@@ -1,5 +1,8 @@
 {
   "functions": {
     "api/*.js": { "maxDuration": 300 }
+  },
+  "git": {
+    "deploymentEnabled": { "backup": false }
   }
 }

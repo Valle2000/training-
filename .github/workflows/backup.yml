@@ -1,0 +1,60 @@
+# Tägliches Backup der Trainingsdaten aus Supabase in den Branch „backup“ dieses (privaten) Repos.
+# Hält nebenbei das kostenlose Supabase-Projekt aktiv (keine Pause nach einer Woche ohne Nutzung).
+# Einrichtung: unter Settings → Secrets and variables → Actions die Secrets SUPABASE_URL und SUPABASE_SECRET_KEY anlegen.
+name: Backup
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Backup-Branch holen oder anlegen
+        run: |
+          git config user.name "training-backup"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git fetch --depth=1 origin backup; then
+            git worktree add backup-data FETCH_HEAD
+            git -C backup-data checkout -B backup
+          else
+            git worktree add --detach backup-data
+            git -C backup-data checkout --orphan backup
+            git -C backup-data rm -rfq .
+            printf '{ "git": { "deploymentEnabled": false } }\n' > backup-data/vercel.json
+            printf '# Backup der Trainingsdaten\n\nWird täglich automatisch vom Workflow „Backup“ geschrieben. Wiederherstellen: siehe scripts/restore.mjs im Haupt-Branch oder app-backup.json in der App einspielen.\n' > backup-data/README.md
+          fi
+
+      - name: Daten aus Supabase sichern
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+        run: node scripts/backup.mjs backup-data
+
+      - name: Änderungen speichern
+        working-directory: backup-data
+        run: |
+          git add -A
+          # meta.json ändert sich bei jedem Lauf; nur speichern, wenn sich echte Daten geändert haben.
+          if git diff --cached --quiet -- . ':(exclude)meta.json' && git rev-parse -q --verify HEAD >/dev/null; then
+            echo "Keine neuen Daten."
+          else
+            git commit -qm "Backup $(date -u +%F)"
+            git push origin backup
+          fi
