@@ -1,0 +1,93 @@
+import React, { useState } from 'react';
+import { BrainCircuit, CalendarPlus, Trash2 } from 'lucide-react';
+import { useData, update, getData, uid } from '../lib/store.js';
+import { coachSummary, today } from '../lib/activities.js';
+import { sportLabel } from '../lib/sports.js';
+import { kiPost } from '../lib/ai.js';
+import { fmtDate, toast } from './common.jsx';
+
+export const DEFAULT_STRATEGY = 'Aktuell ca. 15 h Ausdauer pro Woche plus 2 Krafteinheiten (zusammen ca. 2 h). Bald möchte ich Double-Threshold-Tage einbauen und später auch etwas mehr Intensität.';
+
+export function Coach() {
+  const { settings, coach } = useData();
+  const [strategy, setStrategy] = useState(settings.strategy ?? DEFAULT_STRATEGY);
+  const [question, setQuestion] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [openId, setOpenId] = useState(coach.at(-1)?.id);
+  const current = coach.find((c) => c.id === openId);
+
+  const run = async () => {
+    setBusy(true); setError('');
+    update((d) => ({ ...d, settings: { ...d.settings, strategy } }));
+    try {
+      const data = getData();
+      const t = today(data.settings.timezone);
+      const result = await kiPost('/api/coach', { daten: coachSummary(data, t), frage: question });
+      const entry = { id: uid(), date: t, question, result };
+      update((d) => ({ ...d, coach: [...d.coach, entry].slice(-20) }));
+      setOpenId(entry.id);
+      setQuestion('');
+    } catch (e) { setError(e.message); } finally { setBusy(false); }
+  };
+
+  const adopt = (plan) => {
+    const items = plan.filter((p) => p.sport !== 'rest' && p.zone !== 'Ruhe').map((p) => ({ id: uid(), date: p.datum, title: p.titel, sport: p.sport, minutes: p.minuten, zone: p.zone, description: p.beschreibung, load: p.belastung, source: 'coach' }));
+    const dates = new Set(items.map((i) => i.date));
+    // Offene Coach-Einheiten an denselben Tagen ersetzen, eigene Planungen behalten.
+    update((d) => ({ ...d, plan: [...d.plan.filter((p) => !(p.source === 'coach' && !p.done && dates.has(p.date))), ...items] }));
+    toast(`${items.length} Einheiten in den Kalender übernommen`);
+  };
+
+  return (
+    <>
+      <h1>KI-Coach</h1>
+      <p className="muted">Der Coach bekommt eine Zusammenfassung deiner letzten 12 Wochen (Umfang, Zonen, Kraft, Form, HRV/Schlaf) und deine Strategie. Er bewertet sie anhand der Studienlage im Langlauf und plant die nächsten 7 Tage.</p>
+      <label>Deine Strategie und Ziele</label>
+      <textarea value={strategy} onChange={(e) => setStrategy(e.target.value)} rows={4} />
+      <label>Frage (optional)</label>
+      <textarea value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="z. B. Wie baue ich den ersten Double-Threshold-Tag ein? Lieber Rollski oder Laufen?" rows={2} />
+      <button className="primary wide" onClick={run} disabled={busy} style={{ marginTop: 12 }}><BrainCircuit size={18} className={busy ? 'spin' : ''} />{busy ? 'Analysiere … (bis zu 1–2 Minuten)' : 'Analyse und Wochenplan'}</button>
+      {error && <div className="notice" style={{ color: 'var(--bad)' }}>{error}</div>}
+
+      {current && <Result entry={current} onAdopt={adopt} />}
+
+      {coach.length > 1 && <>
+        <h2>Frühere Analysen</h2>
+        {[...coach].reverse().map((c) => (
+          <div key={c.id} className="item">
+            <button className="ghost grow" style={{ justifyContent: 'flex-start' }} onClick={() => setOpenId(c.id)}>{fmtDate(c.date)} {c.question ? `· ${c.question.slice(0, 50)}` : ''}</button>
+            <button className="ghost" aria-label="Löschen" onClick={() => update((d) => ({ ...d, coach: d.coach.filter((x) => x.id !== c.id) }))}><Trash2 size={15} /></button>
+          </div>
+        ))}
+      </>}
+    </>
+  );
+}
+
+function Result({ entry, onAdopt }) {
+  const r = entry.result;
+  return (
+    <div className="card">
+      <p className="muted small" style={{ marginTop: 0 }}>{fmtDate(entry.date)} {entry.question && `· „${entry.question}“`}</p>
+      <p><b>{r.zusammenfassung}</b></p>
+      {r.warnungen?.length > 0 && <div className="notice" style={{ background: 'var(--badbg)', color: 'var(--bad)' }}>{r.warnungen.map((w, i) => <div key={i}>⚠ {w}</div>)}</div>}
+      {r.analyse?.map((a, i) => (
+        <div key={i} style={{ borderTop: '1px solid var(--line)', padding: '8px 0' }}>
+          <b>{a.titel}</b> <span className={`badge b-${a.bewertung}`}>{a.bewertung}</span>
+          <p style={{ margin: '4px 0', fontSize: 14 }}>{a.text}</p>
+        </div>
+      ))}
+      {r.wochenplan?.length > 0 && <>
+        <h3>Wochenplan</h3>
+        {r.wochenplan.map((p, i) => (
+          <div key={i} className="item" style={{ alignItems: 'flex-start' }}>
+            <div className="grow"><b>{fmtDate(p.datum)} · {p.titel}</b><p>{p.sport === 'rest' ? 'Ruhetag' : `${sportLabel(p.sport)} · ${p.minuten} min · ${p.zone} · Belastung ~${p.belastung}`}</p><p style={{ whiteSpace: 'pre-line', color: 'var(--ink)' }}>{p.beschreibung}</p></div>
+          </div>
+        ))}
+        <button className="primary wide" onClick={() => onAdopt(r.wochenplan)}><CalendarPlus size={18} />In den Kalender übernehmen</button>
+      </>}
+      {r.quellen?.length > 0 && <details style={{ marginTop: 12 }}><summary className="muted">Quellen</summary><ul className="small">{r.quellen.map((q, i) => <li key={i}>{q}</li>)}</ul></details>}
+    </div>
+  );
+}

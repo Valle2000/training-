@@ -1,75 +1,103 @@
 # Training
 
-Eine selbst gehostete, kostenlose Trainingsauswertung als Alternative zu TrainingPeaks.
-Sie holt Einheiten von Polar (oder per FIT-Upload), berechnet eine Belastung pro Einheit
-und zeigt Fitness, Ermüdung und Form über die Zeit.
+Kostenlose, selbst gehostete Trainings-App für Skilanglauf, gebaut wie SkiWax AI: React + Vite als
+installierbare Web-App (PWA), Server-Funktionen auf Vercel, KI über Claude.
 
-## Was die erste Version kann
+## Was die App kann
 
-- **Polar-Sync** über die AccessLink API (OAuth, manueller Sync-Button, optional Webhook)
-- **FIT-Upload**, mehrere Dateien auf einmal, z. B. aus dem Polar-Flow-Export für ältere Daten
-- **Belastung pro Einheit**
-  - mit Wattmesser: Dauer × NP × IF / (FTP × 3600) × 100
-  - sonst aus dem Pulsverlauf (Banister-TRIMP, so skaliert, dass 1 h an der Laktatschwelle = 100)
-  - notfalls aus dem Durchschnittspuls
-- **Fitness / Ermüdung / Form** (42- bzw. 7-Tage-Schnitt, Form = Fitness − Ermüdung vom Vortag),
-  inklusive 14-Tage-Prognose ohne weiteres Training
-- **Einheiten-Liste und Detailansicht** mit Puls- und Leistungsverlauf
-- Dubletten werden erkannt (gleiche Startzeit), Änderungen an FTP oder Schwelle berechnen alles neu
+- **Heute**: Fitness, Ermüdung und Form (wie CTL/ATL/TSB) mit Prognose aus dem Trainingsplan,
+  Tageseinschätzung aus Form und HRV, Erholungswerte, Essensbedarf des Tages
+- **Training**: Wochenkalender mit erledigten und geplanten Einheiten, Liste, Detailansicht mit Puls-
+  und Leistungsverlauf, Laktat, RPE und Notizen; Stunden je Woche nach Intensitätszone
+  (Olympiatoppen I1–I5) und Verteilung locker/Schwelle/hart
+- **Kraft**: Katalog mit gut 30 langlaufrelevanten Übungen (Maximalkraft, Explosiv, spezifisch,
+  einbeinig, Rumpf, Prophylaxe) inklusive Begründung und Ausführung, Vorlagen für zwei Einheiten
+  pro Woche, Eintragen von Sätzen mit Wiederholungen und Gewicht, „Letztes Mal“-Anzeige,
+  geschätztes 1RM und Verlauf je Übung, eigene Übungen
+- **Essen**: Tagesbedarf (Kohlenhydrate, Eiweiß, Fett, kcal) nach Trainingsumfang und -intensität,
+  KI-Essensplan mit Rezepten, Einkaufsliste und Favoriten, abgestimmt auf Trainingszeiten und Vorlieben
+- **Coach**: KI-Analyse der letzten 12 Wochen anhand der Studienlage im Langlauf (Intensitäts-
+  verteilung, Double Threshold, Kraft, Belastungssteuerung, Erholung) mit 7-Tage-Plan, der sich mit
+  einem Klick in den Kalender übernehmen lässt
+- **Datenquellen**: Polar (Einheiten, Nightly Recharge/HRV, Schlaf), Concept2 Logbook (ErgData:
+  SkiErg, RowErg, BikeErg mit Schlagdaten und Watt), Wahoo, FIT-Upload, manuelle Einheiten.
+  Doppelt aufgezeichnete Einheiten (z. B. Polar-Uhr und Wahoo gleichzeitig) werden erkannt.
 
-Die Namen Fitness, Ermüdung, Form und Belastung stehen für das, was TrainingPeaks CTL, ATL,
-TSB und TSS nennt (dort Markennamen).
+### Wie gerechnet wird
+
+| Größe | Berechnung |
+| --- | --- |
+| Belastung (≈ TSS) | mit Watt (Rad, Ergometer): Dauer × NP × IF / (FTP × 3600) × 100; sonst Banister-TRIMP aus dem Pulsverlauf, skaliert auf 100 pro Stunde an der Laktatschwelle; notfalls Durchschnittspuls oder RPE |
+| Fitness / Ermüdung | exponentieller Schnitt der Tagesbelastung über 42 bzw. 7 Tage |
+| Form | Fitness − Ermüdung vom Vortag |
+| Zonen | % Maximalpuls: I1 55–72, I2 72–82, I3 82–87, I4 87–92, I5 > 92 |
+| Kraft-Belastung | Dauer × (RPE/10)² × 100 |
+| Concept2-Watt | 2,80 / (Pace in s/m)³ |
 
 ## Starten
 
 ```bash
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env        # Polar-Zugangsdaten eintragen (optional)
-uvicorn app.main:app --env-file .env --reload
+npm install
+cp .env.example .env   # Schlüssel eintragen (siehe unten)
+npm run dev
 ```
 
-Dann <http://localhost:8000> öffnen, unter **Einstellungen** FTP und/oder Puls-Schwellen eintragen
-und Einheiten hochladen oder Polar verbinden. Daten liegen in `./data` (SQLite + FIT-Dateien).
+Die App läuft dann auf <http://localhost:5173>. Alle Daten liegen lokal im Browser (localStorage
+und IndexedDB). Unter „Mehr“ gibt es ein JSON-Backup.
 
-## Polar einrichten
+## Online stellen (Vercel)
 
-1. Auf <https://admin.polaraccesslink.com> mit dem Polar-Konto anmelden und einen Client anlegen.
-2. Als Redirect-URL `http://localhost:8000/polar/callback` eintragen (bzw. die URL deines Servers).
-3. Client-ID und Secret in `.env` eintragen, Server neu starten.
-4. In der App auf **Polar verbinden** klicken, danach **Mit Polar synchronisieren**.
+Wie bei SkiWax: Repo bei Vercel importieren, die Variablen aus `.env.example` als Environment
+Variables eintragen, `APP_URL` auf die Vercel-Adresse setzen. Auf dem Handy die Seite öffnen und
+„Zum Home-Bildschirm“ wählen.
 
-Die AccessLink API liefert nur Einheiten der letzten 30 Tage. Ältere Daten:
-in Polar Flow unter *Einstellungen → Daten herunterladen* exportieren und die FIT-Dateien hochladen.
+## Datenquellen einrichten
 
-Optional kann Polar bei neuen Einheiten selbst Bescheid geben: Webhook für
-`https://<dein-server>/polar/webhook` mit Event `EXERCISE` anlegen
-(`POST https://www.polaraccesslink.com/v3/webhooks`, Basic-Auth mit Client-ID/Secret) und den
-zurückgegebenen `signature_secret_key` als `POLAR_WEBHOOK_SECRET` setzen. Dafür muss der Server
-öffentlich erreichbar sein.
+Bei jedem Anbieter eine eigene App anlegen. Als Redirect-URL immer `<APP_URL>/api/connect`
+eintragen (lokal: `http://localhost:5173/api/connect`).
 
-## Tests
+| Anbieter | Registrierung | Variablen |
+| --- | --- | --- |
+| Polar AccessLink | <https://admin.polaraccesslink.com> | `POLAR_CLIENT_ID`, `POLAR_CLIENT_SECRET` |
+| Concept2 Logbook | <https://log.concept2.com/developers> | `CONCEPT2_CLIENT_ID`, `CONCEPT2_CLIENT_SECRET` |
+| Wahoo Cloud API | <https://developers.wahooligan.com> | `WAHOO_CLIENT_ID`, `WAHOO_CLIENT_SECRET` |
+
+Hinweise:
+- Polar liefert über die Schnittstelle nur Einheiten der letzten 30 Tage. Ältere Daten in Polar Flow
+  exportieren und als FIT importieren.
+- ErgData lädt Einheiten automatisch ins Concept2 Logbook; die App holt sie dort ab (letzte 90 Tage).
+- Bei Wahoo sind neue Apps zunächst im Sandbox-Modus; für dauerhaften Zugriff muss die App bei
+  Wahoo freigeschaltet werden.
+
+## KI
+
+`ANTHROPIC_API_KEY` bleibt auf dem Server. Coach und Essensplan nutzen Claude Opus 5.5 mit
+automatischem Ersatzmodell, falls eine Anfrage abgelehnt wird. Mit `APP_ACCESS_CODE` lässt sich der
+Zugang schützen; alternativ kann jeder Nutzer unter „Mehr“ einen eigenen Schlüssel eintragen.
+Gesendet wird nur eine kompakte Zusammenfassung, keine Rohdaten.
+
+## Entwicklung
 
 ```bash
-pip install -r requirements-dev.txt
-pytest
+npm test        # ESLint + Tests (Rechenkern, FIT-Import, Kraft, Ernährung)
+npm run build
 ```
 
-## Aufbau
-
-| Datei | Inhalt |
+| Pfad | Inhalt |
 | --- | --- |
-| `app/metrics.py` | NP, Belastung (Leistung/Puls), TRIMP, Fitness/Ermüdung/Form |
-| `app/fitfile.py` | FIT einlesen, auf 1-Hz-Raster bringen, Pausen erkennen |
-| `app/service.py` | Import, Neuberechnung, Tagesbelastung, Verlauf |
-| `app/polar.py` | Polar AccessLink: OAuth, Sync, Webhook-Signatur |
-| `app/db.py` | SQLite-Schema und Einstellungen |
-| `app/main.py` | FastAPI-Routen und JSON-API für die Diagramme |
-| `app/templates/` | Oberfläche (Jinja2 + Chart.js) |
+| `src/lib/metrics.js` | Belastung, Zonen, Fitness/Ermüdung/Form |
+| `src/lib/activities.js` | Einheiten anlegen, Dubletten, Wochen, Zusammenfassung für den Coach |
+| `src/lib/fit.js`, `series.js` | FIT einlesen (Garmin FIT SDK), 1-Hz-Raster |
+| `src/lib/sync.js` | Abgleich Polar, Concept2, Wahoo; FIT-Import |
+| `src/lib/strength.js` | Kraftkatalog, Vorlagen, 1RM |
+| `src/lib/nutrition.js` | Tagesbedarf |
+| `server/connect.mjs` | OAuth und Weiterleitung zu den Anbietern |
+| `server/ai.mjs` | KI-Coach und Essensplan (Claude) |
+| `src/ui/` | Bildschirme |
 
 ## Nächste Schritte
 
-- Trainingskalender mit geplanten Einheiten und geplanter Belastung (fließt in die Prognose ein)
-- Leistungs- und Pulskurve (beste Werte über 5 s bis 60 min), Zeit in Zonen
-- Polar Nightly Recharge / HRV und Schlaf als Trend neben der Form
-- Strava-Import, FTP-Verlauf über die Zeit statt eines festen Werts
+- Geräteübergreifender Sync über Supabase (wie in SkiWax)
+- Leistungskurve (Bestwerte 5 s bis 60 min) und Pulskurve
+- Workout-Builder und Export geplanter Einheiten
+- Laktat-Stufentest mit Schwellenbestimmung

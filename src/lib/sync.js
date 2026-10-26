@@ -1,8 +1,11 @@
 // Abgleich mit Polar, Concept2 (ErgData/Logbook) und Wahoo über /api/connect.
 import { getData, update, putSeries } from './store.js';
-import { parseFit, toSeries } from './fit.js';
+import { toSeries } from './series.js';
 import { buildActivity, findDuplicate, localDate } from './activities.js';
 import { sportFromConcept2 } from './sports.js';
+
+// FIT-Bibliothek ist groß und wird erst geladen, wenn eine FIT-Datei kommt.
+const parseFit = async (bytes) => (await import('./fit.js')).parseFit(bytes);
 
 export const PROVIDERS = {
   polar: { label: 'Polar', hint: 'Einheiten, Nightly Recharge (HRV) und Schlaf der letzten 30 Tage' },
@@ -78,7 +81,7 @@ async function syncPolar() {
     let raw = null;
     try {
       const fit = await call('polar', `/v3/exercises/${ex.id}/fit`, { binary: true });
-      if (fit?.length) raw = parseFit(fit);
+      if (fit?.length) raw = await parseFit(fit);
     } catch { /* ohne FIT: Zusammenfassung verwenden */ }
     if (!raw) {
       const offset = ex['start-time-utc-offset'] || 0; // Minuten
@@ -166,7 +169,7 @@ async function syncWahoo() {
     const s = w.workout_summary || {};
     let raw = null;
     if (s.file?.url) {
-      try { raw = parseFit(await call('wahoo', null, { binary: true, file: s.file.url })); } catch { /* Zusammenfassung */ }
+      try { raw = await parseFit(await call('wahoo', null, { binary: true, file: s.file.url })); } catch { /* Zusammenfassung */ }
     }
     raw ||= { start: w.starts, sport: 'other', elapsedS: Number(s.duration_active_accum) || (w.minutes || 0) * 60, distanceM: Number(s.distance_accum) || null, avgHr: Number(s.heart_rate_avg) || null, avgPower: Number(s.power_avg) || null, calories: Number(s.calories_accum) || null };
     if (await store({ ...raw, source: 'wahoo', externalId: String(w.id), title: w.name || '' })) added++;
@@ -190,7 +193,7 @@ export async function importFiles(files) {
   let added = 0, dup = 0, failed = 0;
   for (const f of files) {
     try {
-      const raw = parseFit(new Uint8Array(await f.arrayBuffer()));
+      const raw = await parseFit(new Uint8Array(await f.arrayBuffer()));
       if (await store({ ...raw, source: 'upload' })) added++; else dup++;
     } catch { failed++; }
   }

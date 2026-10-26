@@ -1,7 +1,7 @@
 // Einheiten anlegen, Dubletten erkennen, Auswertungen über Tage und Wochen.
 import { computeLoad, zoneSeconds, performanceCurve, addDays, ZONES } from './metrics.js';
 import { sportById } from './sports.js';
-import { thin } from './fit.js';
+import { thin } from './series.js';
 
 export const athleteOf = (s = {}) => ({
   ftp: num(s.ftp), lthr: num(s.lthr), hrMax: num(s.hrMax), hrRest: num(s.hrRest), sex: s.sex || 'm',
