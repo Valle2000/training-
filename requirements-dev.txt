@@ -1,3 +1,0 @@
--r requirements.txt
-pytest>=8
-fit-tool>=0.9
