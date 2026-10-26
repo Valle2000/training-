@@ -22,3 +22,21 @@ test('Concept2-Abgleich mit mehreren Einheiten läuft ohne Fehler durch', async 
   assert.equal(acts.find((a) => a.externalId === '2').laps.length, 2);
   assert.ok(acts.every((a) => a.load > 0));
 });
+
+test('„Neu laden“ behält vorhandene Einheiten, wenn die Schnittstelle mittendrin ausfällt', async () => {
+  const { update, getData } = await import('../src/lib/store.js');
+  const { reloadConcept2 } = await import('../src/lib/sync.js');
+  update((d) => ({ ...d, connections: { concept2: { access_token: 't' } } }));
+  const before = getData().activities.filter((a) => a.source === 'concept2');
+  assert.ok(before.length > 0);
+  update((d) => ({ ...d, activities: d.activities.map((a, i) => (i === 0 ? { ...a, notes: 'gut gelaufen' } : a)) }));
+  let calls = 0;
+  globalThis.fetch = async () => {
+    if (++calls > 2) return new Response('kaputt', { status: 500 });
+    return new Response(JSON.stringify({ data: [{ id: 1, date_utc: '2026-10-01 07:00:00', type: 'skierg', time: 18000, distance: 5000 }], meta: { pagination: { total_pages: 3 } } }), { status: 200, headers: { 'content-type': 'application/json' } });
+  };
+  await assert.rejects(reloadConcept2());
+  const after = getData().activities.filter((a) => a.source === 'concept2');
+  assert.equal(after.length, before.length);
+  assert.equal(after[0].notes, 'gut gelaufen');
+});

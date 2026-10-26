@@ -187,12 +187,34 @@ async function concept2Raw(r) {
 }
 
 // Alle Concept2-Einheiten neu laden (z. B. nach Korrekturen an der Auswertung). Eigene Notizen/RPE/Laktat bleiben.
+// Sicher: Alte Einheiten werden erst ersetzt, wenn die neuen vollständig geladen sind. Bricht das Laden ab,
+// bleibt alles wie vorher (früher wurde zuerst gelöscht – bei einem Fehler waren die Einheiten dann weg).
 export async function reloadConcept2(onProgress) {
-  const keep = Object.fromEntries(getData().activities.filter((a) => a.source === 'concept2').map((a) => [a.externalId, { notes: a.notes, rpe: a.rpe, lactate: a.lactate, title: a.title, keySessionId: a.keySessionId, gearIds: a.gearIds }]));
-  update((d) => ({ ...d, activities: d.activities.filter((a) => a.source !== 'concept2') }));
-  const n = await syncConcept2({ all: true, onProgress });
-  update((d) => ({ ...d, activities: d.activities.map((a) => (a.source === 'concept2' && keep[a.externalId] ? { ...a, ...Object.fromEntries(Object.entries(keep[a.externalId]).filter(([, v]) => v != null && v !== '')) } : a)) }));
-  return n;
+  const old = getData().activities.filter((a) => a.source === 'concept2');
+  const keep = Object.fromEntries(old.map((a) => [a.externalId, { notes: a.notes, rpe: a.rpe, lactate: a.lactate, title: a.title, keySessionId: a.keySessionId, gearIds: a.gearIds }]));
+  const fresh = [];
+  let page = 1, pages = 1;
+  do {
+    const res = await call('concept2', `/api/users/me/results?number=100&page=${page}`);
+    pages = res?.meta?.pagination?.total_pages || 1;
+    for (const r of res?.data || []) {
+      const { activity, series } = buildActivity(await concept2Raw(r), getData().settings);
+      const k = keep[activity.externalId];
+      if (k) Object.assign(activity, Object.fromEntries(Object.entries(k).filter(([, v]) => v != null && v !== '')));
+      fresh.push({ activity, series });
+      onProgress?.(`Concept2: ${fresh.length} Einheiten geladen (Seite ${page} von ${pages})`);
+    }
+    page++;
+  } while (page <= pages);
+  if (!fresh.length && old.length) throw new Error('Concept2 hat keine Einheiten geliefert – nichts geändert.');
+  // Alte IDs weiterverwenden, damit andere Geräte die Einheit ersetzen statt doppelt anlegen.
+  const oldId = Object.fromEntries(old.map((a) => [a.externalId, a.id]));
+  for (const f of fresh) { if (oldId[f.activity.externalId]) f.activity.id = oldId[f.activity.externalId]; if (f.series) await putSeries(f.activity.id, f.series); }
+  // Neue Verläufe beim nächsten Online-Abgleich erneut hochladen.
+  try { const m = JSON.parse(localStorage.getItem('trainings-app-sync-meta') || '{}'); for (const f of fresh) delete m.seriesPushed?.[f.activity.id]; localStorage.setItem('trainings-app-sync-meta', JSON.stringify(m)); } catch { /* ohne Konto egal */ }
+  const freshIds = new Set(fresh.map((f) => f.activity.externalId));
+  update((d) => ({ ...d, activities: [...d.activities.filter((a) => a.source !== 'concept2' || !freshIds.has(a.externalId)), ...fresh.map((f) => f.activity)] }));
+  return fresh.length;
 }
 
 // Standard: letzte 50 Einheiten; all = alle Seiten, bis eine Seite leer bzw. nicht voll ist.
