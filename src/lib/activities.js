@@ -41,8 +41,9 @@ export function evaluate(raw, settings) {
   if (!zones && raw.zone) zones = { I1: 0, I2: 0, I3: 0, I4: 0, I5: 0, [raw.zone]: movingS };
   return {
     durationS: movingS,
-    load: res.load != null ? Math.round(res.load * 10) / 10 : null,
-    loadSource: res.source,
+    // Ohne Puls, Watt und RPE: Polars eigene Trainingsbelastung aus dem Export (grobe Näherung).
+    load: res.load != null ? Math.round(res.load * 10) / 10 : raw.externalLoad ?? null,
+    loadSource: res.load != null ? res.source : raw.externalLoad != null ? 'polar' : res.source,
     np: res.np ? Math.round(res.np) : null,
     intensity: res.intensity ? Math.round(res.intensity * 100) / 100 : null,
     trimp: res.trimp ? Math.round(res.trimp) : null,
@@ -67,7 +68,7 @@ export function buildActivity(raw, settings, extra = {}) {
     zone: raw.zone || null, elapsedS: raw.elapsedS ?? raw.durationS ?? null,
     distanceM: raw.distanceM ?? null, avgHr: round(raw.avgHr), maxHr: round(raw.maxHr), avgPower: round(raw.avgPower),
     calories: raw.calories ?? null, ascentM: raw.ascentM ?? null, strengthId: raw.strengthId ?? null,
-    laps: raw.laps || null, pace: raw.pace ?? null, spm: raw.spm ?? null, workS: raw.workS ?? null,
+    laps: raw.laps || null, externalLoad: raw.externalLoad ?? null, pace: raw.pace ?? null, spm: raw.spm ?? null, workS: raw.workS ?? null,
     hasSeries: !!raw.series?.hr?.length, ...ev,
   };
   return { activity, series: raw.series ? thin(raw.series) : null };

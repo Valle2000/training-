@@ -132,3 +132,35 @@ test('Polar-Export ohne Zusammenfassung: Puls aus dem Verlauf statt 0, Profil wi
   assert.equal(r.elapsedS, 120);
   assert.deepEqual({ ...r.athlete, date: undefined }, { date: undefined, hrMax: 192, hrRest: 55, lthr: 173, ftp: 310, weightKg: 79, sex: 'm' });
 });
+
+test('Neues Polar-Format (samples.samples, distanceMeters, Sport als Nummer)', async () => {
+  const { parsePolarJson } = await import('../src/lib/importers.js');
+  const { polarSport } = await import('../src/lib/sports.js');
+  const n = 600;
+  const doc = {
+    startTime: '2018-10-06T11:00:00', stopTime: '2018-10-06T11:10:00', name: 'Freistil-Rollski', durationMillis: 600000, distanceMeters: 3000, calories: 120, trainingLoad: 15, timezoneOffsetMinutes: 120,
+    physicalInformation: { maximumHeartRate: 200, restingHeartRate: 38, anaerobicThreshold: 180, weightKg: 75, sex: 'SEX_MALE', modified: '2018-10-07T20:46:51.000' },
+    sport: { id: '59' },
+    exercises: [{ startTime: '2018-10-06T11:00:00', stopTime: '2018-10-06T11:10:00', durationMillis: 600000, distanceMeters: 3000, timezoneOffsetMinutes: 120,
+      statistics: { statistics: [{ type: 'STATISTICS_TYPE_HEART_RATE', avg: 150, max: 170 }] },
+      samples: { samples: [
+        { type: 'HEART_RATE', intervalMillis: 1000, values: Array.from({ length: n }, (_, i) => (i < 5 ? 'NaN' : 150)) },
+        { type: 'SPEED', intervalMillis: 1000, values: Array(n).fill(18) },
+      ] },
+      pauseTimes: [{ startTime: '2018-10-06T11:05:00.000', endTime: '2018-10-06T11:06:00.000' }] }],
+  };
+  const r = parsePolarJson(doc);
+  assert.equal(r.start, '2018-10-06T09:00:00.000Z');
+  assert.equal(r.sport, 'rollerski_skate');
+  assert.equal(r.distanceM, 3000);
+  assert.equal(r.calories, 120);
+  assert.equal(r.avgHr, 150);
+  assert.equal(r.externalLoad, 15);
+  assert.equal(r.series.hr.length, 540); // Pause herausgenommen
+  assert.equal(r.series.hr[0], null);
+  assert.equal(r.series.speed[10], 5);
+  assert.equal(r.athlete.hrMax, 200);
+  assert.equal(polarSport('Klassischer Skilanglauf'), 'xc_classic');
+  assert.equal(polarSport('Freistil-Skilanglauf'), 'xc_skate');
+  assert.equal(polarSport('Schwimmen Freistil'), 'swim');
+});

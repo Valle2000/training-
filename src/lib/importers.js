@@ -20,7 +20,7 @@ function summarize(points, extra) {
     distanceM: extra.distanceM ?? null, calories: extra.calories ?? null, ascentM: extra.ascentM ?? null,
     avgHr: extra.avgHr ?? avg(hrs), maxHr: extra.maxHr ?? (hrs.length ? Math.max(...hrs) : null),
     avgPower: extra.avgPower ?? (pws.some(Boolean) ? avg(pws) : null),
-    title: extra.title || '', notes: extra.notes || '', laps: extra.laps || null, athlete: extra.athlete || null,
+    title: extra.title || '', notes: extra.notes || '', laps: extra.laps || null, athlete: extra.athlete || null, externalLoad: extra.externalLoad ?? null,
     series: points.length > 30 ? toSeries(points) : null,
   };
 }
@@ -112,6 +112,7 @@ function polarTime(str, offsetMin) {
   return new Date(Date.UTC(y, mo - 1, da, h || 0, mi || 0, Math.floor(se || 0)) - offsetMin * 60000).toISOString();
 }
 export function parsePolarJson(obj) {
+  if (obj.exercises?.[0]?.samples?.samples || obj.durationMillis != null) return parsePolarJsonV2(obj);
   const ex = obj.exercises?.[0] || obj;
   const startRaw = ex.startTime || obj.startTime || ex.start || obj.start;
   if (!startRaw) throw new Error('Keine Startzeit im JSON');
@@ -136,6 +137,46 @@ export function parsePolarJson(obj) {
     avgHr: num(hr.avg ?? hr.average) ?? undefined, maxHr: num(hr.max ?? hr.maximum) ?? undefined,
     calories: num(ex.kiloCalories ?? obj.kiloCalories ?? ex.calories) ?? undefined,
     ascentM: num(ex.ascent ?? obj.ascent) ?? undefined,
+  });
+}
+
+// Neueres Polar-Exportformat: Messwerte als Listen je Typ (samples.samples[{type, intervalMillis, values}]),
+// Distanz in distanceMeters, Sportart nur als Nummer (der Name steht in „name“, z. B. „Freistil-Rollski“).
+export function parsePolarJsonV2(obj) {
+  const ex = obj.exercises?.[0] || obj;
+  const startRaw = ex.startTime || obj.startTime;
+  if (!startRaw) throw new Error('Keine Startzeit im JSON');
+  const offset = num(ex.timezoneOffsetMinutes ?? obj.timezoneOffsetMinutes);
+  const start = polarTime(startRaw, offset);
+  const startMs = Date.parse(startRaw); // Ortszeit wie die Pausen – nur für die relative Zeitachse
+  const value = (v) => { const n = num(v); return n == null || Number.isNaN(n) ? null : n; };
+  const byType = Object.fromEntries((ex.samples?.samples || []).map((s) => [s.type, s]));
+  const pauses = (ex.pauseTimes || []).map((p) => [Date.parse(p.startTime), Date.parse(p.endTime)]).filter(([a, b]) => a && b);
+  const types = Object.values(byType);
+  const totalMs = Math.max(0, ...types.map((s) => (s.values?.length || 0) * (s.intervalMillis || 1000)));
+  const step = Math.min(1000, ...types.map((s) => s.intervalMillis || 1000));
+  const at = (type, sec) => { const s = byType[type]; if (!s?.values) return null; return value(s.values[Math.floor((sec * 1000) / (s.intervalMillis || 1000))]); };
+  const points = [];
+  for (let i = 0; i < totalMs / step; i++) {
+    const t = startMs + i * step;
+    if (pauses.some(([a, b]) => t >= a && t < b)) continue; // Pausen herausnehmen
+    const sec = (i * step) / 1000;
+    const sp = at('SPEED', sec);
+    points.push({ t, hr: at('HEART_RATE', sec), power: at('POWER', sec) ?? at('CYCLING_POWER', sec), speed: sp != null ? sp / 3.6 : null, alt: at('ALTITUDE', sec) });
+  }
+  const hasData = points.some((p) => p.hr || p.power || p.speed);
+  const stats = Object.fromEntries((ex.statistics?.statistics || []).map((s) => [s.type, s]));
+  const p = obj.physicalInformation || ex.physicalInformation;
+  const athlete = p ? { date: p.modified || start, hrMax: num(p.maximumHeartRate), hrRest: num(p.restingHeartRate), lthr: num(p.anaerobicThreshold), ftp: num(p.functionalThresholdPower), weightKg: num(p.weightKg), sex: /FEMALE/.test(p.sex || '') ? 'f' : /MALE/.test(p.sex || '') ? 'm' : null } : null;
+  const stopS = ex.stopTime ? (Date.parse(ex.stopTime) - startMs) / 1000 : null;
+  return summarize(hasData ? points : [], {
+    athlete, start, sport: polarSport(obj.name || ex.name || '') , title: obj.name || '', notes: obj.note || '',
+    elapsedS: num(ex.durationMillis ?? obj.durationMillis) != null ? num(ex.durationMillis ?? obj.durationMillis) / 1000 : stopS ?? undefined,
+    distanceM: num(ex.distanceMeters ?? obj.distanceMeters) ?? undefined,
+    calories: num(ex.calories ?? obj.calories) ?? undefined, ascentM: num(ex.ascentMeters) ?? undefined,
+    avgHr: num(stats.STATISTICS_TYPE_HEART_RATE?.avg) ?? undefined, maxHr: num(stats.STATISTICS_TYPE_HEART_RATE?.max) ?? undefined,
+    avgPower: num(stats.STATISTICS_TYPE_POWER?.avg ?? stats.STATISTICS_TYPE_CYCLING_POWER?.avg) ?? undefined,
+    externalLoad: num(ex.trainingLoad ?? obj.trainingLoad),
   });
 }
 

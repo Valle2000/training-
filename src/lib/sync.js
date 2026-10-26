@@ -3,7 +3,7 @@ import { getData, update, putSeries } from './store.js';
 import { toSeries } from './series.js';
 import { buildActivity, findDuplicate, localDate } from './activities.js';
 import { sportFromConcept2, polarSport } from './sports.js';
-import { readExport, zipEntries, zipEntriesSync } from './importers.js';
+import { readExport, zipEntries, zipEntriesSync, importable } from './importers.js';
 import { recomputeAll } from './recompute.js';
 import { lapsFromConcept2, lapsFromSeries, pacePer, concept2Title, isAutoC2Title } from './laps.js';
 
@@ -359,7 +359,8 @@ export async function importFiles(files, onProgress) {
   // Bildschirm anlassen, damit das Handy beim langen Import nicht einschläft.
   const lock = await globalThis.navigator?.wakeLock?.request('screen').catch(() => null);
   try {
-    for (const f of files) {
+    const list = files.length > 1 ? files.filter((f) => importable(f.webkitRelativePath || f.name)) : files; // Ordner: nur Trainingsdateien
+    for (const f of list) {
       if (!f.name.toLowerCase().endsWith('.zip')) { await handle(f.name, new Uint8Array(await f.arrayBuffer())); continue; }
       onProgress?.(`Öffne ${f.name} (${Math.round(f.size / 1e6)} MB) …`);
       let seen = 0;
