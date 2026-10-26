@@ -99,11 +99,12 @@ export function Settings() {
 
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Vergangene Einheiten importieren</h3>
-        <label className="primary wide" style={{ cursor: 'pointer' }}><Upload size={17} />Dateien wählen (FIT, TCX, GPX, CSV, JSON, ZIP)<input type="file" accept=".fit,.tcx,.gpx,.csv,.json,.zip" multiple hidden onChange={upload} disabled={!!progress} /></label>
+        <label className="primary wide" style={{ cursor: 'pointer' }}><Upload size={17} />Dateien wählen (FIT, TCX, GPX, CSV, JSON, ZIP, GZ)<input type="file" accept=".fit,.tcx,.gpx,.csv,.json,.zip,.gz" multiple hidden onChange={upload} disabled={!!progress} /></label>
         <ul className="small muted" style={{ paddingLeft: 18, lineHeight: 1.55 }}>
           <li><b>Polar:</b> Die Schnittstelle liefert nur Einheiten ab der Verbindung. Ältere Einheiten in Polar Flow (Web) im Tagebuch öffnen → Exportieren (TCX, CSV oder FIT, mehrere auch als ZIP). Den Komplett-Export deines Kontos (account.polar.com, JSON im ZIP) kann die App auch lesen – das Format ist nicht offiziell beschrieben, schick mir eine Rückmeldung, falls Einheiten fehlen.</li>
           <li><b>Concept2 / ErgData:</b> Nach dem Verbinden oben „Ganze Historie“ antippen.</li>
           <li><b>Wahoo:</b> ebenfalls „Ganze Historie“.</li>
+          <li><b>Strava / Garmin:</b> Den Konto-Export (ZIP) direkt auswählen – gepackte Dateien (.fit.gz, .gpx.gz, .tcx.gz) werden gelesen.</li>
           <li>Doppelte Einheiten (gleiche Startzeit und Dauer) werden automatisch übersprungen.</li>
         </ul>
       </div>

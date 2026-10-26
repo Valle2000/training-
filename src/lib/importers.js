@@ -131,6 +131,11 @@ export function parsePolarJson(obj) {
 export async function readExport(name, bytes, parseFit) {
   const lower = name.toLowerCase();
   const text = () => new TextDecoder().decode(bytes);
+  // Gepackte Einzeldateien (z. B. Strava- oder Garmin-Export: activities/123.fit.gz).
+  if (lower.endsWith('.gz')) {
+    const { gunzipSync } = await import('fflate');
+    return readExport(name.slice(0, -3), gunzipSync(bytes), parseFit);
+  }
   if (lower.endsWith('.zip')) {
     const { unzipSync } = await import('fflate');
     const files = unzipSync(bytes);
