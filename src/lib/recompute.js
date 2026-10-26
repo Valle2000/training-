@@ -2,7 +2,8 @@
 import { getData, update, getSeries } from './store.js';
 import { reevaluate } from './activities.js';
 
-export const METRICS_VERSION = 2;
+// 3: Messfehler (unrealistische Watt/Puls) werden vor der Berechnung entfernt.
+export const METRICS_VERSION = 3;
 
 export async function recomputeAll() {
   const st = getData().settings;

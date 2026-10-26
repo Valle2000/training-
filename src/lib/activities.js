@@ -1,5 +1,5 @@
 // Einheiten anlegen, Dubletten erkennen, Auswertungen über Tage und Wochen.
-import { computeLoad, zoneSeconds, performanceCurve, addDays, ZONES, seriesStats } from './metrics.js';
+import { computeLoad, zoneSeconds, performanceCurve, addDays, ZONES, seriesStats, cleanSeries } from './metrics.js';
 import { sportById } from './sports.js';
 import { thin } from './series.js';
 import { keySessionRows } from './keysessions.js';
@@ -29,7 +29,7 @@ export function findDuplicate(activities, a) {
 // Belastung, Zonen usw. aus Rohdaten berechnen. raw.series in 1 Hz (optional).
 export function evaluate(raw, settings) {
   const athlete = athleteOf(settings, raw.sport);
-  const series = raw.series;
+  const series = cleanSeries(raw.series);
   const movingS = series?.hr?.length || raw.durationS || raw.elapsedS || 0;
   const res = computeLoad(athlete, {
     durationS: movingS, power: series?.power, hr: series?.hr, avgHr: raw.avgHr, rpe: raw.rpe,

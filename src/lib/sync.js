@@ -117,10 +117,12 @@ async function syncPolarWellness() {
 }
 
 // Concept2: Watt aus Pace (Zehntelsekunden pro 500 m, BikeErg pro 1000 m): P = 2,80 / (s/m)³
+// Unrealistische Werte (fast leerer Pace beim Anrudern o. Ä.) werden verworfen, sonst entstehen Milliarden Watt.
 export const c2Watts = (paceTenths, type) => {
   if (!paceTenths) return null;
   const perM = paceTenths / 10 / (type === 'bike' ? 1000 : 500);
-  return Math.round(2.8 / perM ** 3);
+  const w = Math.round(2.8 / perM ** 3);
+  return w >= 20 && w <= 2000 ? w : null;
 };
 
 // Standard: letzte 90 Tage; all = komplette Historie (Seite für Seite, meta.pagination.total_pages).

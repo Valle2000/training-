@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check, Copy } from 'lucide-react';
 import { useData, update, getSeries, deleteSeries, uid } from '../lib/store.js';
 import { today, weeks, mondayOf, buildActivity, evaluate, estimatePlanLoad, matchPlan, compliance } from '../lib/activities.js';
-import { addDays, ZONES } from '../lib/metrics.js';
+import { addDays, ZONES, cleanSeries } from '../lib/metrics.js';
 import { SPORTS, sportLabel } from '../lib/sports.js';
 import { importFiles } from '../lib/sync.js';
 import { ZoneWeeks, ZoneBar, LineChart, ZONE_COLORS } from './charts.jsx';
@@ -164,7 +164,7 @@ export function ActivitySheet({ activity, onClose }) {
   const { settings, keySessions, gear } = useData();
   const [a, setA] = useState(activity);
   const [series, setSeries] = useState(null);
-  useEffect(() => { if (activity.hasSeries) getSeries(activity.id).then(setSeries); }, [activity]);
+  useEffect(() => { if (activity.hasSeries) getSeries(activity.id).then((x) => setSeries(cleanSeries(x))); }, [activity]);
   const save = () => {
     const next = activity.hasSeries ? { ...a } : { ...a, ...evaluate({ ...a, durationS: a.durationS }, settings) };
     update((d) => ({ ...d, activities: d.activities.map((x) => (x.id === a.id ? next : x)) }));

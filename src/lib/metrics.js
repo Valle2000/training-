@@ -166,6 +166,14 @@ export function decoupling(output, hr) {
   return r1 && r2 ? Math.round(((r1 - r2) / r1) * 1000) / 10 : null;
 }
 
+// Messfehler entfernen, bevor gerechnet wird (Leistung geht hoch 4 in NP und Belastung ein,
+// ein einziger Ausreißer würde sonst alles verfälschen).
+const ok = (lo, hi) => (v) => (v == null || !(v >= lo && v <= hi) ? null : v);
+export function cleanSeries(series) {
+  if (!series) return series;
+  return { ...series, power: series.power?.map(ok(0, 2500)), hr: series.hr?.map(ok(30, 240)), speed: series.speed?.map(ok(0, 30)) };
+}
+
 // Kennzahlen aus dem Verlauf, die TrainingPeaks & Co. pro Einheit zeigen.
 export function seriesStats(series, { ftp, powerSport }) {
   const power = series.power || [], hr = series.hr || [], speed = series.speed || [];
