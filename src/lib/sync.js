@@ -134,7 +134,6 @@ async function syncConcept2({ all = false, onProgress } = {}) {
     for (const r of res?.data || []) {
       if (known.has(String(r.id))) continue;
       if (await store(await concept2Raw(r))) added++;
-      if (await store(raw)) added++;
     }
     onProgress?.(`Concept2: Seite ${page} von ${pages}, ${added} neu`);
     page++;
