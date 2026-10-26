@@ -35,7 +35,7 @@ export function evaluate(raw, settings) {
     durationS: movingS, power: series?.power, hr: series?.hr, avgHr: raw.avgHr, rpe: raw.rpe,
     kind: raw.sport === 'strength' ? 'strength' : 'endurance', powerSport: !!sportById(raw.sport).power,
   });
-  let zones = series?.hr?.some(Boolean) ? zoneSeconds(series.hr, athlete.hrMax) : null;
+  let zones = series?.hr?.some(Boolean) ? zoneSeconds(series.hr, athlete.hrMax, settings.zoneHr) : null;
   // Ohne Verlauf: ganze Dauer der Zone des Durchschnittspulses bzw. der manuell gewählten Zone zuordnen.
   if (!zones && raw.zone) zones = { I1: 0, I2: 0, I3: 0, I4: 0, I5: 0, [raw.zone]: movingS };
   return {

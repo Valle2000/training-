@@ -13,18 +13,20 @@ export const ZONES = [
   { id: 'I5', label: 'I5 sehr hart', from: 0.92, to: 1.01 },
 ];
 
-export function zoneOf(hr, hrMax) {
+// bounds (optional): Pulsgrenzen I1/I2, I2/I3, I3/I4, I4/I5 aus einem Laktattest; sonst % HFmax.
+export function zoneOf(hr, hrMax, bounds) {
   if (!hr || !hrMax) return null;
+  if (hr / hrMax < ZONES[0].from) return null; // unter I1: Pause/Erholung
+  if (bounds?.length === 4 && bounds.every(Boolean)) return ZONES[bounds.filter((b) => hr >= b).length].id;
   const p = hr / hrMax;
-  if (p < ZONES[0].from) return null; // unter I1: Pause/Erholung
   return ZONES.find((z) => p < z.to)?.id ?? 'I5';
 }
 
 // Sekunden je Zone aus einem 1-Hz-Pulsverlauf.
-export function zoneSeconds(hr, hrMax) {
+export function zoneSeconds(hr, hrMax, bounds) {
   const out = { I1: 0, I2: 0, I3: 0, I4: 0, I5: 0 };
   if (!hrMax) return out;
-  for (const h of hr) { const z = zoneOf(h, hrMax); if (z) out[z]++; }
+  for (const h of hr) { const z = zoneOf(h, hrMax, bounds); if (z) out[z]++; }
   return out;
 }
 
