@@ -1,5 +1,6 @@
 // Einheiten anlegen, Dubletten erkennen, Auswertungen über Tage und Wochen.
 import { computeLoad, zoneSeconds, performanceCurve, addDays, ZONES, seriesStats, cleanSeries } from './metrics.js';
+import { tolerance, seasonTable } from './longterm.js';
 import { sportById } from './sports.js';
 import { thin } from './series.js';
 import { keySessionRows } from './keysessions.js';
@@ -47,7 +48,7 @@ export function evaluate(raw, settings) {
     trimp: res.trimp ? Math.round(res.trimp) : null,
     zones,
     // Bestwertkurven, Leistungszonen, kJ, VI, EF, Entkopplung (nur mit Verlauf)
-    hrCurve: null, powerCurve: null, powerZones: null, kj: null, vi: null, ef: null, decoupling: null,
+    hrCurve: null, powerCurve: null, powerZones: null, kj: null, vi: null, ef: null, decoupling: null, hrHist: null, powerHist: null, powerHr: null,
     ...(series ? seriesStats(series, { ftp: athlete.ftp, powerSport: !!sportById(raw.sport).power }) : {}),
   };
 }
@@ -164,6 +165,11 @@ export function coachSummary(data, t) {
     geplant: plan.filter((p) => p.date >= t).slice(0, 21).map((p) => ({ datum: p.date, titel: p.title, min: p.minutes, zone: p.zone })),
     keySessions: keySessions.map((k) => ({ name: k.name, vergleichsdauerSek: k.intervalSec, verlauf: keySessionRows(activities, k).slice(-6).map((r) => ({ datum: r.date, watt: r.intervalPower ?? undefined, puls: r.intervalHr ?? r.avgHr ?? undefined, laktat: r.lactateAvg ?? undefined, rpe: r.rpe ?? undefined })) })).filter((k) => k.verlauf.length),
     ftp: { rad: settings.ftp, skierg: settings.ftpSkierg, rudern: settings.ftpRow },
+    belastbarkeit: (() => {
+      const tol = tolerance(activities, t, 365);
+      return tol ? { letzte7Tage: Math.round(tol.now.acute), schnittProWocheLetztesJahr: Math.round(tol.now.chronic), bestenVierWochenProWoche: Math.round(tol.now.capacity), verhaeltnis: tol.now.ratio ? r1(tol.now.ratio) : undefined } : undefined;
+    })(),
+    saisons: seasonTable(activities).slice(0, 4).map((s) => ({ saison: s.label, stunden: Math.round(s.hours), maxWoche: r1(s.maxWeek), fitnessMax: Math.round(s.peakFitness) })),
   };
 }
 
