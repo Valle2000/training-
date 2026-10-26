@@ -29,7 +29,7 @@ a { color: var(--accent); }
 .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
 .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin-bottom: 16px; }
 .stat .label { color: var(--muted); font-size: 13px; }
-.stat .value { font-size: 28px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.stat .value { font-size: clamp(20px, 2.4vw, 28px); white-space: nowrap; font-weight: 650; font-variant-numeric: tabular-nums; }
 .stat.fitness .value { color: var(--fitness); } .stat.fatigue .value { color: var(--fatigue); } .stat.form .value { color: var(--form); }
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }

@@ -122,6 +122,7 @@ def parse_fit(source: str | BinaryIO) -> ParsedActivity:
     if elapsed is None and records:
         elapsed = (records[-1].time - records[0].time).total_seconds()
     hrs = [r.hr for r in records if r.hr]
+    powers = [r.power for r in records if r.power is not None]
     return ParsedActivity(
         start=_as_utc(start),
         sport=str(session.get("sport") or "generic"),
@@ -130,7 +131,7 @@ def parse_fit(source: str | BinaryIO) -> ParsedActivity:
         distance_m=session.get("distance"),
         avg_hr=session.get("avg_hr") or (sum(hrs) / len(hrs) if hrs else None),
         max_hr=session.get("max_hr") or (max(hrs) if hrs else None),
-        avg_power=session.get("avg_power"),
+        avg_power=session.get("avg_power") or (sum(powers) / len(powers) if any(powers) else None),
         calories=session.get("calories"),
         records=records,
     )

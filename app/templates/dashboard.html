@@ -4,8 +4,8 @@
   <div class="card stat fitness"><div class="label">Fitness</div><div class="value">{{ today.fitness|num if today else "–" }}</div></div>
   <div class="card stat fatigue"><div class="label">Ermüdung</div><div class="value">{{ today.fatigue|num if today else "–" }}</div></div>
   <div class="card stat form"><div class="label">Form</div><div class="value">{{ today.form|num if today else "–" }}</div></div>
-  <div class="card stat"><div class="label">Diese Woche</div><div class="value">{{ week.load|num }}</div>
-    <div class="muted">{{ week.n }} Einheiten · {{ week.s|duration }}</div></div>
+  <div class="card stat"><div class="label">Diese Woche</div><div class="value">{{ (week.load or 0)|num }}</div>
+    <div class="muted">{{ week.n }} Einheiten · {{ week.s|duration if week.s else "0:00:00" }}</div></div>
 </div>
 
 <div class="card">
