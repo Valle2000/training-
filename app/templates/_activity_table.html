@@ -1,0 +1,20 @@
+{% set rows = recent if recent is defined else activities %}
+{% if rows %}
+<div class="table-wrap"><table>
+  <tr><th>Datum</th><th>Sport</th><th class="num">Dauer</th><th class="num">Distanz</th><th class="num">Ø Puls</th><th class="num">NP</th><th class="num">Belastung</th><th>Basis</th></tr>
+  {% for a in rows %}
+  <tr>
+    <td><a href="/activities/{{ a.id }}">{{ a.local_date }}</a></td>
+    <td>{{ a.name }}</td>
+    <td class="num">{{ a.moving_s|duration }}</td>
+    <td class="num">{{ (a.distance_m / 1000)|num(1) if a.distance_m else "–" }} km</td>
+    <td class="num">{{ a.avg_hr|num }}</td>
+    <td class="num">{{ a.normalized_power|num }}</td>
+    <td class="num"><strong>{{ a.load|num }}</strong></td>
+    <td class="muted">{{ {"power": "Leistung", "hr": "Puls", "hr_avg": "Ø Puls"}.get(a.load_source, "–") }}</td>
+  </tr>
+  {% endfor %}
+</table></div>
+{% else %}
+<p class="muted">Noch keine Einheiten.</p>
+{% endif %}

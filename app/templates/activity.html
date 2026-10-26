@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ a.name }} · {{ a.local_date }}</h1>
+<div class="grid">
+  <div class="card stat"><div class="label">Belastung</div><div class="value">{{ a.load|num }}</div></div>
+  <div class="card stat"><div class="label">Bewegungszeit</div><div class="value">{{ a.moving_s|duration }}</div></div>
+  <div class="card stat"><div class="label">Distanz</div><div class="value">{{ (a.distance_m / 1000)|num(1) if a.distance_m else "–" }}</div></div>
+  <div class="card stat"><div class="label">Ø / max Puls</div><div class="value">{{ a.avg_hr|num }} / {{ a.max_hr|num }}</div></div>
+  {% if a.normalized_power %}
+  <div class="card stat"><div class="label">Ø Leistung / NP</div><div class="value">{{ a.avg_power|num }} / {{ a.normalized_power|num }}</div></div>
+  <div class="card stat"><div class="label">Intensität</div><div class="value">{{ a.intensity|num(2) }}</div></div>
+  {% endif %}
+  <div class="card stat"><div class="label">TRIMP</div><div class="value">{{ a.trimp|num }}</div></div>
+</div>
+<div class="card"><h2>Verlauf</h2><div class="chart"><canvas id="series"></canvas></div></div>
+<form method="post" action="/activities/{{ a.id }}/delete" onsubmit="return confirm('Einheit wirklich löschen?')">
+  <button class="danger">Einheit löschen</button>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+fetch('/api/activities/{{ a.id }}/series').then(r => r.ok ? r.json() : null).then(s => {
+  if (!s) return;
+  const fmt = t => `${Math.floor(t / 3600)}:${String(Math.floor(t % 3600 / 60)).padStart(2, '0')}`;
+  const ds = [];
+  if (s.hr.some(v => v)) ds.push({ label: 'Puls', data: s.hr, borderColor: css('--fatigue'), yAxisID: 'hr' });
+  if (s.power.some(v => v)) ds.push({ label: 'Leistung', data: s.power, borderColor: css('--fitness'), yAxisID: 'pw' });
+  ds.forEach(d => Object.assign(d, { borderWidth: 1.5, pointRadius: 0, spanGaps: true }));
+  new Chart(document.getElementById('series'), {
+    type: 'line', data: { labels: s.t.map(fmt), datasets: ds },
+    options: {
+      maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+      scales: {
+        x: { ticks: { maxTicksLimit: 12 } },
+        hr: { position: 'left', title: { display: true, text: 'Puls' } },
+        pw: { position: 'right', title: { display: true, text: 'Watt' }, grid: { drawOnChartArea: false }, display: s.power.some(v => v) },
+      },
+    },
+  });
+});
+</script>
+{% endblock %}

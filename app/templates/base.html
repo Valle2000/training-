@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Training{% endblock %}</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #f6f7f9; --card: #fff; --text: #1d2330; --muted: #6b7280; --line: #e3e6eb;
+  --accent: #2563eb; --fitness: #2563eb; --fatigue: #db2777; --form: #d97706; --load: #94a3b8;
+  --good: #15803d; --bad: #b91c1c;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #11141a; --card: #1a1f28; --text: #e6e8ec; --muted: #9aa3b2; --line: #2a313d;
+    --accent: #60a5fa; --fitness: #60a5fa; --fatigue: #f472b6; --form: #fbbf24; --load: #64748b;
+    --good: #4ade80; --bad: #f87171;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, sans-serif; }
+header { background: var(--card); border-bottom: 1px solid var(--line); }
+header nav { max-width: 1100px; margin: 0 auto; padding: 12px 16px; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+header a { color: var(--text); text-decoration: none; }
+header .brand { font-weight: 700; margin-right: auto; }
+main { max-width: 1100px; margin: 0 auto; padding: 20px 16px 60px; }
+a { color: var(--accent); }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin-bottom: 16px; }
+.stat .label { color: var(--muted); font-size: 13px; }
+.stat .value { font-size: 28px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.stat.fitness .value { color: var(--fitness); } .stat.fatigue .value { color: var(--fatigue); } .stat.form .value { color: var(--form); }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { color: var(--muted); font-weight: 500; font-size: 13px; }
+td.num, th.num { text-align: right; }
+.msg { background: var(--card); border-left: 4px solid var(--accent); padding: 10px 14px; margin-bottom: 16px; border-radius: 6px; }
+.muted { color: var(--muted); }
+button, .btn { background: var(--accent); color: #fff; border: 0; border-radius: 6px; padding: 8px 14px; font: inherit; cursor: pointer; text-decoration: none; display: inline-block; }
+button.danger { background: var(--bad); }
+form.inline { display: inline; }
+label { display: block; margin-bottom: 12px; }
+input, select { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); width: 100%; max-width: 260px; }
+input[type=file] { max-width: 100%; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.chart { position: relative; height: 340px; }
+h1 { font-size: 22px; margin: 0 0 16px; } h2 { font-size: 17px; margin: 0 0 12px; }
+</style>
+</head>
+<body>
+<header><nav>
+  <a class="brand" href="/">Training</a>
+  <a href="/">Übersicht</a>
+  <a href="/activities">Einheiten</a>
+  <a href="/settings">Einstellungen</a>
+</nav></header>
+<main>
+{% if msg %}<div class="msg">{{ msg }}</div>{% endif %}
+{% block content %}{% endblock %}
+</main>
+<script>
+const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+Chart.defaults.color = css('--muted');
+Chart.defaults.borderColor = css('--line');
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>
