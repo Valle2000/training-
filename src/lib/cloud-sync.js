@@ -90,6 +90,20 @@ export function startCloudSync() {
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncNow(); });
 }
 
+// Verläufe gelöschter Einheiten auch in Supabase entfernen (die Einheiten selbst gehen als „gelöscht“ über den Abgleich).
+export async function deleteRemoteSeries(ids) {
+  const meta = loadMeta();
+  for (const id of ids) delete meta.seriesPushed?.[id];
+  saveMeta(meta);
+  if (!cloudConfigured) return;
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return;
+  for (let i = 0; i < ids.length; i += 100) {
+    const { error } = await supabase.from('training_series').delete().in('activity_id', ids.slice(i, i + 100));
+    if (error) throw error;
+  }
+}
+
 export async function signIn(email, password) {
   const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
   if (error) throw error;

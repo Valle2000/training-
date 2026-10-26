@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link2, Unlink, Download, Upload, RefreshCw, History } from 'lucide-react';
 import { useData, update, getData } from '../lib/store.js';
 import { recomputeAll } from '../lib/recompute.js';
-import { PROVIDERS, startConnect, disconnect, importFiles, testConnection, syncHistory, reloadConcept2 } from '../lib/sync.js';
+import { PROVIDERS, startConnect, disconnect, importFiles, testConnection, syncHistory, reloadConcept2, deleteActivities } from '../lib/sync.js';
 import { getAccessCode, setAccessCode, getOwnKey, setOwnKey } from '../lib/ai.js';
 import { fmtDate, toast } from './common.jsx';
 import { AccountCard } from './account.jsx';
@@ -126,6 +126,7 @@ export function Settings() {
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Daten</h3>
         <p className="muted small">{activities.length} Einheiten auf diesem Gerät. Ohne Anmeldung liegt alles nur in diesem Browser – dann regelmäßig ein Backup machen.</p>
+        <DeleteBySource activities={activities} />
         <div className="row">
           <button className="secondary" onClick={exportData}><Download size={17} />Backup</button>
           <label className="secondary" style={{ cursor: 'pointer' }}><RefreshCw size={17} />Einspielen<input type="file" accept=".json" hidden onChange={importData} /></label>
@@ -133,5 +134,43 @@ export function Settings() {
       </div>
       <p className="muted small" style={{ textAlign: 'center' }}>Version {__APP_VERSION__}</p>
     </>
+  );
+}
+
+// Einheiten nach Herkunft löschen (z. B. einen fehlerhaften Import, um ihn sauber neu einzuspielen).
+const ORIGINS = {
+  'upload:polar': 'Polar-Export (Datei)', 'upload:fit': 'FIT-Dateien', 'upload:tcx': 'TCX-Dateien', 'upload:gpx': 'GPX-Dateien',
+  'upload:': 'Datei-Importe (ältere, z. B. Polar-Export)', concept2: 'Concept2', polar: 'Polar (Schnittstelle)', wahoo: 'Wahoo', manual: 'Von Hand eingetragen',
+};
+function DeleteBySource({ activities }) {
+  const [busy, setBusy] = useState(false);
+  const groups = {};
+  for (const a of activities) {
+    const k = a.source === 'upload' ? `upload:${a.importFormat || ''}` : a.source;
+    (groups[k] ||= []).push(a);
+  }
+  const remove = async (k, list) => {
+    const label = ORIGINS[k] || k;
+    if (!confirm(`${list.length} Einheiten aus „${label}“ löschen? Das gilt auch für Supabase und andere Geräte. Notizen, RPE und Laktat dieser Einheiten gehen verloren.`)) return;
+    setBusy(true);
+    try { toast(`${await deleteActivities(list.map((a) => a.id))} Einheiten gelöscht`); } catch (e) { toast(e.message); }
+    setBusy(false);
+  };
+  const entries = Object.entries(groups).sort((a, b) => b[1].length - a[1].length);
+  if (!entries.length) return null;
+  return (
+    <details style={{ margin: '8px 0 12px' }}>
+      <summary className="small" style={{ cursor: 'pointer' }}>Einheiten nach Herkunft löschen</summary>
+      {entries.map(([k, list]) => {
+        const dates = list.map((a) => a.date).sort();
+        return (
+          <div key={k} className="item">
+            <div className="grow"><b>{ORIGINS[k] || k}</b><p>{list.length} Einheiten · {fmtDate(dates[0], { month: 'short', year: 'numeric' })} – {fmtDate(dates.at(-1), { month: 'short', year: 'numeric' })}</p></div>
+            <button className="danger" style={{ flex: 'none' }} disabled={busy} onClick={() => remove(k, list)}>Löschen</button>
+          </div>
+        );
+      })}
+      <p className="muted small">Tipp: Vorher ein Backup machen. Danach den Export einfach neu importieren.</p>
+    </details>
   );
 }
