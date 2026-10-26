@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Link2, Unlink, Download, Upload, RefreshCw } from 'lucide-react';
+import { Link2, Unlink, Download, Upload, RefreshCw, History } from 'lucide-react';
 import { useData, update, getData } from '../lib/store.js';
 import { recomputeAll } from '../lib/recompute.js';
-import { PROVIDERS, startConnect, disconnect, importFiles, testConnection } from '../lib/sync.js';
+import { PROVIDERS, startConnect, disconnect, importFiles, testConnection, syncHistory } from '../lib/sync.js';
 import { getAccessCode, setAccessCode, getOwnKey, setOwnKey } from '../lib/ai.js';
 import { fmtDate, toast } from './common.jsx';
 
@@ -42,7 +42,19 @@ export function Settings() {
     update(() => ({ ...getData(), ...json }));
     toast('Backup eingespielt');
   };
-  const upload = async (e) => { const r = await importFiles([...e.target.files]); toast(`${r.added} importiert, ${r.dup} schon vorhanden, ${r.failed} fehlerhaft`); };
+  const [progress, setProgress] = useState('');
+  const upload = async (e) => {
+    setProgress('Lese Dateien …');
+    const r = await importFiles([...e.target.files], setProgress);
+    setProgress('');
+    toast(`${r.added} importiert, ${r.dup} schon vorhanden, ${r.failed} nicht lesbar`);
+    e.target.value = '';
+  };
+  const history = async (id) => {
+    setProgress(`${PROVIDERS[id].label}: lade Historie …`);
+    try { toast(`${PROVIDERS[id].label}: ${await syncHistory(id, setProgress)} Einheiten importiert`); } catch (err) { toast(err.message); }
+    setProgress('');
+  };
 
   return (
     <>
@@ -69,6 +81,7 @@ export function Settings() {
           return (
             <div key={id} className="item">
               <div className="grow"><b>{p.label}</b><p>{p.hint}</p>{c && <p>Verbunden seit {fmtDate(c.connectedAt.slice(0, 10))}</p>}{configured && !ready && !c && <p>Auf dem Server nicht eingerichtet (siehe README).</p>}</div>
+              {c && id !== 'polar' && <button className="ghost" style={{ flex: 'none' }} onClick={() => history(id)} disabled={!!progress}><History size={15} />Ganze Historie</button>}
               {c && <button className="ghost" style={{ flex: 'none' }} onClick={() => runTest(id)}>Testen</button>}
               {c ? <button className="secondary" style={{ flex: 'none' }} onClick={() => disconnect(id)}><Unlink size={16} />Trennen</button>
                 : <button className="primary" style={{ flex: 'none' }} disabled={!ready} onClick={() => startConnect(id)}><Link2 size={16} />Verbinden</button>}
@@ -76,8 +89,18 @@ export function Settings() {
           );
         })}
         {test && <div className="notice" style={{ fontFamily: 'ui-monospace,Menlo,monospace', fontSize: 12, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{test.busy ? 'Teste …' : test.lines.join('\n')}</div>}
-        <label className="secondary wide" style={{ cursor: 'pointer', marginTop: 10 }}><Upload size={17} />FIT-Dateien importieren<input type="file" accept=".fit" multiple hidden onChange={upload} /></label>
-        <p className="muted small">Polar liefert über die Schnittstelle nur die letzten 30 Tage. Ältere Daten: Polar Flow → Einstellungen → „Daten herunterladen“ und die FIT-Dateien hier importieren. ErgData lädt Einheiten automatisch ins Concept2 Logbook, von dort holt sie die App.</p>
+        {progress && <div className="notice">{progress}</div>}
+      </div>
+
+      <div className="card">
+        <h3 style={{ marginTop: 0 }}>Vergangene Einheiten importieren</h3>
+        <label className="primary wide" style={{ cursor: 'pointer' }}><Upload size={17} />Dateien wählen (FIT, TCX, GPX, CSV, JSON, ZIP)<input type="file" accept=".fit,.tcx,.gpx,.csv,.json,.zip" multiple hidden onChange={upload} disabled={!!progress} /></label>
+        <ul className="small muted" style={{ paddingLeft: 18, lineHeight: 1.55 }}>
+          <li><b>Polar:</b> Die Schnittstelle liefert nur Einheiten ab der Verbindung. Ältere Einheiten in Polar Flow (Web) im Tagebuch öffnen → Exportieren (TCX, CSV oder FIT, mehrere auch als ZIP). Den Komplett-Export deines Kontos (account.polar.com, JSON im ZIP) kann die App auch lesen – das Format ist nicht offiziell beschrieben, schick mir eine Rückmeldung, falls Einheiten fehlen.</li>
+          <li><b>Concept2 / ErgData:</b> Nach dem Verbinden oben „Ganze Historie“ antippen.</li>
+          <li><b>Wahoo:</b> ebenfalls „Ganze Historie“.</li>
+          <li>Doppelte Einheiten (gleiche Startzeit und Dauer) werden automatisch übersprungen.</li>
+        </ul>
       </div>
 
       <div className="card">

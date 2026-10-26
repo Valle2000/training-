@@ -2,7 +2,8 @@
 import { getData, update, putSeries } from './store.js';
 import { toSeries } from './series.js';
 import { buildActivity, findDuplicate, localDate } from './activities.js';
-import { sportFromConcept2 } from './sports.js';
+import { sportFromConcept2, polarSport } from './sports.js';
+import { readExport } from './importers.js';
 
 // FIT-Bibliothek ist groß und wird erst geladen, wenn eine FIT-Datei kommt.
 const parseFit = async (bytes) => (await import('./fit.js')).parseFit(bytes);
@@ -94,20 +95,6 @@ async function syncPolar() {
   return added;
 }
 
-const polarSport = (s) => {
-  s = String(s || '').toUpperCase();
-  if (s.includes('SKATING') && s.includes('ROLLER')) return 'rollerski_skate';
-  if (s.includes('ROLLER')) return 'rollerski_classic';
-  if (s.includes('SKATING')) return 'xc_skate';
-  if (s.includes('CROSS_COUNTRY') || s.includes('SKIING')) return 'xc_classic';
-  if (s.includes('RUN')) return 'run';
-  if (s.includes('CYCL') || s.includes('BIK')) return 'bike';
-  if (s.includes('ROW')) return 'row';
-  if (s.includes('STRENGTH')) return 'strength';
-  if (s.includes('HIK') || s.includes('WALK')) return 'hike';
-  return 'other';
-};
-
 // Nightly Recharge (HRV, Ruhepuls) und Schlaf → wellness je Datum.
 async function syncPolarWellness() {
   const [nr, sl] = await Promise.all([
@@ -135,36 +122,50 @@ export const c2Watts = (paceTenths, type) => {
   return Math.round(2.8 / perM ** 3);
 };
 
-async function syncConcept2() {
-  const from = new Date(Date.now() - 90 * 864e5).toISOString().slice(0, 10);
-  const res = await call('concept2', `/api/users/me/results?from=${from}&number=250`);
-  let added = 0;
+// Standard: letzte 90 Tage; all = komplette Historie (Seite für Seite, meta.pagination.total_pages).
+async function syncConcept2({ all = false, onProgress } = {}) {
+  const from = all ? null : new Date(Date.now() - 90 * 864e5).toISOString().slice(0, 10);
+  let added = 0, page = 1, pages = 1;
   const known = new Set(getData().activities.filter((a) => a.source === 'concept2').map((a) => a.externalId));
-  for (const r of res?.data || []) {
-    if (known.has(String(r.id))) continue;
-    const start = new Date((r.date_utc || r.date).replace(' ', 'T') + (r.date_utc ? 'Z' : '')).toISOString();
-    let series = null;
-    if (r.stroke_data) {
-      const st = await call('concept2', `/api/users/me/results/${r.id}/strokes`).catch(() => null);
-      const pts = (st?.data || []).map((s) => ({ t: Date.parse(start) + s.t * 100, hr: s.hr || null, power: c2Watts(s.p, r.type) }));
-      if (pts.length) series = toSeries(pts);
+  do {
+    const res = await call('concept2', `/api/users/me/results?${from ? `from=${from}&` : ''}number=100&page=${page}`);
+    pages = res?.meta?.pagination?.total_pages || 1;
+    for (const r of res?.data || []) {
+      if (known.has(String(r.id))) continue;
+      const start = new Date((r.date_utc || r.date).replace(' ', 'T') + (r.date_utc ? 'Z' : '')).toISOString();
+      let series = null;
+      if (r.stroke_data) {
+        const st = await call('concept2', `/api/users/me/results/${r.id}/strokes`).catch(() => null);
+        const pts = (st?.data || []).map((x) => ({ t: Date.parse(start) + x.t * 100, hr: x.hr || null, power: c2Watts(x.p, r.type) }));
+        if (pts.length) series = toSeries(pts);
+      }
+      const raw = {
+        source: 'concept2', externalId: String(r.id), start, sport: sportFromConcept2(r.type), elapsedS: r.time / 10, distanceM: r.distance,
+        avgHr: r.heart_rate?.average || null, maxHr: r.heart_rate?.max || null, calories: r.calories_total || null,
+        avgPower: r.time && r.distance ? c2Watts((r.time / r.distance) * (r.type === 'bike' ? 1000 : 500), r.type) : null,
+        title: r.workout_type && r.workout_type !== 'JustRow' ? r.workout_type : '', notes: r.comments || '', series,
+      };
+      if (await store(raw)) added++;
     }
-    const raw = {
-      source: 'concept2', externalId: String(r.id), start, sport: sportFromConcept2(r.type), elapsedS: r.time / 10, distanceM: r.distance,
-      avgHr: r.heart_rate?.average || null, maxHr: r.heart_rate?.max || null, calories: r.calories_total || null,
-      avgPower: r.time && r.distance ? c2Watts((r.time / r.distance) * (r.type === 'bike' ? 1000 : 500), r.type) : null,
-      title: r.workout_type && r.workout_type !== 'JustRow' ? r.workout_type : '', notes: r.comments || '', series,
-    };
-    if (await store(raw)) added++;
-  }
+    onProgress?.(`Concept2: Seite ${page} von ${pages}, ${added} neu`);
+    page++;
+  } while (page <= pages);
   return added;
 }
 
-async function syncWahoo() {
-  const res = await call('wahoo', '/v1/workouts?page=1&per_page=50');
+// Standard: letzte 50 Einheiten; all = alle Seiten, bis eine Seite leer bzw. nicht voll ist.
+async function syncWahoo({ all = false, onProgress } = {}) {
   let added = 0;
   const known = new Set(getData().activities.filter((a) => a.source === 'wahoo').map((a) => a.externalId));
-  for (const w of res?.workouts || []) {
+  const list = [];
+  for (let page = 1; page <= (all ? 200 : 1); page++) {
+    const res = await call('wahoo', `/v1/workouts?page=${page}&per_page=50`);
+    const ws = res?.workouts || [];
+    list.push(...ws);
+    onProgress?.(`Wahoo: ${list.length} Einheiten gefunden`);
+    if (ws.length < 50) break;
+  }
+  for (const w of list) {
     if (known.has(String(w.id))) continue;
     const s = w.workout_summary || {};
     let raw = null;
@@ -173,6 +174,7 @@ async function syncWahoo() {
     }
     raw ||= { start: w.starts, sport: 'other', elapsedS: Number(s.duration_active_accum) || (w.minutes || 0) * 60, distanceM: Number(s.distance_accum) || null, avgHr: Number(s.heart_rate_avg) || null, avgPower: Number(s.power_avg) || null, calories: Number(s.calories_accum) || null };
     if (await store({ ...raw, source: 'wahoo', externalId: String(w.id), title: w.name || '' })) added++;
+    if (all && added % 10 === 0) onProgress?.(`Wahoo: ${added} neu importiert`);
   }
   return added;
 }
@@ -213,14 +215,23 @@ export async function syncAll() {
   return out;
 }
 
-// FIT-Dateien von Hand (z. B. Polar-Flow-Export für ältere Daten).
-export async function importFiles(files) {
-  let added = 0, dup = 0, failed = 0;
+// Komplette Historie eines verbundenen Anbieters (Concept2, Wahoo). Polar liefert nur Daten ab der Verbindung.
+export async function syncHistory(provider, onProgress) {
+  if (provider === 'concept2') return syncConcept2({ all: true, onProgress });
+  if (provider === 'wahoo') return syncWahoo({ all: true, onProgress });
+  return syncPolar();
+}
+
+// Dateien von Hand: FIT, TCX, GPX, Polar-CSV, Polar-Konto-Export (JSON) und ZIP-Archive mit solchen Dateien.
+export async function importFiles(files, onProgress) {
+  let added = 0, dup = 0, failed = 0, done = 0;
   for (const f of files) {
-    try {
-      const raw = await parseFit(new Uint8Array(await f.arrayBuffer()));
-      if (await store({ ...raw, source: 'upload' })) added++; else dup++;
-    } catch { failed++; }
+    let raws = [];
+    try { raws = await readExport(f.name, new Uint8Array(await f.arrayBuffer()), parseFit); } catch { failed++; }
+    for (const raw of raws) {
+      try { if (await store({ ...raw, source: 'upload' })) added++; else dup++; } catch { failed++; }
+      if (++done % 20 === 0) onProgress?.(`${done} Einheiten verarbeitet, ${added} neu`);
+    }
   }
   return { added, dup, failed };
 }

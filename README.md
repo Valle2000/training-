@@ -89,6 +89,9 @@ eintragen (lokal: `http://localhost:5173/api/connect`).
 Hinweise:
 - Unter Einstellungen → Verbindungen → „Testen“ zeigt die App die Rohantworten der Anbieter
   (Status, Anzahl, Feldnamen) – hilfreich, falls beim ersten Abgleich etwas nicht passt.
+- Ältere Einheiten: unter Mehr → Einstellungen → „Vergangene Einheiten importieren“ Dateien wählen
+  (FIT, TCX, GPX, Polar-CSV, Polar-Konto-Export als JSON, ZIP). Bei Concept2 und Wahoo lädt
+  „Ganze Historie“ alles über die Schnittstelle.
 - Polar liefert über die Schnittstelle nur Einheiten der letzten 30 Tage. Ältere Daten in Polar Flow
   exportieren und als FIT importieren.
 - ErgData lädt Einheiten automatisch ins Concept2 Logbook; die App holt sie dort ab (letzte 90 Tage).
