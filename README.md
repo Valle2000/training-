@@ -69,6 +69,22 @@ npm run dev
 Die App läuft dann auf <http://localhost:5173>. Alle Daten liegen lokal im Browser (localStorage
 und IndexedDB). Unter „Mehr“ gibt es ein JSON-Backup.
 
+## Konto und Abgleich zwischen Geräten (Supabase)
+
+Die App nutzt dasselbe Supabase-Projekt wie SkiWax: gleiche Anmeldung, aber eigene Tabellen
+(`training_records`, `training_series`), die SkiWax-Daten bleiben unberührt.
+
+1. Im Supabase-Dashboard → SQL Editor den Inhalt von `supabase/training.sql` ausführen.
+2. Bei Vercel `VITE_SUPABASE_URL` und `VITE_SUPABASE_ANON_KEY` eintragen (dieselben Werte wie bei SkiWax)
+   und neu veröffentlichen.
+3. In Supabase unter Authentication → URL Configuration die Adresse der Trainings-App bei
+   „Redirect URLs“ ergänzen (für Passwort-zurücksetzen-Mails).
+4. In der App unter Mehr → Einstellungen mit dem SkiWax-Konto anmelden. Vorhandene Daten auf dem Gerät
+   werden übernommen.
+
+Abgeglichen werden alle Datensätze, Einstellungen und Verbindungen; Puls-/Leistungsverläufe werden
+hochgeladen und auf anderen Geräten erst beim Öffnen einer Einheit geladen.
+
 ## Online stellen (Vercel)
 
 Wie bei SkiWax: Repo bei Vercel importieren, die Variablen aus `.env.example` als Environment
@@ -89,6 +105,9 @@ eintragen (lokal: `http://localhost:5173/api/connect`).
 Hinweise:
 - Unter Einstellungen → Verbindungen → „Testen“ zeigt die App die Rohantworten der Anbieter
   (Status, Anzahl, Feldnamen) – hilfreich, falls beim ersten Abgleich etwas nicht passt.
+- Ältere Einheiten: unter Mehr → Einstellungen → „Vergangene Einheiten importieren“ Dateien wählen
+  (FIT, TCX, GPX, Polar-CSV, Polar-Konto-Export als JSON, ZIP). Bei Concept2 und Wahoo lädt
+  „Ganze Historie“ alles über die Schnittstelle.
 - Polar liefert über die Schnittstelle nur Einheiten der letzten 30 Tage. Ältere Daten in Polar Flow
   exportieren und als FIT importieren.
 - ErgData lädt Einheiten automatisch ins Concept2 Logbook; die App holt sie dort ab (letzte 90 Tage).
@@ -123,5 +142,4 @@ npm run build
 
 ## Nächste Schritte
 
-- Geräteübergreifender Sync über Supabase (wie in SkiWax)
-- Automatischer Abgleich im Hintergrund (Webhooks) und Sync zwischen Geräten über Supabase
+- Automatischer Abruf neuer Einheiten im Hintergrund (Webhooks von Polar und Concept2)

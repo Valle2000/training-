@@ -237,7 +237,7 @@ export function AddSheet({ onClose }) {
   };
   return (
     <Sheet title="Einheit hinzufügen" onClose={onClose}>
-      <Seg value={mode} onChange={setMode} options={[['manual', 'Eintragen'], ['fit', 'FIT-Datei']]} />
+      <Seg value={mode} onChange={setMode} options={[['manual', 'Eintragen'], ['fit', 'Datei importieren']]} />
       {mode === 'manual' ? (
         <>
           <label>Sportart</label>
@@ -263,8 +263,8 @@ export function AddSheet({ onClose }) {
         </>
       ) : (
         <>
-          <p className="muted">FIT-Dateien von Polar, Garmin, Wahoo oder Suunto. Für ältere Polar-Daten: in Polar Flow unter Einstellungen → „Daten herunterladen“ exportieren.</p>
-          <label className="primary wide" style={{ cursor: 'pointer' }}><Upload size={18} />{busy ? 'Importiere …' : 'FIT-Dateien wählen'}<input type="file" accept=".fit" multiple hidden onChange={upload} /></label>
+          <p className="muted">FIT, TCX, GPX, Polar-CSV, Polar-Konto-Export (JSON) oder ein ZIP mit solchen Dateien – z. B. aus Polar Flow, Garmin, Wahoo oder Suunto.</p>
+          <label className="primary wide" style={{ cursor: 'pointer' }}><Upload size={18} />{busy ? 'Importiere …' : 'Dateien wählen'}<input type="file" accept=".fit,.tcx,.gpx,.csv,.json,.zip" multiple hidden onChange={upload} /></label>
         </>
       )}
     </Sheet>

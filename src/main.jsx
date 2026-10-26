@@ -12,6 +12,8 @@ import { Analysis } from './ui/analysis.jsx';
 import { Toast, toast } from './ui/common.jsx';
 import { handleConnectReturn, PROVIDERS } from './lib/sync.js';
 import { migrateMetrics } from './lib/recompute.js';
+import { startCloudSync } from './lib/cloud-sync.js';
+import { SyncBadge } from './ui/account.jsx';
 
 const TABS = [
   ['today', 'Heute', Activity], ['training', 'Kalender', CalendarDays], ['analysis', 'Analyse', BarChart3],
@@ -35,7 +37,10 @@ function App() {
     <>
       <header>
         <div className="brand"><Activity size={24} color="#c7f36b" /><div><b>Training</b><small>LANGLAUF · KI-COACH</small></div></div>
-        <button className={`pill${tab === 'more' ? ' on' : ''}`} onClick={() => setTab('more')} aria-label="Mehr: Einstellungen, Material, Gesundheit"><Gear size={16} />Mehr</button>
+        <div className="row" style={{ flex: 'none', gap: 6 }}>
+          <SyncBadge onClick={() => setTab('more')} />
+          <button className={`pill${tab === 'more' ? ' on' : ''}`} onClick={() => setTab('more')} aria-label="Mehr: Einstellungen, Material, Gesundheit"><Gear size={16} />Mehr</button>
+        </div>
       </header>
       <main>
         {tab === 'today' && <Today {...common} />}
@@ -56,6 +61,7 @@ function App() {
   );
 }
 
+startCloudSync();
 createRoot(document.getElementById('root')).render(<App />);
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) navigator.serviceWorker.register('/sw.js').catch(() => {});
