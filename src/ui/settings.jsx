@@ -5,6 +5,7 @@ import { recomputeAll } from '../lib/recompute.js';
 import { PROVIDERS, startConnect, disconnect, importFiles, testConnection, syncHistory } from '../lib/sync.js';
 import { getAccessCode, setAccessCode, getOwnKey, setOwnKey } from '../lib/ai.js';
 import { fmtDate, toast } from './common.jsx';
+import { AccountCard } from './account.jsx';
 
 const FIELDS = [
   ['hrMax', 'Maximalpuls', 'z. B. 196'], ['hrRest', 'Ruhepuls', 'z. B. 42'], ['lthr', 'Laktatschwellen-Puls', 'z. B. 172'],
@@ -58,6 +59,7 @@ export function Settings() {
 
   return (
     <>
+      <AccountCard />
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Athlet</h3>
         <div className="grid2">
@@ -114,7 +116,7 @@ export function Settings() {
 
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Daten</h3>
-        <p className="muted small">{activities.length} Einheiten auf diesem Gerät. Alles liegt lokal im Browser – regelmäßig ein Backup machen.</p>
+        <p className="muted small">{activities.length} Einheiten auf diesem Gerät. Ohne Anmeldung liegt alles nur in diesem Browser – dann regelmäßig ein Backup machen.</p>
         <div className="row">
           <button className="secondary" onClick={exportData}><Download size={17} />Backup</button>
           <label className="secondary" style={{ cursor: 'pointer' }}><RefreshCw size={17} />Einspielen<input type="file" accept=".json" hidden onChange={importData} /></label>

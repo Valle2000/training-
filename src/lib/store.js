@@ -20,6 +20,9 @@ export function update(fn) {
   saveData(state);
   listeners.forEach((l) => l(state));
 }
+// Für den Online-Abgleich: über jede Änderung informiert werden.
+export function subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); }
+
 export function useData() {
   const [d, setD] = useState(state);
   useEffect(() => { listeners.add(setD); return () => listeners.delete(setD); }, []);
@@ -46,5 +49,15 @@ async function tx(mode, fn) {
   });
 }
 export const putSeries = (id, series) => tx('readwrite', (s) => s.put(series, id)).catch(() => null);
-export const getSeries = (id) => tx('readonly', (s) => s.get(id)).catch(() => null);
+export const getLocalSeries = (id) => tx('readonly', (s) => s.get(id)).catch(() => null);
+// Fehlt ein Verlauf lokal (anderes Gerät), kann der Online-Abgleich ihn nachladen.
+let seriesFallback = null;
+export const setSeriesFallback = (fn) => { seriesFallback = fn; };
+export const getSeries = async (id) => {
+  const local = await tx('readonly', (s) => s.get(id)).catch(() => null);
+  if (local || !seriesFallback) return local;
+  const remote = await seriesFallback(id).catch(() => null);
+  if (remote) await putSeries(id, remote);
+  return remote;
+};
 export const deleteSeries = (id) => tx('readwrite', (s) => s.delete(id)).catch(() => null);
