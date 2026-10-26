@@ -40,6 +40,7 @@ export const sportFromConcept2 = (type) => ({ skierg: 'skierg', rower: 'row', bi
 export const polarSport = (s) => {
   s = String(s || '').toUpperCase();
   const skate = s.includes('SKAT');
+  if (/ALPIN|DOWNHILL|SNOWBOARD|BACKCOUNTRY|SKITOUR|TELEMARK/.test(s)) return 'other';
   if (s.includes('ROLLER') || s.includes('ROLLSKI')) return skate ? 'rollerski_skate' : 'rollerski_classic';
   if (s.includes('CROSS_COUNTRY') || s.includes('CROSS-COUNTRY') || s.includes('LANGLAUF') || s.includes('SKIING') || s.includes('SKILANGLAUF')) return skate ? 'xc_skate' : 'xc_classic';
   if (skate) return 'xc_skate';

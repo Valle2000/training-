@@ -45,12 +45,14 @@ export function Settings() {
     toast('Backup eingespielt');
   };
   const [progress, setProgress] = useState('');
+  const [result, setResult] = useState(null);
   const upload = async (e) => {
-    setProgress('Lese Dateien …');
-    const r = await importFiles([...e.target.files], setProgress);
-    setProgress('');
-    toast(`${r.added} importiert, ${r.dup} schon vorhanden, ${r.failed} nicht lesbar`);
+    const files = [...e.target.files];
     e.target.value = '';
+    setResult(null);
+    setProgress('Lese Dateien …');
+    try { setResult(await importFiles(files, setProgress)); } catch (err) { setResult({ added: 0, dup: 0, failed: 1, errors: [err.message] }); }
+    setProgress('');
   };
   const history = async (id) => {
     setProgress(`${PROVIDERS[id].label}: lade Historie …`);
@@ -100,6 +102,8 @@ export function Settings() {
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Vergangene Einheiten importieren</h3>
         <label className="primary wide" style={{ cursor: 'pointer' }}><Upload size={17} />Dateien wählen (FIT, TCX, GPX, CSV, JSON, ZIP, GZ)<input type="file" accept=".fit,.tcx,.gpx,.csv,.json,.zip,.gz" multiple hidden onChange={upload} disabled={!!progress} /></label>
+        {progress && <div className="notice">{progress}<br /><span className="small">App geöffnet lassen – große Exporte dauern einige Minuten.</span></div>}
+        {result && <div className="notice"><b>{result.added} importiert</b> · {result.dup} schon vorhanden · {result.failed} nicht lesbar{result.errors?.length > 0 && <div className="small" style={{ marginTop: 4, wordBreak: 'break-word' }}>{result.errors.join(' · ')}</div>}{result.added > 0 && <div className="small" style={{ marginTop: 4 }}>Die Verläufe werden im Hintergrund nach Supabase hochgeladen (wenn angemeldet).</div>}</div>}
         <ul className="small muted" style={{ paddingLeft: 18, lineHeight: 1.55 }}>
           <li><b>Polar:</b> Die Schnittstelle liefert nur Einheiten ab der Verbindung. Ältere Einheiten in Polar Flow (Web) im Tagebuch öffnen → Exportieren (TCX, CSV oder FIT, mehrere auch als ZIP). Den Komplett-Export deines Kontos (account.polar.com, JSON im ZIP) kann die App auch lesen – das Format ist nicht offiziell beschrieben, schick mir eine Rückmeldung, falls Einheiten fehlen.</li>
           <li><b>Concept2 / ErgData:</b> Nach dem Verbinden oben „Ganze Historie“ antippen.</li>

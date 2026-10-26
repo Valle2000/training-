@@ -3,7 +3,7 @@ import { getData, update, putSeries } from './store.js';
 import { toSeries } from './series.js';
 import { buildActivity, findDuplicate, localDate } from './activities.js';
 import { sportFromConcept2, polarSport } from './sports.js';
-import { readExport } from './importers.js';
+import { readExport, zipEntries, zipEntriesSync } from './importers.js';
 import { lapsFromConcept2, lapsFromSeries, pacePer, concept2Title, isAutoC2Title } from './laps.js';
 
 // FIT-Bibliothek ist groß und wird erst geladen, wenn eine FIT-Datei kommt.
@@ -306,17 +306,50 @@ export async function syncHistory(provider, onProgress) {
 }
 
 // Dateien von Hand: FIT, TCX, GPX, Polar-CSV, Polar-Konto-Export (JSON) und ZIP-Archive mit solchen Dateien.
+// Auch für sehr große Exporte (tausende Einheiten): ZIPs werden Datei für Datei gelesen, gespeichert wird in Paketen.
 export async function importFiles(files, onProgress) {
   let added = 0, dup = 0, failed = 0, done = 0;
-  for (const f of files) {
+  const errors = [], pending = [];
+  const fail = (name, e) => { failed++; if (errors.length < 3) errors.push(`${name.split('/').pop()}: ${e?.message || e}`); };
+  const flush = () => { if (!pending.length) return; const batch = pending.splice(0); update((x) => ({ ...x, activities: [...x.activities, ...batch] })); };
+  const add = async (raw) => {
+    const d = getData(), cand = { ...raw, durationS: raw.elapsedS };
+    if (findDuplicate(d.activities, cand) || findDuplicate(pending, cand)) return false;
+    const { activity, series } = buildActivity({ ...raw, source: 'upload' }, d.settings);
+    if (series) await putSeries(activity.id, series);
+    pending.push(activity);
+    if (pending.length >= 25) flush();
+    return true;
+  };
+  const handle = async (name, bytes) => {
     let raws = [];
-    try { raws = await readExport(f.name, new Uint8Array(await f.arrayBuffer()), parseFit); } catch { failed++; }
+    try { raws = await readExport(name, bytes, parseFit); } catch (e) { fail(name, e); }
     for (const raw of raws) {
-      try { if (await store({ ...raw, source: 'upload' })) added++; else dup++; } catch { failed++; }
-      if (++done % 20 === 0) onProgress?.(`${done} Einheiten verarbeitet, ${added} neu`);
+      try { if (await add(raw)) added++; else dup++; } catch (e) { fail(name, e); }
+      if (++done % 10 === 0) onProgress?.(`${done} Einheiten verarbeitet · ${added} neu · ${dup} schon vorhanden${failed ? ` · ${failed} nicht lesbar` : ''}`);
     }
+    await new Promise((r) => setTimeout(r, 0)); // Anzeige aktualisieren lassen
+  };
+  // Bildschirm anlassen, damit das Handy beim langen Import nicht einschläft.
+  const lock = await globalThis.navigator?.wakeLock?.request('screen').catch(() => null);
+  try {
+    for (const f of files) {
+      if (!f.name.toLowerCase().endsWith('.zip')) { await handle(f.name, new Uint8Array(await f.arrayBuffer())); continue; }
+      onProgress?.(`Öffne ${f.name} (${Math.round(f.size / 1e6)} MB) …`);
+      let seen = 0;
+      try {
+        for await (const e of zipEntries(f)) { seen++; await handle(e.name, e.bytes); }
+      } catch (err) {
+        if (seen) fail(f.name, err);
+        else for await (const e of zipEntriesSync(new Uint8Array(await f.arrayBuffer()))) await handle(e.name, e.bytes);
+      }
+      flush();
+    }
+  } finally {
+    flush();
+    lock?.release?.().catch(() => {});
   }
-  return { added, dup, failed };
+  return { added, dup, failed, errors };
 }
 
 export { localDate };

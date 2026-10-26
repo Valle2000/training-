@@ -52,12 +52,15 @@ async function run() {
   // Verläufe hochladen (einmal je Einheit, höchstens 40 pro Durchgang, damit es flüssig bleibt).
   meta.seriesPushed ||= {};
   const todo = getData().activities.filter((a) => a.hasSeries && !meta.seriesPushed[a.id]).slice(0, 40);
-  for (const a of todo) {
-    const series = await getLocalSeries(a.id);
-    if (!series) continue;
-    const { error } = await supabase.from('training_series').upsert({ owner: session.user.id, activity_id: a.id, data: series }, { onConflict: 'owner,activity_id' });
+  // Zu zehnt hochladen (nach großen Importen mit tausenden Einheiten deutlich schneller).
+  for (let i = 0; i < todo.length; i += 10) {
+    const rows = [];
+    for (const a of todo.slice(i, i + 10)) { const data = await getLocalSeries(a.id); if (data) rows.push({ owner: session.user.id, activity_id: a.id, data }); }
+    if (!rows.length) continue;
+    const { error } = await supabase.from('training_series').upsert(rows, { onConflict: 'owner,activity_id' });
     if (error) throw error;
-    meta.seriesPushed[a.id] = true;
+    for (const r of rows) meta.seriesPushed[r.activity_id] = true;
+    saveMeta(meta);
   }
   meta.lastSync = new Date().toISOString();
   saveMeta(meta);

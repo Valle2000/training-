@@ -101,3 +101,23 @@ test('Pace-Format rundet richtig', async () => {
   assert.equal(fmtPace(119.7), '2:00');
   assert.equal(fmtPace(121.1), '2:01');
 });
+
+test('Polar-Konto-Export: Zeitzone, Tempo, Titel, nur Trainingsdateien, Alpin ≠ Langlauf', async () => {
+  const { parsePolarJson, importable, zipEntries } = await import('../src/lib/importers.js');
+  const { polarSport } = await import('../src/lib/sports.js');
+  const { zipSync, strToU8 } = await import('fflate');
+  const samples = Array.from({ length: 60 }, (_, k) => ({ dateTime: `2019-05-05T10:00:${String(k).padStart(2, '0')}.000`, value: 130 }));
+  const doc = { startTime: '2019-05-05T10:00:00.000', timeZoneOffset: 120, name: 'Intervalle', note: 'hart', exercises: [{ startTime: '2019-05-05T10:00:00.000', sport: 'RUNNING', samples: { heartRate: samples, speed: samples.map((s) => ({ ...s, value: 36 })) } }] };
+  const r = parsePolarJson(doc);
+  assert.equal(r.start, '2019-05-05T08:00:00.000Z');
+  assert.equal(r.title, 'Intervalle');
+  assert.equal(r.notes, 'hart');
+  assert.equal(r.series.speed[5], 10);
+  assert.ok(importable('x/training-session-2019.json') && !importable('x/activity-2019.json') && importable('a/1.fit.gz') && !importable('x/sleep.json'));
+  assert.equal(polarSport('DOWNHILL_SKIING'), 'other');
+  assert.equal(polarSport('CROSS-COUNTRY_SKIING'), 'xc_classic');
+  const zip = zipSync({ 'e/training-session-1.json': strToU8(JSON.stringify(doc)), 'e/activity-1.json': strToU8('{}') });
+  const names = [];
+  for await (const e of zipEntries(new File([zip], 'e.zip'))) names.push(e.name);
+  assert.deepEqual(names, ['e/training-session-1.json']);
+});

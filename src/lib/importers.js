@@ -19,7 +19,7 @@ function summarize(points, extra) {
     distanceM: extra.distanceM ?? null, calories: extra.calories ?? null, ascentM: extra.ascentM ?? null,
     avgHr: extra.avgHr ?? avg(hrs), maxHr: extra.maxHr ?? (hrs.length ? Math.max(...hrs) : null),
     avgPower: extra.avgPower ?? (pws.some(Boolean) ? avg(pws) : null),
-    title: extra.title || '', laps: extra.laps || null,
+    title: extra.title || '', notes: extra.notes || '', laps: extra.laps || null,
     series: points.length > 30 ? toSeries(points) : null,
   };
 }
@@ -104,27 +104,84 @@ const isoDur = (s) => { const m = /PT(?:([\d.]+)H)?(?:([\d.]+)M)?(?:([\d.]+)S)?/
 
 // Polar-Konto-Export (JSON je Trainingseinheit). Das Format ist nicht offiziell dokumentiert,
 // deshalb wird tolerant gelesen: Zeit, Dauer, Sportart, Puls und Messreihen, wo vorhanden.
+// Ortszeit ohne Zonenangabe („2019-05-05T10:00:00.000“) plus Versatz in Minuten → UTC.
+function polarTime(str, offsetMin) {
+  if (/[zZ]|[+-]\d\d:?\d\d$/.test(str) || offsetMin == null) return new Date(str).toISOString();
+  const [d, t = '0:0:0'] = str.split('T'), [y, mo, da] = d.split('-').map(Number), [h, mi, se] = t.split(':').map(Number);
+  return new Date(Date.UTC(y, mo - 1, da, h || 0, mi || 0, Math.floor(se || 0)) - offsetMin * 60000).toISOString();
+}
 export function parsePolarJson(obj) {
   const ex = obj.exercises?.[0] || obj;
   const startRaw = ex.startTime || obj.startTime || ex.start || obj.start;
   if (!startRaw) throw new Error('Keine Startzeit im JSON');
-  const start = new Date(startRaw).toISOString();
+  const offset = num(ex.timezoneOffset ?? ex.timeZoneOffset ?? obj.timeZoneOffset ?? obj.timezoneOffset);
+  const start = polarTime(startRaw, offset);
   const samples = ex.samples || obj.samples || {};
   const series = (key) => (Array.isArray(samples[key]) ? samples[key] : []).map((s) => ({ t: Date.parse(s.dateTime || s.time), v: num(s.value) })).filter((s) => s.t);
   const byT = new Map();
   for (const s of series('heartRate')) byT.set(s.t, { t: s.t, hr: s.v });
   for (const s of series('power')) byT.set(s.t, { ...(byT.get(s.t) || { t: s.t }), power: s.v });
   for (const s of series('altitude')) byT.set(s.t, { ...(byT.get(s.t) || { t: s.t }), alt: s.v });
+  for (const s of series('speed')) byT.set(s.t, { ...(byT.get(s.t) || { t: s.t }), speed: s.v != null ? s.v / 3.6 : null }); // km/h → m/s
   const points = [...byT.values()].sort((a, b) => a.t - b.t);
   const hr = ex.heartRate || obj.heartRate || {};
   return summarize(points, {
-    start, sport: polarSport(ex.sport || obj.sport || ''), title: obj.name || ex.name || '',
+    start, sport: polarSport(ex.sport || obj.sport || ''), title: obj.title || obj.name || ex.name || '', notes: obj.note || obj.notes || '',
     elapsedS: isoDur(ex.duration || obj.duration) ?? (ex.stopTime ? (Date.parse(ex.stopTime) - Date.parse(startRaw)) / 1000 : undefined),
     distanceM: num(ex.distance ?? obj.distance) ?? undefined,
     avgHr: num(hr.avg ?? hr.average) ?? undefined, maxHr: num(hr.max ?? hr.maximum) ?? undefined,
     calories: num(ex.kiloCalories ?? obj.kiloCalories ?? ex.calories) ?? undefined,
     ascentM: num(ex.ascent ?? obj.ascent) ?? undefined,
   });
+}
+
+// Nur Dateien, die Einheiten enthalten können (Polar-Export: training-session-*.json; Tagesaktivität, Schlaf usw. nicht).
+export function importable(name) {
+  const n = name.toLowerCase();
+  if (n.endsWith('/') || n.includes('__macosx')) return false;
+  const base = n.replace(/\.gz$/, '');
+  if (base.endsWith('.json')) return /training|session|exercise/.test(n.split('/').pop());
+  return /\.(fit|tcx|gpx|csv|zip)$/.test(base);
+}
+
+// Große ZIP-Dateien Stück für Stück lesen, ohne alles auf einmal zu entpacken (Polar-Export: Tausende Dateien,
+// mehrere hundert MB). Liefert {name, bytes} je passender Datei.
+export async function* zipEntries(file) {
+  const { Unzip, UnzipInflate } = await import('fflate');
+  const ready = [];
+  let error = null;
+  const uz = new Unzip((entry) => {
+    if (!importable(entry.name)) return; // ohne start() werden die Daten übersprungen
+    const parts = [];
+    entry.ondata = (err, chunk, final) => {
+      if (err) { error = err; return; }
+      parts.push(chunk);
+      if (final) {
+        const bytes = new Uint8Array(parts.reduce((a, p) => a + p.length, 0));
+        let o = 0;
+        for (const p of parts) { bytes.set(p, o); o += p.length; }
+        ready.push({ name: entry.name, bytes });
+      }
+    };
+    entry.start();
+  });
+  uz.register(UnzipInflate);
+  const reader = file.stream().getReader();
+  for (;;) {
+    const { done, value } = await reader.read();
+    uz.push(value || new Uint8Array(0), done);
+    if (error) throw error;
+    while (ready.length) yield ready.shift();
+    if (done) return;
+  }
+}
+
+// Ersatzweg, falls das Archiv sich nicht als Strom lesen lässt: Inhaltsverzeichnis lesen, dann Datei für Datei entpacken.
+export async function* zipEntriesSync(bytes) {
+  const { unzipSync } = await import('fflate');
+  const names = [];
+  unzipSync(bytes, { filter: (f) => { if (importable(f.name)) names.push(f.name); return false; } });
+  for (const n of names) yield { name: n, bytes: unzipSync(bytes, { filter: (f) => f.name === n })[n] };
 }
 
 // Eine Datei (auch ZIP) → Liste von Rohdaten. FIT wird über den übergebenen Leser verarbeitet.
