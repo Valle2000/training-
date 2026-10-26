@@ -1,0 +1,26 @@
+{
+ "settings": {},
+ "food": null,
+ "activities": [],
+ "strength": [],
+ "plan": [],
+ "recipes": [],
+ "coach": [],
+ "wellness": [],
+ "customExercises": [],
+ "keySessions": [
+  {
+   "id": "mvprnztswdrxd",
+   "name": "3x20min",
+   "sport": "skierg",
+   "keywords": "",
+   "description": "",
+   "intervalSec": 1200
+  }
+ ],
+ "lactateTests": [],
+ "races": [],
+ "gear": [],
+ "health": [],
+ "workouts": []
+}

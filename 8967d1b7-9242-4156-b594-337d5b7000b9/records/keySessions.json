@@ -1,0 +1,15 @@
+[
+ {
+  "id": "mvprnztswdrxd",
+  "deleted": false,
+  "updated_at": "2026-10-26T22:38:52.535554+00:00",
+  "data": {
+   "id": "mvprnztswdrxd",
+   "name": "3x20min",
+   "sport": "skierg",
+   "keywords": "",
+   "description": "",
+   "intervalSec": 1200
+  }
+ }
+]
