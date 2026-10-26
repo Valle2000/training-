@@ -10,6 +10,9 @@ import { Sheet, Seg, fmtDuration, fmtNum, fmtDate, fmtKm, toast } from './common
 import { Season, Races } from './season.jsx';
 import { Workouts } from './workouts.jsx';
 import { durationOf, workoutLoad, mainZone, describe } from '../lib/workouts.js';
+import { LapsCard } from './laps.jsx';
+import { fmtPace } from '../lib/laps.js';
+import { athleteOf } from '../lib/activities.js';
 
 export function Training({ openActivity, openAdd }) {
   const { activities, plan, settings } = useData();
@@ -81,7 +84,7 @@ export function Training({ openActivity, openAdd }) {
                 <p>{fmtDate(a.date)} · {fmtDuration(a.durationS)} h {fmtKm(a.distanceM) && '· ' + fmtKm(a.distanceM)}{a.avgHr ? ` · Ø ${a.avgHr}` : ''} · {a.source}</p>
                 <ZoneBar zones={a.zones} />
               </div>
-              <span className="num">{fmtNum(a.load)}</span>
+              <span className="num" title={a.load == null ? 'Schwellenwerte fehlen' : undefined}>{a.load == null ? '?' : fmtNum(a.load)}</span>
             </button>
           ))}
         </>
@@ -190,12 +193,17 @@ export function ActivitySheet({ activity, onClose }) {
         {a.kj != null && <div><b>{a.kj}</b><span>kJ</span></div>}
         {a.vi != null && <div><b>{fmtNum(a.vi, 2)}</b><span>VI</span></div>}
         {a.powerCurve?.[1200] && <div><b>{a.powerCurve[1200]}</b><span>beste 20 min W</span></div>}
+        {a.pace != null && <div><b>{fmtPace(a.pace)}</b><span>Ø Pace {a.sport === 'bikeerg' ? '/1000 m' : '/500 m'}</span></div>}
+        {a.spm != null && <div><b>{a.spm}</b><span>Ø Schläge/min</span></div>}
+        {a.elapsedS && a.durationS && a.elapsedS - a.durationS > 120 && <div><b>{fmtDuration(a.elapsedS)}</b><span>Gesamt inkl. Pausen</span></div>}
       </div>
+      {a.load == null && (() => { const at = athleteOf(settings, a.sport); const miss = [!at.hrMax && 'Maximalpuls', !at.hrRest && 'Ruhepuls', !at.lthr && 'Schwellenpuls', !at.ftp && 'FTP'].filter(Boolean); return <div className="notice">Für die Belastung fehlen: {miss.join(', ')}. Unter Mehr → Einstellungen → Athlet eintragen, dann rechnet die App alle Einheiten neu.</div>; })()}
       <ZoneBar zones={a.zones} />
       {series && <div className="card"><LineChart labels={labels} xFormat={(s) => fmtDuration(s)} series={[
         ...(series.hr.some(Boolean) ? [{ label: 'Puls', values: series.hr, color: 'var(--fat)' }] : []),
         ...(series.power.some(Boolean) ? [{ label: 'Watt', values: series.power, color: 'var(--fit)' }] : []),
       ]} /></div>}
+      <LapsCard laps={a.laps} erg={['skierg', 'row'].includes(a.sport) ? 'erg' : a.sport === 'bikeerg' ? 'bike' : null} />
       <div className="grid2">
         <div><label>Titel</label><input value={a.title} onChange={(e) => setA({ ...a, title: e.target.value })} placeholder="z. B. 5×6 min Schwelle" /></div>
         <div><label>Sportart</label><select value={a.sport} onChange={(e) => setA({ ...a, sport: e.target.value })}>{SPORTS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}</select></div>

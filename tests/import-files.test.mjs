@@ -69,3 +69,35 @@ test('Polar-Sportnamen deutsch und englisch', () => {
   assert.equal(polarSport('Laufen'), 'run');
   assert.equal(polarSport('Krafttraining'), 'strength');
 });
+
+test('Concept2-Intervalle: Zeitachse läuft über alle Intervalle weiter', async () => {
+  const { concept2Points } = await import('../src/lib/sync.js');
+  const { toSeries } = await import('../src/lib/series.js');
+  const { lapsFromConcept2, lapAnalysis } = await import('../src/lib/laps.js');
+  const { c2Watts } = await import('../src/lib/sync.js');
+  // 3 Intervalle à 10 min, 2 min Pause; Schlagzeit (Zehntelsekunden) beginnt je Intervall bei 0, ein Schlag alle 2 s
+  const workout = { intervals: [1, 2, 3].map((k) => ({ time: 6000, distance: 2400 + k * 20, rest_time: 1200, stroke_rate: 40, heart_rate: { average: 150 + k * 3, max: 165 } })) };
+  const laps = lapsFromConcept2(workout, 'skierg', c2Watts);
+  const strokes = [];
+  for (let k = 0; k < 3; k++) for (let t = 0; t <= 6000; t += 20) strokes.push({ t, p: 1250, hr: 150 + k * 3 });
+  const pts = concept2Points(strokes, 0, laps, 'skierg');
+  assert.equal(Math.round((pts.at(-1).t - pts[0].t) / 1000), 3 * 600 + 2 * 120);
+  const series = toSeries(pts, 30);
+  assert.ok(Math.abs(series.hr.length - 1800) <= 3, String(series.hr.length)); // Pausen > 30 s werden nicht gezählt
+  // Schläge alle 1,5 s dürfen die Zeit nicht strecken
+  const odd = toSeries(Array.from({ length: 401 }, (_, i) => ({ t: i * 1500, hr: 140 })), 30);
+  assert.ok(Math.abs(odd.hr.length - 601) <= 1, String(odd.hr.length));
+  assert.equal(laps.length, 3);
+  assert.equal(laps[1].startS, 720);
+  assert.equal(Math.round(laps[0].pace), 124); // 600 s für 2420 m = 2:04 /500 m
+  const a = lapAnalysis(laps);
+  assert.equal(a.count, 3);
+  assert.equal(a.hrRise, 6);
+  assert.ok(a.fade > 0);
+});
+
+test('Pace-Format rundet richtig', async () => {
+  const { fmtPace } = await import('../src/lib/laps.js');
+  assert.equal(fmtPace(119.7), '2:00');
+  assert.equal(fmtPace(121.1), '2:01');
+});

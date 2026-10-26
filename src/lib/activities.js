@@ -66,6 +66,7 @@ export function buildActivity(raw, settings, extra = {}) {
     zone: raw.zone || null, elapsedS: raw.elapsedS ?? raw.durationS ?? null,
     distanceM: raw.distanceM ?? null, avgHr: round(raw.avgHr), maxHr: round(raw.maxHr), avgPower: round(raw.avgPower),
     calories: raw.calories ?? null, ascentM: raw.ascentM ?? null, strengthId: raw.strengthId ?? null,
+    laps: raw.laps || null, pace: raw.pace ?? null, spm: raw.spm ?? null, workS: raw.workS ?? null,
     hasSeries: !!raw.series?.hr?.length, ...ev,
   };
   return { activity, series: raw.series ? thin(raw.series) : null };

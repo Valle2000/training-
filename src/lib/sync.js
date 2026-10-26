@@ -4,6 +4,7 @@ import { toSeries } from './series.js';
 import { buildActivity, findDuplicate, localDate } from './activities.js';
 import { sportFromConcept2, polarSport } from './sports.js';
 import { readExport } from './importers.js';
+import { lapsFromConcept2, lapsFromSeries, pacePer } from './laps.js';
 
 // FIT-Bibliothek ist groß und wird erst geladen, wenn eine FIT-Datei kommt.
 const parseFit = async (bytes) => (await import('./fit.js')).parseFit(bytes);
@@ -132,25 +133,65 @@ async function syncConcept2({ all = false, onProgress } = {}) {
     pages = res?.meta?.pagination?.total_pages || 1;
     for (const r of res?.data || []) {
       if (known.has(String(r.id))) continue;
-      const start = new Date((r.date_utc || r.date).replace(' ', 'T') + (r.date_utc ? 'Z' : '')).toISOString();
-      let series = null;
-      if (r.stroke_data) {
-        const st = await call('concept2', `/api/users/me/results/${r.id}/strokes`).catch(() => null);
-        const pts = (st?.data || []).map((x) => ({ t: Date.parse(start) + x.t * 100, hr: x.hr || null, power: c2Watts(x.p, r.type) }));
-        if (pts.length) series = toSeries(pts);
-      }
-      const raw = {
-        source: 'concept2', externalId: String(r.id), start, sport: sportFromConcept2(r.type), elapsedS: r.time / 10, distanceM: r.distance,
-        avgHr: r.heart_rate?.average || null, maxHr: r.heart_rate?.max || null, calories: r.calories_total || null,
-        avgPower: r.time && r.distance ? c2Watts((r.time / r.distance) * (r.type === 'bike' ? 1000 : 500), r.type) : null,
-        title: r.workout_type && r.workout_type !== 'JustRow' ? r.workout_type : '', notes: r.comments || '', series,
-      };
+      if (await store(await concept2Raw(r))) added++;
       if (await store(raw)) added++;
     }
     onProgress?.(`Concept2: Seite ${page} von ${pages}, ${added} neu`);
     page++;
   } while (page <= pages);
   return added;
+}
+
+// Eine Concept2-Einheit mit Intervallen/Splits und Schlagdaten in Rohdaten umwandeln.
+// Bei Intervall-Einheiten beginnt die Zeit der Schlagdaten in jedem Intervall neu: Die Zeitachse wird
+// deshalb fortgeschrieben (plus Pause), damit nicht nur das erste Intervall zählt.
+export function concept2Points(strokes, startMs, laps, type) {
+  const pts = [];
+  let offset = 0, prevT = -1, lap = 0;
+  for (const x of strokes) {
+    if (x.t < prevT) { offset += prevT + ((laps[lap]?.restS || 0) * 10); lap++; }
+    prevT = x.t;
+    pts.push({ t: startMs + (offset + x.t) * 100, hr: x.hr || null, power: c2Watts(x.p, type), lap });
+  }
+  return pts;
+}
+
+async function concept2Raw(r) {
+  const start = new Date((r.date_utc || r.date).replace(' ', 'T') + (r.date_utc ? 'Z' : '')).toISOString();
+  let workout = r.workout;
+  if (!workout && r.workout_type && r.workout_type !== 'JustRow') workout = (await call('concept2', `/api/users/me/results/${r.id}`).catch(() => null))?.data?.workout;
+  let laps = lapsFromConcept2(workout, r.type, c2Watts);
+  let series = null;
+  if (r.stroke_data) {
+    const st = await call('concept2', `/api/users/me/results/${r.id}/strokes`).catch(() => null);
+    const pts = concept2Points(st?.data || [], Date.parse(start), laps, r.type);
+    if (pts.length) {
+      series = toSeries(pts, 30);
+      // Ohne Intervall-Angaben: Runden aus den Neustarts der Schlagzeit ableiten.
+      if (!laps.length && pts.at(-1).lap > 0) {
+        const bounds = [];
+        for (let i = 0; i <= pts.at(-1).lap; i++) { const p = pts.filter((x) => x.lap === i); bounds.push({ startS: (p[0].t - pts[0].t) / 1000, durationS: (p.at(-1).t - p[0].t) / 1000 }); }
+        laps = lapsFromSeries(series, bounds);
+      }
+    }
+  }
+  const restS = (Number(r.rest_time) || 0) / 10 || laps.reduce((a, l) => a + (l.restS || 0), 0);
+  return {
+    source: 'concept2', externalId: String(r.id), start, sport: sportFromConcept2(r.type), elapsedS: r.time / 10 + restS, workS: r.time / 10, distanceM: r.distance,
+    avgHr: r.heart_rate?.average || null, maxHr: r.heart_rate?.max || null, calories: r.calories_total || null,
+    avgPower: r.time && r.distance ? c2Watts((r.time / r.distance) * (r.type === 'bike' ? 1000 : 500), r.type) : null,
+    pace: pacePer(r.time / 10, r.distance, r.type === 'bike' ? 1000 : 500), spm: r.stroke_rate || null,
+    title: r.workout_type && r.workout_type !== 'JustRow' ? r.workout_type : '', notes: r.comments || '', series, laps: laps.length ? laps : null,
+  };
+}
+
+// Alle Concept2-Einheiten neu laden (z. B. nach Korrekturen an der Auswertung). Eigene Notizen/RPE/Laktat bleiben.
+export async function reloadConcept2(onProgress) {
+  const keep = Object.fromEntries(getData().activities.filter((a) => a.source === 'concept2').map((a) => [a.externalId, { notes: a.notes, rpe: a.rpe, lactate: a.lactate, title: a.title, keySessionId: a.keySessionId, gearIds: a.gearIds }]));
+  update((d) => ({ ...d, activities: d.activities.filter((a) => a.source !== 'concept2') }));
+  const n = await syncConcept2({ all: true, onProgress });
+  update((d) => ({ ...d, activities: d.activities.map((a) => (a.source === 'concept2' && keep[a.externalId] ? { ...a, ...Object.fromEntries(Object.entries(keep[a.externalId]).filter(([, v]) => v != null && v !== '')) } : a)) }));
+  return n;
 }
 
 // Standard: letzte 50 Einheiten; all = alle Seiten, bis eine Seite leer bzw. nicht voll ist.
@@ -202,6 +243,20 @@ export async function testConnection(provider) {
       } catch { info = text.slice(0, 160) || '(leer)'; }
       lines.push(`${r.status} ${path} → ${info}`);
     } catch (e) { lines.push(`Fehler ${path}: ${e.message}`); }
+  }
+  if (provider === 'concept2') {
+    // Aufbau einer Einheit mit Intervallen zeigen, damit Feldnamen geprüft werden können.
+    try {
+      const list = await call('concept2', '/api/users/me/results?number=20');
+      const r = (list?.data || []).find((x) => x.workout_type && x.workout_type !== 'JustRow') || list?.data?.[0];
+      if (r) {
+        const d = (await call('concept2', `/api/users/me/results/${r.id}`))?.data || {};
+        const iv = d.workout?.intervals?.[0] || d.workout?.splits?.[0];
+        lines.push(`Detail ${r.workout_type}: Felder: ${Object.keys(d).join(', ')}`);
+        lines.push(`workout: ${d.workout ? Object.keys(d.workout).join(', ') : '–'}; Intervall/Split: ${iv ? JSON.stringify(iv).slice(0, 220) : '–'}`);
+        if (r.stroke_data) { const st = await call('concept2', `/api/users/me/results/${r.id}/strokes`); const ts = (st?.data || []).map((x) => x.t); lines.push(`Schläge: ${ts.length}, Zeit-Neustarts: ${ts.filter((t, i) => i && t < ts[i - 1]).length}, Beispiel: ${JSON.stringify(st?.data?.[0] || {})}`); }
+      }
+    } catch (e) { lines.push(`Detail-Fehler: ${e.message}`); }
   }
   return lines;
 }
