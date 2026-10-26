@@ -11,6 +11,7 @@ import { Season, Races } from './season.jsx';
 import { Workouts } from './workouts.jsx';
 import { durationOf, workoutLoad, mainZone, describe } from '../lib/workouts.js';
 import { LapsCard } from './laps.jsx';
+import { ActivityChart } from './activity-chart.jsx';
 import { fmtPace } from '../lib/laps.js';
 import { athleteOf } from '../lib/activities.js';
 
@@ -176,7 +177,6 @@ export function ActivitySheet({ activity, onClose }) {
     update((d) => ({ ...d, activities: d.activities.filter((x) => x.id !== a.id) }));
     onClose();
   };
-  const labels = series?.hr?.map((_, i) => i * 5);
   return (
     <Sheet title={a.title || sportLabel(a.sport)} onClose={onClose}>
       <p className="muted">{fmtDate(a.date, { weekday: 'long', day: 'numeric', month: 'long' })} · {new Date(a.start).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} · Quelle: {a.source}</p>
@@ -199,10 +199,7 @@ export function ActivitySheet({ activity, onClose }) {
       </div>
       {a.load == null && (() => { const at = athleteOf(settings, a.sport); const miss = [!at.hrMax && 'Maximalpuls', !at.hrRest && 'Ruhepuls', !at.lthr && 'Schwellenpuls', !at.ftp && 'FTP'].filter(Boolean); return <div className="notice">Für die Belastung fehlen: {miss.join(', ')}. Unter Mehr → Einstellungen → Athlet eintragen, dann rechnet die App alle Einheiten neu.</div>; })()}
       <ZoneBar zones={a.zones} />
-      {series && <div className="card"><LineChart labels={labels} xFormat={(s) => fmtDuration(s)} series={[
-        ...(series.hr.some(Boolean) ? [{ label: 'Puls', values: series.hr, color: 'var(--fat)' }] : []),
-        ...(series.power.some(Boolean) ? [{ label: 'Watt', values: series.power, color: 'var(--fit)' }] : []),
-      ]} /></div>}
+      {series && <ActivityChart series={series} sport={a.sport} laps={a.laps} />}
       <LapsCard laps={a.laps} erg={['skierg', 'row'].includes(a.sport) ? 'erg' : a.sport === 'bikeerg' ? 'bike' : null} />
       <div className="grid2">
         <div><label>Titel</label><input value={a.title} onChange={(e) => setA({ ...a, title: e.target.value })} placeholder="z. B. 5×6 min Schwelle" /></div>

@@ -48,3 +48,8 @@ table.t{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:
 .day .p.missed{text-decoration:line-through;opacity:.55;border-color:var(--muted);color:var(--muted)}.day b{cursor:pointer}
 .pill.on{background:#ffffff22;border-color:#c7f36b;color:#fff}
 table.t.nowrap td,table.t.nowrap th{white-space:nowrap}
+/* Doppelregler: zwei Range-Inputs übereinander, nur die Griffe sind bedienbar */
+.dual{position:relative;height:30px;margin:4px 0}.dual input{position:absolute;inset:0;width:100%;margin:0;background:none;pointer-events:none;-webkit-appearance:none;appearance:none;height:30px}
+.dual input::-webkit-slider-thumb{pointer-events:auto;-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent);border:3px solid var(--card);box-shadow:0 1px 4px #0005;cursor:pointer}
+.dual input::-moz-range-thumb{pointer-events:auto;width:18px;height:18px;border-radius:50%;background:var(--accent);border:3px solid var(--card);cursor:pointer}
+.dual::before{content:'';position:absolute;left:0;right:0;top:13px;height:4px;border-radius:2px;background:var(--line)}
