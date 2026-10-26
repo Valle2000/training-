@@ -87,7 +87,7 @@ export function ZoneWeeks({ weeks, height = 200 }) {
 }
 
 // Einfaches Liniendiagramm (z. B. Puls/Leistung einer Einheit, 1RM-Verlauf, HRV).
-export function LineChart({ series: all, labels, height = 200, xFormat = (v) => v }) {
+export function LineChart({ series: all, labels, height = 200, xFormat = (v) => v, shared = false }) {
   // Reihen ohne einen einzigen Wert weglassen.
   const series = all.filter((s) => s.values.some((a) => a != null && (s.signed || a > 0)));
   const H = height, L = 36, R = 36, T = 10, B = 22, iw = W - L - R, ih = H - T - B;
@@ -96,11 +96,13 @@ export function LineChart({ series: all, labels, height = 200, xFormat = (v) => 
   const x = (i) => L + (n === 1 ? iw / 2 : (i / (n - 1)) * iw);
   // signed: Werte dürfen negativ sein (z. B. Form); sonst gelten 0/leer als fehlend.
   const ok = (s, a) => a != null && (s.signed || a > 0);
-  const scales = series.map((s) => {
-    const v = s.values.filter((a) => ok(s, a));
-    const lo = Math.min(...v), hi = Math.max(...v), pad = (hi - lo) * 0.1 || 5;
-    return { lo: s.signed ? lo - pad : Math.max(0, lo - pad), hi: hi + pad };
-  });
+  // shared: alle Reihen auf einer gemeinsamen Achse (vergleichbare Größen, z. B. Stunden je Saison).
+  const scaleOf = (vals, signed) => {
+    const lo = Math.min(...vals), hi = Math.max(...vals), pad = (hi - lo) * 0.1 || 5;
+    return { lo: signed ? lo - pad : Math.max(0, lo - pad), hi: hi + pad };
+  };
+  const one = shared && scaleOf(series.flatMap((s) => s.values.filter((a) => ok(s, a))), series.some((s) => s.signed));
+  const scales = series.map((s) => one || scaleOf(s.values.filter((a) => ok(s, a)), s.signed));
   const ticks = Array.from({ length: Math.min(6, n) }, (_, k) => Math.round((k * (n - 1)) / Math.max(1, Math.min(5, n - 1))));
   return (
     <div>
@@ -111,10 +113,12 @@ export function LineChart({ series: all, labels, height = 200, xFormat = (v) => 
           const y = (v) => T + ih - ((v - lo) / (hi - lo || 1)) * ih;
           return (
             <g key={s.label}>
-              <path d={path(s.values.map((v, i) => (ok(s, v) ? [x(i), y(v)] : null)))} fill="none" stroke={s.color} strokeWidth={s.dots ? 2 : 1.4} />
+              <path d={path(s.values.map((v, i) => (ok(s, v) ? [x(i), y(v)] : null)))} fill="none" stroke={s.color} strokeWidth={s.dots ? 2 : s.width || 1.4} strokeDasharray={s.dashed ? '5 4' : undefined} />
               {s.dots && s.values.map((v, i) => ok(s, v) && <circle key={i} cx={x(i)} cy={y(v)} r="3" fill={s.color} />)}
-              <text x={k === 0 ? L - 4 : W - R + 4} y={T + 8} textAnchor={k === 0 ? 'end' : 'start'} fill={s.color}>{axisFmt(hi)}</text>
-              <text x={k === 0 ? L - 4 : W - R + 4} y={T + ih} textAnchor={k === 0 ? 'end' : 'start'} fill={s.color}>{axisFmt(lo)}</text>
+              {(!shared || k === 0) && <>
+                <text x={k === 0 ? L - 4 : W - R + 4} y={T + 8} textAnchor={k === 0 ? 'end' : 'start'} fill={shared ? 'var(--muted)' : s.color}>{axisFmt(hi)}</text>
+                <text x={k === 0 ? L - 4 : W - R + 4} y={T + ih} textAnchor={k === 0 ? 'end' : 'start'} fill={shared ? 'var(--muted)' : s.color}>{axisFmt(lo)}</text>
+              </>}
             </g>
           );
         })}

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link2, Unlink, Download, Upload, RefreshCw, History } from 'lucide-react';
 import { useData, update, getData } from '../lib/store.js';
 import { recomputeAll } from '../lib/recompute.js';
-import { PROVIDERS, startConnect, disconnect, importFiles, testConnection, syncHistory } from '../lib/sync.js';
+import { PROVIDERS, startConnect, disconnect, importFiles, testConnection, syncHistory, reloadConcept2 } from '../lib/sync.js';
 import { getAccessCode, setAccessCode, getOwnKey, setOwnKey } from '../lib/ai.js';
 import { fmtDate, toast } from './common.jsx';
 import { AccountCard } from './account.jsx';
@@ -20,6 +20,7 @@ export function Settings() {
   const [code, setCode] = useState(getAccessCode());
   const [key, setKey] = useState(getOwnKey());
   const [test, setTest] = useState(null);
+  const maxSeen = Math.max(0, ...activities.map((a) => a.maxHr || 0));
   const runTest = async (id) => { setTest({ id, busy: true }); setTest({ id, lines: await testConnection(id) }); };
   useEffect(() => { fetch('/api/connect?provider=polar&op=status').then((r) => r.json()).then((j) => setConfigured(j.configured || [])).catch(() => setConfigured([])); }, []);
 
@@ -67,6 +68,7 @@ export function Settings() {
           <div><label>Geschlecht (TRIMP)</label><select value={s.sex || 'm'} onChange={(e) => setS({ ...s, sex: e.target.value })}><option value="m">männlich</option><option value="f">weiblich</option></select></div>
           <div><label>Zeitzone</label><input value={s.timezone || 'Europe/Berlin'} onChange={(e) => setS({ ...s, timezone: e.target.value })} /></div>
         </div>
+        {!s.hrMax && maxSeen > 150 && <p className="small">Höchster Puls in deinen Einheiten: <b>{maxSeen}</b> <button className="ghost" style={{ display: 'inline', padding: 0 }} onClick={() => setS({ ...s, hrMax: String(maxSeen) })}>als Maximalpuls übernehmen</button> <span className="muted">(ein echter Test oder Wettkampf ist genauer)</span></p>}
         <label>Ziele und Wettkämpfe</label>
         <textarea value={s.goals || ''} onChange={(e) => setS({ ...s, goals: e.target.value })} placeholder="z. B. Hauptziel Engadin Skimarathon März, Volkslauf-Serie im Januar" />
         <label>Verfügbarkeit</label>
@@ -84,6 +86,7 @@ export function Settings() {
             <div key={id} className="item">
               <div className="grow"><b>{p.label}</b><p>{p.hint}</p>{c && <p>Verbunden seit {fmtDate(c.connectedAt.slice(0, 10))}</p>}{configured && !ready && !c && <p>Auf dem Server nicht eingerichtet (siehe README).</p>}</div>
               {c && id !== 'polar' && <button className="ghost" style={{ flex: 'none' }} onClick={() => history(id)} disabled={!!progress}><History size={15} />Ganze Historie</button>}
+              {c && id === 'concept2' && <button className="ghost" style={{ flex: 'none' }} disabled={!!progress} onClick={async () => { if (!confirm('Alle Concept2-Einheiten neu laden? Notizen, RPE und Laktat bleiben erhalten.')) return; setProgress('Concept2: lade neu …'); try { toast(`Concept2: ${await reloadConcept2(setProgress)} Einheiten neu geladen`); } catch (err) { toast(err.message); } setProgress(''); }}><RefreshCw size={15} />Neu laden</button>}
               {c && <button className="ghost" style={{ flex: 'none' }} onClick={() => runTest(id)}>Testen</button>}
               {c ? <button className="secondary" style={{ flex: 'none' }} onClick={() => disconnect(id)}><Unlink size={16} />Trennen</button>
                 : <button className="primary" style={{ flex: 'none' }} disabled={!ready} onClick={() => startConnect(id)}><Link2 size={16} />Verbinden</button>}

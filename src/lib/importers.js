@@ -19,7 +19,7 @@ function summarize(points, extra) {
     distanceM: extra.distanceM ?? null, calories: extra.calories ?? null, ascentM: extra.ascentM ?? null,
     avgHr: extra.avgHr ?? avg(hrs), maxHr: extra.maxHr ?? (hrs.length ? Math.max(...hrs) : null),
     avgPower: extra.avgPower ?? (pws.some(Boolean) ? avg(pws) : null),
-    title: extra.title || '',
+    title: extra.title || '', laps: extra.laps || null,
     series: points.length > 30 ? toSeries(points) : null,
   };
 }
@@ -39,7 +39,12 @@ export function parseTcx(xml) {
   })).filter((p) => p.t);
   const sumLaps = (n) => laps.reduce((a, l) => a + (num(tag(l, n)) || 0), 0);
   const notes = tag(act, 'Notes');
-  return summarize(points, {
+  const t0 = laps[0] ? Date.parse(attr(laps[0], 'StartTime')) : points[0]?.t;
+  const lapList = laps.length > 1 ? laps.map((l, i) => {
+    const dur = num(tag(l, 'TotalTimeSeconds')), dist = num(tag(l, 'DistanceMeters'));
+    return { n: i + 1, startS: (Date.parse(attr(l, 'StartTime')) - t0) / 1000, durationS: dur, distanceM: dist, avgHr: num(tag(tag(l, 'AverageHeartRateBpm') || '', 'Value')), maxHr: num(tag(tag(l, 'MaximumHeartRateBpm') || '', 'Value')), avgPower: num(tag(l, 'AvgWatts')), pace: dur && dist ? (dur / dist) * 1000 : null };
+  }) : null;
+  return summarize(points, { laps: lapList,
     start: laps[0] ? new Date(attr(laps[0], 'StartTime') || points[0]?.t).toISOString() : undefined,
     sport: notes ? polarSport(notes) : sport, title: notes || '',
     elapsedS: laps.length ? sumLaps('TotalTimeSeconds') : undefined,

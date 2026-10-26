@@ -166,6 +166,14 @@ export function decoupling(output, hr) {
   return r1 && r2 ? Math.round(((r1 - r2) / r1) * 1000) / 10 : null;
 }
 
+// Messfehler entfernen, bevor gerechnet wird (Leistung geht hoch 4 in NP und Belastung ein,
+// ein einziger Ausreißer würde sonst alles verfälschen).
+const ok = (lo, hi) => (v) => (v == null || !(v >= lo && v <= hi) ? null : v);
+export function cleanSeries(series) {
+  if (!series) return series;
+  return { ...series, power: series.power?.map(ok(0, 2500)), hr: series.hr?.map(ok(30, 240)), speed: series.speed?.map(ok(0, 30)) };
+}
+
 // Kennzahlen aus dem Verlauf, die TrainingPeaks & Co. pro Einheit zeigen.
 export function seriesStats(series, { ftp, powerSport }) {
   const power = series.power || [], hr = series.hr || [], speed = series.speed || [];
@@ -185,5 +193,45 @@ export function seriesStats(series, { ftp, powerSport }) {
     if (hrVals.length && np) out.ef = Math.round((np / (hrVals.reduce((a, b) => a + b, 0) / hrVals.length)) * 100) / 100;
   }
   if (hasHr && (hasPower || hasSpeed)) out.decoupling = decoupling(hasPower ? power : speed, hr);
+  if (hasHr) out.hrHist = histogram(hr, HR_BIN);
+  if (hasPower && powerSport) out.powerHist = histogram(power, POWER_BIN);
+  if (hasHr && hasPower && powerSport) out.powerHr = powerHrTable(power, hr);
   return out;
+}
+
+// Sekunden je Bereich (5 bpm bzw. 10 W), damit sich später beliebige Bereiche über die ganze Historie summieren lassen.
+export const HR_BIN = 5, POWER_BIN = 10;
+export function histogram(values, bin) {
+  const out = {};
+  for (const v of values) if (v > 0) { const k = Math.floor(v / bin) * bin; out[k] = (out[k] || 0) + 1; }
+  return out;
+}
+// Summe der Sekunden zwischen lo und hi (einschließlich der Bereiche, die angeschnitten werden, anteilig).
+export function secondsBetween(hist, lo, hi, bin) {
+  if (!hist) return 0;
+  let s = 0;
+  for (const [k, sec] of Object.entries(hist)) {
+    const a = +k, b = a + bin, overlap = Math.min(b, hi) - Math.max(a, lo);
+    if (overlap > 0) s += sec * (overlap / bin);
+  }
+  return s;
+}
+
+// Puls bei Leistung: Leistung als 60-s-Schnitt (der Puls hängt hinterher), die ersten 10 min ohne (Aufwärmen,
+// Puls noch nicht eingeschwungen). Ergebnis: [[Watt, Ø Puls, Sekunden]] je 10-W-Bereich.
+export function powerHrTable(power, hr, { window = 60, skip = 600 } = {}) {
+  const n = Math.min(power.length, hr.length);
+  const start = n > skip * 2 ? skip : Math.min(120, Math.floor(n / 4));
+  const bins = {};
+  let sum = 0;
+  for (let i = 0; i < n; i++) {
+    sum += power[i] || 0;
+    if (i >= window) sum -= power[i - window] || 0;
+    if (i < start || i < window || !(hr[i] > 0) || !(power[i] > 0)) continue;
+    const k = Math.round(sum / window / POWER_BIN) * POWER_BIN;
+    if (k <= 0) continue;
+    const b = (bins[k] ||= [0, 0]);
+    b[0] += hr[i]; b[1]++;
+  }
+  return Object.entries(bins).filter(([, b]) => b[1] >= 30).map(([k, b]) => [+k, Math.round((b[0] / b[1]) * 10) / 10, b[1]]).sort((a, b) => a[0] - b[0]);
 }

@@ -14,6 +14,7 @@ import { handleConnectReturn, PROVIDERS } from './lib/sync.js';
 import { migrateMetrics } from './lib/recompute.js';
 import { startCloudSync } from './lib/cloud-sync.js';
 import { SyncBadge } from './ui/account.jsx';
+import { hydrate, onSaveError } from './lib/store.js';
 
 const TABS = [
   ['today', 'Heute', Activity], ['training', 'Kalender', CalendarDays], ['analysis', 'Analyse', BarChart3],
@@ -29,7 +30,10 @@ function App() {
     const r = handleConnectReturn();
     if (r) { setTab('more'); toast(r.error ? `${PROVIDERS[r.provider]?.label || r.provider}: ${r.error}` : `${PROVIDERS[r.provider].label} verbunden – jetzt unter „Heute“ abgleichen`); }
   }, []);
-  useEffect(() => { migrateMetrics(); }, []);
+  const [saveErr, setSaveErr] = useState(null);
+  useEffect(() => onSaveError(setSaveErr), []);
+  // Vorschau-Adressen von Vercel haben einen eigenen, leeren Speicher.
+  const wrongHost = typeof __APP_URL__ === 'string' && __APP_URL__ && !location.origin.startsWith(__APP_URL__) && !/localhost|127\.0\.0\.1/.test(location.hostname);
   useEffect(() => { scrollTo(0, 0); }, [tab]);
 
   const common = { go: setTab, openActivity: setActivity, openAdd: () => setAdding(true) };
@@ -43,6 +47,8 @@ function App() {
         </div>
       </header>
       <main>
+        {saveErr && <div className="notice" style={{ background: 'var(--badbg)', color: 'var(--bad)' }}><b>Achtung:</b> {saveErr} Bitte unter Mehr → Einstellungen anmelden (Online-Abgleich) oder ein Backup machen.</div>}
+        {wrongHost && <div className="notice" style={{ background: 'var(--warnbg)', color: 'var(--warn)' }}><b>Andere Adresse:</b> Du nutzt {location.host}. Daten liegen je Adresse getrennt – öffne die App über <a href={__APP_URL__}>{__APP_URL__.replace('https://', '')}</a>{' '}oder melde dich an, dann sind sie überall gleich.</div>}
         {tab === 'today' && <Today {...common} />}
         {tab === 'training' && <Training {...common} />}
         {tab === 'analysis' && <Analysis {...common} />}
@@ -61,7 +67,9 @@ function App() {
   );
 }
 
-startCloudSync();
 createRoot(document.getElementById('root')).render(<App />);
+// Erst den vollständigen Stand aus IndexedDB laden, dann Kennzahlen prüfen und online abgleichen –
+// sonst könnte ein unvollständiger Stand Einheiten als „gelöscht“ melden.
+hydrate().finally(() => { migrateMetrics(); startCloudSync(); });
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) navigator.serviceWorker.register('/sw.js').catch(() => {});

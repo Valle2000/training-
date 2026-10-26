@@ -25,6 +25,13 @@ export function parseFit(bytes) {
     avgPower: s.avgPower ?? (pws.some(Boolean) ? pws.reduce((a, b) => a + b, 0) / pws.length : null),
     calories: s.totalCalories ?? null,
     ascentM: s.totalAscent ?? null,
+    // Runden (Lap-Taste oder automatische Runden der Uhr).
+    laps: (messages.lapMesgs || []).length > 1 ? messages.lapMesgs.map((l, i) => ({
+      n: i + 1, startS: l.startTime ? (new Date(l.startTime) - new Date(start)) / 1000 : null,
+      durationS: l.totalTimerTime ?? l.totalElapsedTime ?? null, distanceM: l.totalDistance ?? null,
+      avgHr: l.avgHeartRate ?? null, maxHr: l.maxHeartRate ?? null, avgPower: l.avgPower ?? null, spm: l.avgCadence ?? null,
+      pace: l.totalTimerTime && l.totalDistance ? (l.totalTimerTime / l.totalDistance) * 1000 : null,
+    })) : null,
     series: toSeries(records.map((r) => ({ t: r.timestamp.getTime(), hr: r.heartRate, power: r.power, speed: r.enhancedSpeed ?? r.speed, alt: r.enhancedAltitude ?? r.altitude }))),
   };
 }

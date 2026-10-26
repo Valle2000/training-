@@ -41,3 +41,16 @@ test('Key Session: Wert der Kurve für beliebige Intervalllänge', async () => {
   assert.equal(curveAt({ 360: 290 }, 360), 290);
   assert.deepEqual(trend([{ l: 2.8 }, { l: 2.4 }], 'l', true), { pct: -14.3, better: true });
 });
+
+test('Messfehler: Ausreißer bei Watt verfälschen die Belastung nicht', async () => {
+  const { evaluate } = await import('../src/lib/activities.js');
+  const { c2Watts } = await import('../src/lib/sync.js');
+  assert.equal(c2Watts(1, 'skierg'), null);
+  assert.equal(c2Watts(50, 'skierg'), null);
+  assert.equal(c2Watts(1200, 'skierg'), 203);
+  const power = Array(1800).fill(200); power[100] = 4e10; power[200] = 350000000000;
+  const hr = Array(1800).fill(150); hr[5] = 255; hr[6] = 3;
+  const ev = evaluate({ sport: 'skierg', series: { power, hr } }, { ftpSkierg: 230, hrMax: 196, hrRest: 42, lthr: 172 });
+  assert.ok(ev.load > 30 && ev.load < 50, String(ev.load));
+  assert.ok(ev.powerCurve[5] <= 2500);
+});
