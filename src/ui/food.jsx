@@ -56,7 +56,7 @@ export function Food() {
   return (
     <>
       <h1>Ernährung</h1>
-      {!weight && <div className="notice">Trag unter „Einstellungen → Athlet“ dein Gewicht ein, dann rechnet die App deinen Bedarf aus.</div>}
+      {!weight && <div className="notice">Trag unter „Mehr → Einstellungen → Athlet“ dein Gewicht ein, dann rechnet die App deinen Bedarf aus.</div>}
       {dayList.map((d) => d.targets && (
         <div key={d.date} className="item">
           <div className="grow"><b>{fmtDate(d.date)}</b> <span className={`badge ${d.targets.level === 'hoch' ? 'b-achtung' : d.targets.level === 'mittel' ? 'b-info' : 'b-gut'}`}>Bedarf {d.targets.level}</span>

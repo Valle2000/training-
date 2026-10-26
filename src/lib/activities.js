@@ -128,7 +128,7 @@ export const isThreshold = (a) => a.zone === 'I3' || (a.zones?.I3 || 0) >= 900;
 
 // Kompakte Daten für den KI-Coach, damit die Anfrage klein bleibt.
 export function coachSummary(data, t) {
-  const { activities, strength, plan, settings, wellness, keySessions = [] } = data;
+  const { activities, strength, plan, settings, wellness, keySessions = [], races = [], health = [], lactateTests = [] } = data;
   const c = curve(activities, plan, t, 0);
   const now = c.find((d) => d.day === t) || c.at(-1);
   const recent = activities.filter((a) => a.date >= addDays(t, -21)).sort((a, b) => a.date.localeCompare(b.date));
@@ -155,7 +155,11 @@ export function coachSummary(data, t) {
     kraftLetzte4Wochen: strength.filter((s) => s.date >= addDays(t, -28)).map((s) => ({
       datum: s.date, uebungen: (s.items || []).map((it) => `${it.name || it.ex}: ${(it.sets || []).map((x) => `${x.reps || x.sec || '?'}${x.kg ? '×' + x.kg + 'kg' : ''}`).join(', ')}`),
     })),
-    erholung: wellness.filter((w) => w.date >= addDays(t, -14)).map((w) => ({ datum: w.date, hrv: w.hrv, ruhepuls: w.restHr, schlafScore: w.sleepScore, schlafStd: w.sleepH, recharge: w.recharge })),
+    erholung: wellness.filter((w) => w.date >= addDays(t, -14)).map((w) => ({ datum: w.date, hrv: w.hrv, ruhepuls: w.restHr, schlafScore: w.sleepScore, schlafStd: w.sleepH, recharge: w.recharge, gefuehl1bis5: w.feel, schlafqualitaet1bis5: w.sleepQ, muskelkater1bis5: w.soreness, stress1bis5: w.stress, symptome: w.symptoms?.length ? w.symptoms : undefined, gewichtKg: w.weightKg ?? undefined })),
+    rennen: races.filter((r) => r.date >= addDays(t, -60)).sort((a, b) => a.date.localeCompare(b.date)).map((r) => ({ datum: r.date, name: r.name, prioritaet: r.priority, technik: r.technique, km: r.distanceKm || undefined, ziel: r.goal || undefined, rueckstandProzent: r.result?.gapPct ?? undefined, platz: r.result?.place || undefined })),
+    gesundheit: health.filter((e) => !e.end || e.end >= addDays(t, -60)).map((e) => ({ art: e.type, titel: e.title, von: e.start, bis: e.end || 'andauernd', auswirkung: e.impact })),
+    laktattest: (() => { const lt = [...lactateTests].sort((a, b) => b.date.localeCompare(a.date))[0]; return lt ? { datum: lt.date, sport: lt.sport, einheit: lt.unit, stufen: lt.steps.filter((x) => x.lactate).map((x) => ({ last: x.load, puls: x.hr || undefined, laktat: x.lactate })) } : undefined; })(),
+    pulszonenAusLaktattest: settings.zoneHr || undefined,
     geplant: plan.filter((p) => p.date >= t).slice(0, 21).map((p) => ({ datum: p.date, titel: p.title, min: p.minutes, zone: p.zone })),
     keySessions: keySessions.map((k) => ({ name: k.name, vergleichsdauerSek: k.intervalSec, verlauf: keySessionRows(activities, k).slice(-6).map((r) => ({ datum: r.date, watt: r.intervalPower ?? undefined, puls: r.intervalHr ?? r.avgHr ?? undefined, laktat: r.lactateAvg ?? undefined, rpe: r.rpe ?? undefined })) })).filter((k) => k.verlauf.length),
     ftp: { rad: settings.ftp, skierg: settings.ftpSkierg, rudern: settings.ftpRow },

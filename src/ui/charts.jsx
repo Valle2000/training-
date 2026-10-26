@@ -187,3 +187,62 @@ export function CurveChart({ curves, durations, unit = 'W', height = 230, fmt })
     </div>
   );
 }
+
+// Punktdiagramm mit linearer x-Achse (z. B. Laktat über Watt). series: [{label, color, points:[{x,y}], axis:'left'|'right', dashed}]
+export function XYChart({ series, height = 230, xLabel = '', marks = [] }) {
+  const H = height, L = 38, R = 38, T = 10, B = 26, iw = W - L - R, ih = H - T - B;
+  const all = series.flatMap((s) => s.points);
+  if (!all.length) return null;
+  const xs = all.map((p) => p.x), x0 = Math.min(...xs), x1 = Math.max(...xs);
+  const range = (axis) => { const v = series.filter((s) => (s.axis || 'left') === axis).flatMap((s) => s.points.map((p) => p.y)); if (!v.length) return null; const lo = Math.min(...v), hi = Math.max(...v), pad = (hi - lo) * 0.1 || 1; return [Math.max(0, lo - pad), hi + pad]; };
+  const ranges = { left: range('left'), right: range('right') };
+  const x = (v) => L + ((v - x0) / (x1 - x0 || 1)) * iw;
+  const y = (v, axis) => { const [lo, hi] = ranges[axis]; return T + ih - ((v - lo) / (hi - lo)) * ih; };
+  return (
+    <div>
+      <svg className="chart" viewBox={`0 0 ${W} ${H}`}>
+        {[0, 0.5, 1].map((f) => <line key={f} className="grid" x1={L} x2={W - R} y1={T + ih * f} y2={T + ih * f} />)}
+        {marks.map((m) => <g key={m.label}><line x1={x(m.x)} x2={x(m.x)} y1={T} y2={T + ih} stroke={m.color} strokeDasharray="4 3" /><text x={x(m.x) + 3} y={T + 10} fill={m.color}>{m.label}</text></g>)}
+        {['left', 'right'].map((axis) => ranges[axis] && <g key={axis}>
+          <text x={axis === 'left' ? L - 4 : W - R + 4} y={T + 8} textAnchor={axis === 'left' ? 'end' : 'start'}>{axisFmt(ranges[axis][1])}</text>
+          <text x={axis === 'left' ? L - 4 : W - R + 4} y={T + ih} textAnchor={axis === 'left' ? 'end' : 'start'}>{axisFmt(ranges[axis][0])}</text>
+        </g>)}
+        {series.map((s) => {
+          const pts = [...s.points].sort((a, b) => a.x - b.x);
+          return <g key={s.label}>
+            <path d={path(pts.map((p) => [x(p.x), y(p.y, s.axis || 'left')]))} fill="none" stroke={s.color} strokeWidth="2" strokeDasharray={s.dashed ? '5 4' : undefined} />
+            {!s.noDots && pts.map((p, i) => <circle key={i} cx={x(p.x)} cy={y(p.y, s.axis || 'left')} r="3.5" fill={s.color} />)}
+          </g>;
+        })}
+        <text x={L} y={H - 6}>{Math.round(x0)}</text><text x={W - R} y={H - 6} textAnchor="end">{Math.round(x1)} {xLabel}</text>
+      </svg>
+      <div className="legend">{series.map((s) => <span key={s.label}><i style={{ background: s.color }} />{s.label}</span>)}</div>
+    </div>
+  );
+}
+
+// Saisonübersicht: Zielstunden je Woche (Rahmen, Phasenfarbe) und Ist-Stunden (gefüllt), Rennen als Marker.
+export function SeasonChart({ weeks, actual, today, height = 220 }) {
+  const H = height, L = 30, T = 16, B = 22, iw = W - L - 6, ih = H - T - B;
+  const max = niceMax(Math.max(...weeks.map((w) => Math.max(w.targetHours, actual[w.from] || 0)), 1));
+  const bw = iw / weeks.length;
+  return (
+    <svg className="chart" viewBox={`0 0 ${W} ${H}`}>
+      {[0, 0.5, 1].map((f) => <line key={f} className="grid" x1={L} x2={W} y1={T + ih * f} y2={T + ih * f} />)}
+      <text x={L - 4} y={T + 8} textAnchor="end">{max} h</text>
+      {weeks.map((w, i) => {
+        const xx = L + i * bw, th = (w.targetHours / max) * ih, ah = ((actual[w.from] || 0) / max) * ih;
+        const isNow = today >= w.from && today <= w.to;
+        return <g key={w.from}>
+          <title>{`${w.from}: Ziel ${w.targetHours} h, Ist ${(actual[w.from] || 0).toFixed(1)} h`}</title>
+          <rect x={xx + 0.5} y={T + ih - th} width={Math.max(1, bw - 1)} height={th} fill={w.color} opacity="0.45" />
+          {ah > 0 && <rect x={xx + bw * 0.2} y={T + ih - ah} width={Math.max(1, bw * 0.6)} height={ah} fill="var(--ink)" opacity="0.75" />}
+          {w.races.some((r) => r.priority === 'A') && <text x={xx + bw / 2} y={T - 3} textAnchor="middle" fill="var(--bad)">A</text>}
+          {!w.races.some((r) => r.priority === 'A') && w.races.length > 0 && <text x={xx + bw / 2} y={T - 3} textAnchor="middle">{w.races[0].priority}</text>}
+          {isNow && <line x1={xx + bw / 2} x2={xx + bw / 2} y1={T} y2={T + ih} stroke="var(--accent)" strokeWidth="2" />}
+          {(i % 4 === 0) && <text x={xx} y={H - 6}>{`${+w.from.slice(8)}.${+w.from.slice(5, 7)}.`}</text>}
+        </g>;
+      })}
+    </svg>
+  );
+}

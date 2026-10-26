@@ -7,6 +7,9 @@ import { SPORTS, sportLabel } from '../lib/sports.js';
 import { importFiles } from '../lib/sync.js';
 import { ZoneWeeks, ZoneBar, LineChart, ZONE_COLORS } from './charts.jsx';
 import { Sheet, Seg, fmtDuration, fmtNum, fmtDate, fmtKm, toast } from './common.jsx';
+import { Season, Races } from './season.jsx';
+import { Workouts } from './workouts.jsx';
+import { durationOf, workoutLoad, mainZone, describe } from '../lib/workouts.js';
 
 export function Training({ openActivity, openAdd }) {
   const { activities, plan, settings } = useData();
@@ -32,7 +35,7 @@ export function Training({ openActivity, openAdd }) {
         <h1 style={{ flex: 'none', margin: '8px 0' }}>Kalender</h1>
         <button className="primary" style={{ flex: 'none' }} onClick={openAdd}><Plus size={18} />Einheit</button>
       </div>
-      <Seg value={view} onChange={setView} options={[['week', 'Woche'], ['list', 'Liste'], ['zones', 'Zonen']]} />
+      <Seg value={view} onChange={setView} options={[['week', 'Woche'], ['list', 'Liste'], ['season', 'Saison'], ['races', 'Rennen'], ['workouts', 'Workouts'], ['zones', 'Zonen']]} />
 
       {view === 'week' && (
         <>
@@ -91,6 +94,9 @@ export function Training({ openActivity, openAdd }) {
           <ZoneShare weeks={w12.slice(-4)} />
         </div>
       )}
+      {view === 'season' && <Season />}
+      {view === 'races' && <Races openActivity={openActivity} />}
+      {view === 'workouts' && <Workouts />}
       {planItem && <PlanEditor item={planItem} onClose={() => setPlanItem(null)} />}
     </>
   );
@@ -110,7 +116,7 @@ const PLAN_ZONES = [['I1', 'I1 locker'], ['I2', 'I2 mittel'], ['I3', 'I3 Schwell
 
 // Geplante Einheit anlegen oder bearbeiten. Die Belastung fließt in die Formprognose ein.
 function PlanEditor({ item, onClose }) {
-  const { keySessions } = useData();
+  const { keySessions, workouts, settings } = useData();
   const isNew = !item.id;
   const [p, setP] = useState({ sport: 'rollerski_skate', minutes: 60, zone: 'I1', title: '', description: '', ...item });
   const [manualLoad, setManualLoad] = useState(!isNew && item.load !== estimatePlanLoad(item.minutes, item.zone));
@@ -133,6 +139,7 @@ function PlanEditor({ item, onClose }) {
       </div>
       <label>Titel</label><input value={p.title} onChange={set('title')} placeholder="z. B. Double Threshold AM: 5×6 min" />
       {keySessions.length > 0 && <><label>Key Session</label><select value={p.keySessionId || ''} onChange={(e) => { const k = keySessions.find((x) => x.id === e.target.value); setP({ ...p, keySessionId: e.target.value || null, ...(k && !p.title ? { title: k.name, sport: k.sport || p.sport } : {}) }); }}><option value="">–</option>{keySessions.map((k) => <option key={k.id} value={k.id}>{k.name}</option>)}</select></>}
+      {workouts.length > 0 && <><label>Workout aus Bibliothek</label><select value={p.workoutId || ''} onChange={(e) => { const w = workouts.find((x) => x.id === e.target.value); if (!w) return setP({ ...p, workoutId: null }); setManualLoad(true); setP({ ...p, workoutId: w.id, title: w.name, sport: w.sport, minutes: Math.round(durationOf(w) / 60), zone: mainZone(w), load: workoutLoad(w, settings), description: describe(w.steps) }); }}><option value="">–</option>{workouts.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}</select></>}
       <label>Beschreibung</label><textarea value={p.description} onChange={set('description')} placeholder="Aufwärmen, Intervalle, Laktatziel …" />
       <label>Geschätzte Belastung</label>
       <div className="row">
@@ -150,7 +157,7 @@ function PlanEditor({ item, onClose }) {
 }
 
 export function ActivitySheet({ activity, onClose }) {
-  const { settings, keySessions } = useData();
+  const { settings, keySessions, gear } = useData();
   const [a, setA] = useState(activity);
   const [series, setSeries] = useState(null);
   useEffect(() => { if (activity.hasSeries) getSeries(activity.id).then(setSeries); }, [activity]);
@@ -195,6 +202,7 @@ export function ActivitySheet({ activity, onClose }) {
         <div><label>RPE (1–10)</label><input type="number" min="1" max="10" step="0.5" value={a.rpe ?? ''} onChange={(e) => setA({ ...a, rpe: e.target.value ? Number(e.target.value) : null })} /></div>
         <div><label>Laktat (mmol/l)</label><input value={a.lactate} onChange={(e) => setA({ ...a, lactate: e.target.value })} placeholder="z. B. 2,1 / 2,4 / 2,8" /></div>
       </div>
+      {gear.some((g) => !g.retired) && <><label>Material {a.gearIds ? '' : '(automatisch nach Sportart)'}</label><div className="chips">{gear.filter((g) => !g.retired).map((g) => { const on = a.gearIds ? a.gearIds.includes(g.id) : (g.defaultSports || []).includes(a.sport); return <button key={g.id} className={`chip${on ? ' on' : ''}`} onClick={() => { const cur = a.gearIds || gear.filter((x) => (x.defaultSports || []).includes(a.sport)).map((x) => x.id); setA({ ...a, gearIds: on ? cur.filter((x) => x !== g.id) : [...cur, g.id] }); }}>{g.name}</button>; })}</div></>}
       {keySessions.length > 0 && <><label>Key Session</label><select value={a.keySessionId || ''} onChange={(e) => setA({ ...a, keySessionId: e.target.value || null })}><option value="">automatisch (über Stichwörter)</option>{keySessions.map((k) => <option key={k.id} value={k.id}>{k.name}</option>)}</select></>}
       <label>Notiz</label><textarea value={a.notes} onChange={(e) => setA({ ...a, notes: e.target.value })} />
       <div className="row" style={{ marginTop: 12 }}>

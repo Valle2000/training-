@@ -8,6 +8,7 @@ import { PRESETS, SPORT_FILTERS, periodRange, previousRange, inRange, totals, bu
 import { KEY_TEMPLATES, keySessionRows, trend } from '../lib/keysessions.js';
 import { FormChart, LineChart, StackedBars, CurveChart, ZONE_COLORS } from './charts.jsx';
 import { Seg, Sheet, fmtDate, fmtNum, fmtDuration, toast } from './common.jsx';
+import { LactateSection } from './lactate.jsx';
 
 const GROUP_STACKS = [
   { key: 'ski', label: 'Ski/Rollski/SkiErg', color: 'var(--z2)' }, { key: 'endurance', label: 'Ausdauer sonst', color: 'var(--fit)' },
@@ -49,13 +50,14 @@ export function Analysis({ openActivity }) {
         </select>
         <span className="muted small" style={{ flex: '2 1 160px' }}>{fmtDate(range.from, { day: 'numeric', month: 'short', year: '2-digit' })} – {fmtDate(range.to, { day: 'numeric', month: 'short', year: '2-digit' })} · Vergleich: Vorzeitraum gleicher Länge</span>
       </div>
-      <Seg value={section} onChange={setSection} options={[['overview', 'Überblick'], ['curves', 'Bestwerte'], ['zones', 'Zonen'], ['recovery', 'Form & Erholung'], ['keys', 'Key Sessions']]} />
+      <Seg value={section} onChange={setSection} options={[['overview', 'Überblick'], ['curves', 'Bestwerte'], ['zones', 'Zonen'], ['recovery', 'Form & Erholung'], ['keys', 'Key Sessions'], ['lactate', 'Laktat']]} />
 
       {section === 'overview' && <Overview acts={acts} prevActs={prevActs} range={range} by={by} setBy={setBy} />}
       {section === 'curves' && <Curves acts={acts} prevActs={prevActs} all={inRange(activities, { from: '0000', to: t }, filter)} settings={settings} filter={filter} openActivity={openActivity} activities={activities} />}
       {section === 'zones' && <Zones acts={acts} range={range} by={by} setBy={setBy} />}
       {section === 'recovery' && <Recovery activities={activities} plan={plan} wellness={wellness} range={range} t={t} acts={acts} />}
       {section === 'keys' && <KeySessions activities={activities} openActivity={openActivity} />}
+      {section === 'lactate' && <LactateSection />}
     </>
   );
 }

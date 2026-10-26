@@ -9,18 +9,9 @@ import { dayTargets } from '../lib/nutrition.js';
 import { FormChart, ZoneBar, LineChart } from './charts.jsx';
 import { rolling } from '../lib/analysis.js';
 import { fmtDuration, fmtNum, toast } from './common.jsx';
-
-// Einschätzung aus Form und Erholungswerten (keine Diagnose, nur Orientierung).
-export function readiness(form, wellness) {
-  const last = wellness.at(-1);
-  const prev = wellness.slice(-8, -1).filter((w) => w.hrv);
-  const hrvBase = prev.length >= 3 ? prev.reduce((a, w) => a + w.hrv, 0) / prev.length : null;
-  const hrvDrop = last?.hrv && hrvBase ? (last.hrv - hrvBase) / hrvBase : 0;
-  if (form < -30 || hrvDrop < -0.15) return { level: 'kritisch', text: 'Hohe Ermüdung – heute locker oder Ruhetag.' };
-  if (form < -15 || hrvDrop < -0.08) return { level: 'achtung', text: 'Belastung hoch – harte Einheiten nur, wenn du dich gut fühlst.' };
-  if (form > 15) return { level: 'gut', text: 'Frisch – guter Tag für Qualität oder Wettkampf.' };
-  return { level: 'info', text: 'Normale Trainingsbelastung.' };
-}
+import { ReadinessCard, MorningSheet } from './morning.jsx';
+import { RaceCountdown } from './season.jsx';
+import { HealthBanner } from './more.jsx';
 
 export function Today({ go, openActivity, openAdd }) {
   const data = useData();
@@ -33,7 +24,7 @@ export function Today({ go, openActivity, openAdd }) {
   const week = weeks(activities, 1, t)[0];
   const todays = activities.filter((a) => a.date === t);
   const planned = plan.filter((p) => p.date === t && !p.done);
-  const r = now ? readiness(now.form, wellness) : null;
+  const [checking, setChecking] = useState(false);
   const minutes = [...todays.map((a) => (a.durationS || 0) / 60), ...planned.map((p) => p.minutes || 0)].reduce((a, b) => a + b, 0);
   const hard = [...todays.map((a) => ((a.zones?.I3 || 0) + (a.zones?.I4 || 0) + (a.zones?.I5 || 0)) / 60), ...planned.filter((p) => ['I3', 'I4', 'I5'].includes(p.zone)).map((p) => p.minutes || 0)].reduce((a, b) => a + b, 0);
   const longest = Math.max(0, ...todays.filter((a) => a.sport !== 'strength').map((a) => (a.durationS || 0) / 60), ...planned.filter((p) => p.sport !== 'strength').map((p) => p.minutes || 0));
@@ -59,10 +50,12 @@ export function Today({ go, openActivity, openAdd }) {
           <div className="fat"><b>{fmtNum(now?.fatigue)}</b><span>Ermüdung</span></div>
           <div className="form"><b>{fmtNum(now?.form)}</b><span>Form</span></div>
         </div>
-        {r && <p><span className={`badge b-${r.level}`}>{r.level === 'info' ? 'normal' : r.level}</span> {r.text}</p>}
-        {!activities.length && <p>Noch keine Einheiten. Verbinde Polar, Concept2 oder Wahoo unter „Einstellungen“ oder trag eine Einheit ein.</p>}
+        <ReadinessCard date={t} form={now?.form ?? null} onCheck={() => setChecking(true)} />
+        {!activities.length && <p>Noch keine Einheiten. Verbinde Polar, Concept2 oder Wahoo unter „Mehr → Einstellungen“ oder trag eine Einheit ein.</p>}
       </div>
 
+      <HealthBanner go={go} />
+      <RaceCountdown go={go} />
       <div className="row">
         {connected && <button className="secondary" onClick={sync} disabled={busy}><RefreshCw size={17} className={busy ? 'spin' : ''} />Abgleichen</button>}
         <button className="primary" onClick={openAdd}><Plus size={18} />Einheit</button>
@@ -112,7 +105,7 @@ export function Today({ go, openActivity, openAdd }) {
           {lastW && (
             <div className="card">
               <h3 style={{ marginTop: 0 }}><HeartPulse size={16} /> Erholung</h3>
-              <p className="muted small" style={{ margin: 0 }}>{lastW.date}</p>
+              <p className="muted small" style={{ margin: 0 }}>{new Date(lastW.date + 'T12:00:00').toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
               {lastW.hrv && <p style={{ margin: '4px 0' }}>HRV <b>{lastW.hrv} ms</b></p>}
               {lastW.restHr && <p style={{ margin: '4px 0' }}>Ruhepuls <b>{lastW.restHr}</b></p>}
               {lastW.sleepH && <p style={{ margin: '4px 0' }}><Moon size={14} /> {fmtNum(lastW.sleepH, 1)} h{lastW.sleepScore ? ` · Score ${lastW.sleepScore}` : ''}</p>}
@@ -127,7 +120,8 @@ export function Today({ go, openActivity, openAdd }) {
           )}
         </div>
       )}
-      {!settings.hrMax && <div className="notice">Trag unter „Einstellungen → Athlet“ Maximalpuls, Ruhepuls und Schwellenpuls ein (und FTP, falls du mit Watt trainierst), sonst kann keine Belastung berechnet werden.</div>}
+      {!settings.hrMax && <div className="notice">Trag unter „Mehr → Einstellungen → Athlet“ Maximalpuls, Ruhepuls und Schwellenpuls ein (und FTP, falls du mit Watt trainierst), sonst kann keine Belastung berechnet werden.</div>}
+      {checking && <MorningSheet date={t} onClose={() => setChecking(false)} />}
     </>
   );
 }

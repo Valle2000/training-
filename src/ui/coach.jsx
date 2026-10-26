@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { BrainCircuit, CalendarPlus, Trash2, BookOpen, Search } from 'lucide-react';
 import { useData, update, getData, uid } from '../lib/store.js';
-import { coachSummary, today } from '../lib/activities.js';
+import { coachSummary, today, weeks as weekStats } from '../lib/activities.js';
+import { seasonPlan, seasonStart, PHASES } from '../lib/season.js';
+import { addDays } from '../lib/metrics.js';
 import { sportLabel } from '../lib/sports.js';
 import { kiPost } from '../lib/ai.js';
 import { fmtDate, toast, Seg } from './common.jsx';
@@ -76,7 +78,15 @@ function CoachAi() {
     try {
       const data = getData();
       const t = today(data.settings.timezone);
-      const result = await kiPost('/api/coach', { daten: coachSummary(data, t), frage: question });
+      const daten = coachSummary(data, t);
+      // Saisonphase und Wochenziel aus der Saisonplanung mitgeben.
+      const ss = data.settings.season || {};
+      const avg = weekStats(data.activities, 8, t).slice(0, 7).reduce((a, w) => a + w.hours, 0) / 7;
+      const base = Number(ss.baseHours) || Math.round(avg) || 10, peak = Number(ss.peakHours) || Math.round(base * 1.25);
+      const start = ss.start || seasonStart(t);
+      const wk = seasonPlan(data.races, { start, end: ss.end || addDays(addDays(start, 365), -1), baseHours: base, peakHours: peak });
+      daten.saison = wk.filter((w) => w.to >= t).slice(0, 4).map((w) => ({ ab: w.from, phase: PHASES[w.phase].label, zielStunden: w.targetHours }));
+      const result = await kiPost('/api/coach', { daten, frage: question });
       const entry = { id: uid(), date: t, question, result };
       update((d) => ({ ...d, coach: [...d.coach, entry].slice(-20) }));
       setOpenId(entry.id);

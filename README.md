@@ -23,6 +23,18 @@ installierbare Web-App (PWA), Server-Funktionen auf Vercel, KI über Claude.
   geschätztes 1RM und Verlauf je Übung, eigene Übungen
 - **Essen**: Tagesbedarf (Kohlenhydrate, Eiweiß, Fett, kcal) nach Trainingsumfang und -intensität,
   KI-Essensplan mit Rezepten, Einkaufsliste und Favoriten, abgestimmt auf Trainingszeiten und Vorlieben
+- **Laktat-Stufentest** (Analyse → Laktat): Stufen eintragen, LT1 (Basis + 0,5 mmol), LT2 (modifizierte
+  Dmax), 2/4 mmol, persönliche Pulszonen nach Laktat; Zonen, Schwellenpuls und FTP übernehmen; Vergleich
+  mit dem Vortest
+- **Morgen-Check und Tagesampel**: Gefühl, Schlaf, Muskelkater, Stress, Symptome, Gewicht; Ampel aus
+  Check, HRV-Trend, Ruhepuls und Form
+- **Saisonplanung** (Kalender → Saison): Phasen rückwärts vom A-Rennen, Wochenziele im 3:1-Rhythmus,
+  Tapering, Ist/Ziel, Form-Prognose für den Renntag
+- **Rennen**: A/B/C-Rennen, Ergebnisse mit Zeit, Platz und Rückstand auf den Sieger in %, Verlauf
+- **Workouts** (Kalender → Workouts): Baukasten mit Wiederholungen und Zielen (Zone, % FTP, Puls),
+  Belastungsschätzung, Planen im Kalender, Export als FIT (Garmin, Wahoo) und ZWO (Zwift)
+- **Material und Gesundheit** (Mehr): km/Stunden je Ski, Rollski, Schuh, Rad mit Service-Erinnerung;
+  Krankheiten/Verletzungen mit Ausfalltagen und der Belastungsentwicklung davor
 - **Wissen & FAQ**: Lexikon mit Kernaussagen aus der Trainingswissenschaft (inkl. Studien 2023–2026),
   Evidenzstufe und Quellen
 - **Coach**: KI-Analyse der letzten 12 Wochen anhand der Studienlage im Langlauf (Intensitäts-
@@ -112,5 +124,4 @@ npm run build
 ## Nächste Schritte
 
 - Geräteübergreifender Sync über Supabase (wie in SkiWax)
-- Workout-Builder und Export geplanter Einheiten
-- Laktat-Stufentest mit Schwellenbestimmung
+- Automatischer Abgleich im Hintergrund (Webhooks) und Sync zwischen Geräten über Supabase

@@ -46,7 +46,6 @@ export function Settings() {
 
   return (
     <>
-      <h1>Einstellungen</h1>
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Athlet</h3>
         <div className="grid2">

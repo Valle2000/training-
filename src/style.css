@@ -46,3 +46,5 @@ nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px
 table.t{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}table.t td,table.t th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}table.t th{color:var(--muted);font-weight:600}
 @media(max-width:420px){.stats b{font-size:20px}.grid3{grid-template-columns:1fr 1fr}}
 .day .p.missed{text-decoration:line-through;opacity:.55;border-color:var(--muted);color:var(--muted)}.day b{cursor:pointer}
+.pill.on{background:#ffffff22;border-color:#c7f36b;color:#fff}
+table.t.nowrap td,table.t.nowrap th{white-space:nowrap}
