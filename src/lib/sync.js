@@ -4,6 +4,7 @@ import { toSeries } from './series.js';
 import { buildActivity, findDuplicate, localDate } from './activities.js';
 import { sportFromConcept2, polarSport } from './sports.js';
 import { readExport, zipEntries, zipEntriesSync } from './importers.js';
+import { recomputeAll } from './recompute.js';
 import { lapsFromConcept2, lapsFromSeries, pacePer, concept2Title, isAutoC2Title } from './laps.js';
 
 // FIT-Bibliothek ist groß und wird erst geladen, wenn eine FIT-Datei kommt.
@@ -308,24 +309,49 @@ export async function syncHistory(provider, onProgress) {
 // Dateien von Hand: FIT, TCX, GPX, Polar-CSV, Polar-Konto-Export (JSON) und ZIP-Archive mit solchen Dateien.
 // Auch für sehr große Exporte (tausende Einheiten): ZIPs werden Datei für Datei gelesen, gespeichert wird in Paketen.
 export async function importFiles(files, onProgress) {
-  let added = 0, dup = 0, failed = 0, done = 0;
+  let added = 0, dup = 0, failed = 0, done = 0, refreshed = 0;
   const errors = [], pending = [];
   const fail = (name, e) => { failed++; if (errors.length < 3) errors.push(`${name.split('/').pop()}: ${e?.message || e}`); };
   const flush = () => { if (!pending.length) return; const batch = pending.splice(0); update((x) => ({ ...x, activities: [...x.activities, ...batch] })); };
   const add = async (raw) => {
     const d = getData(), cand = { ...raw, durationS: raw.elapsedS };
-    if (findDuplicate(d.activities, cand) || findDuplicate(pending, cand)) return false;
+    if (findDuplicate(pending, cand)) return false;
+    const old = findDuplicate(d.activities, cand);
+    if (old) {
+      // Schon importiert, aber mit weniger Daten (z. B. früherer Import ohne Puls)? Dann mit den neuen Daten auffrischen.
+      if (old.source !== 'upload' || (old.hasSeries && old.avgHr) || !(raw.series?.hr?.length || raw.avgHr)) return false;
+      const { activity, series } = buildActivity({ ...raw, source: 'upload' }, d.settings, { id: old.id });
+      for (const k of ['notes', 'rpe', 'lactate', 'title', 'keySessionId', 'gearIds']) if (old[k] != null && old[k] !== '') activity[k] = old[k];
+      if (series) await putSeries(old.id, series);
+      update((x) => ({ ...x, activities: x.activities.map((a) => (a.id === old.id ? activity : a)) }));
+      refreshed++;
+      return false;
+    }
     const { activity, series } = buildActivity({ ...raw, source: 'upload' }, d.settings);
     if (series) await putSeries(activity.id, series);
     pending.push(activity);
     if (pending.length >= 25) flush();
     return true;
   };
+  // Leere Einstellungen (Maximalpuls, Ruhepuls, Schwelle, FTP, Gewicht) aus dem neuesten Polar-Profil übernehmen –
+  // sofort, damit schon beim Import die Belastung berechnet wird.
+  let profile = null;
+  const filled = new Set();
+  const applyProfile = () => {
+    const st = getData().settings, next = {};
+    for (const k of ['hrMax', 'hrRest', 'lthr', 'ftp', 'weightKg', 'sex']) {
+      if (!profile[k] || !(st[k] == null || st[k] === '' || filled.has(k)) || String(st[k]) === String(profile[k])) continue;
+      next[k] = String(profile[k]); filled.add(k);
+    }
+    if (!Object.keys(next).length) return;
+    update((x) => ({ ...x, settings: { ...x.settings, ...next } }));
+  };
   const handle = async (name, bytes) => {
     let raws = [];
     try { raws = await readExport(name, bytes, parseFit); } catch (e) { fail(name, e); }
     for (const raw of raws) {
-      try { if (await add(raw)) added++; else dup++; } catch (e) { fail(name, e); }
+      if (raw.athlete && (!profile || raw.athlete.date > profile.date)) { profile = raw.athlete; applyProfile(); }
+      try { const r0 = refreshed; if (await add(raw)) added++; else if (refreshed === r0) dup++; } catch (e) { fail(name, e); }
       if (++done % 10 === 0) onProgress?.(`${done} Einheiten verarbeitet · ${added} neu · ${dup} schon vorhanden${failed ? ` · ${failed} nicht lesbar` : ''}`);
     }
     await new Promise((r) => setTimeout(r, 0)); // Anzeige aktualisieren lassen
@@ -349,7 +375,9 @@ export async function importFiles(files, onProgress) {
     flush();
     lock?.release?.().catch(() => {});
   }
-  return { added, dup, failed, errors };
+  // Profilwerte übernommen: alle Einheiten (auch schon vorhandene und übersprungene) einheitlich neu berechnen.
+  if (filled.size) { onProgress?.('Berechne mit deinem aktuellen Polar-Profil neu …'); await recomputeAll(); }
+  return { added, dup, failed, errors, refreshed, filled: [...filled] };
 }
 
 export { localDate };

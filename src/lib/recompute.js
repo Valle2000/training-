@@ -4,7 +4,8 @@ import { reevaluate } from './activities.js';
 
 // 3: Messfehler (unrealistische Watt/Puls) werden vor der Berechnung entfernt.
 // 4: Puls-/Watt-Verteilung und Puls bei Leistung je Einheit (für Langzeit-Auswertungen).
-export const METRICS_VERSION = 4;
+// 5: fehlende Ø/max Puls aus dem Verlauf ergänzen (Polar-Import hatte 0 eingetragen).
+export const METRICS_VERSION = 5;
 
 export async function recomputeAll() {
   const st = getData().settings;

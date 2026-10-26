@@ -3,7 +3,8 @@
 import { toSeries } from './series.js';
 import { polarSport } from './sports.js';
 
-const num = (v) => { const n = Number(String(v ?? '').replace(',', '.')); return Number.isFinite(n) ? n : null; };
+// Leere Angaben bleiben leer (nicht 0) – sonst stünde z. B. „Ø Puls 0“ in der Einheit, wenn Polar keine Zusammenfassung mitschickt.
+const num = (v) => { if (v == null || String(v).trim() === '') return null; const n = Number(String(v).replace(',', '.')); return Number.isFinite(n) ? n : null; };
 const tag = (xml, name) => { const m = new RegExp(`<(?:\\w+:)?${name}\\b[^>]*>([\\s\\S]*?)</(?:\\w+:)?${name}>`).exec(xml); return m ? m[1] : null; };
 const tags = (xml, name) => xml.match(new RegExp(`<(?:\\w+:)?${name}\\b[^>]*>[\\s\\S]*?</(?:\\w+:)?${name}>`, 'g')) || [];
 const attr = (xml, name) => { const m = new RegExp(`${name}="([^"]*)"`).exec(xml); return m ? m[1] : null; };
@@ -19,7 +20,7 @@ function summarize(points, extra) {
     distanceM: extra.distanceM ?? null, calories: extra.calories ?? null, ascentM: extra.ascentM ?? null,
     avgHr: extra.avgHr ?? avg(hrs), maxHr: extra.maxHr ?? (hrs.length ? Math.max(...hrs) : null),
     avgPower: extra.avgPower ?? (pws.some(Boolean) ? avg(pws) : null),
-    title: extra.title || '', notes: extra.notes || '', laps: extra.laps || null,
+    title: extra.title || '', notes: extra.notes || '', laps: extra.laps || null, athlete: extra.athlete || null,
     series: points.length > 30 ? toSeries(points) : null,
   };
 }
@@ -125,7 +126,10 @@ export function parsePolarJson(obj) {
   for (const s of series('speed')) byT.set(s.t, { ...(byT.get(s.t) || { t: s.t }), speed: s.v != null ? s.v / 3.6 : null }); // km/h → m/s
   const points = [...byT.values()].sort((a, b) => a.t - b.t);
   const hr = ex.heartRate || obj.heartRate || {};
-  return summarize(points, {
+  // Profil zum Zeitpunkt der Einheit (Polar speichert es mit): für fehlende Einstellungen nach dem Import.
+  const p = obj.physicalInformationSnapshot;
+  const athlete = p ? { date: p.dateTime || start, hrMax: num(p.maximumHeartRate), hrRest: num(p.restingHeartRate), lthr: num(p.anaerobicThreshold), ftp: num(p.functionalThresholdPower), weightKg: num(p['weight, kg']), sex: p.sex === 'FEMALE' ? 'f' : p.sex === 'MALE' ? 'm' : null } : null;
+  return summarize(points, { athlete,
     start, sport: polarSport(ex.sport || obj.sport || ''), title: obj.title || obj.name || ex.name || '', notes: obj.note || obj.notes || '',
     elapsedS: isoDur(ex.duration || obj.duration) ?? (ex.stopTime ? (Date.parse(ex.stopTime) - Date.parse(startRaw)) / 1000 : undefined),
     distanceM: num(ex.distance ?? obj.distance) ?? undefined,

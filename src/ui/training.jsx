@@ -82,7 +82,7 @@ export function Training({ openActivity, openAdd }) {
             <button key={a.id} className="item" onClick={() => openActivity(a)}>
               <div className="grow">
                 <b>{a.title || sportLabel(a.sport)}</b>
-                <p>{fmtDate(a.date)} · {fmtDuration(a.durationS)} h {fmtKm(a.distanceM) && '· ' + fmtKm(a.distanceM)}{a.avgHr ? ` · Ø ${a.avgHr}` : ''} · {a.source}</p>
+                <p>{fmtDate(a.date, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} · {fmtDuration(a.durationS)} h {fmtKm(a.distanceM) && '· ' + fmtKm(a.distanceM)}{a.avgHr ? ` · Ø ${a.avgHr}` : ''} · {a.source}</p>
                 <ZoneBar zones={a.zones} />
               </div>
               <span className="num" title={a.load == null ? 'Schwellenwerte fehlen' : undefined}>{a.load == null ? '?' : fmtNum(a.load)}</span>
@@ -179,7 +179,7 @@ export function ActivitySheet({ activity, onClose }) {
   };
   return (
     <Sheet title={a.title || sportLabel(a.sport)} onClose={onClose}>
-      <p className="muted">{fmtDate(a.date, { weekday: 'long', day: 'numeric', month: 'long' })} · {new Date(a.start).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} · Quelle: {a.source}</p>
+      <p className="muted">{fmtDate(a.date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} · {new Date(a.start).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} · Quelle: {a.source}</p>
       <div className="stats">
         <div><b>{fmtNum(a.load)}</b><span>Belastung ({{ power: 'Watt', hr: 'Puls', hr_avg: 'Ø Puls', rpe: 'RPE' }[a.loadSource] || '–'})</span></div>
         <div><b>{fmtDuration(a.durationS)}</b><span>Dauer</span></div>

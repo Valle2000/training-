@@ -121,3 +121,14 @@ test('Polar-Konto-Export: Zeitzone, Tempo, Titel, nur Trainingsdateien, Alpin â‰
   for await (const e of zipEntries(new File([zip], 'e.zip'))) names.push(e.name);
   assert.deepEqual(names, ['e/training-session-1.json']);
 });
+
+test('Polar-Export ohne Zusammenfassung: Puls aus dem Verlauf statt 0, Profil wird gelesen', async () => {
+  const { parsePolarJson } = await import('../src/lib/importers.js');
+  const hr = Array.from({ length: 120 }, (_, k) => ({ dateTime: `2022-03-19T19:${String(10 + Math.floor(k / 60)).padStart(2, '0')}:${String(k % 60).padStart(2, '0')}.463`, value: 140 + (k % 10) }));
+  const r = parsePolarJson({ startTime: '2022-03-19T19:10:00.000', timeZoneOffset: -180, physicalInformationSnapshot: { dateTime: '2022-03-19T23:40:03.000', maximumHeartRate: 192, restingHeartRate: 55, anaerobicThreshold: 173, functionalThresholdPower: 310, 'weight, kg': 79, sex: 'MALE' },
+    exercises: [{ startTime: '2022-03-19T19:10:00.000', stopTime: '2022-03-19T19:12:00.000', sport: 'RUNNING', samples: { heartRate: hr } }] });
+  assert.equal(Math.round(r.avgHr), 145);
+  assert.equal(r.maxHr, 149);
+  assert.equal(r.elapsedS, 120);
+  assert.deepEqual({ ...r.athlete, date: undefined }, { date: undefined, hrMax: 192, hrRest: 55, lthr: 173, ftp: 310, weightKg: 79, sex: 'm' });
+});

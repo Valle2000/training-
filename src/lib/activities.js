@@ -77,7 +77,14 @@ const round = (v) => (v == null ? null : Math.round(v));
 // Neuberechnung (z. B. nach geänderter Schwelle). Verlauf liegt nur ausgedünnt (5 s) vor → hochrechnen.
 export function reevaluate(a, settings, series5) {
   const series = series5 ? Object.fromEntries(Object.entries(series5).map(([k, v]) => [k, v.flatMap((x) => [x, x, x, x, x])])) : null;
-  return { ...a, ...evaluate({ ...a, series, durationS: series ? null : a.durationS }, settings) };
+  // Fehlende Ø/max Puls bzw. Ø Leistung (z. B. „0“ aus älteren Polar-Importen) aus dem Verlauf ergänzen.
+  const hr = series5?.hr?.filter((h) => h > 0) || [], pw = series5?.power?.filter((p) => p != null) || [];
+  const fill = {
+    avgHr: a.avgHr || (hr.length ? round(hr.reduce((x, y) => x + y, 0) / hr.length) : a.avgHr ?? null),
+    maxHr: a.maxHr || (hr.length ? Math.max(...hr) : a.maxHr ?? null),
+    avgPower: a.avgPower || (pw.some(Boolean) ? round(pw.reduce((x, y) => x + y, 0) / pw.length) : a.avgPower ?? null),
+  };
+  return { ...a, ...fill, ...evaluate({ ...a, ...fill, series, durationS: series ? null : a.durationS }, settings) };
 }
 
 export function dailyLoads(activities) {
