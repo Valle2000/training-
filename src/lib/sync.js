@@ -4,7 +4,7 @@ import { toSeries } from './series.js';
 import { buildActivity, findDuplicate, localDate } from './activities.js';
 import { sportFromConcept2, polarSport } from './sports.js';
 import { readExport } from './importers.js';
-import { lapsFromConcept2, lapsFromSeries, pacePer } from './laps.js';
+import { lapsFromConcept2, lapsFromSeries, pacePer, concept2Title, isAutoC2Title } from './laps.js';
 
 // FIT-Bibliothek ist groß und wird erst geladen, wenn eine FIT-Datei kommt.
 const parseFit = async (bytes) => (await import('./fit.js')).parseFit(bytes);
@@ -160,7 +160,11 @@ export function concept2Points(strokes, startMs, laps, type) {
 async function concept2Raw(r) {
   const start = new Date((r.date_utc || r.date).replace(' ', 'T') + (r.date_utc ? 'Z' : '')).toISOString();
   let workout = r.workout;
-  if (!workout && r.workout_type && r.workout_type !== 'JustRow') workout = (await call('concept2', `/api/users/me/results/${r.id}`).catch(() => null))?.data?.workout;
+  if (!workout && r.workout_type && r.workout_type !== 'JustRow') {
+    const detail = (await call('concept2', `/api/users/me/results/${r.id}`).catch(() => null))?.data;
+    workout = detail?.workout;
+    if (detail) r = { ...detail, ...r };
+  }
   let laps = lapsFromConcept2(workout, r.type, c2Watts);
   let series = null;
   if (r.stroke_data) {
@@ -182,7 +186,7 @@ async function concept2Raw(r) {
     avgHr: r.heart_rate?.average || null, maxHr: r.heart_rate?.max || null, calories: r.calories_total || null,
     avgPower: r.time && r.distance ? c2Watts((r.time / r.distance) * (r.type === 'bike' ? 1000 : 500), r.type) : null,
     pace: pacePer(r.time / 10, r.distance, r.type === 'bike' ? 1000 : 500), spm: r.stroke_rate || null,
-    title: r.workout_type && r.workout_type !== 'JustRow' ? r.workout_type : '', notes: r.comments || '', series, laps: laps.length ? laps : null,
+    title: concept2Title(r, workout), notes: r.comments || '', series, laps: laps.length ? laps : null,
   };
 }
 
@@ -191,7 +195,8 @@ async function concept2Raw(r) {
 // bleibt alles wie vorher (früher wurde zuerst gelöscht – bei einem Fehler waren die Einheiten dann weg).
 export async function reloadConcept2(onProgress) {
   const old = getData().activities.filter((a) => a.source === 'concept2');
-  const keep = Object.fromEntries(old.map((a) => [a.externalId, { notes: a.notes, rpe: a.rpe, lactate: a.lactate, title: a.title, keySessionId: a.keySessionId, gearIds: a.gearIds }]));
+  // Titel nur behalten, wenn er selbst vergeben wurde (nicht der alte automatische wie „VariableInterval“).
+  const keep = Object.fromEntries(old.map((a) => [a.externalId, { notes: a.notes, rpe: a.rpe, lactate: a.lactate, title: isAutoC2Title(a.title) ? null : a.title, keySessionId: a.keySessionId, gearIds: a.gearIds }]));
   const fresh = [];
   let page = 1, pages = 1;
   do {
@@ -262,7 +267,7 @@ export async function testConnection(provider) {
         const j = JSON.parse(text);
         const list = Array.isArray(j) ? j : j.data || j.workouts || j.recharges || j.nights || null;
         const first = Array.isArray(list) ? list[0] : j;
-        info = `${Array.isArray(list) ? list.length + ' Einträge, ' : ''}Felder: ${first ? Object.keys(first).slice(0, 12).join(', ') : '–'}`;
+        info = `${Array.isArray(list) ? list.length + ' Einträge, ' : ''}Felder: ${first ? Object.keys(first).slice(0, 40).join(', ') : '–'}`;
       } catch { info = text.slice(0, 160) || '(leer)'; }
       lines.push(`${r.status} ${path} → ${info}`);
     } catch (e) { lines.push(`Fehler ${path}: ${e.message}`); }

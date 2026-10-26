@@ -40,3 +40,16 @@ test('„Neu laden“ behält vorhandene Einheiten, wenn die Schnittstelle mitte
   assert.equal(after.length, before.length);
   assert.equal(after[0].notes, 'gut gelaufen');
 });
+
+test('Concept2-Namen: eigener Name, Kommentar oder Aufbau wie im Logbuch', async () => {
+  const { concept2Title, isAutoC2Title } = await import('../src/lib/laps.js');
+  assert.equal(concept2Title({ name: 'Double Threshold AM' }), 'Double Threshold AM');
+  assert.equal(concept2Title({ comments: 'Schwelle 5x6' }), 'Schwelle 5x6');
+  assert.equal(concept2Title({ workout_type: 'FixedTimeSplits', time: 18000 }), '30:00');
+  assert.equal(concept2Title({ workout_type: 'FixedDistanceSplits', distance: 10000 }), '10.000m');
+  const iv = (n, time, rest) => Array.from({ length: n }, () => ({ type: 'time', time, distance: 1500, rest_time: rest }));
+  assert.equal(concept2Title({ workout_type: 'FixedTimeInterval' }, { intervals: [...iv(4, 3600, 600), { type: 'time', time: 3600, distance: 1500, rest_time: 0 }] }), '5×6:00/1:00r');
+  assert.equal(concept2Title({ workout_type: 'VariableInterval' }, { intervals: [{ type: 'distance', distance: 2000, time: 4800, rest_time: 1200 }, { type: 'time', time: 6000, distance: 2400, rest_time: 0 }] }), '2.000m/2:00r, 10:00');
+  assert.equal(concept2Title({ workout_type: 'JustRow' }), '');
+  assert.ok(isAutoC2Title('VariableInterval') && isAutoC2Title('') && !isAutoC2Title('Meine Einheit'));
+});
