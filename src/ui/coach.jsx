@@ -1,14 +1,67 @@
 import React, { useState } from 'react';
-import { BrainCircuit, CalendarPlus, Trash2 } from 'lucide-react';
+import { BrainCircuit, CalendarPlus, Trash2, BookOpen, Search } from 'lucide-react';
 import { useData, update, getData, uid } from '../lib/store.js';
 import { coachSummary, today } from '../lib/activities.js';
 import { sportLabel } from '../lib/sports.js';
 import { kiPost } from '../lib/ai.js';
-import { fmtDate, toast } from './common.jsx';
+import { fmtDate, toast, Seg } from './common.jsx';
+import { TOPICS, FAQ, EVIDENCE_LABEL } from '../lib/knowledge.js';
 
 export const DEFAULT_STRATEGY = 'Aktuell ca. 15 h Ausdauer pro Woche plus 2 Krafteinheiten (zusammen ca. 2 h). Bald möchte ich Double-Threshold-Tage einbauen und später auch etwas mehr Intensität.';
 
 export function Coach() {
+  const [view, setView] = useState('coach');
+  return (
+    <>
+      <h1>Coach</h1>
+      <Seg value={view} onChange={setView} options={[['coach', 'KI-Coach'], ['wiki', 'Wissen'], ['faq', 'FAQ']]} />
+      {view === 'coach' && <CoachAi />}
+      {view === 'wiki' && <Knowledge />}
+      {view === 'faq' && <Faq onTopic={() => setView('wiki')} />}
+    </>
+  );
+}
+
+const EV_CLASS = { stark: 'b-gut', mittel: 'b-info', gering: 'b-achtung' };
+
+function Knowledge() {
+  const [q, setQ] = useState('');
+  const [cat, setCat] = useState('');
+  const cats = [...new Set(TOPICS.map((t) => t.cat))];
+  const list = TOPICS.filter((t) => (!cat || t.cat === cat) && (!q || JSON.stringify(t).toLowerCase().includes(q.toLowerCase())));
+  return (
+    <>
+      <p className="muted" style={{ marginTop: 12 }}>Kernaussagen aus der Trainingswissenschaft mit Fokus Langlauf, inklusive aktueller Studien (2023–2026). Jede Aussage hat eine Quelle und eine Einschätzung, wie belastbar sie ist.</p>
+      <div className="row"><Search size={18} style={{ flex: 'none' }} /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Suchen, z. B. Schwelle, HRV, Eiweiß" /></div>
+      <div className="chips"><button className={`chip${!cat ? ' on' : ''}`} onClick={() => setCat('')}>Alle</button>{cats.map((c) => <button key={c} className={`chip${cat === c ? ' on' : ''}`} onClick={() => setCat(c)}>{c}</button>)}</div>
+      {list.map((t) => (
+        <details key={t.id} id={'topic-' + t.id} className="card">
+          <summary><b>{t.title}</b> <span className={`badge ${EV_CLASS[t.evidence]}`}>{EVIDENCE_LABEL[t.evidence]}</span></summary>
+          <ul style={{ paddingLeft: 18, lineHeight: 1.55, fontSize: 14 }}>{t.facts.map((f, i) => <li key={i}>{f}</li>)}</ul>
+          <p style={{ fontSize: 14 }}><b>Für dein Training:</b> {t.practice}</p>
+          {t.sources.length > 0 && <div className="small muted"><BookOpen size={13} /> Quellen:<ul style={{ paddingLeft: 18, margin: '4px 0' }}>{t.sources.map((s) => <li key={s.url}><a href={s.url} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>{s.text}</a></li>)}</ul></div>}
+        </details>
+      ))}
+      <p className="muted small">Studien beschreiben Durchschnitte und oft kleine Gruppen. Sie ersetzen kein Körpergefühl und keine ärztliche Abklärung.</p>
+    </>
+  );
+}
+
+function Faq({ onTopic }) {
+  return (
+    <>
+      {FAQ.map((f, i) => (
+        <details key={i} className="card">
+          <summary><b>{f.q}</b></summary>
+          <p style={{ fontSize: 14 }}>{f.a}</p>
+          <div className="chips">{f.refs.map((r) => { const t = TOPICS.find((x) => x.id === r); return t && <button key={r} className="chip" onClick={() => { onTopic(); setTimeout(() => { const el = document.getElementById('topic-' + r); if (el) { el.open = true; el.scrollIntoView({ behavior: 'smooth' }); } }, 50); }}>{t.title}</button>; })}</div>
+        </details>
+      ))}
+    </>
+  );
+}
+
+function CoachAi() {
   const { settings, coach } = useData();
   const [strategy, setStrategy] = useState(settings.strategy ?? DEFAULT_STRATEGY);
   const [question, setQuestion] = useState('');
@@ -41,8 +94,7 @@ export function Coach() {
 
   return (
     <>
-      <h1>KI-Coach</h1>
-      <p className="muted">Der Coach bekommt eine Zusammenfassung deiner letzten 12 Wochen (Umfang, Zonen, Kraft, Form, HRV/Schlaf) und deine Strategie. Er bewertet sie anhand der Studienlage im Langlauf und plant die nächsten 7 Tage.</p>
+      <p className="muted" style={{ marginTop: 12 }}>Der Coach bekommt eine Zusammenfassung deiner letzten 12 Wochen (Umfang, Zonen, Kraft, Form, HRV/Schlaf) und deine Strategie. Er bewertet sie anhand der Studienlage im Langlauf und plant die nächsten 7 Tage.</p>
       <label>Deine Strategie und Ziele</label>
       <textarea value={strategy} onChange={(e) => setStrategy(e.target.value)} rows={4} />
       <label>Frage (optional)</label>

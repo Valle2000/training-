@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Activity, CalendarDays, Dumbbell, Utensils, BrainCircuit, Menu } from 'lucide-react';
+import { Activity, CalendarDays, Dumbbell, Utensils, BrainCircuit, BarChart3, Settings as Gear } from 'lucide-react';
 import './style.css';
 import { Today } from './ui/today.jsx';
 import { Training, ActivitySheet, AddSheet } from './ui/training.jsx';
@@ -8,12 +8,14 @@ import { Strength } from './ui/strength.jsx';
 import { Food } from './ui/food.jsx';
 import { Coach } from './ui/coach.jsx';
 import { Settings } from './ui/settings.jsx';
+import { Analysis } from './ui/analysis.jsx';
 import { Toast, toast } from './ui/common.jsx';
 import { handleConnectReturn, PROVIDERS } from './lib/sync.js';
+import { migrateMetrics } from './lib/recompute.js';
 
 const TABS = [
-  ['today', 'Heute', Activity], ['training', 'Training', CalendarDays], ['strength', 'Kraft', Dumbbell],
-  ['food', 'Essen', Utensils], ['coach', 'Coach', BrainCircuit], ['more', 'Mehr', Menu],
+  ['today', 'Heute', Activity], ['training', 'Kalender', CalendarDays], ['analysis', 'Analyse', BarChart3],
+  ['strength', 'Kraft', Dumbbell], ['food', 'Essen', Utensils], ['coach', 'Coach', BrainCircuit],
 ];
 
 function App() {
@@ -25,6 +27,7 @@ function App() {
     const r = handleConnectReturn();
     if (r) { setTab('more'); toast(r.error ? `${PROVIDERS[r.provider]?.label || r.provider}: ${r.error}` : `${PROVIDERS[r.provider].label} verbunden – jetzt unter „Heute“ abgleichen`); }
   }, []);
+  useEffect(() => { migrateMetrics(); }, []);
   useEffect(() => { scrollTo(0, 0); }, [tab]);
 
   const common = { go: setTab, openActivity: setActivity, openAdd: () => setAdding(true) };
@@ -32,10 +35,12 @@ function App() {
     <>
       <header>
         <div className="brand"><Activity size={24} color="#c7f36b" /><div><b>Training</b><small>LANGLAUF · KI-COACH</small></div></div>
+        <button className="pill" onClick={() => setTab('more')} aria-label="Einstellungen"><Gear size={16} />Einstellungen</button>
       </header>
       <main>
         {tab === 'today' && <Today {...common} />}
         {tab === 'training' && <Training {...common} />}
+        {tab === 'analysis' && <Analysis {...common} />}
         {tab === 'strength' && <Strength />}
         {tab === 'food' && <Food />}
         {tab === 'coach' && <Coach />}

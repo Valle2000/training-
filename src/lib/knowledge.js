@@ -1,0 +1,191 @@
+// Wissen: Kernaussagen aus der Trainingswissenschaft mit Fokus Skilanglauf (Stand Oktober 2026).
+// evidence: 'stark' = Metaanalysen/Konsens, 'mittel' = mehrere Studien, 'gering' = beschreibend/Fallstudien/Praxis.
+
+const S = {
+  walther23: { text: 'Walther et al. 2023, Front Physiol – Junioren → Senioren, 17 Weltklasse-Langläufer', url: 'https://pubmed.ncbi.nlm.nih.gov/38054044/' },
+  walther25: { text: 'Walther, Kocbach & Sandbakk 2025, Eur J Sport Sci – Day-to-day Periodisierung', url: 'https://pubmed.ncbi.nlm.nih.gov/40400090/' },
+  torvik21: { text: 'Torvik, Solli & Sandbakk 2021, Front Physiol – Weltklasse-Langdistanzläufer', url: 'https://www.researchgate.net/publication/349595177_The_Training_Characteristics_of_World-Class_Male_Long-Distance_Cross-Country_Skiers' },
+  staff25: { text: 'Staff et al. 2025, Sports Med Open – Weltklasse-Langläuferinnen über drei Jahrzehnte', url: 'https://link.springer.com/article/10.1186/s40798-025-00939-1' },
+  coaches25: { text: 'Sandbakk et al. 2025, Sports Med Open – Best Practice norwegischer Weltklasse-Trainer', url: 'https://link.springer.com/article/10.1186/s40798-025-00848-3' },
+  strengthCoaches: { text: 'Haugen et al. 2026, J Strength Cond Res – Kraft- und Schnelligkeitstraining laut Weltklasse-Trainern', url: 'https://pubmed.ncbi.nlm.nih.gov/42172297/' },
+  oliveira24: { text: 'Oliveira et al. 2024, Sports Med – Metaanalyse polarisiert vs. andere Verteilungen', url: 'https://www.researchgate.net/publication/380425831' },
+  seiler06: { text: 'Seiler & Kjerland 2006, Scand J Med Sci Sports – Intensitätsverteilung', url: 'https://pubmed.ncbi.nlm.nih.gov/16430681/' },
+  casado23: { text: 'Casado, Foster, Bakken & Tjelta 2023, IJERPH – Norwegisches Modell (Review)', url: 'https://www.trailrunnermag.com/training/the-norwegian-method-for-endurance-training' },
+  dtReview: { text: 'Systematischer Review: Norwegian double-threshold method in distance running', url: 'https://www.researchgate.net/publication/376465773' },
+  strengthSR: { text: 'Systematischer Review 2022: Krafttraining und Langlaufleistung', url: 'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9179959/' },
+  hoff99: { text: 'Hoff et al. 1999, Med Sci Sports Exerc – Maximalkraft und Ökonomie bei Langläuferinnen', url: 'https://pubmed.ncbi.nlm.nih.gov/10378915/' },
+  ofsteng18: { text: 'Øfsteng et al. 2018 – Kraft verbessert Doppelstock nach langer Belastung', url: 'https://www.researchgate.net/publication/320315019' },
+  hrvMeta: { text: 'Granero-Gallegos et al. 2020, IJERPH – Metaanalyse HRV-gesteuertes Training', url: 'https://www.mdpi.com/1660-4601/17/21/7999' },
+  hrvMeta21: { text: 'Manresa-Rocamora et al. 2021, IJERPH – HRV-gesteuertes Training (Metaanalyse)', url: 'https://www.semanticscholar.org/paper/e18a5e1b42c5f53cb2b3d45e1a50734805112454' },
+  svendsen16: { text: 'Svendsen et al. 2016, Br J Sports Med – Training und Infekte bei Elite-Langläufern', url: 'https://bjsm.bmj.com/content/50/13/809' },
+  lea24: { text: 'Bushmanova et al. 2024, Nutrients – Energiemangel bei Langläufern im Jahresverlauf', url: 'https://doi.org/10.3390/nu16142279' },
+  kettunen23: { text: 'Kettunen et al. 2023, JISSN – Ernährung und LEA-Marker bei jungen Langläuferinnen', url: 'https://www.tandfonline.com/doi/full/10.1080/15502783.2023.2226639' },
+  bosquet07: { text: 'Bosquet et al. 2007, Med Sci Sports Exerc – Metaanalyse Tapering', url: 'https://pubmed.ncbi.nlm.nih.gov/17762369/' },
+  morton18: { text: 'Morton et al. 2018, Br J Sports Med – Metaanalyse Eiweiß und Krafttraining', url: 'https://bjsm.bmj.com/content/52/6/376' },
+  hydrogel: { text: 'Kohlenhydrat-Hydrogel bei Elite-Langläufern, Rollski bei −5 °C (Crossover-Studie)', url: 'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6815417/' },
+  gssi: { text: 'GSSI – Kohlenhydrate für Ausdauersportler', url: 'https://www.gssiweb.org/sports-science-exchange/article/dietary-carbohydrate-and-the-endurance-athlete-contemporary-perspectives' },
+  altitudeNormo: { text: 'Kettunen et al. 2023, Scand J Med Sci Sports – normobares LHTLH bei Langläufern', url: 'https://jyx.jyu.fi/jyx/Record/jyx_123456789_86765/Details' },
+  altitudeHypo: { text: 'Hypobares LHTL bei norwegischen Langläufern (kein Zusatzeffekt)', url: 'https://lida.sport-iat.de/ta/Record/4048297?lng=de' },
+  sleep21: { text: 'Walsh et al. 2021, Br J Sports Med – Schlaf und Athleten (Konsens)', url: 'https://bjsm.bmj.com/content/55/7' },
+};
+
+export const TOPICS = [
+  {
+    id: 'tid', cat: 'Intensität', title: 'Intensitätsverteilung: wie viel locker, wie viel hart?', evidence: 'mittel',
+    facts: [
+      'Weltklasse-Langläufer trainieren rund 90 % ihrer Ausdauerzeit locker: 91/3/6 (locker/mittel/hart) als Junioren, 92/4/4 als Senioren (17 Olympia-Medaillengewinner).',
+      'Weltklasse-Langdistanzläufer: rund 861 h/Jahr, davon 92 % Ausdauer, knapp 89 % der Einheiten locker; 50–60 % im Doppelstock.',
+      'Polarisiertes Training ist anderen Verteilungen (z. B. pyramidal) laut Metaanalyse insgesamt nicht klar überlegen; Vorteile zeigten sich eher bei kurzen Interventionen unter 12 Wochen.',
+    ],
+    practice: 'Achte darauf, dass die lockeren Einheiten wirklich locker sind (I1/I2) und die harten gezielt. Ob die Verteilung eher polarisiert oder pyramidal ist, ist zweitrangig – entscheidend sind Gesamtumfang, Kontinuität und Qualität der Schlüsseleinheiten.',
+    sources: [S.walther23, S.torvik21, S.oliveira24, S.seiler06],
+  },
+  {
+    id: 'volume', cat: 'Umfang & Entwicklung', title: 'Umfang aufbauen: was Weltklasse von „gut“ unterscheidet', evidence: 'gering',
+    facts: [
+      'Vom besten Junioren- zum besten Seniorenjahr stieg der Umfang um rund 200 h (+35 %), fast komplett durch mehr lockeres Training (+186 h).',
+      'Der Zuwachs kam vor allem über mehr und längere lockere Einheiten und häufigeres Training zweimal am Tag; harte Einheiten wurden eher weniger.',
+      'Die erfolgreichsten Langläuferinnen steigerten ihren Umfang länger, gleichmäßiger und stufenweise – und verbesserten VO2max und Schwellenwerte stärker.',
+      'Weltklasse: etwa 750–1000 h pro Jahr, rund 90 % davon Ausdauer.',
+    ],
+    practice: 'Steigere über Jahre, nicht über Wochen. Der wichtigste Hebel ist mehr lockeres Volumen bei gleichbleibender Qualität der harten Tage. Es sind Beobachtungsdaten weniger Athleten – als Orientierung, nicht als Gesetz.',
+    sources: [S.walther23, S.staff25, S.torvik21],
+  },
+  {
+    id: 'week', cat: 'Periodisierung', title: 'Wochenstruktur und harte Tage', evidence: 'gering',
+    facts: [
+      'Weltklasse-Langläufer setzen harte Tage alle 3–4 Tage (Vorbereitung: alle 3,6 Tage, Wettkampfphase: alle 3,0 Tage), Ruhe- oder leichte Tage etwa alle 8–9 Tage.',
+      'Nur 5 % der Tage kombinieren viel Umfang und hohe Intensität: Tage sind entweder lang oder intensiv.',
+      'Der Tag vor einer harten Einheit war in der Vorbereitung der umfangreichste (127 % des Tagesmittels).',
+      'Norwegische Weltklasse-Trainer: viel lockeres Training plus 2–3 Schlüsseltage pro Woche mit insgesamt 3–5 intensiven Einheiten; klassische Periodisierung mit sinkendem Umfang und mehr Spezifität zu den Höhepunkten.',
+    ],
+    practice: 'Plane 2–3 Schlüsseltage pro Woche (z. B. ein Double-Threshold-Tag + ein Intervalltag) und trenne „lange Tage“ von „harten Tagen“. Alle 8–10 Tage ein bewusst leichter Tag.',
+    sources: [S.walther25, S.coaches25],
+  },
+  {
+    id: 'dt', cat: 'Schwelle', title: 'Double Threshold (norwegisches Modell)', evidence: 'gering',
+    facts: [
+      'Kern ist laktatgesteuertes Schwellen-Intervalltraining: zwei Schwelleneinheiten am selben Tag, Laktat meist etwa 2–4 mmol/l, bewusst kontrolliert statt maximal.',
+      'Typisch: morgens längere Intervalle (z. B. 5×6 min), abends kürzere (z. B. 10×3 min); Laktat wird in den Pausen gemessen.',
+      'Kontrollierte Studien fehlen weitgehend: Die Evidenz ist beschreibend (Fallberichte, Trainingsprotokolle von Läufern), ein aktueller Übersichtsartikel nennt sie „begrenzt“.',
+    ],
+    practice: 'Einstieg mit einem Double-Threshold-Tag pro Woche, die übrigen Tage dann wirklich locker. Intensität über Laktat (oder Puls/Watt aus einem Stufentest) deckeln – wer zu hart läuft, verliert den Sinn der Methode. Fortschritt über eine Key Session tracken.',
+    sources: [S.casado23, S.dtReview],
+  },
+  {
+    id: 'strength', cat: 'Kraft', title: 'Krafttraining für Langläufer', evidence: 'mittel',
+    facts: [
+      'Systematischer Review (10 Studien, 6–12 Wochen): Maximalkrafttraining kann Leistung, Doppelstock-Ökonomie und Maximalkraft verbessern, VO2max aber nicht; der Gesamteffekt gilt als noch nicht eindeutig.',
+      'Langläuferinnen verbesserten mit Maximalkrafttraining (1RM +14,5 %) die Doppelstockleistung über eine bessere Ökonomie.',
+      'Krafttraining verlängerte die Zeit bis zur Erschöpfung im Doppelstock nach langer Vorbelastung um rund 20 %.',
+      'Weltklasse-Trainer nutzen Kraft/Schnelligkeit v. a. für Verletzungsprophylaxe, Ökonomie, Endbeschleunigung und Knochengesundheit; 20–200 h/Jahr, 4–8 Übungen, 2–4 Sätze, 5–10 Wiederholungen; klar unterstützend, nicht im Mittelpunkt.',
+    ],
+    practice: 'Zwei Krafteinheiten pro Woche in der Vorbereitung (schwer, wenige Wiederholungen, explosiv), in der Saison eine zum Erhalt. Oberkörper/Rumpf für den Doppelstock nicht vergessen. Nicht direkt vor Schlüsseleinheiten.',
+    sources: [S.strengthSR, S.hoff99, S.ofsteng18, S.strengthCoaches],
+  },
+  {
+    id: 'hrv', cat: 'Erholung', title: 'HRV-gesteuertes Training', evidence: 'mittel',
+    facts: [
+      'Metaanalyse: HRV-gesteuertes und klassisch geplantes Training verbessern beide die VO2max, die Effektstärke war in den HRV-Gruppen größer.',
+      'In den Studien wird meist die morgendliche HRV (lnRMSSD) gegen einen gleitenden Normalbereich verglichen; das Verzerrungsrisiko der Studien ist allerdings oft hoch.',
+      'Eine der eingeschlossenen Studien wurde mit Nordisch-Profis durchgeführt (Schmitt 2018).',
+    ],
+    practice: 'Wichtiger als ein einzelner Wert ist der Trend: Liegt der 7-Tage-Schnitt deutlich unter deinem Normalbereich (und Ruhepuls erhöht, Schlaf schlecht), verschiebe harte Einheiten. In der App: Analyse → Form & Erholung.',
+    sources: [S.hrvMeta, S.hrvMeta21],
+  },
+  {
+    id: 'illness', cat: 'Gesundheit', title: 'Infekte vermeiden', evidence: 'mittel',
+    facts: [
+      'Bei 37 Elite-Langläufern (über 7000 Personenwochen) berichteten Athleten mit großen Schwankungen der Trainingsbelastung häufiger Infektsymptome.',
+      'Kürzere Krankheitsphasen gingen mit mehr Erfolg einher. Größte Risikofaktoren: internationale Flugreisen und Wettkampfphasen im Winter.',
+      'Finnische Daten: Langläufer haben im Schnitt etwa drei Atemwegsinfekte pro Jahr; das Risiko war nach der Tour de Ski und bei Weltmeisterschaften deutlich erhöht.',
+    ],
+    practice: 'Belastung gleichmäßig steigern (Ramp Rate im Blick), keine großen Sprünge nach Pausen. Nach Reisen und bei Wettkampfhäufung bewusst erholen. Bei Fieber oder Symptomen unterhalb des Halses: kein Training.',
+    sources: [S.svendsen16],
+  },
+  {
+    id: 'energy', cat: 'Ernährung', title: 'Genug essen: Energiemangel (REDs)', evidence: 'mittel',
+    facts: [
+      'Bei 27 gut trainierten männlichen Langläufern lag die Energieverfügbarkeit im Juni (Vorbereitung) an Trainingstagen unter 15 kcal/kg fettfreie Masse – zu wenig Essen bei hohem Trainingsumsatz.',
+      'Bei jungen Langläuferinnen hingen niedrigere Energieverfügbarkeit und Kohlenhydrataufnahme mit mehr Warnzeichen für Energiemangel zusammen.',
+      'Auch bei jungen Nordischen blieb die Kohlenhydrataufnahme trotz Verbesserung unter den Empfehlungen.',
+    ],
+    practice: 'In Phasen mit viel Umfang bewusst mehr essen, vor allem Kohlenhydrate. Warnzeichen: sinkende Leistung trotz Training, häufige Infekte, Verletzungen, schlechter Schlaf, bei Frauen Zyklusstörungen. Die Ernährungsseite der App rechnet den Bedarf nach Umfang.',
+    sources: [S.lea24, S.kettunen23],
+  },
+  {
+    id: 'carbs', cat: 'Ernährung', title: 'Kohlenhydrate im Training und Wettkampf', evidence: 'mittel',
+    facts: [
+      'Für Belastungen über etwa 2,5 Stunden werden bis zu 90 g Kohlenhydrate pro Stunde empfohlen, am besten als Glukose-Fruktose-Mischung.',
+      'In einer Rollski-Studie bei −5 °C mit Elite-Langläufern lieferten zugeführte Kohlenhydrate rund 28 % der Energie über 120 min.',
+      'Höhere Mengen (120 g/h) wurden bisher vor allem im Laufen untersucht, nicht im Langlauf.',
+    ],
+    practice: 'Im langen Training 60–90 g/h üben (der Darm ist trainierbar), damit es im Rennen funktioniert. Bei Kälte warme Getränke in isolierten Flaschen.',
+    sources: [S.gssi, S.hydrogel],
+  },
+  {
+    id: 'protein', cat: 'Ernährung', title: 'Eiweiß', evidence: 'stark',
+    facts: [
+      'Metaanalyse (49 Studien, 1863 Teilnehmende): Eiweiß verstärkt Kraft- und Muskelzuwachs durch Krafttraining; oberhalb von etwa 1,6 g/kg/Tag gab es im Mittel keinen weiteren Zuwachs (Unsicherheitsbereich etwa 1,0–2,2 g/kg).',
+    ],
+    practice: '1,6–2,0 g/kg pro Tag, auf 4–5 Mahlzeiten verteilt, mit Eiweiß nach dem Training und vor dem Schlafen.',
+    sources: [S.morton18],
+  },
+  {
+    id: 'taper', cat: 'Wettkampf', title: 'Tapering vor dem Höhepunkt', evidence: 'stark',
+    facts: [
+      'Metaanalyse (27 Studien): am wirksamsten war ein etwa zweiwöchiges Tapering, bei dem der Umfang exponentiell um 41–60 % reduziert wurde – bei gleicher Intensität und Trainingshäufigkeit.',
+    ],
+    practice: 'Zwei Wochen vor dem Saisonhöhepunkt Umfang deutlich runter, Intensität kurz und knackig beibehalten. In der Formkurve sieht man die Form dann ins Plus steigen.',
+    sources: [S.bosquet07],
+  },
+  {
+    id: 'altitude', cat: 'Höhe', title: 'Höhentraining', evidence: 'mittel',
+    facts: [
+      'Normobares „Live high – train low and high“ (28 Tage, ~2400 m) steigerte bei Langläufern die Hämoglobinmasse um rund 4 %, VO2max und Leistung verbesserten sich aber nicht stärker als in der Kontrollgruppe.',
+      'Bei norwegischen Langläufern brachten 26 Nächte auf 2207 m gegenüber 1035 m keinen Zusatzeffekt auf Hämoglobinmasse, VO2max oder Laufleistung.',
+    ],
+    practice: 'Höhentraining ist kein Selbstläufer. Wenn, dann gut geplant (Eisenstatus, genug Energie, Intensität anfangs reduzieren) und mit realistischen Erwartungen.',
+    sources: [S.altitudeNormo, S.altitudeHypo],
+  },
+  {
+    id: 'sleep', cat: 'Erholung', title: 'Schlaf', evidence: 'mittel',
+    facts: [
+      'Ein Expertenkonsens (Br J Sports Med 2021) bewertet Schlaf als zentralen Teil der Erholung von Athleten und empfiehlt, Schlaf regelmäßig zu erfassen und Probleme aktiv anzugehen.',
+    ],
+    practice: 'Regelmäßige Schlafzeiten, vor harten Tagen und nach Reisen besonders auf Schlaf achten. Schlafdauer aus Polar siehst du unter Analyse → Form & Erholung.',
+    sources: [S.sleep21],
+  },
+  {
+    id: 'metrics', cat: 'Kennzahlen', title: 'Kennzahlen der App erklärt', evidence: 'stark',
+    facts: [
+      'Belastung (≈ TSS): 1 h an der Schwelle = 100. Mit Watt aus NP und FTP, sonst aus dem Pulsverlauf (Banister-TRIMP).',
+      'Fitness (≈ CTL): Durchschnitt der Tagesbelastung über ~42 Tage. Ermüdung (≈ ATL): über ~7 Tage. Form (≈ TSB) = Fitness − Ermüdung vom Vortag.',
+      'Ramp Rate: Fitness-Zuwachs pro Woche. Große Sprünge erhöhen das Infekt- und Verletzungsrisiko.',
+      'IF: NP / FTP. VI: NP / Ø Leistung (gleichmäßig ≈ 1,0). EF: NP / Ø Puls – steigt mit besserer aerober Fitness.',
+      'Aerobe Entkopplung: wie stark das Verhältnis Leistung/Puls von der 1. zur 2. Hälfte abfällt; unter 5 % gilt als gut.',
+      'Zonen: Puls I1–I5 nach Olympiatoppen (% HFmax), Leistung Z1–Z7 nach Coggan (% FTP).',
+    ],
+    practice: 'Form zwischen etwa −10 und −30 ist in Aufbauphasen normal; für Wettkämpfe sollte sie positiv sein. Werte sind Modelle – das Körpergefühl zählt mit.',
+    sources: [],
+  },
+];
+
+export const FAQ = [
+  { q: 'Wie viele Stunden sollte ich trainieren?', a: 'Weltklasse liegt bei 750–1000 h im Jahr. Für dich zählt die stetige Steigerung über Jahre: Die Besten haben ihren Umfang lang und schrittweise erhöht, vor allem mit lockerem Training. 15 h pro Woche (≈ 750 h/Jahr) sind bereits ein hoher Umfang – Qualität der harten Tage und Erholung entscheiden jetzt.', refs: ['volume'] },
+  { q: 'Wie oft sollte ich hart trainieren?', a: 'Weltklasse-Langläufer setzen harte Tage alle 3–4 Tage, also 2–3 Schlüsseltage pro Woche mit insgesamt 3–5 intensiven Einheiten. Dazwischen locker oder lang, nicht beides hart.', refs: ['week'] },
+  { q: 'Wie baue ich Double Threshold ein?', a: 'Mit einem Double-Threshold-Tag pro Woche starten, z. B. morgens 5×6 min, abends 10×3 min, beides kontrolliert (Laktat etwa 2–3,5 mmol/l). Die übrigen Tage locker. Lege eine Key Session an, um Watt/Puls/Laktat über Wochen zu vergleichen. Die Methode ist in der Praxis erfolgreich, aber wissenschaftlich noch wenig kontrolliert untersucht.', refs: ['dt'] },
+  { q: 'Polarisiert oder pyramidal?', a: 'Laut Metaanalyse gibt es keinen klaren Sieger. Weltklasse-Langläufer liegen bei rund 90 % locker, 3–4 % Schwelle, 4–6 % hart. Wichtiger als das Etikett ist, dass locker wirklich locker ist.', refs: ['tid'] },
+  { q: 'Bringt Krafttraining etwas für Langlauf?', a: 'Ja, vor allem für Doppelstock-Ökonomie, Maximalkraft und Ermüdungsresistenz – die VO2max steigt dadurch nicht. Zwei schwere Einheiten pro Woche in der Vorbereitung, eine in der Saison.', refs: ['strength'] },
+  { q: 'Woran erkenne ich, dass ich zu viel trainiere?', a: 'Mehrere Zeichen zusammen: HRV-Trend deutlich unter Normal, erhöhter Ruhepuls, schlechter Schlaf, Leistung in Key Sessions sinkt bei gleichem Aufwand, Form längere Zeit unter −30, häufige Infekte. Dann Umfang und Intensität reduzieren und Energiezufuhr prüfen.', refs: ['hrv', 'illness', 'energy'] },
+  { q: 'Was bedeutet die Form-Zahl?', a: 'Form = Fitness − Ermüdung. Negativ heißt: du bist gerade belastet (normal im Aufbau). Positiv heißt: frisch. Für Wettkämpfe ist eine leicht positive Form gut; durch Tapering steigt sie.', refs: ['metrics', 'taper'] },
+  { q: 'Wie viele Kohlenhydrate brauche ich im langen Training?', a: 'Ab etwa 90 min 30–60 g pro Stunde, bei Einheiten über 2,5 h bis zu 90 g pro Stunde (Glukose + Fruktose). Im Training üben, damit der Darm es im Rennen verträgt.', refs: ['carbs'] },
+  { q: 'Wie viel Eiweiß brauche ich?', a: 'Etwa 1,6–2,0 g pro kg Körpergewicht am Tag, über den Tag verteilt.', refs: ['protein'] },
+  { q: 'Wie tapere ich vor einem wichtigen Rennen?', a: 'Rund zwei Wochen, Umfang um 41–60 % senken, Intensität und Häufigkeit beibehalten.', refs: ['taper'] },
+  { q: 'Lohnt sich Höhentraining?', a: 'Die Studien bei Langläufern sind ernüchternd: mehr Hämoglobin, aber nicht automatisch mehr Leistung. Wenn, dann gut vorbereitet und nicht als Abkürzung.', refs: ['altitude'] },
+  { q: 'Wie vermeide ich Infekte im Winter?', a: 'Belastung gleichmäßig steigern, große Sprünge vermeiden, nach Flugreisen und Wettkampfblöcken bewusst erholen, genug essen und schlafen.', refs: ['illness', 'energy', 'sleep'] },
+  { q: 'Welche FTP gilt für SkiErg und Rad?', a: 'Jede Sportart hat ihre eigene Schwellenleistung. Trag unter Einstellungen FTP Rad, SkiErg und Rudern getrennt ein; die App schätzt außerdem unter Analyse → Bestwerte deine FTP aus der Leistungskurve.', refs: ['metrics'] },
+  { q: 'Was ist eine Key Session?', a: 'Eine wiederkehrende Schlüsseleinheit, z. B. „5×6 min Schwelle Rollski“. Die App sucht alle ähnlichen Einheiten und zeigt, ob du bei gleichem Puls/Laktat mehr Watt schaffst – das ist der direkteste Fortschrittsnachweis.', refs: ['dt'] },
+];
+
+export const EVIDENCE_LABEL = { stark: 'starke Evidenz', mittel: 'mittlere Evidenz', gering: 'begrenzte Evidenz' };

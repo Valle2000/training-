@@ -6,7 +6,8 @@ import { addDays } from '../lib/metrics.js';
 import { sportLabel } from '../lib/sports.js';
 import { syncAll } from '../lib/sync.js';
 import { dayTargets } from '../lib/nutrition.js';
-import { FormChart, ZoneBar } from './charts.jsx';
+import { FormChart, ZoneBar, LineChart } from './charts.jsx';
+import { rolling } from '../lib/analysis.js';
 import { fmtDuration, fmtNum, toast } from './common.jsx';
 
 // Einschätzung aus Form und Erholungswerten (keine Diagnose, nur Orientierung).
@@ -59,7 +60,7 @@ export function Today({ go, openActivity, openAdd }) {
           <div className="form"><b>{fmtNum(now?.form)}</b><span>Form</span></div>
         </div>
         {r && <p><span className={`badge b-${r.level}`}>{r.level === 'info' ? 'normal' : r.level}</span> {r.text}</p>}
-        {!activities.length && <p>Noch keine Einheiten. Verbinde Polar, Concept2 oder Wahoo unter „Mehr“ oder trag eine Einheit ein.</p>}
+        {!activities.length && <p>Noch keine Einheiten. Verbinde Polar, Concept2 oder Wahoo unter „Einstellungen“ oder trag eine Einheit ein.</p>}
       </div>
 
       <div className="row">
@@ -85,6 +86,20 @@ export function Today({ go, openActivity, openAdd }) {
         <h3 style={{ marginTop: 0 }}>Fitness, Ermüdung, Form</h3>
         <FormChart days={shown} />
       </div>
+      {wellness.some((w) => w.hrv || w.sleepH) && (() => {
+        const w = wellness.filter((x) => x.date >= addDays(t, -60));
+        const fByDay = Object.fromEntries(days.map((d) => [d.day, d.form]));
+        return (
+          <div className="card">
+            <h3 style={{ marginTop: 0 }}>HRV, Schlaf und Form (60 Tage)</h3>
+            <LineChart labels={w.map((x) => x.date)} xFormat={(d) => `${+d.slice(8)}.${+d.slice(5, 7)}.`} series={[
+              { label: 'HRV 7-Tage-Schnitt (ms)', values: rolling(w.map((x) => x.hrv ?? null), 7), color: 'var(--z2)' },
+              { label: 'Form', values: w.map((x) => fByDay[x.date] ?? null), color: 'var(--form)', signed: true },
+            ]} />
+            {w.some((x) => x.sleepH) && <LineChart height={140} labels={w.map((x) => x.date)} xFormat={(d) => `${+d.slice(8)}.${+d.slice(5, 7)}.`} series={[{ label: 'Schlaf (h)', values: w.map((x) => x.sleepH ?? null), color: 'var(--fit)', dots: true }]} />}
+          </div>
+        );
+      })()}
 
       <div className="stats">
         <div><b>{fmtDuration(week.hours * 3600)}</b><span>Stunden diese Woche</span></div>
@@ -112,7 +127,7 @@ export function Today({ go, openActivity, openAdd }) {
           )}
         </div>
       )}
-      {!settings.hrMax && <div className="notice">Trag unter „Mehr → Athlet“ Maximalpuls, Ruhepuls und Schwellenpuls ein (und FTP, falls du mit Watt trainierst), sonst kann keine Belastung berechnet werden.</div>}
+      {!settings.hrMax && <div className="notice">Trag unter „Einstellungen → Athlet“ Maximalpuls, Ruhepuls und Schwellenpuls ein (und FTP, falls du mit Watt trainierst), sonst kann keine Belastung berechnet werden.</div>}
     </>
   );
 }

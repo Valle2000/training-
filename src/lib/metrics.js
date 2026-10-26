@@ -108,3 +108,80 @@ export function performanceCurve(dailyLoad, start, end, { planned = {}, today = 
   }
   return out;
 }
+
+// Leistungszonen nach Coggan in % FTP.
+export const POWER_ZONES = [
+  { id: 'P1', label: 'Z1 Erholung', to: 0.55 },
+  { id: 'P2', label: 'Z2 Grundlage', to: 0.75 },
+  { id: 'P3', label: 'Z3 Tempo', to: 0.9 },
+  { id: 'P4', label: 'Z4 Schwelle', to: 1.05 },
+  { id: 'P5', label: 'Z5 VO2max', to: 1.2 },
+  { id: 'P6', label: 'Z6 anaerob', to: 1.5 },
+  { id: 'P7', label: 'Z7 neuromuskulär', to: Infinity },
+];
+
+export function powerZoneSeconds(power, ftp) {
+  const out = Object.fromEntries(POWER_ZONES.map((z) => [z.id, 0]));
+  if (!ftp) return out;
+  for (const p of power) { if (!p) continue; out[POWER_ZONES.find((z) => p / ftp < z.to).id]++; }
+  return out;
+}
+
+// Zeitspannen für Bestwertkurven (Sekunden).
+// Enthält typische Intervalllängen (3, 4, 6, 8, 10, 15 min), damit Key Sessions sie direkt vergleichen können.
+export const CURVE_DURATIONS = [5, 10, 15, 30, 60, 120, 180, 240, 300, 360, 480, 600, 720, 900, 1200, 1800, 2700, 3600, 5400, 7200, 10800];
+
+// Höchster Durchschnitt über jede Zeitspanne (Mean-Max). fill: Lücken mit letztem Wert füllen (Puls).
+export function meanMax(values, { fill = false, durations = CURVE_DURATIONS } = {}) {
+  let last = 0;
+  const v = values.map((x) => { if (x == null || x === 0) return fill ? last : 0; last = x; return x; });
+  const out = {};
+  for (const d of durations) {
+    if (d > v.length) break;
+    let acc = 0, best = 0;
+    for (let i = 0; i < v.length; i++) {
+      acc += v[i];
+      if (i >= d) acc -= v[i - d];
+      if (i >= d - 1 && acc > best) best = acc;
+    }
+    if (best > 0) out[d] = Math.round(best / d);
+  }
+  return out;
+}
+
+// Aerobe Entkopplung (Pa:HR bzw. Pace:HR): Verhältnis Leistung/Puls in 1. vs. 2. Hälfte, in %.
+// Unter ~5 % gilt als gute Grundlagenausdauer für die gewählte Dauer.
+export function decoupling(output, hr) {
+  const n = Math.min(output.length, hr.length);
+  if (n < 1200) return null;
+  const half = Math.floor(n / 2);
+  const ratio = (a, b) => {
+    let o = 0, h = 0, c = 0;
+    for (let i = a; i < b; i++) if (output[i] > 0 && hr[i] > 0) { o += output[i]; h += hr[i]; c++; }
+    return c > 60 ? o / h : null;
+  };
+  const r1 = ratio(0, half), r2 = ratio(half, n);
+  return r1 && r2 ? Math.round(((r1 - r2) / r1) * 1000) / 10 : null;
+}
+
+// Kennzahlen aus dem Verlauf, die TrainingPeaks & Co. pro Einheit zeigen.
+export function seriesStats(series, { ftp, powerSport }) {
+  const power = series.power || [], hr = series.hr || [], speed = series.speed || [];
+  const hasPower = power.some((p) => p > 0), hasHr = hr.some((h) => h > 0), hasSpeed = speed.some((s) => s > 0);
+  const out = {};
+  if (hasHr) out.hrCurve = meanMax(hr, { fill: true });
+  if (hasPower) {
+    const avg = power.reduce((a, p) => a + (p || 0), 0) / power.length;
+    const np = normalizedPower(power);
+    out.kj = Math.round(power.reduce((a, p) => a + (p || 0), 0) / 1000);
+    out.vi = np && avg ? Math.round((np / avg) * 100) / 100 : null;
+    if (powerSport) {
+      out.powerCurve = meanMax(power);
+      if (ftp) out.powerZones = powerZoneSeconds(power, ftp);
+    }
+    const hrVals = hr.filter((h) => h > 0);
+    if (hrVals.length && np) out.ef = Math.round((np / (hrVals.reduce((a, b) => a + b, 0) / hrVals.length)) * 100) / 100;
+  }
+  if (hasHr && (hasPower || hasSpeed)) out.decoupling = decoupling(hasPower ? power : speed, hr);
+  return out;
+}

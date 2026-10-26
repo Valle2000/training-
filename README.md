@@ -6,16 +6,25 @@ installierbare Web-App (PWA), Server-Funktionen auf Vercel, KI über Claude.
 ## Was die App kann
 
 - **Heute**: Fitness, Ermüdung und Form (wie CTL/ATL/TSB) mit Prognose aus dem Trainingsplan,
-  Tageseinschätzung aus Form und HRV, Erholungswerte, Essensbedarf des Tages
-- **Training**: Wochenkalender mit erledigten und geplanten Einheiten, Liste, Detailansicht mit Puls-
-  und Leistungsverlauf, Laktat, RPE und Notizen; Stunden je Woche nach Intensitätszone
-  (Olympiatoppen I1–I5) und Verteilung locker/Schwelle/hart
+  Tageseinschätzung aus Form und HRV, HRV/Schlaf/Form als Verlauf, Essensbedarf des Tages
+- **Kalender**: Einheiten planen (Belastung wird geschätzt und fließt in die Formprognose ein),
+  Soll/Ist je Woche, verpasste Einheiten, Vorwoche kopieren; Liste und Detailansicht mit Puls- und
+  Leistungsverlauf, IF, EF, Entkopplung, kJ, VI, Laktat, RPE, Key-Session-Zuordnung
+- **Analyse** (wie TrainingPeaks/WKO): frei wählbare Zeiträume (4 Wochen bis alles, Saison ab 1. Mai,
+  eigener Zeitraum), Filter nach Sportart, Vergleich zum Vorzeitraum, Stunden/Belastung/Distanz/
+  Höhenmeter/kJ je Woche oder Monat, Tabelle nach Sportart und Monat, Puls- und Leistungszonen
+  (I1–I5 und Coggan Z1–Z7), Leistungs- und Pulskurve (Bestwerte 5 s bis 3 h) mit Vorzeitraum und
+  Allzeit, W/kg, FTP-Schätzung, Ramp Rate, HRV/Schlaf/Ruhepuls, Effizienz-Trend, aerobe Entkopplung
+- **Key Sessions**: eigene Schlüsseleinheiten (z. B. Double Threshold 5×6 min); alle passenden
+  Einheiten werden verglichen (Watt über die Intervalllänge, Puls, Watt pro Puls, Laktat, RPE)
 - **Kraft**: Katalog mit gut 30 langlaufrelevanten Übungen (Maximalkraft, Explosiv, spezifisch,
   einbeinig, Rumpf, Prophylaxe) inklusive Begründung und Ausführung, Vorlagen für zwei Einheiten
   pro Woche, Eintragen von Sätzen mit Wiederholungen und Gewicht, „Letztes Mal“-Anzeige,
   geschätztes 1RM und Verlauf je Übung, eigene Übungen
 - **Essen**: Tagesbedarf (Kohlenhydrate, Eiweiß, Fett, kcal) nach Trainingsumfang und -intensität,
   KI-Essensplan mit Rezepten, Einkaufsliste und Favoriten, abgestimmt auf Trainingszeiten und Vorlieben
+- **Wissen & FAQ**: Lexikon mit Kernaussagen aus der Trainingswissenschaft (inkl. Studien 2023–2026),
+  Evidenzstufe und Quellen
 - **Coach**: KI-Analyse der letzten 12 Wochen anhand der Studienlage im Langlauf (Intensitäts-
   verteilung, Double Threshold, Kraft, Belastungssteuerung, Erholung) mit 7-Tage-Plan, der sich mit
   einem Klick in den Kalender übernehmen lässt
@@ -30,7 +39,10 @@ installierbare Web-App (PWA), Server-Funktionen auf Vercel, KI über Claude.
 | Belastung (≈ TSS) | mit Watt (Rad, Ergometer): Dauer × NP × IF / (FTP × 3600) × 100; sonst Banister-TRIMP aus dem Pulsverlauf, skaliert auf 100 pro Stunde an der Laktatschwelle; notfalls Durchschnittspuls oder RPE |
 | Fitness / Ermüdung | exponentieller Schnitt der Tagesbelastung über 42 bzw. 7 Tage |
 | Form | Fitness − Ermüdung vom Vortag |
-| Zonen | % Maximalpuls: I1 55–72, I2 72–82, I3 82–87, I4 87–92, I5 > 92 |
+| Zonen | % Maximalpuls: I1 55–72, I2 72–82, I3 82–87, I4 87–92, I5 > 92; Leistung nach Coggan (% FTP) |
+| FTP | getrennt für Rad, SkiErg und Rudern |
+| EF / Entkopplung | NP / Ø Puls; Abfall Leistung:Puls von 1. zu 2. Hälfte in % |
+| Bestwertkurve | höchster Durchschnitt je Dauer (5 s … 3 h) |
 | Kraft-Belastung | Dauer × (RPE/10)² × 100 |
 | Concept2-Watt | 2,80 / (Pace in s/m)³ |
 
@@ -63,6 +75,8 @@ eintragen (lokal: `http://localhost:5173/api/connect`).
 | Wahoo Cloud API | <https://developers.wahooligan.com> | `WAHOO_CLIENT_ID`, `WAHOO_CLIENT_SECRET` |
 
 Hinweise:
+- Unter Einstellungen → Verbindungen → „Testen“ zeigt die App die Rohantworten der Anbieter
+  (Status, Anzahl, Feldnamen) – hilfreich, falls beim ersten Abgleich etwas nicht passt.
 - Polar liefert über die Schnittstelle nur Einheiten der letzten 30 Tage. Ältere Daten in Polar Flow
   exportieren und als FIT importieren.
 - ErgData lädt Einheiten automatisch ins Concept2 Logbook; die App holt sie dort ab (letzte 90 Tage).
@@ -98,6 +112,5 @@ npm run build
 ## Nächste Schritte
 
 - Geräteübergreifender Sync über Supabase (wie in SkiWax)
-- Leistungskurve (Bestwerte 5 s bis 60 min) und Pulskurve
 - Workout-Builder und Export geplanter Einheiten
 - Laktat-Stufentest mit Schwellenbestimmung

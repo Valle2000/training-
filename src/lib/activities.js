@@ -1,10 +1,13 @@
 // Einheiten anlegen, Dubletten erkennen, Auswertungen über Tage und Wochen.
-import { computeLoad, zoneSeconds, performanceCurve, addDays, ZONES } from './metrics.js';
+import { computeLoad, zoneSeconds, performanceCurve, addDays, ZONES, seriesStats } from './metrics.js';
 import { sportById } from './sports.js';
 import { thin } from './series.js';
+import { keySessionRows } from './keysessions.js';
 
-export const athleteOf = (s = {}) => ({
-  ftp: num(s.ftp), lthr: num(s.lthr), hrMax: num(s.hrMax), hrRest: num(s.hrRest), sex: s.sex || 'm',
+// FTP je Sportart: SkiErg und Rudern haben eigene Schwellenleistungen, sonst gilt die Rad-FTP.
+export const ftpFor = (s = {}, sport) => num({ skierg: s.ftpSkierg, row: s.ftpRow, bikeerg: s.ftp }[sport]) ?? num(s.ftp);
+export const athleteOf = (s = {}, sport) => ({
+  ftp: ftpFor(s, sport), lthr: num(s.lthr), hrMax: num(s.hrMax), hrRest: num(s.hrRest), sex: s.sex || 'm',
 });
 const num = (v) => (v === '' || v == null || isNaN(Number(v)) ? null : Number(v));
 
@@ -25,7 +28,7 @@ export function findDuplicate(activities, a) {
 
 // Belastung, Zonen usw. aus Rohdaten berechnen. raw.series in 1 Hz (optional).
 export function evaluate(raw, settings) {
-  const athlete = athleteOf(settings);
+  const athlete = athleteOf(settings, raw.sport);
   const series = raw.series;
   const movingS = series?.hr?.length || raw.durationS || raw.elapsedS || 0;
   const res = computeLoad(athlete, {
@@ -43,11 +46,17 @@ export function evaluate(raw, settings) {
     intensity: res.intensity ? Math.round(res.intensity * 100) / 100 : null,
     trimp: res.trimp ? Math.round(res.trimp) : null,
     zones,
+    // Bestwertkurven, Leistungszonen, kJ, VI, EF, Entkopplung (nur mit Verlauf)
+    hrCurve: null, powerCurve: null, powerZones: null, kj: null, vi: null, ef: null, decoupling: null,
+    ...(series ? seriesStats(series, { ftp: athlete.ftp, powerSport: !!sportById(raw.sport).power }) : {}),
   };
 }
 
 // Neue Einheit aus Rohdaten (FIT, Concept2, manuell). Gibt {activity, series} zurück.
 export function buildActivity(raw, settings, extra = {}) {
+  // Fehlen Ø/max Puls oder Ø Leistung in der Zusammenfassung, aus dem Verlauf berechnen.
+  const hr = raw.series?.hr?.filter((h) => h > 0) || [], pw = raw.series?.power?.filter((p) => p != null) || [];
+  raw = { ...raw, avgHr: raw.avgHr ?? (hr.length ? hr.reduce((a, b) => a + b, 0) / hr.length : null), maxHr: raw.maxHr ?? (hr.length ? Math.max(...hr) : null), avgPower: raw.avgPower ?? (pw.some(Boolean) ? pw.reduce((a, b) => a + b, 0) / pw.length : null) };
   const ev = evaluate(raw, settings);
   const activity = {
     id: extra.id || Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
@@ -119,7 +128,7 @@ export const isThreshold = (a) => a.zone === 'I3' || (a.zones?.I3 || 0) >= 900;
 
 // Kompakte Daten für den KI-Coach, damit die Anfrage klein bleibt.
 export function coachSummary(data, t) {
-  const { activities, strength, plan, settings, wellness } = data;
+  const { activities, strength, plan, settings, wellness, keySessions = [] } = data;
   const c = curve(activities, plan, t, 0);
   const now = c.find((d) => d.day === t) || c.at(-1);
   const recent = activities.filter((a) => a.date >= addDays(t, -21)).sort((a, b) => a.date.localeCompare(b.date));
@@ -148,5 +157,29 @@ export function coachSummary(data, t) {
     })),
     erholung: wellness.filter((w) => w.date >= addDays(t, -14)).map((w) => ({ datum: w.date, hrv: w.hrv, ruhepuls: w.restHr, schlafScore: w.sleepScore, schlafStd: w.sleepH, recharge: w.recharge })),
     geplant: plan.filter((p) => p.date >= t).slice(0, 21).map((p) => ({ datum: p.date, titel: p.title, min: p.minutes, zone: p.zone })),
+    keySessions: keySessions.map((k) => ({ name: k.name, vergleichsdauerSek: k.intervalSec, verlauf: keySessionRows(activities, k).slice(-6).map((r) => ({ datum: r.date, watt: r.intervalPower ?? undefined, puls: r.intervalHr ?? r.avgHr ?? undefined, laktat: r.lactateAvg ?? undefined, rpe: r.rpe ?? undefined })) })).filter((k) => k.verlauf.length),
+    ftp: { rad: settings.ftp, skierg: settings.ftpSkierg, rudern: settings.ftpRow },
+  };
+}
+
+// Geschätzte Belastung einer geplanten Einheit pro Stunde je Zone (≈ IF² × 100).
+export const PLAN_LOAD_PER_HOUR = { I1: 50, I2: 65, I3: 90, I4: 110, I5: 125, Kraft: 45, Ruhe: 0 };
+export const estimatePlanLoad = (minutes, zone) => Math.round(((Number(minutes) || 0) / 60) * (PLAN_LOAD_PER_HOUR[zone] ?? 50));
+
+// Geplante Einheit gilt als erledigt, wenn am selben Tag eine Einheit derselben Sportgruppe existiert.
+export function matchPlan(p, activities) {
+  const g = sportById(p.sport).group;
+  return activities.find((a) => a.date === p.date && (a.sport === p.sport || sportById(a.sport).group === g));
+}
+
+// Soll/Ist für einen Zeitraum.
+export function compliance(plan, activities, from, to) {
+  const items = plan.filter((p) => p.date >= from && p.date <= to);
+  const acts = activities.filter((a) => a.date >= from && a.date <= to);
+  const done = items.filter((p) => p.done || matchPlan(p, acts));
+  return {
+    planned: items.length, done: done.length,
+    plannedMin: items.reduce((a, p) => a + (Number(p.minutes) || 0), 0), actualMin: acts.reduce((a, x) => a + (x.durationS || 0) / 60, 0),
+    plannedLoad: items.reduce((a, p) => a + (p.load || 0), 0), actualLoad: acts.reduce((a, x) => a + (x.load || 0), 0),
   };
 }

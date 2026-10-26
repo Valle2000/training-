@@ -179,6 +179,31 @@ async function syncWahoo() {
 
 const SYNC = { polar: syncPolar, concept2: syncConcept2, wahoo: syncWahoo };
 
+// Verbindungstest: ruft die Listen-Endpunkte ab und zeigt Status, Anzahl und Feldnamen (zur Fehlersuche).
+const TEST_PATHS = {
+  polar: ['/v3/exercises', '/v3/users/nightly-recharge', '/v3/users/sleep'],
+  concept2: ['/api/users/me', '/api/users/me/results?number=5'],
+  wahoo: ['/v1/user', '/v1/workouts?page=1&per_page=5'],
+};
+export async function testConnection(provider) {
+  const lines = [];
+  for (const path of TEST_PATHS[provider]) {
+    try {
+      const r = await fetch(`/api/connect?provider=${provider}&op=get&path=${encodeURIComponent(path)}`, { headers: { 'x-provider-token': await token(provider) } });
+      const text = await r.text();
+      let info = '';
+      try {
+        const j = JSON.parse(text);
+        const list = Array.isArray(j) ? j : j.data || j.workouts || j.recharges || j.nights || null;
+        const first = Array.isArray(list) ? list[0] : j;
+        info = `${Array.isArray(list) ? list.length + ' Einträge, ' : ''}Felder: ${first ? Object.keys(first).slice(0, 12).join(', ') : '–'}`;
+      } catch { info = text.slice(0, 160) || '(leer)'; }
+      lines.push(`${r.status} ${path} → ${info}`);
+    } catch (e) { lines.push(`Fehler ${path}: ${e.message}`); }
+  }
+  return lines;
+}
+
 export async function syncAll() {
   const out = {};
   for (const p of Object.keys(getData().connections)) {

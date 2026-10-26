@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check, Copy } from 'lucide-react';
 import { useData, update, getSeries, deleteSeries, uid } from '../lib/store.js';
-import { today, weeks, mondayOf, buildActivity, evaluate } from '../lib/activities.js';
+import { today, weeks, mondayOf, buildActivity, evaluate, estimatePlanLoad, matchPlan, compliance } from '../lib/activities.js';
 import { addDays, ZONES } from '../lib/metrics.js';
 import { SPORTS, sportLabel } from '../lib/sports.js';
 import { importFiles } from '../lib/sync.js';
@@ -18,12 +18,18 @@ export function Training({ openActivity, openAdd }) {
   const w12 = useMemo(() => weeks(activities, 12, t), [activities, t]);
   const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
   const wk = weeks(activities.filter((a) => a.date >= monday && a.date <= days[6]), 1, days[6])[0];
-  const plannedWeek = plan.filter((p) => p.date >= monday && p.date <= days[6] && !p.done);
+  const comp = compliance(plan, activities, monday, days[6]);
+  const copyLastWeek = () => {
+    const prev = plan.filter((p) => p.date >= addDays(monday, -7) && p.date < monday);
+    if (!prev.length) return toast('In der Vorwoche ist nichts geplant');
+    update((d) => ({ ...d, plan: [...d.plan, ...prev.map((p) => ({ ...p, id: uid(), date: addDays(p.date, 7), done: false }))] }));
+    toast(`${prev.length} Einheiten kopiert`);
+  };
 
   return (
     <>
       <div className="row" style={{ justifyContent: 'space-between' }}>
-        <h1 style={{ flex: 'none', margin: '8px 0' }}>Training</h1>
+        <h1 style={{ flex: 'none', margin: '8px 0' }}>Kalender</h1>
         <button className="primary" style={{ flex: 'none' }} onClick={openAdd}><Plus size={18} />Einheit</button>
       </div>
       <Seg value={view} onChange={setView} options={[['week', 'Woche'], ['list', 'Liste'], ['zones', 'Zonen']]} />
@@ -37,17 +43,22 @@ export function Training({ openActivity, openAdd }) {
           </div>
           <div className="week">
             {days.map((d) => (
-              <div key={d} className={`day${d === t ? ' today' : ''}`}>
-                <b>{fmtDate(d, { weekday: 'short', day: 'numeric' })}</b>
+              <div key={d} className={`day${d === t ? ' today' : ''}`} onClick={(e) => e.target === e.currentTarget && setPlanItem({ date: d })}>
+                <b onClick={() => setPlanItem({ date: d })}>{fmtDate(d, { weekday: 'short', day: 'numeric' })}</b>
                 {activities.filter((a) => a.date === d).map((a) => <div key={a.id} className="a" onClick={() => openActivity(a)}>{Math.round(a.durationS / 60)}′ {sportLabel(a.sport)}</div>)}
-                {plan.filter((p) => p.date === d && !p.done).map((p) => <div key={p.id} className="p" onClick={() => setPlanItem(p)}>{p.minutes}′ {p.title}</div>)}
+                {plan.filter((p) => p.date === d && !p.done && !(d <= t && matchPlan(p, activities))).map((p) => <div key={p.id} className={`p${d < t ? ' missed' : ''}`} onClick={() => setPlanItem(p)}>{p.minutes}′ {p.title || sportLabel(p.sport)}</div>)}
               </div>
             ))}
           </div>
+          <p className="muted small">Tippe auf einen Tag, um eine Einheit zu planen. Gestrichelt = geplant, durchgestrichen = verpasst.</p>
           <div className="stats">
-            <div><b>{fmtNum(wk.hours, 1)}</b><span>Stunden</span></div>
-            <div><b>{fmtNum(wk.load)}</b><span>Belastung</span></div>
-            <div><b>{fmtNum(plannedWeek.reduce((a, p) => a + p.minutes, 0) / 60, 1)}</b><span>Std. geplant offen</span></div>
+            <div><b>{fmtNum(comp.actualMin / 60, 1)}<small className="muted">/{fmtNum(comp.plannedMin / 60, 1)}</small></b><span>Stunden Ist/Soll</span></div>
+            <div><b>{fmtNum(comp.actualLoad)}<small className="muted">/{fmtNum(comp.plannedLoad)}</small></b><span>Belastung Ist/Soll</span></div>
+            <div><b>{comp.done}/{comp.planned}</b><span>Einheiten erledigt</span></div>
+          </div>
+          <div className="row">
+            <button className="secondary" onClick={() => setPlanItem({ date: days.find((d) => d >= t) || days[0] })}><Plus size={17} />Einheit planen</button>
+            <button className="secondary" onClick={copyLastWeek}><Copy size={17} />Vorwoche kopieren</button>
           </div>
           <div className="card">
             <h3 style={{ marginTop: 0 }}>Zonen dieser Woche</h3>
@@ -80,7 +91,7 @@ export function Training({ openActivity, openAdd }) {
           <ZoneShare weeks={w12.slice(-4)} />
         </div>
       )}
-      {planItem && <PlanSheet item={planItem} onClose={() => setPlanItem(null)} />}
+      {planItem && <PlanEditor item={planItem} onClose={() => setPlanItem(null)} />}
     </>
   );
 }
@@ -95,22 +106,51 @@ function ZoneShare({ weeks: w }) {
   return <p className="muted small">Letzte 4 Wochen: locker (I1–I2) {pct(z.I1 + z.I2)} % · Schwelle (I3) {pct(z.I3)} % · hart (I4–I5) {pct(z.I4 + z.I5)} %. Weltklasse-Langläufer liegen meist bei 80–90 % locker.</p>;
 }
 
-function PlanSheet({ item, onClose }) {
-  const set = (fn) => { update((d) => ({ ...d, plan: fn(d.plan) })); onClose(); };
+const PLAN_ZONES = [['I1', 'I1 locker'], ['I2', 'I2 mittel'], ['I3', 'I3 Schwelle'], ['I4', 'I4 hart'], ['I5', 'I5 sehr hart'], ['Kraft', 'Kraft']];
+
+// Geplante Einheit anlegen oder bearbeiten. Die Belastung fließt in die Formprognose ein.
+function PlanEditor({ item, onClose }) {
+  const { keySessions } = useData();
+  const isNew = !item.id;
+  const [p, setP] = useState({ sport: 'rollerski_skate', minutes: 60, zone: 'I1', title: '', description: '', ...item });
+  const [manualLoad, setManualLoad] = useState(!isNew && item.load !== estimatePlanLoad(item.minutes, item.zone));
+  const load = manualLoad ? p.load : estimatePlanLoad(p.minutes, p.zone);
+  const set = (k) => (e) => setP({ ...p, [k]: e.target.value });
+  const save = () => {
+    const next = { ...p, id: p.id || uid(), minutes: Number(p.minutes) || 0, load: Number(load) || 0, source: p.source || 'manual' };
+    update((d) => ({ ...d, plan: [...d.plan.filter((x) => x.id !== next.id), next] }));
+    toast('Geplant');
+    onClose();
+  };
+  const remove = () => { update((d) => ({ ...d, plan: d.plan.filter((x) => x.id !== p.id) })); onClose(); };
   return (
-    <Sheet title={item.title} onClose={onClose}>
-      <p className="muted">{fmtDate(item.date)} · {sportLabel(item.sport)} · {item.minutes} min · {item.zone} · geschätzte Belastung {item.load}</p>
-      <p style={{ whiteSpace: 'pre-line' }}>{item.description}</p>
+    <Sheet title={isNew ? 'Einheit planen' : 'Geplante Einheit'} onClose={onClose}>
+      <div className="grid2">
+        <div><label>Datum</label><input type="date" value={p.date} onChange={set('date')} /></div>
+        <div><label>Sportart</label><select value={p.sport} onChange={(e) => setP({ ...p, sport: e.target.value, zone: e.target.value === 'strength' ? 'Kraft' : p.zone === 'Kraft' ? 'I1' : p.zone })}>{SPORTS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}</select></div>
+        <div><label>Minuten</label><input type="number" value={p.minutes} onChange={set('minutes')} /></div>
+        <div><label>Hauptzone</label><select value={p.zone} onChange={set('zone')}>{PLAN_ZONES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></div>
+      </div>
+      <label>Titel</label><input value={p.title} onChange={set('title')} placeholder="z. B. Double Threshold AM: 5×6 min" />
+      {keySessions.length > 0 && <><label>Key Session</label><select value={p.keySessionId || ''} onChange={(e) => { const k = keySessions.find((x) => x.id === e.target.value); setP({ ...p, keySessionId: e.target.value || null, ...(k && !p.title ? { title: k.name, sport: k.sport || p.sport } : {}) }); }}><option value="">–</option>{keySessions.map((k) => <option key={k.id} value={k.id}>{k.name}</option>)}</select></>}
+      <label>Beschreibung</label><textarea value={p.description} onChange={set('description')} placeholder="Aufwärmen, Intervalle, Laktatziel …" />
+      <label>Geschätzte Belastung</label>
       <div className="row">
-        <button className="secondary" onClick={() => set((p) => p.map((x) => (x.id === item.id ? { ...x, done: true } : x)))}><Check size={17} />Erledigt / ausblenden</button>
-        <button className="danger" onClick={() => set((p) => p.filter((x) => x.id !== item.id))}><Trash2 size={17} />Löschen</button>
+        <input type="number" value={load} disabled={!manualLoad} onChange={(e) => setP({ ...p, load: e.target.value })} />
+        <button className="ghost" style={{ flex: 'none' }} onClick={() => { setManualLoad(!manualLoad); setP({ ...p, load }); }}>{manualLoad ? 'automatisch' : 'selbst festlegen'}</button>
+      </div>
+      <p className="muted small">Automatisch: pro Stunde I1 ≈ 50, I2 ≈ 65, I3 ≈ 90, I4 ≈ 110, I5 ≈ 125, Kraft ≈ 45.</p>
+      <div className="row" style={{ marginTop: 12 }}>
+        <button className="primary" onClick={save}>Speichern</button>
+        {!isNew && <button className="secondary" onClick={() => { update((d) => ({ ...d, plan: d.plan.map((x) => (x.id === p.id ? { ...x, done: true } : x)) })); onClose(); }}><Check size={17} />Erledigt</button>}
+        {!isNew && <button className="danger" onClick={remove}><Trash2 size={17} />Löschen</button>}
       </div>
     </Sheet>
   );
 }
 
 export function ActivitySheet({ activity, onClose }) {
-  const { settings } = useData();
+  const { settings, keySessions } = useData();
   const [a, setA] = useState(activity);
   const [series, setSeries] = useState(null);
   useEffect(() => { if (activity.hasSeries) getSeries(activity.id).then(setSeries); }, [activity]);
@@ -137,6 +177,12 @@ export function ActivitySheet({ activity, onClose }) {
         <div><b>{a.avgHr ?? '–'}/{a.maxHr ?? '–'}</b><span>Ø/max Puls</span></div>
         <div><b>{a.avgPower ?? '–'}{a.np ? `/${a.np}` : ''}</b><span>Ø W{a.np ? '/NP' : ''}</span></div>
         <div><b>{a.trimp ?? '–'}</b><span>TRIMP</span></div>
+        {a.intensity != null && <div><b>{fmtNum(a.intensity, 2)}</b><span>IF</span></div>}
+        {a.ef != null && <div><b>{fmtNum(a.ef, 2)}</b><span>EF (NP/Puls)</span></div>}
+        {a.decoupling != null && <div><b style={{ color: a.decoupling > 5 ? 'var(--bad)' : 'var(--good)' }}>{fmtNum(a.decoupling, 1)} %</b><span>Entkopplung</span></div>}
+        {a.kj != null && <div><b>{a.kj}</b><span>kJ</span></div>}
+        {a.vi != null && <div><b>{fmtNum(a.vi, 2)}</b><span>VI</span></div>}
+        {a.powerCurve?.[1200] && <div><b>{a.powerCurve[1200]}</b><span>beste 20 min W</span></div>}
       </div>
       <ZoneBar zones={a.zones} />
       {series && <div className="card"><LineChart labels={labels} xFormat={(s) => fmtDuration(s)} series={[
@@ -149,6 +195,7 @@ export function ActivitySheet({ activity, onClose }) {
         <div><label>RPE (1–10)</label><input type="number" min="1" max="10" step="0.5" value={a.rpe ?? ''} onChange={(e) => setA({ ...a, rpe: e.target.value ? Number(e.target.value) : null })} /></div>
         <div><label>Laktat (mmol/l)</label><input value={a.lactate} onChange={(e) => setA({ ...a, lactate: e.target.value })} placeholder="z. B. 2,1 / 2,4 / 2,8" /></div>
       </div>
+      {keySessions.length > 0 && <><label>Key Session</label><select value={a.keySessionId || ''} onChange={(e) => setA({ ...a, keySessionId: e.target.value || null })}><option value="">automatisch (über Stichwörter)</option>{keySessions.map((k) => <option key={k.id} value={k.id}>{k.name}</option>)}</select></>}
       <label>Notiz</label><textarea value={a.notes} onChange={(e) => setA({ ...a, notes: e.target.value })} />
       <div className="row" style={{ marginTop: 12 }}>
         <button className="primary" onClick={save}>Speichern</button>
