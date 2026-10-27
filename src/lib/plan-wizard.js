@@ -284,9 +284,13 @@ export function flexible(pr = {}, date) {
 
 // Multisport: Schwerpunkt-Zeiträume (z. B. Juni–August Laufen oder Rad, Triathlon-Block mit Rad + Lauf).
 export const FOCUS_OPTIONS = [['run', 'Laufen'], ['bike', 'Rad'], ['tri', 'Triathlon (Rad + Lauf)'], ['rollerski', 'Rollski/Ski (Standard)']];
-export function focusOn(date, list = []) {
+// Schneelage: Zeiträume ohne Schnee (snow: false) ersetzen Ski durch eine Ersatzsportart (winterSub).
+export const noSnowOn = (date, snow = []) => (snow || []).some((p) => !p.snow && date >= p.from && date <= p.to);
+export function focusOn(date, list = [], snow = [], winterSub = 'run') {
   const f = (list || []).find((x) => date >= x.from && date <= x.to && x.sport !== 'rollerski');
-  return f ? f.sport : null;
+  if (f) return f.sport;
+  if (noSnowOn(date, snow) && (winterSub === 'run' || winterSub === 'bike')) return winterSub;
+  return null;
 }
 // Sportart einer Rennzeile im Kalender.
 export const raceSport = (technique, date) => (technique === 'Rad' ? 'bike' : technique === 'Lauf' || technique === 'Triathlon' ? 'run' : technique === 'Rollski' ? 'rollerski_skate' : winter(date) ? 'xc_skate' : 'rollerski_skate');
@@ -378,8 +382,18 @@ export function generatePlan(opts, races = []) {
       const day = days[dow - 1];
       if (slot === 'dt') {
         const am = pickByType('dt_am', rot) || pickByType('threshold', rot), pm = pickByType('dt_pm', rot) || pickByType('threshold', rot + 1);
-        if (am) put(day, sess(am, day.date, rot++, 'vormittags'));
-        if (pm && opts.doubles !== false && room(day) >= pm.minutes) put(day, sess(pm, day.date, rot++, 'nachmittags'));
+        if (am) {
+          const x = sess(am, day.date, rot++, 'vormittags');
+          // Double Threshold getrennt: morgens Rad (gelenkschonend), abends Laufen – im Laufen-Schwerpunkt.
+          if (fSport === 'run' && opts.dtSplit !== false && x.sport !== 'bike' && am.sport === 'specific') x.sport = 'bike';
+          put(day, x);
+        }
+        if (pm && opts.doubles !== false && room(day) >= pm.minutes) {
+          const x = sess(pm, day.date, rot++, 'nachmittags');
+          // Mit Rad als Ersatz: auch die Abendeinheit auf dem Rad.
+          if (fSport === 'bike' && pm.sport === 'run') x.sport = 'bike';
+          put(day, x);
+        }
       } else if (slot === 'opener') {
         const race = weekRaces[0];
         const d = race ? days.find((x) => x.date === addDays(race.date, -1)) || day : day;

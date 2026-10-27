@@ -5,7 +5,7 @@ import { today, weeks as weekStats } from '../lib/activities.js';
 import { addDays } from '../lib/metrics.js';
 import { sportLabel, SPORTS } from '../lib/sports.js';
 import { PHASES, PRIORITY_INFO, raceAdvice } from '../lib/season.js';
-import { FOCUS_OPTIONS, focusOn, APPROACHES, KEY_TYPES, allOptions, makeKey, PLAN_SOURCES, GOALS, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend, hardDayCount, suggestHardDays, checkHardDays } from '../lib/plan-wizard.js';
+import { FOCUS_OPTIONS, focusOn, noSnowOn, APPROACHES, KEY_TYPES, allOptions, makeKey, PLAN_SOURCES, GOALS, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend, hardDayCount, suggestHardDays, checkHardDays } from '../lib/plan-wizard.js';
 import { Sheet, fmtDate, fmtNum, toast } from './common.jsx';
 import { freeMinutes, hasSchedule, periodForWeek } from '../lib/week-adapt.js';
 
@@ -41,7 +41,7 @@ export function PlanWizard({ onClose }) {
   const keys = o.keys || ap.defaults;
   const pr = o.profile || {};
   const rec = recommend(pr, Number(o.startHours) || 10);
-  const plan = useMemo(() => (step >= 5 ? generatePlan({ ...o, keys, customKeys: custom, capFor: hasSchedule(settings.schedule) ? (d) => freeMinutes(d, settings.schedule) : null, periodFor: settings.schedule?.periods?.length ? (m) => periodForWeek(m, settings.schedule) : null, focusFor: (m) => focusOn(m, settings.season?.focus) }, races) : []), [step, o, keys, races, custom, settings.schedule, settings.season?.focus]);
+  const plan = useMemo(() => (step >= 5 ? generatePlan({ ...o, keys, customKeys: custom, capFor: hasSchedule(settings.schedule) ? (d) => freeMinutes(d, settings.schedule) : null, periodFor: settings.schedule?.periods?.length ? (m) => periodForWeek(m, settings.schedule) : null, focusFor: (m) => focusOn(m, settings.season?.focus, settings.season?.snow, settings.season?.winterSub) }, races) : []), [step, o, keys, races, custom, settings.schedule, settings.season?.focus, settings.season?.snow, settings.season?.winterSub]);
   const set = (k, v) => setO({ ...o, [k]: v });
   const toggleKey = (id) => set('keys', keys.includes(id) ? keys.filter((k) => k !== id) : [...keys, id]);
   const setPr = (k, v) => set('profile', { ...pr, [k]: v });
@@ -270,7 +270,7 @@ function WizardRaces({ t }) {
         </div>
       ))}
       {!up.length && <p className="muted small">Noch keine Rennen eingetragen.</p>}
-      <FocusBlocks t={t} focus={settings.season?.focus || []} />
+      <FocusBlocks t={t} focus={settings.season?.focus || []} snow={settings.season?.snow || []} winterSub={settings.season?.winterSub || 'run'} />
       {advice.map((a) => <div key={a.text} className="notice" style={a.level === 'gelb' ? { background: 'var(--warnbg)', color: 'var(--warn)' } : undefined}>{a.text}</div>)}
       <div className="card">
         <b className="small">Rennen hinzufügen</b>
@@ -341,15 +341,36 @@ const FOCUS_WHY = {
   tri: 'Triathlon: Ausdauer aus Rad und Lauf, dazu Koppeltraining (Rad direkt gefolgt von Lauf) in der Vorbereitung. Im Wettkampf zählt der Wechsel Rad → Lauf.',
 };
 // Schwerpunkt-Zeiträume: Im Sommer Laufen, Rad oder Triathlon statt Rollski/Ski.
-function FocusBlocks({ t, focus }) {
+function FocusBlocks({ t, focus, snow, winterSub }) {
   const year = t.slice(0, 4);
   const set = (list) => update((d) => ({ ...d, settings: { ...d.settings, season: { ...(d.settings.season || {}), focus: list } } }));
+  const setSnow = (list) => update((d) => ({ ...d, settings: { ...d.settings, season: { ...(d.settings.season || {}), snow: list } } }));
+  const setSub = (v) => update((d) => ({ ...d, settings: { ...d.settings, season: { ...(d.settings.season || {}), winterSub: v } } }));
   return (
     <div className="card">
       <b>Sport-Schwerpunkte</b>
       <p className="muted small">Du machst mehrere Sportarten? Lege Zeiträume fest, in denen der Plan auf eine andere Sportart setzt – z. B. im Sommer Laufen oder Rad. Außerhalb davon bleibt es beim Rollski/Ski-Plan.</p>
       <div className="chips">{FOCUS_PRESETS.map((p) => <button key={p.label} className="chip" onClick={() => set([...focus, { id: uid(), sport: p.sport, label: p.label, from: `${year}-${p.from}`, to: `${year}-${p.to}` }])}><Plus size={13} /> {p.label}</button>)}</div>
       {focus.some((f, i) => focus.slice(i + 1).some((g) => f.from <= g.to && g.from <= f.to)) && <div className="notice" style={{ background: 'var(--warnbg)', color: 'var(--warn)' }}>Zwei Zeiträume überschneiden sich – im Plan gilt der oben stehende.</div>}
+      <b className="small" style={{ display: 'block', marginTop: 12 }}>Schneelage</b>
+      <p className="muted small">Ohne Schnee (z. B. Dezember bei Tauwetter) wird der Ski-Plan durch eine Ersatzsportart ersetzt. Standard: Laufen. Der Schnee-Zeitraum ist im Normalfall der Winter.</p>
+      <div className="chips"><button className="chip" onClick={() => setSnow([...snow, { id: uid(), snow: false, from: `${year}-12-01`, to: `${year}-12-31` }])}><Plus size={13} /> Kein Schnee (Dezember)</button></div>
+      {snow.map((p) => (
+        <div key={p.id} className="item" style={{ flexWrap: 'wrap' }}>
+          <div className="grow"><b>Kein Schnee</b>
+            <div className="grid2" style={{ marginTop: 6 }}>
+              <div><label>von</label><input type="date" value={p.from} onChange={(e) => setSnow(snow.map((x) => (x.id === p.id ? { ...x, from: e.target.value } : x)))} /></div>
+              <div><label>bis</label><input type="date" value={p.to} onChange={(e) => setSnow(snow.map((x) => (x.id === p.id ? { ...x, to: e.target.value } : x)))} /></div>
+            </div>
+          </div>
+          <button className="ghost" style={{ flex: 'none' }} onClick={() => setSnow(snow.filter((x) => x.id !== p.id))} aria-label="Entfernen"><Trash2 size={16} /></button>
+        </div>
+      ))}
+      {snow.length > 0 && <>
+        <label>Ersatz ohne Schnee</label>
+        <div className="chips">{[['run', 'Laufen'], ['bike', 'Rad']].map(([v, l]) => <button key={v} className={`chip${winterSub === v ? ' on' : ''}`} onClick={() => setSub(v)}>{l}</button>)}</div>
+        <p className="small muted">Mit Laufen: Double Threshold morgens Rad, abends Laufen – so wird der Laufumfang belastbar verteilt. Mit Rad: alle Schwellen auf dem Rad.</p>
+      </>}
       {focus.map((f) => (
         <div key={f.id} className="item" style={{ flexWrap: 'wrap' }}>
           <div className="grow"><b>{f.label || FOCUS_OPTIONS.find((x) => x[0] === f.sport)?.[1]}</b>

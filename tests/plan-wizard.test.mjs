@@ -187,3 +187,25 @@ test('Multisport: Schwerpunkte setzen die Sportart, Triathlon bekommt Koppeltrai
   const race = tri.flatMap((w) => w.days.flatMap((d) => d.sessions)).find((s) => s.title.startsWith('Rennen: Triathlon'));
   assert.equal(race.sport, 'run');
 });
+
+test('Winter ohne Schnee: Laufen statt Ski, Double Threshold morgens Rad, abends Laufen', async () => {
+  const { focusOn, noSnowOn } = await import('../src/lib/plan-wizard.js');
+  const snow = [{ snow: false, from: '2027-12-01', to: '2027-12-31' }];
+  assert.ok(noSnowOn('2027-12-10', snow));
+  assert.equal(focusOn('2027-12-10', [], snow, 'run'), 'run');
+  assert.equal(focusOn('2027-12-10', [], snow, 'bike'), 'bike');
+  assert.equal(focusOn('2027-01-10', [], snow, 'run'), null);
+  const o = { ...base, start: '2027-12-06', end: '2027-12-26', approach: 'norwegian', dtDays: 1, hardDays: [3, 6], focusFor: (m) => focusOn(m, [], snow, 'run') };
+  const w = generatePlan(o, []);
+  const dt = w.flatMap((x) => x.days.flatMap((d) => d.sessions)).filter((s) => /Double Threshold/.test(s.title));
+  assert.ok(dt.some((s) => s.title.includes('morgens') && s.sport === 'bike'), 'DT morgens Rad');
+  assert.ok(dt.some((s) => s.title.includes('abends') && s.sport === 'run'), 'DT abends Laufen');
+});
+
+test('Winter ohne Schnee mit Rad als Ersatz: beide Double-Threshold-Einheiten auf dem Rad', async () => {
+  const { focusOn } = await import('../src/lib/plan-wizard.js');
+  const snow = [{ snow: false, from: '2027-12-01', to: '2027-12-31' }];
+  const w = generatePlan({ ...base, start: '2027-12-06', end: '2027-12-26', approach: 'norwegian', dtDays: 1, hardDays: [3, 6], focusFor: (m) => focusOn(m, [], snow, 'bike') }, []);
+  const dt = w.flatMap((x) => x.days.flatMap((d) => d.sessions)).filter((s) => /Double Threshold/.test(s.title));
+  assert.ok(dt.length > 0 && dt.every((s) => s.sport === 'bike'), JSON.stringify(dt.map((s) => s.sport)));
+});
