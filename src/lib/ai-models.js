@@ -29,3 +29,27 @@ export function estimateCost(kind, modelId, effort) {
   return costOf(modelId, { input: t.input, output: t.output * (EFFORT_FACTOR[effort] ?? 1) });
 }
 export const fmtUsd = (x) => (x == null ? '–' : x === 0 ? '0 Cent' : x < 0.01 ? 'unter 1 Cent' : `${x < 1 ? `${String(Math.round(x * 100)).replace('.', ',')} Cent` : `${String(Math.round(x * 100) / 100).replace('.', ',')} $`}`);
+
+// Schlüssel einer Anfrage: gleiche Daten, Frage, Modell und Gründlichkeit ergeben dieselbe Antwort.
+export function requestKey(payload) {
+  const s = JSON.stringify(payload);
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return (h >>> 0).toString(36);
+}
+
+// Beispiele: was sinnvoll ist und was unnötige Kosten verursacht (Preise je Anfrage mit Opus, „Gründlich“).
+export const AI_EXAMPLES = {
+  sinnvoll: [
+    'Analyse und Wochenplan einmal pro Woche (ca. 1,40 $ im Monat mit Opus).',
+    'Eine konkrete Frage, wenn etwas auffällt, z. B. „Warum war die Schwelleneinheit so schwer?“.',
+    'Essensplan einmal pro Woche oder wenn sich Vorlieben ändern (ca. 0,90 $ im Monat mit Opus).',
+  ],
+  unnoetig: [
+    'Eine Analyse nach jeder Einheit – das wären ca. 10 $ im Monat, ohne dass sich der Plan wesentlich ändert.',
+    'Dieselbe Frage mehrmals ohne neue Daten – die App zeigt dir die letzte Antwort, die kostet nichts.',
+    'Zahlen, die die App selbst zeigt (Ampel, Wochenbilanz, Zonen) – dafür braucht es keine KI.',
+    'Einen Essensplan für jeden Tag einzeln – ein Plan für die ganze Woche reicht.',
+  ],
+};
+export const monthlyEstimate = (kind, modelId, effort, perMonth) => Math.round(estimateCost(kind, modelId, effort) * perMonth * 100) / 100;
