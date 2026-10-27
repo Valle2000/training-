@@ -4,7 +4,7 @@ import { nutritionTips } from './nutrition.js';
 import { slotDay, busyOn, hasSchedule, toMin, fmtTime } from './week-adapt.js';
 
 const HARD = ['I3', 'I4', 'I5'];
-const OUTDOOR_WINTER = new Set(['xc_skate', 'xc_classic', 'run', 'hike', 'rollerski_skate', 'rollerski_classic', 'bike']);
+const OUTDOOR_WINTER = new Set(['xc_skate', 'xc_classic', 'run', 'hike', 'rollerski_skate', 'rollerski_classic', 'rollerski', 'bike']);
 
 // Erste Uhrzeit aus den Vorlieben („7:00 und 17:00“), für geplante Einheiten ohne Uhrzeit.
 const prefTime = (s, i) => { const m = (String(s || '').match(/\d{1,2}[:.]\d{2}/g) || [])[i]; return m ? m.replace('.', ':').padStart(5, '0') : null; };

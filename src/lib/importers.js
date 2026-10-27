@@ -342,7 +342,7 @@ function csvRows(text) {
   return rows;
 }
 const STRAVA_SPORT = [
-  [/roll ?ski|roller ?ski/i, (n) => (/skat|freistil|free/i.test(n) ? 'rollerski_skate' : 'rollerski_classic')],
+  [/roll ?ski|roller ?ski/i, () => 'rollerski'], // Strava kennt keinen Stil
   [/nordic ski|backcountry/i, (n) => (/skat|freistil|free/i.test(n) ? 'xc_skate' : 'xc_classic')],
   [/virtual ride|e-?bike|ride|velomobile|handcycle/i, () => 'bike'], [/virtual run|trail run|run/i, () => 'run'],
   [/rowing|row/i, () => 'row'], [/weight|crossfit|workout/i, () => 'strength'], [/hike|walk|snowshoe/i, () => 'hike'],

@@ -4,6 +4,7 @@ export const SPORTS = [
   { id: 'xc_classic', label: 'Langlauf klassisch', group: 'ski' },
   { id: 'rollerski_skate', label: 'Rollski Skating', group: 'ski' },
   { id: 'rollerski_classic', label: 'Rollski klassisch', group: 'ski' },
+  { id: 'rollerski', label: 'Rollski', group: 'ski' }, // ohne Stil (z. B. Strava)
   { id: 'skierg', label: 'SkiErg', group: 'ski', power: true },
   { id: 'run', label: 'Laufen', group: 'endurance' },
   { id: 'hike', label: 'Berglauf / Wandern', group: 'endurance' },
@@ -22,13 +23,16 @@ export const sportLabel = (id) => sportById(id).label;
 export function sportFromFit(sport, subSport) {
   const s = String(sport || '').toLowerCase(), sub = String(subSport || '').toLowerCase();
   if (s === 'crossCountrySkiing'.toLowerCase() || s === 'cross_country_skiing') return sub.includes('skate') ? 'xc_skate' : 'xc_classic';
-  if (s === 'rollerskiing' || s === 'roller_skiing' || sub.includes('roller')) return sub.includes('classic') ? 'rollerski_classic' : 'rollerski_skate';
+  if (s === 'rollerskiing' || s === 'roller_skiing' || sub.includes('roller')) return sub.includes('classic') ? 'rollerski_classic' : sub.includes('skate') ? 'rollerski_skate' : 'rollerski';
   if (s === 'running') return sub.includes('trail') ? 'hike' : 'run';
   if (s === 'hiking' || s === 'walking') return 'hike';
   if (s === 'cycling') return 'bike';
   if (s === 'rowing') return 'row';
   if (s === 'swimming') return 'swim';
-  if (s === 'training' || s === 'fitnessequipment' || s === 'fitness_equipment') return sub.includes('strength') ? 'strength' : 'other';
+  if (s === 'training' || s === 'fitnessequipment' || s === 'fitness_equipment') {
+    if (sub.includes('skiing')) return 'skierg'; // Concept2 SkiErg meldet „indoorSkiing“
+    return sub.includes('strength') ? 'strength' : 'other';
+  }
   return 'other';
 }
 

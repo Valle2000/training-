@@ -371,7 +371,7 @@ export function generatePlan(opts, races = []) {
     const total = w.targetHours * 60;
     let used = 0;
     // Winter: höchstens eine Ski-Einheit am Tag; an Tagen ohne Ski (Einstellung) Laufen bzw. SkiErg statt Ski.
-    const isSki = (sp) => /^(xc_|rollerski_)/.test(sp || '');
+    const isSki = (sp) => /^(xc_|rollerski)/.test(sp || '');
     const noSki = new Set(opts.noSkiDays || []);
     const put = (day, s) => {
       if (winter(day.date) && isSki(s.sport)) {

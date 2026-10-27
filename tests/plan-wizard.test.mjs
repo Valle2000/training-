@@ -270,7 +270,7 @@ test('Winter: mindestens 2,5 h Laufen pro Woche, ohne Anfahrt zur Loipe', () => 
 });
 
 test('Winter: eine Ski-Einheit pro Tag, Double Threshold morgens am SkiErg, Tage ohne Ski', () => {
-  const isSki = (sp) => /^(xc_|rollerski_)/.test(sp);
+  const isSki = (sp) => /^(xc_|rollerski)/.test(sp);
   const w = generatePlan({ ...base, start: '2026-12-07', end: '2027-02-28', approach: 'norwegian', dtDays: 2, hardDays: [2, 6], longDay: 7, noSkiDays: [4, 5], strengthPerWeek: 2 }, []);
   const days = w.flatMap((x) => x.days);
   for (const d of days) assert.ok(d.sessions.filter((s) => isSki(s.sport)).length <= 1, `${d.date}: mehr als ein Ski`);

@@ -39,7 +39,7 @@ test('Strava-Export: Dubletten, Watt-Zusammenführung, Namen', async () => {
   assert.equal(merged.notes, 'mit Gruppe');
   const ski = acts.find((a) => a.date === '2025-06-05');
   assert.equal(ski.title, 'Rollski, klassisch');
-  assert.equal(ski.sport, 'rollerski_classic');
+  assert.equal(ski.sport, 'rollerski');
   assert.equal(ski.notes, 'locker, schön');
 });
 
@@ -54,7 +54,7 @@ test('Strava-CSV: Bewegungszeit und Gesamtzeit werden übernommen', async () => 
 test('Strava: Rollski auch mit anderer Schreibweise, unbekannter Typ über den Namen; SkiErg-Kopie von Concept2 ist Dublette', async () => {
   const { stravaSport } = await import('../src/lib/importers.js');
   const { findDuplicate } = await import('../src/lib/activities.js');
-  assert.equal(stravaSport('Rollski', 'Rollski Freistil'), 'rollerski_skate');
+  assert.equal(stravaSport('Rollski', 'Rollski Freistil'), 'rollerski');
   assert.equal(stravaSport('Übungsfahrt', 'Rollerski Klassisch'), 'rollerski_classic');
   const c2 = { id: 'c', source: 'concept2', externalId: '9', start: '2026-10-27T15:00:00Z', durationS: 1800, elapsedS: 1800 };
   const strava = { source: 'upload', start: '2026-10-27T16:05:00Z', durationS: 1790, elapsedS: 1800 };
@@ -67,4 +67,12 @@ test('Sonstiges erkennen: aus Titel und Notiz', async () => {
   assert.equal(guessSport({ title: 'SkiErg Schwelle' }), 'skierg');
   assert.equal(guessSport({ title: 'Morgenrunde', notes: 'Radfahren locker' }), 'bike');
   assert.equal(guessSport({ title: 'Irgendwas' }), 'other');
+});
+
+test('FIT: Concept2 SkiErg und Rollski-Stil', async () => {
+  const { sportFromFit } = await import('../src/lib/sports.js');
+  assert.equal(sportFromFit('fitnessEquipment', 'indoorSkiing'), 'skierg');
+  assert.equal(sportFromFit('rollerSkiing', 'classic'), 'rollerski_classic');
+  assert.equal(sportFromFit('rollerSkiing', 'skate'), 'rollerski_skate');
+  assert.equal(sportFromFit('rollerSkiing', ''), 'rollerski');
 });

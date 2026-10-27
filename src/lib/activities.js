@@ -114,7 +114,7 @@ export function buildActivity(raw, settings, extra = {}) {
 const round = (v) => (v == null ? null : Math.round(v));
 
 // Splits nach Distanz aus dem 1-Hz-Tempoverlauf (m/s): jeder km (Rad: alle 5 km), wie die Autolap-Funktion der Uhr.
-const SPLIT_M = { run: 1000, hike: 1000, xc_skate: 1000, xc_classic: 1000, rollerski_skate: 1000, rollerski_classic: 1000, bike: 5000 };
+const SPLIT_M = { run: 1000, hike: 1000, xc_skate: 1000, xc_classic: 1000, rollerski_skate: 1000, rollerski_classic: 1000, rollerski: 1000, bike: 5000 };
 export function distanceSplits(series, sport) {
   const step = SPLIT_M[sport], sp = series?.speed;
   if (!step || !sp?.some((v) => v > 0)) return null;
