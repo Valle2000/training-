@@ -167,12 +167,10 @@ function Zones({ acts, range, by, setBy }) {
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Intensitätsverteilung</h3>
         {totalH ? <>
-          <StackedBars buckets={bk} unit=" h" stacks={[{ key: 'easy', label: 'locker (I1–I2)', color: ZONE_COLORS.I1 }, { key: 'thr', label: 'Schwelle (I3)', color: ZONE_COLORS.I3 }, { key: 'hard', label: 'hart (I4–I5)', color: ZONE_COLORS.I5 }, { key: 'strength', label: 'Kraft', color: 'var(--load)' }]} value={(b, k) => (k === 'easy' ? b.zones.I1 + b.zones.I2 : k === 'thr' ? b.zones.I3 : k === 'hard' ? b.zones.I4 + b.zones.I5 : b.groups.strength)} />
+          <StackedBars buckets={bk} unit=" h" stacks={[...ZONES.map((z) => ({ key: z.id, label: z.label, color: ZONE_COLORS[z.id] })), { key: 'strength', label: 'Kraft', color: 'var(--load)' }]} value={(b, k) => (k === 'strength' ? b.groups.strength : b.zones[k])} />
           <table className="t"><tbody>
-            <tr><td>locker (I1–I2)</td><td>{share(tot.zones.I1 + tot.zones.I2)} %</td></tr>
-            <tr><td>Schwelle (I3)</td><td>{share(tot.zones.I3)} %</td></tr>
-            <tr><td>hart (I4–I5)</td><td>{share(tot.zones.I4 + tot.zones.I5)} %</td></tr>
-            <tr><td>Kraft</td><td>{share(kraftH)} %</td></tr>
+            {ZONES.map((z, i) => <tr key={z.id}><td><i style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 3, background: ZONE_COLORS[z.id], marginRight: 6 }} />{z.label}{bpm(i) && <span className="muted small"> · {bpm(i)}</span>}</td><td>{share(tot.zones[z.id])} % · {fmtDuration(tot.zones[z.id] * 3600)} h</td></tr>)}
+            <tr><td><i style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 3, background: 'var(--load)', marginRight: 6 }} />Kraft</td><td>{share(kraftH)} % · {fmtDuration(kraftH * 3600)} h</td></tr>
             {withoutHr > 0.05 && <tr><td className="muted">ohne Pulsdaten</td><td className="muted">{share(withoutHr)} %</td></tr>}
           </tbody></table>
           <p className="muted small">Anteil an allen Stunden im Zeitraum. Kraft ist eine eigene Gruppe, nicht Teil der Pulszonen.</p>
