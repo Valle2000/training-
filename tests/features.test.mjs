@@ -130,3 +130,20 @@ test('Umfangsbetontes Belastungsmodell (Lucia-TRIMP)', async () => {
   assert.equal(vol.loadSource, 'lucia');
   assert.ok(vol.load > std.load, `${vol.load} > ${std.load}`);
 });
+
+test('Wiedereinstieg nach Krankheit: Stufen nach Dauer und Fieber', async () => {
+  const { returnPlan } = await import('../src/lib/gear.js');
+  const cold = { type: 'ill', start: '2026-10-01', end: '2026-10-04', systemic: false }; // 4 Tage
+  const r = returnPlan(cold, '2026-10-06');
+  assert.equal(r.steps[0].from, '2026-10-05'); // 1 Tag beschwerdefrei
+  assert.equal(r.steps.length, 4);
+  assert.equal(r.current, 1);
+  assert.equal(returnPlan(cold, '2026-10-20'), null); // vorbei
+  const flu = { type: 'ill', start: '2026-10-01', end: '2026-10-08', systemic: true }; // 8 Tage, Fieber
+  const f = returnPlan(flu, '2026-10-09');
+  assert.equal(f.current, -1);
+  assert.equal(f.steps[0].from, '2026-10-10');
+  assert.equal(f.steps[0].to, '2026-10-13'); // 4 Tage je Stufe
+  assert.equal(returnPlan({ ...flu, end: null }, '2026-10-05').active, true);
+  assert.equal(returnPlan({ type: 'injury', start: '2026-10-01' }, '2026-10-05'), null);
+});

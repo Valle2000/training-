@@ -3,7 +3,7 @@ import { Plus, Trash2, Wrench, HeartCrack } from 'lucide-react';
 import { useData, update, uid } from '../lib/store.js';
 import { today } from '../lib/activities.js';
 import { SPORTS } from '../lib/sports.js';
-import { GEAR_KINDS, gearUsage, HEALTH_TYPES, healthDays, loadBefore, healthStats } from '../lib/gear.js';
+import { GEAR_KINDS, gearUsage, HEALTH_TYPES, healthDays, loadBefore, healthStats, returnPlan } from '../lib/gear.js';
 import { seasonStart } from '../lib/season.js';
 import { Settings } from './settings.jsx';
 import { Sheet, Seg, fmtDate, fmtNum, toast } from './common.jsx';
@@ -91,6 +91,7 @@ function Health() {
         <div><b>{st.niggle}</b><span>Tage mit Beschwerden</span></div>
       </div>
       <button className="primary wide" onClick={() => setEdit({ id: uid(), type: 'ill', title: '', bodyPart: '', start: t, end: '', severity: 2, impact: 'pause', notes: '' })}><Plus size={17} />Krankheit / Verletzung eintragen</button>
+      {sorted.map((e) => returnPlan(e, t) && <ReturnCard key={'r' + e.id} e={e} t={t} />)}
       {sorted.map((e) => {
         const lb = loadBefore(e, activities);
         return (
@@ -121,6 +122,7 @@ function HealthEditor({ e: initial, onClose }) {
         <div><label>Ende (leer = aktuell)</label><input type="date" value={e.end || ''} onChange={set('end')} /></div>
       </div>
       <label>Bezeichnung</label><input value={e.title} onChange={set('title')} placeholder="z. B. Erkältung, Schienbeinkante" />
+      {e.type === 'ill' && <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontWeight: 400, marginTop: 8 }}><input type="checkbox" checked={!!e.systemic} onChange={(ev) => setE({ ...e, systemic: ev.target.checked })} style={{ width: 18, height: 18 }} />Fieber, Gliederschmerzen oder starkes Krankheitsgefühl (Ganzkörpersymptome)</label>}
       <label>Körperstelle</label><input value={e.bodyPart} onChange={set('bodyPart')} placeholder="optional" />
       <label>Auswirkung aufs Training</label><select value={e.impact} onChange={set('impact')}><option value="pause">kein Training</option><option value="reduced">eingeschränkt</option><option value="none">normal möglich</option></select>
       <label>Notizen (Behandlung, Auslöser)</label><textarea value={e.notes} onChange={set('notes')} />
@@ -133,11 +135,28 @@ function HealthEditor({ e: initial, onClose }) {
 }
 
 // Für „Heute“: laufende Krankheit/Verletzung.
+// Wiedereinstieg nach Krankheit: aktuelle Stufe und Termine.
+function ReturnCard({ e, t }) {
+  const r = returnPlan(e, t);
+  if (!r) return null;
+  return (
+    <div className="card" style={{ borderColor: 'var(--accent)' }}>
+      <b>{r.active ? 'Während der Krankheit' : 'Wiedereinstieg'}: {e.title || 'Krankheit'}</b>
+      {r.active ? <p className="small">{r.text}</p> : <>
+        <p className="small muted">{r.current === -1 ? `Noch ${Math.max(1, Math.round((Date.parse(r.steps[0].from) - Date.parse(t)) / 864e5))} Tag(e) beschwerdefrei abwarten.` : 'Nur zur nächsten Stufe, wenn die vorige ohne Rückfall ging.'}</p>
+        {r.steps.map((s, i) => <p key={s.label} className="small" style={{ margin: '4px 0', fontWeight: i === r.current ? 700 : 400, color: i < r.current ? 'var(--muted)' : undefined }}>{i === r.current ? '▶ ' : ''}{s.label} ({fmtDate(s.from, { day: 'numeric', month: 'numeric' })}{s.to !== s.from ? `–${fmtDate(s.to, { day: 'numeric', month: 'numeric' })}` : ''}): {s.text}</p>)}
+      </>}
+      <p className="muted small">Warnzeichen – sofort aufhören und ärztlich abklären: Brustschmerz, Herzstolpern, ungewöhnliche Atemnot, Schwindel. Mehr unter Coach → Wissen „Wiedereinstieg nach Krankheit“.</p>
+    </div>
+  );
+}
+
 export function HealthBanner({ go }) {
   const { health, settings } = useData();
   const t = today(settings.timezone);
   const cur = health.filter((e) => !e.end || e.end >= t);
-  if (!cur.length) return null;
-  return cur.map((e) => <button key={e.id} className="notice" style={{ width: '100%', textAlign: 'left', border: 0, background: 'var(--badbg)', color: 'var(--bad)' }} onClick={() => go('more')}><HeartCrack size={14} /> {e.title || 'Ausfall'} seit {healthDays({ ...e, end: null }, t)} Tagen{e.impact === 'pause' ? ' – Trainingspause' : e.impact === 'reduced' ? ' – eingeschränkt' : ''}</button>);
+  const back = health.filter((e) => e.end && e.end < t).map((e) => ({ e, r: returnPlan(e, t) })).filter((x) => x.r);
+  if (!cur.length && !back.length) return null;
+  return [...back.map(({ e, r }) => <button key={'r' + e.id} className="notice" style={{ width: '100%', textAlign: 'left', border: 0 }} onClick={() => go('more')}><HeartCrack size={14} /> Wiedereinstieg nach {e.title || 'Krankheit'}: {r.current === -1 ? 'noch beschwerdefrei abwarten' : `${r.steps[r.current].label} – ${r.steps[r.current].text}`}</button>), ...cur.map((e) => <button key={e.id} className="notice" style={{ width: '100%', textAlign: 'left', border: 0, background: 'var(--badbg)', color: 'var(--bad)' }} onClick={() => go('more')}><HeartCrack size={14} /> {e.title || 'Ausfall'} seit {healthDays({ ...e, end: null }, t)} Tagen{e.impact === 'pause' ? ' – Trainingspause' : e.impact === 'reduced' ? ' – eingeschränkt' : ''}</button>)];
 }
 

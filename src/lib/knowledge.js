@@ -26,6 +26,17 @@ const S = {
   gssi: { text: 'GSSI – Kohlenhydrate für Ausdauersportler', url: 'https://www.gssiweb.org/sports-science-exchange/article/dietary-carbohydrate-and-the-endurance-athlete-contemporary-perspectives' },
   altitudeNormo: { text: 'Kettunen et al. 2023, Scand J Med Sci Sports – normobares LHTLH bei Langläufern', url: 'https://jyx.jyu.fi/jyx/Record/jyx_123456789_86765/Details' },
   altitudeHypo: { text: 'Hypobares LHTL bei norwegischen Langläufern (kein Zusatzeffekt)', url: 'https://lida.sport-iat.de/ta/Record/4048297?lng=de' },
+  schwellnus16: { text: 'Schwellnus et al. 2016, Br J Sports Med – IOC-Konsens Belastung und Krankheitsrisiko', url: 'https://bjsm.bmj.com/content/50/17/1043' },
+  soligard16: { text: 'Soligard et al. 2016, Br J Sports Med – IOC-Konsens Belastung und Verletzungsrisiko', url: 'https://bjsm.bmj.com/content/50/17/1030' },
+  meeusen13: { text: 'Meeusen et al. 2013, Med Sci Sports Exerc – ECSS/ACSM-Konsens Übertraining', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Meeusen+prevention+diagnosis+treatment+overtraining+syndrome+joint+consensus+2013' },
+  elliott20: { text: 'Elliott et al. 2020, Br J Sports Med – Stufenweiser Wiedereinstieg nach COVID-19', url: 'https://bjsm.bmj.com/content/54/19/1174' },
+  mountjoy23: { text: 'Mountjoy et al. 2023, Br J Sports Med – IOC-Konsens REDs', url: 'https://bjsm.bmj.com/content/57/17/1073' },
+  casado23: { text: 'Casado et al. 2023 – Das norwegische Modell (Review)', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Casado+Foster+Bakken+Tjelta+Norwegian+method' },
+  seiler10: { text: 'Seiler 2010, IJSPP – Best Practice Intensitäts- und Umfangsverteilung', url: 'https://pubmed.ncbi.nlm.nih.gov/20861519/' },
+  ronnestad14: { text: 'Rønnestad et al. 2014, Scand J Med Sci Sports – Block-Periodisierung', url: 'https://pubmed.ncbi.nlm.nih.gov/23134196/' },
+  sandbakk17: { text: 'Sandbakk & Holmberg 2017, IJSPP – Physiologie und Training im Skilanglauf', url: 'https://pubmed.ncbi.nlm.nih.gov/28095083/' },
+  xcInjury: { text: 'Studien zu Überlastungsbeschwerden bei Langläufern (PubMed-Suche)', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=cross-country+skiers+overuse+injuries' },
+  racinais15: { text: 'Racinais et al. 2015, Br J Sports Med – Konsens Training in der Hitze', url: 'https://bjsm.bmj.com/content/49/18/1164' },
   sleep21: { text: 'Walsh et al. 2021, Br J Sports Med – Schlaf und Athleten (Konsens)', url: 'https://bjsm.bmj.com/content/55/7' },
 };
 
@@ -104,6 +115,84 @@ export const TOPICS = [
     sources: [S.svendsen16],
   },
   {
+    id: 'approaches', cat: 'Periodisierung', title: 'Trainingsansätze im Vergleich', evidence: 'mittel',
+    facts: [
+      'Pyramidal (Weltklasse-Langlauf): ~90 % locker, 3–5 % Schwelle, 4–6 % hart; viele lange Einheiten, Steigerung über Jahre vor allem im lockeren Umfang.',
+      'Polarisiert (Seiler, ~80/20): locker oder richtig hart, wenig Schwelle. In kurzen Studien oft leicht besser, über längere Zeit laut Metaanalyse nicht klar überlegen.',
+      'Norwegisches Modell / Double Threshold: viel Schwelle in kontrollierten Portionen (Laktat 2–3 mmol/l), zwei Einheiten am selben Tag. Erfolgreich in der Praxis, wissenschaftlich vor allem beschrieben.',
+      'Block-Periodisierung (Rønnestad): konzentrierte HIT-Wochen (z. B. 5 Intervalleinheiten), danach Wochen mit wenig Intensität – bei Trainierten ähnliche oder etwas größere Verbesserungen.',
+      'Allen gemeinsam: der größte Teil bleibt locker, harte Tage mit Abstand, Entlastungswochen, und Kontinuität schlägt jeden Ansatz.',
+    ],
+    practice: 'Unter Kalender → Saison → „Saisonplan-Assistent“ einen Ansatz wählen, Stunden und Key Sessions festlegen – die App plant die Wochen. Nach einem Block (8–12 Wochen) anhand der Key Sessions prüfen, ob es wirkt.',
+    sources: [S.seiler10, S.casado23, S.ronnestad14, S.sandbakk17, S.walther23, S.oliveira24],
+  },
+  {
+    id: 'sick_train', cat: 'Gesundheit', title: 'Krank: trainieren oder nicht?', evidence: 'gering',
+    facts: [
+      'Fieber, Gliederschmerzen, starkes Krankheitsgefühl, Durchfall/Erbrechen oder geschwollene Lymphknoten („unterhalb des Halses“): kein Training – Belastung mit einem Infekt kann das Herz (Myokarditis) gefährden.',
+      'Nur Schnupfen oder leichtes Halskratzen ohne Fieber („oberhalb des Halses“): höchstens kurz und ganz locker (I1, 20–40 min). Werden die Symptome dabei schlimmer: abbrechen.',
+      'Nach einem Infekt ist die Leistungsfähigkeit oft einige Tage bis Wochen reduziert; Puls bei gleicher Leistung höher, HRV niedriger.',
+      'Warnzeichen für das Herz – sofort aufhören und ärztlich abklären: Brustschmerz, Herzstolpern/Herzrasen, ungewöhnliche Atemnot, Schwindel oder Ohnmacht.',
+    ],
+    practice: 'Krankheit im Gesundheitslog (Mehr → Gesundheit) eintragen und „Fieber/Ganzkörpersymptome“ markieren – die App zeigt dir einen stufenweisen Wiedereinstieg. Im Zweifel einen Tag mehr Pause.',
+    sources: [S.schwellnus16, S.elliott20],
+  },
+  {
+    id: 'return', cat: 'Gesundheit', title: 'Wiedereinstieg nach Krankheit', evidence: 'gering',
+    facts: [
+      'Erst wieder trainieren, wenn du mindestens 24 h fieber- und beschwerdefrei bist (nach Fieber/Ganzkörpersymptomen eher mehrere Tage).',
+      'Stufen, je mindestens 1 Tag, nur weiter, wenn es gut ging: 1) 15–30 min Gehen oder ganz locker, 2) 30–60 min I1, 3) normaler lockerer Umfang (I1–I2), 4) wieder Intensität.',
+      'Faustregel: Der Wiederaufbau dauert etwa so viele Tage, wie du krank warst – nach Fieber oder COVID eher doppelt so lange; nach COVID mit Ganzkörpersymptomen empfahl der Konsens mindestens 7 beschwerdefreie Tage vor dem Start der Stufen.',
+      'Kommen Symptome zurück (Husten, Fieber, ungewöhnliche Erschöpfung, Ruhepuls deutlich erhöht): eine Stufe zurück bzw. pausieren.',
+      'Nach längerer Pause Umfang nicht sprunghaft auf das alte Niveau – große Belastungssprünge erhöhen das Risiko für den nächsten Infekt.',
+    ],
+    practice: 'Im Plan-Assistenten den Ansatz „Grundlage / Wiedereinstieg“ wählen (nur locker, max. ca. +10 % pro Woche). Morgen-Check mit HRV und Ruhepuls hilft, den richtigen Moment für Intensität zu finden.',
+    sources: [S.elliott20, S.schwellnus16, S.svendsen16],
+  },
+  {
+    id: 'gi_ill', cat: 'Gesundheit', title: 'Magen-Darm-Infekt', evidence: 'gering',
+    facts: [
+      'Bei Durchfall/Erbrechen kein Training: Flüssigkeits- und Salzverlust, schnelle Dehydrierung, Kreislaufprobleme.',
+      'Trinken mit Salz und Zucker (oder Elektrolytlösung), dann schonende Kost (Reis, Banane, Zwieback, Brühe).',
+      'Wiedereinstieg erst, wenn du wieder normal isst und trinkst und das Gewicht zurück ist – sonst fehlen Energie und Glykogen.',
+    ],
+    practice: 'Rund um Rennen und Trainingslager: Hände waschen, keine geteilten Flaschen, im Ausland nur abgefülltes Wasser.',
+    sources: [S.schwellnus16],
+  },
+  {
+    id: 'overtraining', cat: 'Erholung', title: 'Überlastung: Overreaching und Übertraining', evidence: 'mittel',
+    facts: [
+      'Funktionelles Overreaching: kurzfristig müde nach einem harten Block, nach einigen Tagen Erholung leistungsfähiger – gewollt.',
+      'Nicht-funktionelles Overreaching: Leistung bleibt über Wochen reduziert, Stimmung und Schlaf leiden – zu viel Belastung bei zu wenig Erholung.',
+      'Übertrainingssyndrom: Leistungseinbruch über Monate; Ursachen oft Kombination aus Training, Energiemangel, Schlaf, Stress und Infekten.',
+      'Typische Zeichen: Leistung in Key Sessions sinkt bei gleichem Aufwand, Puls lässt sich nicht hochbringen oder ist in Ruhe erhöht, HRV-Trend fällt, schlechter Schlaf, Reizbarkeit, wenig Lust aufs Training, häufige Infekte.',
+      'Energiemangel (REDs) sieht ähnlich aus und ist oft die eigentliche Ursache – ausreichend essen ist Teil der Erholung.',
+    ],
+    practice: 'Nach jedem 3-Wochen-Aufbau eine leichtere Woche. Wenn mehrere Zeichen über 1–2 Wochen auftreten: Intensität streichen, Umfang reduzieren, mehr schlafen und essen; bleibt es, ärztlich abklären (Blutbild, Ferritin, Schilddrüse).',
+    sources: [S.meeusen13, S.mountjoy23, S.hrvMeta],
+  },
+  {
+    id: 'injury', cat: 'Gesundheit', title: 'Überlastungsbeschwerden im Langlauf', evidence: 'gering',
+    facts: [
+      'Häufig: unterer Rücken (viel Doppelstock), Schulter und Ellbogen (Stockeinsatz), Achillessehne und Schienbein (Laufen, Skigang), Leiste/Adduktoren (Skating).',
+      'Hauptrisiko sind schnelle Belastungsänderungen: neue Bewegungen (erster Rollski im Frühjahr, viel Doppelstock), mehr Umfang oder Intensität in kurzer Zeit.',
+      'Sehnenbeschwerden mögen keine komplette Ruhe: dosierte Belastung (z. B. langsames, schweres Wadenheben) hilft oft mehr als Pause.',
+      'Schmerz-Ampel: bis 3/10 während der Belastung und am nächsten Morgen nicht schlechter = ok; darüber oder morgens schlimmer = reduzieren.',
+    ],
+    practice: 'Neue Belastungen langsam einführen (z. B. Doppelstock-Anteil über Wochen steigern), Kraft- und Prophylaxe-Übungen (Copenhagen, Nordic Hamstring, Wadenheben, Face Pulls) regelmäßig. Beschwerden im Gesundheitslog notieren – die App zeigt die Belastung davor.',
+    sources: [S.soligard16, S.xcInjury],
+  },
+  {
+    id: 'heat_training', cat: 'Umwelt', title: 'Training in der Hitze', evidence: 'stark',
+    facts: [
+      'Hitzeakklimatisation (1–2 Wochen täglich 60–90 min in der Wärme) senkt Puls und Körpertemperatur bei gleicher Leistung und erhöht die Schweißrate.',
+      'In der Hitze liegt der Puls bei gleicher Leistung deutlich höher – harte Einheiten nach Watt bzw. Gefühl steuern oder in kühle Tageszeiten legen.',
+      'Gut hydriert starten, unterwegs mit Natrium trinken, vor harten Einheiten vorkühlen (kalte Getränke, Eisslush).',
+    ],
+    practice: 'Ernährung → Wissen: Schweißraten-Rechner; an heißen Tagen dort „Heute heiß“ antippen.',
+    sources: [S.racinais15],
+  },
+  {
     id: 'energy', cat: 'Ernährung', title: 'Genug essen: Energiemangel (REDs)', evidence: 'mittel',
     facts: [
       'Bei 27 gut trainierten männlichen Langläufern lag die Energieverfügbarkeit im Juni (Vorbereitung) an Trainingstagen unter 15 kcal/kg fettfreie Masse – zu wenig Essen bei hohem Trainingsumsatz.',
@@ -172,6 +261,11 @@ export const TOPICS = [
 ];
 
 export const FAQ = [
+  { q: 'Welcher Trainingsansatz passt zu mir?', a: 'Bei viel Zeit (12–20 h) passt der pyramidale Weltklasse-Ansatz mit viel lockerem Umfang; bei begrenzter Zeit (6–12 h) polarisiert; Double Threshold, wenn du gerne Schwelle trainierst und dich gut über Laktat oder Puls steuern kannst; Block-Periodisierung für gezielte VO2max-Phasen. Der Plan-Assistent unter Kalender → Saison plant jeden davon.', refs: ['approaches'] },
+  { q: 'Darf ich mit Erkältung trainieren?', a: 'Ohne Fieber und nur mit Symptomen oberhalb des Halses höchstens kurz und ganz locker. Bei Fieber, Gliederschmerzen, Durchfall oder starkem Krankheitsgefühl: kein Training. Warnzeichen wie Brustschmerz oder Herzstolpern ärztlich abklären.', refs: ['sick_train'] },
+  { q: 'Wie steige ich nach Krankheit wieder ein?', a: 'Ab 24 h beschwerdefrei (nach Fieber länger) stufenweise: Gehen/ganz locker → 30–60 min I1 → normaler lockerer Umfang → Intensität, jeweils mindestens einen Tag. Etwa so viele Tage Aufbau, wie du krank warst. Die App zeigt die Stufen im Gesundheitslog.', refs: ['return'] },
+  { q: 'Bin ich übertrainiert?', a: 'Ein Zeichen allein sagt wenig. Wenn über 1–2 Wochen mehrere zusammenkommen – sinkende Leistung bei gleichem Aufwand, erhöhter Ruhepuls, fallende HRV, schlechter Schlaf, wenig Motivation, Infekte –, Intensität streichen, Umfang reduzieren, mehr essen und schlafen. Bleibt es, Blutwerte prüfen lassen.', refs: ['overtraining'] },
+  { q: 'Was tun bei Schmerzen an Sehne oder Rücken?', a: 'Schmerz-Ampel: bis 3/10 und am nächsten Morgen nicht schlechter ist ok. Belastung anpassen statt komplett pausieren, Ursache suchen (Umfangssprung, neue Bewegung), gezielte Kraftübungen. Bei zunehmenden oder nächtlichen Schmerzen ärztlich abklären.', refs: ['injury'] },
   { q: 'Wie viele Stunden sollte ich trainieren?', a: 'Weltklasse liegt bei 750–1000 h im Jahr. Für dich zählt die stetige Steigerung über Jahre: Die Besten haben ihren Umfang lang und schrittweise erhöht, vor allem mit lockerem Training. 15 h pro Woche (≈ 750 h/Jahr) sind bereits ein hoher Umfang – Qualität der harten Tage und Erholung entscheiden jetzt.', refs: ['volume'] },
   { q: 'Wie oft sollte ich hart trainieren?', a: 'Weltklasse-Langläufer setzen harte Tage alle 3–4 Tage, also 2–3 Schlüsseltage pro Woche mit insgesamt 3–5 intensiven Einheiten. Dazwischen locker oder lang, nicht beides hart.', refs: ['week'] },
   { q: 'Wie baue ich Double Threshold ein?', a: 'Mit einem Double-Threshold-Tag pro Woche starten, z. B. morgens 5×6 min, abends 10×3 min, beides kontrolliert (Laktat etwa 2–3,5 mmol/l). Die übrigen Tage locker. Lege eine Key Session an, um Watt/Puls/Laktat über Wochen zu vergleichen. Die Methode ist in der Praxis erfolgreich, aber wissenschaftlich noch wenig kontrolliert untersucht.', refs: ['dt'] },

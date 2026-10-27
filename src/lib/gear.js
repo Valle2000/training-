@@ -42,3 +42,27 @@ export function healthStats(entries, from, to, today) {
   }, 0);
   return { ill: days('ill'), injury: days('injury'), niggle: days('niggle'), count: inRange.length };
 }
+
+// Stufenweiser Wiedereinstieg nach Krankheit (Praxisempfehlung nach IOC-Konsens 2016 und Elliott et al. 2020):
+// erst beschwerdefrei warten, dann 4 Stufen; Dauer je Stufe wächst mit der Krankheitsdauer, nach Fieber/
+// Ganzkörpersymptomen doppelt so lang. Gibt null zurück, wenn kein Wiedereinstieg (mehr) ansteht.
+export const RETURN_STAGES = [
+  ['Stufe 1', 'Gehen oder ganz locker, 15–30 min'],
+  ['Stufe 2', 'Locker I1, 30–60 min'],
+  ['Stufe 3', 'Normaler lockerer Umfang (I1–I2), noch keine Intervalle'],
+  ['Stufe 4', 'Wieder Intensität – mit einer kürzeren Schwelleneinheit beginnen'],
+];
+export function returnPlan(e, t) {
+  if (e.type !== 'ill') return null;
+  if (!e.end || e.end >= t) {
+    return { active: true, text: e.systemic ? 'Fieber oder Ganzkörpersymptome: kein Training. Viel trinken, schlafen, genug essen.' : 'Nur Symptome oberhalb des Halses, kein Fieber: höchstens 20–40 min ganz locker – werden die Symptome schlimmer, abbrechen. Sonst Pause.' };
+  }
+  const ill = healthDays(e, t);
+  const wait = e.systemic ? (/covid|corona/i.test(e.title || '') ? 7 : 2) : 1;
+  const per = Math.max(1, Math.round((ill * (e.systemic ? 2 : 1)) / 4));
+  let from = addDays(e.end, wait);
+  const steps = RETURN_STAGES.map(([label, text]) => { const s = { label, text, from, to: addDays(from, per - 1) }; from = addDays(from, per); return s; });
+  if (t > steps.at(-1).from) return null; // Stufe 4 erreicht → normales Training
+  const current = t < steps[0].from ? -1 : steps.findIndex((s) => t >= s.from && t <= s.to);
+  return { active: false, wait, steps, current: current === -1 && t >= steps[0].from ? 3 : current };
+}

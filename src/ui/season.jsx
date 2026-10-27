@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import { Plus, Trash2, Trophy, Flag } from 'lucide-react';
+import { Plus, Trash2, Trophy, Flag, Wand2 } from 'lucide-react';
 import { useData, update, uid } from '../lib/store.js';
 import { today, weeks as weekStats, mondayOf, dailyLoads } from '../lib/activities.js';
 import { addDays, performanceCurve } from '../lib/metrics.js';
 import { PHASES, seasonPlan, seasonStart, gapPct, parseTime, fmtTime } from '../lib/season.js';
 import { SeasonChart, LineChart } from './charts.jsx';
 import { Sheet, fmtDate, fmtNum, toast } from './common.jsx';
+import { PlanWizard } from './plan-wizard.jsx';
 
 const PRIORITY = { A: 'Saisonhöhepunkt', B: 'wichtig', C: 'Trainingsrennen' };
 const TECHNIQUE = ['Skating', 'Klassisch', 'Skiathlon', 'Rollski', 'Lauf', 'Rad', 'Sonstiges'];
@@ -43,8 +44,11 @@ export function Season() {
   const proj = nr ? projectedForm(activities, plan, wk, t, nr.date) : null;
   const setS = (k, v) => update((d) => ({ ...d, settings: { ...d.settings, season: { ...(d.settings.season || {}), [k]: v } } }));
   const total = wk.reduce((a, w) => a + w.targetHours, 0), done = wk.filter((w) => w.to < t).reduce((a, w) => a + (actual[w.from] || 0), 0);
+  const [wizard, setWizard] = useState(false);
   return (
     <>
+      <button className="primary wide" style={{ marginTop: 10 }} onClick={() => setWizard(true)}><Wand2 size={18} />Saisonplan-Assistent: Ansatz wählen und Wochen planen</button>
+      {wizard && <PlanWizard onClose={() => setWizard(false)} />}
       {nr && <div className="card" style={{ borderColor: 'var(--accent)' }}>
         <div className="row" style={{ justifyContent: 'space-between' }}><b style={{ flex: 'none' }}><Flag size={16} /> {nr.name}</b><span className="badge b-info" style={{ flex: 'none' }}>{nr.priority}-Rennen</span></div>
         <p style={{ margin: '6px 0' }}>{fmtDate(nr.date, { weekday: 'long', day: 'numeric', month: 'long' })} · noch {Math.round((Date.parse(nr.date) - Date.parse(t)) / 864e5)} Tage</p>
