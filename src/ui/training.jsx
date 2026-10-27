@@ -99,7 +99,7 @@ export function Training({ openActivity, openAdd }) {
             <option value="">Alle ({activities.length})</option>
             {Object.entries(sportCounts).sort((x, y) => y[1] - x[1]).map(([id, n]) => <option key={id} value={id}>{sportLabel(id)} ({n})</option>)}
           </select>
-          {sportFilter === 'other' && <OtherTools list={sorted} />}
+          {sportFilter === 'other' && <><OtherTools list={sorted} /><OtherGroups list={sorted} /></>}
           {!sorted.length && <p className="muted">Noch keine Einheiten.</p>}
           {sorted.map((a) => (
             <button key={a.id} className="item" onClick={() => openActivity(a)}>
@@ -357,6 +357,58 @@ export function AddSheet({ onClose }) {
 }
 
 // Werkzeuge für Einheiten mit Sportart „Sonstiges“: automatisch erkennen oder alle sichtbaren auf eine Sportart setzen.
+// Sonstiges nach Gruppen (Quelle + Titel): eine Gruppe auf einmal zuordnen – bei vielen Einheiten schneller als einzeln.
+const median = (xs) => { if (!xs.length) return null; const s = [...xs].sort((a, b) => a - b); return s[Math.floor(s.length / 2)]; };
+function OtherGroups({ list }) {
+  const [busy, setBusy] = useState(false);
+  const [pick, setPick] = useState({});
+  const groups = useMemo(() => {
+    const m = new Map();
+    for (const a of list) {
+      const title = (a.title || '').trim() || '(ohne Titel)';
+      const source = a.source || 'manuell';
+      const key = `${source}|${title}`;
+      if (!m.has(key)) m.set(key, { key, source, title, items: [] });
+      m.get(key).items.push(a);
+    }
+    return [...m.values()].map((g) => {
+      const kmh = g.items.map((a) => (a.distanceM && a.durationS ? (a.distanceM / a.durationS) * 3.6 : null)).filter((v) => v > 0);
+      const hr = g.items.map((a) => a.avgHr).filter(Boolean);
+      return { ...g, n: g.items.length, kmh: median(kmh), hr: median(hr) };
+    }).sort((a, b) => b.n - a.n);
+  }, [list]);
+  const apply = async (g) => {
+    const to = pick[g.key];
+    if (!to) return;
+    setBusy(true);
+    const ids = new Set(g.items.map((a) => a.id));
+    update((d) => ({ ...d, activities: d.activities.map((a) => (ids.has(a.id) ? { ...a, sport: to } : a)) }));
+    toast(`${g.n} Einheiten auf ${sportLabel(to)} gesetzt. Belastung wird neu berechnet …`);
+    await recomputeAll();
+    setBusy(false);
+  };
+  return (
+    <div className="card">
+      <b className="small">Sonstiges nach Gruppen</b>
+      <p className="muted small">Gleicher Titel und gleiche Quelle – Tempo und Puls (Median) helfen bei der Zuordnung: Rollski ca. 10–16 km/h, Rad meist über 20 km/h.</p>
+      {groups.slice(0, 60).map((g) => (
+        <div key={g.key} className="row" style={{ flexWrap: 'nowrap', alignItems: 'center', gap: 6, marginTop: 6 }}>
+          <div className="grow small" style={{ minWidth: 0 }}>
+            <b>{g.n}× {g.title}</b>
+            <div className="muted">{g.source}{g.kmh ? ` · Ø ${String(Math.round(g.kmh * 10) / 10).replace('.', ',')} km/h` : ''}{g.hr ? ` · Puls ${Math.round(g.hr)}` : ''}</div>
+          </div>
+          <select value={pick[g.key] || ''} onChange={(e) => setPick({ ...pick, [g.key]: e.target.value })} style={{ flex: 'none', width: 130 }}>
+            <option value="">–</option>
+            {SPORTS.filter((x) => x.id !== 'other').map((x) => <option key={x.id} value={x.id}>{x.label}</option>)}
+          </select>
+          <button className="secondary" style={{ flex: 'none' }} disabled={busy || !pick[g.key]} onClick={() => apply(g)}>Setzen</button>
+        </div>
+      ))}
+      {groups.length > 60 && <p className="muted small">Weitere {groups.length - 60} Gruppen – nach dem Setzen der ersten rücken sie nach oben.</p>}
+    </div>
+  );
+}
+
 function OtherTools({ list }) {
   const [busy, setBusy] = useState(false);
   const [target, setTarget] = useState('');
