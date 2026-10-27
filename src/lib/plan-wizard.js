@@ -282,6 +282,15 @@ export function flexible(pr = {}, date) {
   return false;
 }
 
+// Multisport: Schwerpunkt-Zeiträume (z. B. Juni–August Laufen oder Rad, Triathlon-Block mit Rad + Lauf).
+export const FOCUS_OPTIONS = [['run', 'Laufen'], ['bike', 'Rad'], ['tri', 'Triathlon (Rad + Lauf)'], ['rollerski', 'Rollski/Ski (Standard)']];
+export function focusOn(date, list = []) {
+  const f = (list || []).find((x) => date >= x.from && date <= x.to && x.sport !== 'rollerski');
+  return f ? f.sport : null;
+}
+// Sportart einer Rennzeile im Kalender.
+export const raceSport = (technique, date) => (technique === 'Rad' ? 'bike' : technique === 'Lauf' || technique === 'Triathlon' ? 'run' : technique === 'Rollski' ? 'rollerski_skate' : winter(date) ? 'xc_skate' : 'rollerski_skate');
+
 // Optionen: approach, startHours, peakHours, start, end, restDays ([1] = Montag), longDay (7 = Sonntag), doubles, strengthPerWeek, keys (IDs)
 export function generatePlan(opts, races = []) {
   const ap = APPROACHES.find((a) => a.id === opts.approach) || APPROACHES[0];
@@ -296,6 +305,11 @@ export function generatePlan(opts, races = []) {
   const pickHit = (zone, k) => { const list = options.filter((o) => o.type === 'hit' && o.zone === zone && keys.has(o.id)); return list.length ? list[k % list.length] : null; };
   return weeks.map((w) => {
     let hardSlots = phasesFor(ap, opts.dtDays)[w.phase] ?? [];
+    const focus = opts.focusFor ? opts.focusFor(w.from) : null;
+    const fSport = focus === 'run' || focus === 'bike' ? focus : null;
+    // Triathlon: harte Einheiten wechseln zwischen Lauf und Rad (sonst Rollski wie im Standardplan).
+    let triFlip = 0;
+    const sess = (o, date, i, when) => session(o, date, i, when, focus === 'tri' ? (triFlip++ % 2 ? 'bike' : 'run') : fSport);
     // Besondere Zeiten (Prüfungsphase, Reise, Trainingslager): Umfang skalieren, harte Einheiten begrenzen.
     const per = opts.periodFor ? opts.periodFor(w.from) : null;
     if (per) {
@@ -364,22 +378,22 @@ export function generatePlan(opts, races = []) {
       const day = days[dow - 1];
       if (slot === 'dt') {
         const am = pickByType('dt_am', rot) || pickByType('threshold', rot), pm = pickByType('dt_pm', rot) || pickByType('threshold', rot + 1);
-        if (am) put(day, session(am, day.date, rot++, 'vormittags'));
-        if (pm && opts.doubles !== false && room(day) >= pm.minutes) put(day, session(pm, day.date, rot++, 'nachmittags'));
+        if (am) put(day, sess(am, day.date, rot++, 'vormittags'));
+        if (pm && opts.doubles !== false && room(day) >= pm.minutes) put(day, sess(pm, day.date, rot++, 'nachmittags'));
       } else if (slot === 'opener') {
         const race = weekRaces[0];
         const d = race ? days.find((x) => x.date === addDays(race.date, -1)) || day : day;
-        put(d, session(optionById('opener'), d.date, rot++));
+        put(d, sess(optionById('opener'), d.date, rot++));
       } else if (slot === 'i4' || slot === 'i5') {
         const o = pickHit(slot.toUpperCase(), rot) || pickHit(slot === 'i5' ? 'I4' : 'I5', rot) || pickByType('hit', rot);
-        if (o) put(day, session(o, day.date, rot++));
+        if (o) put(day, sess(o, day.date, rot++));
       } else {
         const o = pickByType(slot, rot) || pickByType(slot === 'race' ? 'hit' : slot === 'hit' ? 'threshold' : 'hit', rot);
-        if (o) put(day, session(o, day.date, rot++));
+        if (o) put(day, sess(o, day.date, rot++));
       }
     });
     // Rennen der Woche als Einheit eintragen (Dauer grob nach Distanz).
-    for (const r of w.races || []) { const d = days.find((x) => x.date === r.date); if (d) put(d, { title: `Rennen: ${r.name}`, sport: winter(r.date) ? 'xc_skate' : 'rollerski_skate', minutes: Math.round((Number(r.distanceKm) || 15) * 3.2 + 40), zone: 'I4', description: 'Inkl. Ein- und Auslaufen', kind: 'race' }); }
+    for (const r of w.races || []) { const d = days.find((x) => x.date === r.date); if (d) put(d, { title: `Rennen: ${r.name}`, sport: raceSport(r.technique, r.date), minutes: Math.round((Number(r.distanceKm) || 15) * 3.2 + 40), zone: 'I4', description: 'Inkl. Ein- und Auslaufen', kind: 'race' }); }
     // 2) Lange Einheit (ca. 22 % der Woche, 1,5–3,5 h), nicht in Renn-/Taperwochen mit Rennen am Wochenende.
     const raceOnLong = (w.races || []).some((r) => days[longDay - 1]?.date === r.date);
     if (keys.has('long') && !raceOnLong && !['race', 'recovery'].includes(w.phase)) {
@@ -408,18 +422,21 @@ export function generatePlan(opts, races = []) {
     let speedDone = !(keys.has('speed') && ['base', 'build', 'specific'].includes(w.phase));
     let speedLeft = pr.weak?.includes('sprint') ? 2 : 1;
     let techLeft = pr.weak?.some((x) => x === 'skate' || x === 'classic') && !['race', 'taper'].includes(w.phase) ? 1 : 0;
-    const share = per?.type === 'travel' ? 0.1 : specificShare(w.phase, w.from, pr);
+    const share = per?.type === 'travel' ? 0.1 : focus ? Math.min(0.2, specificShare(w.phase, w.from, pr)) : specificShare(w.phase, w.from, pr);
     for (let i = 0; i < n; i++) {
       const d = slots[i];
       const min = Math.floor(Math.min(150, room(d), Math.max(40, easy / (n - i))) / 5) * 5;
       if (min < 30) { if (room(d) < 30) continue; break; }
       const specific = (i / Math.max(1, n)) < share;
-      const s = { title: 'Locker', sport: specific ? specificSport(d.date, i + (pr.weak?.includes('classic') ? 1 : 0)) : generalSport(pr, i + rot), minutes: min, zone: 'I1', description: 'Grundlage I1, wirklich locker', kind: 'easy' };
+      const easySport = focus === 'tri' ? (i % 2 ? 'bike' : 'run') : fSport || focus;
+      const s = { title: focus ? `Locker (${focus === 'tri' ? (i % 2 ? 'Rad' : 'Laufen') : focus === 'run' ? 'Laufen' : 'Rad'})` : 'Locker', sport: specific && !focus ? specificSport(d.date, i + (pr.weak?.includes('classic') ? 1 : 0)) : easySport || (specific ? specificSport(d.date, i) : generalSport(pr, i + rot)), minutes: min, zone: 'I1', description: 'Grundlage I1, wirklich locker', kind: 'easy' };
+      // Triathlon-Block: die erste lockere Einheit der Woche als Koppeltraining Rad → Lauf (gewöhnt die Beine an den Wechsel).
+      if (focus === 'tri' && i === 0 && ['build', 'specific'].includes(w.phase) && room(d) >= 80) { s.title = 'Koppeln: Rad → Lauf'; s.sport = 'bike'; s.minutes = 80; s.description = 'Rad 60 min locker, direkt danach Lauf 20 min locker. Der Wechsel Rad → Lauf ist im Triathlon der Knackpunkt.'; }
       if (specific && techLeft > 0) { s.title = 'Locker + Technik'; s.description = `Grundlage I1 mit Technikübungen (${pr.weak?.includes('classic') ? 'Klassisch: Abstoß, Gleiten auf einem Ski' : 'Skating: Gewichtsverlagerung, Eins-zu-eins, ohne Stöcke'}), gern Video`; techLeft--; }
       if (!speedDone && specific && s.title === 'Locker') { s.title = 'Locker + Sprints'; s.description = 'Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause'; speedLeft--; if (speedLeft <= 0) speedDone = true; }
       // Wer es nicht so ernst nimmt, legt die Sportart nicht fest: locker nach Lust (Spaß-Fokus außerhalb des Winters,
       // ambitioniert im Frühjahr/Frühsommer). Leistungsorientierte bekommen feste Sportarten.
-      if (!specific && s.title === 'Locker' && flexible(pr, d.date)) {
+      if (!focus && !specific && s.title === 'Locker' && flexible(pr, d.date)) {
         const liked = (pr.likes || []).map((x) => sportName(x)).filter(Boolean);
         s.sport = 'other'; s.title = 'Locker nach Lust';
         s.description = `Grundlage I1 – Sportart frei: ${liked.length ? liked.join(', ') + ' oder was sonst Spaß macht' : 'Rad, Laufen, Rollski, Wandern, Schwimmen … was Spaß macht'}`;
@@ -431,8 +448,8 @@ export function generatePlan(opts, races = []) {
   });
 }
 
-function session(o, date, i, when = '') {
-  const sport = o.sport === 'specific' ? specificSport(date, i) : o.sport;
+function session(o, date, i, when = '', focusSport = null) {
+  const sport = o.sport === 'specific' ? (focusSport || specificSport(date, i)) : o.sport;
   return { title: o.name + (when && !/^Double Threshold/.test(o.name) ? ` (${when})` : ''), sport, minutes: o.minutes, zone: o.zone, description: o.desc, kind: 'hard', keyId: o.id };
 }
 

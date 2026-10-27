@@ -5,7 +5,7 @@ import { today, weeks as weekStats } from '../lib/activities.js';
 import { addDays } from '../lib/metrics.js';
 import { sportLabel, SPORTS } from '../lib/sports.js';
 import { PHASES, PRIORITY_INFO, raceAdvice } from '../lib/season.js';
-import { APPROACHES, KEY_TYPES, allOptions, makeKey, PLAN_SOURCES, GOALS, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend, hardDayCount, suggestHardDays, checkHardDays } from '../lib/plan-wizard.js';
+import { FOCUS_OPTIONS, focusOn, APPROACHES, KEY_TYPES, allOptions, makeKey, PLAN_SOURCES, GOALS, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend, hardDayCount, suggestHardDays, checkHardDays } from '../lib/plan-wizard.js';
 import { Sheet, fmtDate, fmtNum, toast } from './common.jsx';
 import { freeMinutes, hasSchedule, periodForWeek } from '../lib/week-adapt.js';
 
@@ -41,7 +41,7 @@ export function PlanWizard({ onClose }) {
   const keys = o.keys || ap.defaults;
   const pr = o.profile || {};
   const rec = recommend(pr, Number(o.startHours) || 10);
-  const plan = useMemo(() => (step >= 5 ? generatePlan({ ...o, keys, customKeys: custom, capFor: hasSchedule(settings.schedule) ? (d) => freeMinutes(d, settings.schedule) : null, periodFor: settings.schedule?.periods?.length ? (m) => periodForWeek(m, settings.schedule) : null }, races) : []), [step, o, keys, races, custom, settings.schedule]);
+  const plan = useMemo(() => (step >= 5 ? generatePlan({ ...o, keys, customKeys: custom, capFor: hasSchedule(settings.schedule) ? (d) => freeMinutes(d, settings.schedule) : null, periodFor: settings.schedule?.periods?.length ? (m) => periodForWeek(m, settings.schedule) : null, focusFor: (m) => focusOn(m, settings.season?.focus) }, races) : []), [step, o, keys, races, custom, settings.schedule, settings.season?.focus]);
   const set = (k, v) => setO({ ...o, [k]: v });
   const toggleKey = (id) => set('keys', keys.includes(id) ? keys.filter((k) => k !== id) : [...keys, id]);
   const setPr = (k, v) => set('profile', { ...pr, [k]: v });
@@ -243,10 +243,10 @@ function KeyEditor({ edit, onClose, onSaved }) {
   );
 }
 
-const TECH = ['Skating', 'Klassisch', 'Skiathlon', 'Rollski', 'Lauf', 'Rad', 'Sonstiges'];
+const TECH = ['Skating', 'Klassisch', 'Skiathlon', 'Rollski', 'Lauf', 'Rad', 'Triathlon', 'Sonstiges'];
 // Rennen festlegen und gewichten: A = Höhepunkt (Phasen + Tapering), B = Mini-Taper, C = Trainingsrennen.
 function WizardRaces({ t }) {
-  const { races } = useData();
+  const { races, settings } = useData();
   const up = races.filter((r) => r.date >= t).sort((a, b) => a.date.localeCompare(b.date));
   const [n, setN] = useState({ name: '', date: '', priority: 'B', technique: 'Skating', distanceKm: '' });
   const setPrio = (id, priority) => update((d) => ({ ...d, races: d.races.map((r) => (r.id === id ? { ...r, priority } : r)) }));
@@ -270,6 +270,7 @@ function WizardRaces({ t }) {
         </div>
       ))}
       {!up.length && <p className="muted small">Noch keine Rennen eingetragen.</p>}
+      <FocusBlocks t={t} focus={settings.season?.focus || []} />
       {advice.map((a) => <div key={a.text} className="notice" style={a.level === 'gelb' ? { background: 'var(--warnbg)', color: 'var(--warn)' } : undefined}>{a.text}</div>)}
       <div className="card">
         <b className="small">Rennen hinzufügen</b>
@@ -325,6 +326,42 @@ function HardDays({ o, set, setO, schedule }) {
           <li><b>Weniger Tage als vorgesehen</b> sind erlaubt: Dann fallen die übrigen harten Einheiten weg – sinnvoll in stressigen Phasen oder beim Wiedereinstieg.</li>
         </ul>
       </details>
+    </div>
+  );
+}
+
+const FOCUS_PRESETS = [
+  { label: 'Sommer Laufen', sport: 'run', from: '06-01', to: '08-31' },
+  { label: 'Sommer Rad', sport: 'bike', from: '06-01', to: '08-31' },
+  { label: 'Triathlon-Block', sport: 'tri', from: '05-01', to: '08-31' },
+];
+const FOCUS_WHY = {
+  run: 'Laufen im Sommer: viel Ausdauer ohne Ski. Die Stoßbelastung steigt – Laufumfang langsam steigern (max. ca. 10 % pro Woche), Schwellen- und Intervalleinheiten laufen.',
+  bike: 'Rad im Sommer: großer Umfang ohne Stoßbelastung, ideal für die Grundlage. Intervalle als 30/15 auf dem Rad, lange Ausfahrten als Ersatz für lange Läufe.',
+  tri: 'Triathlon: Ausdauer aus Rad und Lauf, dazu Koppeltraining (Rad direkt gefolgt von Lauf) in der Vorbereitung. Im Wettkampf zählt der Wechsel Rad → Lauf.',
+};
+// Schwerpunkt-Zeiträume: Im Sommer Laufen, Rad oder Triathlon statt Rollski/Ski.
+function FocusBlocks({ t, focus }) {
+  const year = t.slice(0, 4);
+  const set = (list) => update((d) => ({ ...d, settings: { ...d.settings, season: { ...(d.settings.season || {}), focus: list } } }));
+  return (
+    <div className="card">
+      <b>Sport-Schwerpunkte</b>
+      <p className="muted small">Du machst mehrere Sportarten? Lege Zeiträume fest, in denen der Plan auf eine andere Sportart setzt – z. B. im Sommer Laufen oder Rad. Außerhalb davon bleibt es beim Rollski/Ski-Plan.</p>
+      <div className="chips">{FOCUS_PRESETS.map((p) => <button key={p.label} className="chip" onClick={() => set([...focus, { id: uid(), sport: p.sport, label: p.label, from: `${year}-${p.from}`, to: `${year}-${p.to}` }])}><Plus size={13} /> {p.label}</button>)}</div>
+      {focus.some((f, i) => focus.slice(i + 1).some((g) => f.from <= g.to && g.from <= f.to)) && <div className="notice" style={{ background: 'var(--warnbg)', color: 'var(--warn)' }}>Zwei Zeiträume überschneiden sich – im Plan gilt der oben stehende.</div>}
+      {focus.map((f) => (
+        <div key={f.id} className="item" style={{ flexWrap: 'wrap' }}>
+          <div className="grow"><b>{f.label || FOCUS_OPTIONS.find((x) => x[0] === f.sport)?.[1]}</b>
+            <div className="grid2" style={{ marginTop: 6 }}>
+              <div><label>von</label><input type="date" value={f.from} onChange={(e) => set(focus.map((x) => (x.id === f.id ? { ...x, from: e.target.value } : x)))} /></div>
+              <div><label>bis</label><input type="date" value={f.to} onChange={(e) => set(focus.map((x) => (x.id === f.id ? { ...x, to: e.target.value } : x)))} /></div>
+            </div>
+            <p className="small muted" style={{ margin: '4px 0 0' }}>{FOCUS_WHY[f.sport]}</p>
+          </div>
+          <button className="ghost" style={{ flex: 'none' }} onClick={() => set(focus.filter((x) => x.id !== f.id))} aria-label="Entfernen"><Trash2 size={16} /></button>
+        </div>
+      ))}
     </div>
   );
 }

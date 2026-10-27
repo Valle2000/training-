@@ -168,3 +168,22 @@ test('Harte Tage wählbar: Mi + Sa, Norwegisch mit einem Double-Threshold-Tag', 
   }
   assert.ok(KEY_OPTIONS.filter((k) => k.type !== 'opener' && k.type !== 'speed' && k.type !== 'long' && k.type !== 'strength').every((k) => k.why), 'alle Intervalle haben eine Begründung');
 });
+
+test('Multisport: Schwerpunkte setzen die Sportart, Triathlon bekommt Koppeltraining', async () => {
+  const { focusOn, raceSport } = await import('../src/lib/plan-wizard.js');
+  const list = [{ sport: 'run', from: '2027-06-01', to: '2027-08-31' }, { sport: 'tri', from: '2027-05-01', to: '2027-08-31' }];
+  assert.equal(focusOn('2027-06-15', list), 'run');
+  assert.equal(focusOn('2027-05-15', list), 'tri');
+  assert.equal(focusOn('2027-09-15', list), null);
+  assert.equal(raceSport('Triathlon', '2027-07-01'), 'run');
+  assert.equal(raceSport('Rad', '2027-07-01'), 'bike');
+  const o = { ...base, start: '2027-05-03', end: '2027-08-29', approach: 'pyramidal' };
+  const run = generatePlan({ ...o, focusFor: (m) => focusOn(m, [{ sport: 'run', from: '2027-05-01', to: '2027-08-31' }]) }, []);
+  const easy = run.flatMap((w) => w.days.flatMap((d) => d.sessions)).filter((s) => s.kind === 'easy' && s.title.startsWith('Locker ('));
+  assert.ok(easy.length > 0 && easy.every((s) => s.sport === 'run'), 'lockere Einheiten laufen');
+  const tri = generatePlan({ ...o, focusFor: (m) => focusOn(m, list) }, [{ id: 'r', date: '2027-08-15', name: 'Triathlon Sprint', priority: 'A', technique: 'Triathlon', distanceKm: 25 }]);
+  const brick = tri.flatMap((w) => w.days.flatMap((d) => d.sessions)).filter((s) => s.title.startsWith('Koppeln'));
+  assert.ok(brick.length >= 2, 'Koppeltraining je Woche in Aufbau/Vorbereitung');
+  const race = tri.flatMap((w) => w.days.flatMap((d) => d.sessions)).find((s) => s.title.startsWith('Rennen: Triathlon'));
+  assert.equal(race.sport, 'run');
+});

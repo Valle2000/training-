@@ -5,7 +5,7 @@ import { addDays } from './metrics.js';
 import { toMin, fmtTime } from './week-adapt.js';
 
 // Grobe Schätzung der Rennzeit (min/km) nach Technik, wenn keine Zielzeit angegeben ist.
-const PACE = { Skating: 3.0, Klassisch: 3.4, Skiathlon: 3.2, Rollski: 2.6, Lauf: 5.0, Rad: 1.8, Sonstiges: 4.0 };
+const PACE = { Skating: 3.0, Klassisch: 3.4, Skiathlon: 3.2, Rollski: 2.6, Lauf: 5.0, Rad: 1.8, Triathlon: 3.6, Sonstiges: 4.0 };
 export const estimateMinutes = (race) => Math.round((Number(race.distanceKm) || 15) * (PACE[race.technique] || 3.2));
 const r5 = (x) => Math.round(x / 5) * 5;
 const de = (x, d = 0) => String(Math.round(x * 10 ** d) / 10 ** d).replace('.', ',');

@@ -12,7 +12,7 @@ import { RaceReport, RacePlanSheet } from './race-plan.jsx';
 const PlanWizard = lazy(() => import('./plan-wizard.jsx').then((m) => ({ default: m.PlanWizard })));
 
 const PRIORITY = { A: 'Saisonhöhepunkt', B: 'wichtig', C: 'Trainingsrennen' };
-const TECHNIQUE = ['Skating', 'Klassisch', 'Skiathlon', 'Rollski', 'Lauf', 'Rad', 'Sonstiges'];
+const TECHNIQUE = ['Skating', 'Klassisch', 'Skiathlon', 'Rollski', 'Lauf', 'Rad', 'Triathlon', 'Sonstiges'];
 
 export const nextRace = (races, t) => [...races].filter((r) => r.date >= t).sort((a, b) => a.date.localeCompare(b.date))[0];
 
