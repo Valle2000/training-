@@ -57,6 +57,12 @@ Regeln:
 - Plane die Mahlzeiten um die Trainingszeiten herum, inklusive Verpflegung während langer Einheiten.
 - Rezepte mit realistischen Mengen für die angegebene Portionszahl, einfachen Zutaten aus dem deutschen Supermarkt und klaren Schritten. Makros pro Portion schätzen.
 - Rezepte dürfen über Tage wiederverwendet werden (Meal Prep), das spart Zeit.
+- Ein Rezeptkatalog der App wird mitgeschickt (Name [Mahlzeit; Situation; Ernährungsform]). Nutze passende Katalogrezepte gern mit genau diesem Namen (Mengen an die Ziele anpassen) und ergänze eigene Rezepte für Abwechslung.
+- Vor harten Einheiten (Schwelle, Intervalle, Double Threshold) kohlenhydratreich und leicht verdaulich; zwischen zwei Einheiten am selben Tag schnell auffüllen (ca. 1 g KH/kg pro Stunde bis zur nächsten Einheit). Vor lockeren Einheiten unter 90 min darf es gelegentlich eiweiß- und gemüsebetont mit wenig Kohlenhydraten sein (Train Low, max. 1–2× pro Woche, nur wenn erlaubt).
+- Mikronährstoffe: über die Tage Eisen (Hülsenfrüchte, Hirse, Haferflocken, rotes Fleisch 1–2×/Woche, mit Vitamin C kombiniert), Calcium, Vitamin D (Fisch, Eier; Winter), Omega-3 (1–2× Fisch/Woche, Leinöl, Walnüsse), Magnesium/Kalium (Vollkorn, Nüsse, Kerne, Kartoffeln) und Folat (grünes Gemüse) gezielt abdecken; vegan: B12-Hinweis.
+- Hitze (Feld hitze): mehr Flüssigkeit und Natrium einplanen (Getränk mit 500–1000 mg Natrium pro Liter, salzige Snacks), kühle, leichte Mahlzeiten; bei angegebener Schweißrate die Trinkmenge pro Stunde daraus ableiten (ca. 70–80 % ersetzen).
+- Während Einheiten über 75 min konkrete Verpflegung pro Stunde angeben (Getränk, Gel, Riegel, Banane).
+- Hinweise: 2–4 kurze, konkrete Tipps zu Timing, Trinken und Mikronährstoffen für genau diese Tage.
 - Antworte auf Deutsch.`;
 
 const FOOD_SCHEMA = {
@@ -120,7 +126,7 @@ async function coach(body) {
 async function food(body) {
   const { tage, vorlieben } = body;
   if (!tage?.length) throw httpError(400, 'Tage fehlen');
-  const content = `Tagesziele und Training (JSON):\n${JSON.stringify(tage)}\n\nVorlieben und Rahmen:\n${JSON.stringify(vorlieben || {})}\n\nErstelle den Ernährungsplan mit Rezepten und Einkaufsliste.`;
+  const content = `Tagesziele und Training (JSON):\n${JSON.stringify(tage)}\n\nVorlieben und Rahmen:\n${JSON.stringify(vorlieben || {})}${Array.isArray(body.katalog) ? `\n\nRezeptkatalog der App:\n${body.katalog.slice(0, 150).map((x) => String(x).slice(0, 160)).join('\n')}` : ''}\n\nErstelle den Ernährungsplan mit Rezepten und Einkaufsliste.`;
   return askClaude({ system: FOOD_SYSTEM, schema: FOOD_SCHEMA, content, effort: 'medium' });
 }
 
