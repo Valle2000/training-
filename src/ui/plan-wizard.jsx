@@ -5,7 +5,7 @@ import { today, weeks as weekStats } from '../lib/activities.js';
 import { addDays } from '../lib/metrics.js';
 import { sportLabel, SPORTS } from '../lib/sports.js';
 import { PHASES, PRIORITY_INFO, raceAdvice } from '../lib/season.js';
-import { APPROACHES, KEY_TYPES, allOptions, makeKey, PLAN_SOURCES, GOALS, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend } from '../lib/plan-wizard.js';
+import { APPROACHES, KEY_TYPES, allOptions, makeKey, PLAN_SOURCES, GOALS, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend, hardDayCount, suggestHardDays, checkHardDays } from '../lib/plan-wizard.js';
 import { Sheet, fmtDate, fmtNum, toast } from './common.jsx';
 import { freeMinutes, hasSchedule, periodForWeek } from '../lib/week-adapt.js';
 
@@ -129,6 +129,7 @@ export function PlanWizard({ onClose }) {
         </div>
         <label>Ruhetage</label>
         <div className="chips">{DOW.map((d, i) => <button key={d} className={`chip${o.restDays.includes(i + 1) ? ' on' : ''}`} onClick={() => set('restDays', o.restDays.includes(i + 1) ? o.restDays.filter((x) => x !== i + 1) : [...o.restDays, i + 1])}>{d}</button>)}</div>
+        <HardDays o={o} set={set} setO={setO} schedule={hasSchedule(settings.schedule) ? settings.schedule : null} />
         <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontWeight: 400, marginTop: 8 }}><input type="checkbox" checked={o.doubles !== false} onChange={(e) => set('doubles', e.target.checked)} style={{ width: 18, height: 18 }} />Zwei Einheiten an einem Tag erlaubt</label>
         <p className="muted small">Dein Schnitt der letzten 7 Wochen: {fmtNum(recent.reduce((a, w) => a + w.hours, 0) / (recent.length || 1), 1)} h. {hasSchedule(settings.schedule) ? 'Deine Uni-/Arbeitszeiten aus „Alltag“ werden berücksichtigt – pro Tag wird nur so viel geplant, wie frei ist. ' : 'Tipp: Unter Kalender → Woche → „Alltag“ Uni/Arbeit eintragen, dann plant der Assistent nur in deine freie Zeit. '}Steigerung im 3:1-Rhythmus (3 Wochen aufbauen, 1 leichter), Tapering vor A-Rennen 2 Wochen. {nextA ? `Nächstes A-Rennen: ${nextA.name} am ${fmtDate(nextA.date)}.` : 'Tipp: A-Rennen unter „Rennen“ eintragen – dann plant der Assistent die Phasen rückwärts davon.'}</p>
       </>}
@@ -146,7 +147,7 @@ export function PlanWizard({ onClose }) {
               {list.map((k) => (
                 <div key={k.id} className="item" style={{ fontWeight: 400 }}>
                   <input type="checkbox" checked={keys.includes(k.id)} onChange={() => toggleKey(k.id)} style={{ width: 20, height: 20, flex: 'none' }} aria-label={k.name} />
-                  <div className="grow" onClick={() => toggleKey(k.id)} style={{ cursor: 'pointer' }}><b>{k.name}</b>{k.custom && <span className="badge b-info" style={{ marginLeft: 6 }}>eigene</span>}<p>{k.desc}{k.minutes ? ` · ca. ${k.minutes} min` : ''}{k.sport !== 'specific' && k.sport !== 'strength' ? ` · ${sportLabel(k.sport)}` : ''}</p></div>
+                  <div className="grow" onClick={() => toggleKey(k.id)} style={{ cursor: 'pointer' }}><b>{k.name}</b>{k.custom && <span className="badge b-info" style={{ marginLeft: 6 }}>eigene</span>}{k.why && <p className="small" style={{ margin: '2px 0', color: 'var(--accent)' }}>{k.why}</p>}<p>{k.desc}{k.minutes ? ` · ca. ${k.minutes} min` : ''}{k.sport !== 'specific' && k.sport !== 'strength' ? ` · ${sportLabel(k.sport)}` : ''}</p></div>
                   {k.spec && <button className="ghost" style={{ flex: 'none' }} title={k.custom ? 'Bearbeiten' : 'Als eigene Einheit anpassen'} onClick={() => setEdit(k.custom ? { id: k.id, name: k.name, spec: k.spec } : { spec: k.spec, from: k.id })}><Pencil size={16} /></button>}
                 </div>
               ))}
@@ -282,5 +283,48 @@ function WizardRaces({ t }) {
         <button className="secondary" onClick={add}><Plus size={16} />Hinzufügen</button>
       </div>
     </>
+  );
+}
+
+// Harte Tage wählen – mit Vorschlägen, Begründung und Warnungen. Norwegisch: 1 oder 2 Double-Threshold-Tage.
+function HardDays({ o, set, setO, schedule }) {
+  const dt = Number(o.dtDays) || 2;
+  const needed = hardDayCount(o.approach, dt);
+  const sug = suggestHardDays(needed, { restDays: o.restDays, longDay: o.longDay });
+  const own = o.hardDays || [];
+  const warn = own.length ? checkHardDays(own, { restDays: o.restDays, longDay: o.longDay, needed }) : [];
+  const label = (c) => c.map((d) => DOW[d - 1]).join(' + ');
+  const same = (a, b) => a.length === b.length && a.every((x) => b.includes(x));
+  // Freie Zeit je Wochentag in der Startwoche (aus „Alltag“).
+  const free = (d) => (schedule ? Math.round(freeMinutes(addDays(o.start, d - 1), schedule) / 6) / 10 : null);
+  return (
+    <div className="card" style={{ marginTop: 12 }}>
+      <b>Harte Tage</b>
+      {o.approach === 'norwegian' && <>
+        <label>Double-Threshold-Tage pro Woche</label>
+        <div className="chips">{[1, 2].map((n) => <button key={n} className={`chip${dt === n ? ' on' : ''}`} onClick={() => setO({ ...o, dtDays: n, hardDays: null })}>{n} {n === 1 ? 'Tag' : 'Tage'}</button>)}</div>
+        <p className="muted small">{dt === 1 ? 'Ein Double-Threshold-Tag plus eine harte Einheit: für die meisten der beste Einstieg – zwei kontrollierte Schwelleneinheiten an einem Tag, der Rest der Woche bleibt locker und erholsam.' : 'Zwei Double-Threshold-Tage plus eine kurze harte Einheit: sehr viel Schwelle. Erst sinnvoll mit solider Grundlage (ca. 10+ h/Woche) und guter Steuerung über Laktat oder Puls – sonst wird es schnell zu viel.'}</p>
+      </>}
+      <p className="small" style={{ margin: '6px 0' }}>Dein Ansatz plant in der Aufbauphase <b>{needed} harte {needed === 1 ? 'Tag' : 'Tage'}</b> pro Woche{o.approach === 'norwegian' ? ' (ein Double-Threshold-Tag zählt als ein Tag)' : ''}. Vorschläge passend zu Ruhetag und langem Tag:</p>
+      <div className="chips">
+        <button className={`chip${!own.length ? ' on' : ''}`} onClick={() => set('hardDays', null)}>Automatisch</button>
+        {sug.map((c) => <button key={c.join()} className={`chip${same(own, c) ? ' on' : ''}`} onClick={() => set('hardDays', c)}>{label(c)}</button>)}
+      </div>
+      <label>Oder selbst wählen</label>
+      <div className="chips">{DOW.map((d, i) => <button key={d} className={`chip${own.includes(i + 1) ? ' on' : ''}`} onClick={() => set('hardDays', own.includes(i + 1) ? own.filter((x) => x !== i + 1) : [...own, i + 1].sort())}>{d}{free(i + 1) != null ? ` · ${String(free(i + 1)).replace('.', ',')} h` : ''}</button>)}</div>
+      {schedule && <p className="muted small" style={{ margin: 0 }}>Zahl hinter dem Tag = freie Zeit laut „Alltag“.</p>}
+      {warn.map((w) => <div key={w} className="notice" style={{ background: 'var(--warnbg)', color: 'var(--warn)' }}>{w}</div>)}
+      <details style={{ marginTop: 8 }}>
+        <summary className="small" style={{ cursor: 'pointer' }}><b>Welche Tage machen Sinn?</b></summary>
+        <ul className="small" style={{ paddingLeft: 18 }}>
+          <li><b>Mindestens 48 h Abstand</b> zwischen harten Tagen – dann ist die nächste harte Einheit wieder von hoher Qualität. Weltklasse-Langläufer setzen etwa alle 3–4 Tage einen harten Tag.</li>
+          <li><b>Mittwoch + Samstag</b> (oder Dienstag + Freitag): gleichmäßig verteilt, je 2–3 lockere Tage dazwischen – sehr guter Standard bei zwei harten Tagen.</li>
+          <li><b>Tag nach dem Ruhetag:</b> du bist frisch – gut für die wichtigste Einheit der Woche.</li>
+          <li><b>Samstag hart + Sonntag lang (locker):</b> klassischer Wochenend-Block und Rennrhythmus, weil Rennen meist am Wochenende sind. Der lange Tag muss dann wirklich locker bleiben.</li>
+          <li><b>Alltag zählt:</b> harte Einheiten dahin, wo du Zeit und Energie hast – nicht nach dem längsten Uni- oder Arbeitstag. Kraft am selben Tag nach der harten Einheit oder an lockeren Tagen, nicht am Tag davor.</li>
+          <li><b>Weniger Tage als vorgesehen</b> sind erlaubt: Dann fallen die übrigen harten Einheiten weg – sinnvoll in stressigen Phasen oder beim Wiedereinstieg.</li>
+        </ul>
+      </details>
+    </div>
   );
 }

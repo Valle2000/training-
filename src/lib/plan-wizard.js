@@ -141,9 +141,109 @@ export const KEY_OPTIONS = [
   { id: 'long', type: 'long', name: 'Lange Einheit am Wochenende', minutes: 0, zone: 'I1', sport: 'specific', desc: 'Lang und locker, gern mit viel Doppelstock; Verpflegung üben' },
   { id: 'strength', type: 'strength', name: 'Krafttraining', minutes: 60, zone: 'Kraft', sport: 'strength', desc: 'Kraft-Vorlage A/B oder JOE (Doppelstock-Fokus)' },
 ];
+// Wozu welche Form? Kurz die Vorteile – hilft bei der Auswahl.
+const WHY = {
+  dt_am: 'Einstieg ins Double Threshold: kurze Wiederholungen, leicht zu kontrollieren, gut für die ersten Wochen.',
+  dtam_3x20: 'Viel Zeit an der unteren Schwelle in wenigen langen Blöcken – sehr rennnah für Langdistanzen, trainiert Konzentration und gleichmäßiges Tempo.',
+  dtam_8x8: 'Hoher Umfang an der Schwelle, durch die kurzen Pausen trotzdem gut kontrollierbar – klassische norwegische Vormittagseinheit.',
+  dtam_6x10: 'Ausgewogen zwischen Umfang und Kontrolle; 60 min an der Schwelle, gut zum Vergleichen über die Saison.',
+  dtam_5x10: 'Wie 6×10, etwas weniger Umfang – gut für Wochen mit viel Alltag oder am Anfang.',
+  dtam_4x12: 'Längere Blöcke, weniger Pausen – Übergang von Intervallen zu langen Schwellenblöcken.',
+  dtam_2x25: 'Sehr lange Blöcke an der unteren Schwelle – Ausdauer an der Schwelle und Renntempo für 30–50 km.',
+  dt_pm: 'Abends kürzer und etwas schneller: mehr Tempo und Technik an der Schwelle trotz Vorbelastung vom Morgen.',
+  dtpm_8x4: 'Kurze Blöcke, etwas höheres Tempo als morgens – trainiert Schwelle mit flüssiger Technik bei Vorermüdung.',
+  dtpm_12x3: 'Viele kurze Wiederholungen – hoher Schwellenumfang bei guter Lockerheit.',
+  dtpm_6x5: 'Mittellange Blöcke – wenn 3 min zu kurz und 8–10 min abends zu zäh sind.',
+  dtpm_20x1: 'Sehr kurze Belastungen an der oberen Schwelle – Tempo und Technik, wenig muskuläre Ermüdung.',
+  dtpm_25x400: 'Bakken-Klassiker im Laufen: viele kurze Wiederholungen, Tempo exakt steuerbar über die Zeit pro 400 m.',
+  thr_6x10: 'Der Klassiker: 60 min Schwelle, gut dosierbar und über Wochen vergleichbar (Key Session).',
+  thr_3x20s: 'Lange Blöcke an der unteren Schwelle – rennspezifisch für lange Rennen, mental fordernd.',
+  thr_6x8: 'Etwas kürzere Blöcke als 6×10 – leichter, das Tempo sauber zu halten; gut auf Rollski.',
+  thr_8x8: 'Hoher Schwellenumfang (64 min) – für Fortgeschrittene in der Aufbauphase.',
+  thr_5x10: 'Etwas weniger als 6×10 – gut als Einstieg oder in Wochen mit wenig Zeit.',
+  thr_4x12: 'Längere Blöcke mit wenigen Pausen – Übergang zu Dauertempo.',
+  thr_4x8: 'Kompakte Schwelleneinheit (32 min) – wenn wenig Zeit ist oder in Wettkampfwochen.',
+  thr_3x15: 'Mittellange Blöcke – rennnahes Tempo für 15–30 km.',
+  thr_2x30: 'Sehr lange Blöcke an der unteren Schwelle – Langdistanz-Vorbereitung.',
+  thr_10x3: 'Kurze Wiederholungen – Schwelle mit höherem Tempo und guter Technik, wenig Ermüdung.',
+  thr_8x4: 'Kurze Blöcke mit kurzen Pausen – viel Zeit an der Schwelle bei lockerer Technik.',
+  thr_tempo45: 'Dauertempo ohne Pause – Renngefühl und gleichmäßiges Pacing für Langdistanzen.',
+  thr_3x20: 'SkiErg: Doppelstock-Kraftausdauer an der Schwelle, unabhängig von Wetter und Gelände.',
+  thr_3x10: 'SkiErg kompakt – Oberkörper-Schwelle, gut als zweite Einheit am Tag.',
+  hit_5x4: 'VO2max-Klassiker: 20 min nahe der maximalen Sauerstoffaufnahme, gut steuerbar.',
+  hit_4x4: 'Norwegischer 4×4-Klassiker – in Studien deutliche VO2max-Verbesserung; kurz genug, um voll zu gehen.',
+  hit_6x4: 'Mehr Umfang als 5×4 – für gut Trainierte in der Wettkampfvorbereitung.',
+  hit_4x5: 'Etwas längere Blöcke – mehr Zeit nahe VO2max pro Wiederholung, gut für lange Anstiege.',
+  hit_5x5: 'Viel Zeit nahe VO2max (25 min) – anspruchsvoll, für Fortgeschrittene.',
+  hit_6x3: 'Kürzer und schneller – mehr Tempo, gut für Technik bei hoher Geschwindigkeit.',
+  hit_4x6: 'Lange harte Blöcke – nahe am Tempo von 10–15-km-Rennen.',
+  hit_hill: 'Bergauf mit Stöcken: sehr langlaufspezifisch, viel Muskelmasse, wenig Stoßbelastung – ideal im Sommer.',
+  hit_hill8x4: 'Bergläufe: hohe Intensität bei geringer Stoßbelastung, kräftigt Beine und Hüfte.',
+  hit_pyr: 'Abwechslung und Pacing-Training – verschiedene Längen in einer Einheit, mental leichter.',
+  hit_30_15: 'Kurze Intervalle mit kurzen Pausen: besonders viel Zeit nahe VO2max bei erträglicher Ermüdung (Rønnestad) – auf Rad, SkiErg oder Rollski bergauf.',
+  hit_40_20: 'Wie 30/15, etwas längere Belastungen – Übergang zu längeren VO2max-Intervallen.',
+  hit_10x1: 'Kurz und sehr hart – Tempohärte, Laktattoleranz und Antritte für Rennen und Sprints.',
+  hit_15x1: 'Kurze Pausen machen es zur Mischung aus VO2max und Laktattoleranz – sehr fordernd.',
+  hit_8x2: 'Harte Zwei-Minuten-Blöcke – nahe am Tempo von Sprint-Rennen bzw. Rennanstiegen.',
+  hit_hill10x1: 'Kurz, explosiv und bergauf – Kraft, Schnellkraft und Technik unter Ermüdung.',
+  race_pace: 'Geplantes Renntempo üben: Pacing-Gefühl, Technik und Verpflegung im Renntempo.',
+  race_3x8: 'Längere Blöcke im Renntempo – für Distanzrennen.',
+  race_5x3: 'Kürzere Blöcke im Renntempo – Start und Endspurt üben.',
+  race_sprint: 'Sprint-Format simulieren: mehrere harte Läufe mit Pausen wie im Rennen (Prolog, Vorlauf, Finale).',
+  race_tt: 'Testrennen auf bekannter Runde – der beste Formtest, über die Saison vergleichbar.',
+};
+const WHY_TYPE = { dt_am: 'Vormittags längere, kontrollierte Schwellenblöcke.', dt_pm: 'Abends kürzere, etwas schnellere Schwellenblöcke.', threshold: 'Schwelle: viel Wirkung bei überschaubarer Erholungszeit.', hit: 'Harte Intervalle für VO2max und Tempohärte.', race: 'Renntempo und Rennabläufe üben.' };
+for (const o of KEY_OPTIONS) o.why = WHY[o.id] || null;
+
 // Eigene Einheiten (settings.customKeys: [{id, spec}]) zusammen mit dem Katalog.
-export const allOptions = (custom = []) => [...KEY_OPTIONS, ...custom.map((c) => ({ ...makeKey({ ...c.spec, id: c.id, name: c.name }), custom: true }))];
+export const allOptions = (custom = []) => [...KEY_OPTIONS, ...custom.map((c) => { const k = makeKey({ ...c.spec, id: c.id, name: c.name }); return { ...k, custom: true, why: WHY_TYPE[k.type] || null }; })];
 export const optionById = (id) => KEY_OPTIONS.find((o) => o.id === id);
+
+// ——— Harte Tage wählen ———
+// Wie viele harte Tage plant ein Ansatz pro Woche (Aufbau/Wettkampfvorbereitung)? Ein Double-Threshold-Tag zählt als ein Tag.
+export function hardDayCount(approachId, dtDays = 2) {
+  const ap = APPROACHES.find((a) => a.id === approachId);
+  if (!ap) return 2;
+  if (ap.phases.build === 'block') return 2;
+  const slots = phasesFor(ap, dtDays).build || [];
+  return slots.filter((x) => x !== 'opener').length;
+}
+// Norwegisch mit nur einem Double-Threshold-Tag: DT + eine harte Einheit.
+function phasesFor(ap, dtDays) {
+  if (ap.id !== 'norwegian' || Number(dtDays) !== 1) return ap.phases;
+  return { ...ap.phases, build: ['dt', 'hit'], specific: ['dt', 'race'] };
+}
+const cyc = (a, b) => { const d = Math.abs(a - b); return Math.min(d, 7 - d); };
+// Vorschläge für n harte Tage: möglichst großer Abstand (mind. 48 h), nicht auf Ruhetag/langem Tag; bei Gleichstand
+// lieber ein harter Tag am Wochenende (Rennrhythmus) und der Tag nach dem Ruhetag (frisch).
+export function suggestHardDays(n, { restDays = [1], longDay = 7 } = {}) {
+  const free = [1, 2, 3, 4, 5, 6, 7].filter((d) => !restDays.includes(d) && d !== longDay);
+  const combos = [];
+  const rec = (start, pick) => { if (pick.length === n) { combos.push([...pick]); return; } for (let i = start; i < free.length; i++) rec(i + 1, [...pick, free[i]]); };
+  rec(0, []);
+  const score = (c) => {
+    let minGap = 7;
+    for (let i = 0; i < c.length; i++) for (let j = i + 1; j < c.length; j++) minGap = Math.min(minGap, cyc(c[i], c[j]));
+    const weekend = c.some((d) => d >= 6) ? 1 : 0;
+    const afterRest = c.some((d) => restDays.includes(((d + 5) % 7) + 1)) ? 1 : 0;
+    const beforeLong = c.includes(((longDay + 5) % 7) + 1) ? 0.5 : 0; // Tag vor dem langen Tag hart: als Wochenend-Block okay
+    return minGap * 10 + weekend * 2 + afterRest + beforeLong * 0.5;
+  };
+  const gapOf = (c) => Math.min(7, ...c.flatMap((x, i) => c.slice(i + 1).map((y) => cyc(x, y))));
+  const best = Math.max(0, ...combos.map(gapOf));
+  return combos.filter((c) => gapOf(c) >= Math.min(2, best)).sort((a, b) => score(b) - score(a)).slice(0, 3);
+}
+export function checkHardDays(days = [], { restDays = [1], longDay = 7, needed = 2 } = {}) {
+  const out = [];
+  const s = [...days].sort((a, b) => a - b);
+  for (let i = 0; i < s.length; i++) for (let j = i + 1; j < s.length; j++) if (cyc(s[i], s[j]) === 1) out.push(`${DOW_NAME[s[i] - 1]} und ${DOW_NAME[s[j] - 1]} liegen direkt hintereinander – weniger Erholung, die zweite Einheit leidet meist. Mindestens einen lockeren Tag dazwischen.`);
+  for (const d of s) if (restDays.includes(d)) out.push(`${DOW_NAME[d - 1]} ist dein Ruhetag.`);
+  if (s.includes(longDay)) out.push(`${DOW_NAME[longDay - 1]} ist dein langer Tag – lang und hart am selben Tag ist sehr ermüdend (Ausnahme: Rennen).`);
+  if (s.length < needed) out.push(`Der Ansatz sieht ${needed} harte Tage vor, gewählt sind ${s.length} – die übrigen harten Einheiten fallen weg (bewusst weniger Intensität).`);
+  if (s.length > needed) out.push(`${s.length} Tage gewählt, der Ansatz braucht ${needed} – es werden die ersten ${needed} genutzt.`);
+  return out;
+}
+const DOW_NAME = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
 
 // Rollski im Sommer, Ski im Winter (Dez–März).
 const winter = (date) => [12, 1, 2, 3].includes(Number(date.slice(5, 7)));
@@ -195,7 +295,7 @@ export function generatePlan(opts, races = []) {
   let rot = 0, buildIdx = 0, rotIdx = 0, prevHours = null;
   const pickHit = (zone, k) => { const list = options.filter((o) => o.type === 'hit' && o.zone === zone && keys.has(o.id)); return list.length ? list[k % list.length] : null; };
   return weeks.map((w) => {
-    let hardSlots = ap.phases[w.phase] ?? [];
+    let hardSlots = phasesFor(ap, opts.dtDays)[w.phase] ?? [];
     // Besondere Zeiten (Prüfungsphase, Reise, Trainingslager): Umfang skalieren, harte Einheiten begrenzen.
     const per = opts.periodFor ? opts.periodFor(w.from) : null;
     if (per) {
@@ -203,11 +303,17 @@ export function generatePlan(opts, races = []) {
       if (Array.isArray(hardSlots) && per.hardMax != null) hardSlots = hardSlots.slice(0, per.hardMax);
       else if (hardSlots === 'block' && per.factor < 1) hardSlots = ['threshold'];
     }
-    let hardDays = ap.days.hard;
+    // Eigene harte Tage: Anzahl harter Einheiten passt sich an (weniger Tage = bewusst weniger Intensität).
+    const own = opts.hardDays?.length ? [...opts.hardDays].sort((a, b) => a - b) : null;
+    let hardDays = own || ap.days.hard;
     if (hardSlots === 'block') {
       const blockWeek = buildIdx % 4 === 0; buildIdx++;
       hardSlots = blockWeek ? ['hit', 'hit', 'hit', 'hit', 'hit'] : w.phase === 'specific' ? ['threshold', 'race'] : ['threshold', 'hit'];
       if (blockWeek) { hardDays = ap.days.block; w.targetHours = Math.round(w.targetHours * 0.85 * 10) / 10; w.block = true; }
+    }
+    if (own && !w.block && Array.isArray(hardSlots)) {
+      const opener = hardSlots.filter((x) => x === 'opener');
+      hardSlots = [...hardSlots.filter((x) => x !== 'opener').slice(0, own.length), ...opener];
     }
     // 'rot': pro 4-Wochen-Zyklus einmal I4 (bzw. Wettkampftempo in der Wettkampfvorbereitung) und einmal I5,
     // nie in der Entlastungswoche (deutlich weniger Stunden als die Vorwoche).

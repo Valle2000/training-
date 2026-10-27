@@ -152,3 +152,19 @@ test('Hinweise zur Rennplanung', async () => {
   assert.ok(adv.some((x) => x.text.includes('Wettkampfblock')));
   assert.ok(raceAdvice([{ name: 'Z', date: '2027-01-10', priority: 'C' }], '2026-11-01').some((x) => x.text.includes('Kein A-Rennen')));
 });
+
+test('Harte Tage wählbar: Mi + Sa, Norwegisch mit einem Double-Threshold-Tag', async () => {
+  const { suggestHardDays, hardDayCount, checkHardDays, KEY_OPTIONS } = await import('../src/lib/plan-wizard.js');
+  assert.equal(hardDayCount('norwegian', 1), 2);
+  assert.equal(hardDayCount('norwegian', 2), 3);
+  assert.ok(suggestHardDays(2, { restDays: [1], longDay: 7 }).some((c) => c.join() === '3,6'));
+  assert.ok(checkHardDays([3, 4], { needed: 2 })[0].includes('hintereinander'));
+  const w = generatePlan({ ...base, start: '2026-11-02', end: '2026-12-06', approach: 'norwegian', dtDays: 1, hardDays: [3, 6] }, []);
+  for (const x of w.filter((y) => y.phase === 'build')) {
+    const hardDows = [...new Set(x.days.filter((d) => d.sessions.some((s) => s.kind === 'hard')).map((d) => d.dow))];
+    assert.ok(hardDows.every((d) => [3, 6].includes(d)), `${x.from}: ${hardDows}`);
+    const dt = x.days.filter((d) => d.sessions.filter((s) => s.kind === 'hard').length === 2);
+    assert.ok(dt.length <= 1);
+  }
+  assert.ok(KEY_OPTIONS.filter((k) => k.type !== 'opener' && k.type !== 'speed' && k.type !== 'long' && k.type !== 'strength').every((k) => k.why), 'alle Intervalle haben eine Begründung');
+});
