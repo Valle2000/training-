@@ -221,7 +221,26 @@ export function generatePlan(opts, races = []) {
     if (deload && ap.id === 'threshold') hardSlots = hardSlots.slice(0, 1);
     const rest = new Set(opts.restDays || [1]), longDay = Number(opts.longDay) || 7;
     const days = Array.from({ length: 7 }, (_, i) => ({ dow: i + 1, date: addDays(w.from, i), sessions: [] }));
-    const free = (dow) => !rest.has(dow) && dow !== longDay;
+    // B- und C-Rennen ersetzen je eine harte Einheit; vor B-Rennen Vorbelastung am Vortag.
+    const PRIO = { A: 0, B: 1, C: 2 };
+    const weekRaces = [...(w.races || [])].sort((a, b) => (PRIO[a.priority] ?? 2) - (PRIO[b.priority] ?? 2));
+    const minor = weekRaces.filter((r) => r.priority !== 'A');
+    if (minor.length && Array.isArray(hardSlots) && w.phase !== 'race') {
+      hardSlots = hardSlots.filter((x) => x !== 'opener');
+      hardSlots = hardSlots.slice(0, Math.max(0, hardSlots.length - minor.length));
+      if (minor.some((r) => r.priority === 'B')) hardSlots.push('opener');
+    }
+    // Keine harte Einheit am Renntag, am Tag davor und nach A-/B-Rennen am Tag danach (auch Rennen vom Vorsonntag).
+    const dowOfDate = (d) => Math.round((Date.parse(d) - Date.parse(w.from)) / 864e5) + 1;
+    const blocked = new Set(), raceDows = new Set();
+    for (const r of races) {
+      const dw = dowOfDate(r.date);
+      if (dw >= 1 && dw <= 7) { raceDows.add(dw); blocked.add(dw); blocked.add(dw - 1); }
+      if (r.priority !== 'C') blocked.add(dw + 1);
+      if (r.priority === 'B' || r.priority === 'A') blocked.add(dw - 2);
+    }
+    const free = (dow) => !rest.has(dow) && dow !== longDay && !raceDows.has(dow);
+    const hardOk = (dow) => free(dow) && !blocked.has(dow);
     const total = w.targetHours * 60;
     let used = 0;
     const put = (day, s) => { day.sessions.push(s); used += s.minutes; };
@@ -232,7 +251,9 @@ export function generatePlan(opts, races = []) {
     hardSlots.forEach((slot, k) => {
       let dow = hardDays[k] ?? hardDays[hardDays.length - 1] ?? 3;
       const need = slot === 'dt' ? 70 : 60;
-      for (let tries = 0; tries < 7 && (!free(dow) || hardUsed.has(dow) || room(days[dow - 1]) < need); tries++) dow = (dow % 7) + 1;
+      if (slot !== 'opener') for (let tries = 0; tries < 7 && (!hardOk(dow) || hardUsed.has(dow) || room(days[dow - 1]) < need); tries++) dow = (dow % 7) + 1;
+      // Keine passende Lücke (z. B. Rennen, Ruhetage): Einheit weglassen statt neben das Rennen legen.
+      if (slot !== 'opener' && (!hardOk(dow) || hardUsed.has(dow))) return;
       hardUsed.add(dow);
       const day = days[dow - 1];
       if (slot === 'dt') {
@@ -240,7 +261,7 @@ export function generatePlan(opts, races = []) {
         if (am) put(day, session(am, day.date, rot++, 'vormittags'));
         if (pm && opts.doubles !== false && room(day) >= pm.minutes) put(day, session(pm, day.date, rot++, 'nachmittags'));
       } else if (slot === 'opener') {
-        const race = (w.races || [])[0];
+        const race = weekRaces[0];
         const d = race ? days.find((x) => x.date === addDays(race.date, -1)) || day : day;
         put(d, session(optionById('opener'), d.date, rot++));
       } else if (slot === 'i4' || slot === 'i5') {
@@ -262,7 +283,7 @@ export function generatePlan(opts, races = []) {
     // 3) Kraft auf Tage ohne harte Einheit.
     // Kraft: Vorbereitung wie gewählt, ab Wettkampfvorbereitung und in Erholungswochen höchstens 1× (Erhalt).
     const strengthN = ['base', 'build'].includes(w.phase) ? opts.strengthPerWeek ?? 2 : Math.min(1, opts.strengthPerWeek ?? 2);
-    const strengthDays = days.filter((d) => !rest.has(d.dow) && d.dow !== longDay && !d.sessions.length && room(d) >= 60);
+    const strengthDays = days.filter((d) => !rest.has(d.dow) && d.dow !== longDay && !d.sessions.length && room(d) >= 60 && !raceDows.has(d.dow) && !raceDows.has(d.dow + 1) && !raceDows.has(d.dow + 2));
     for (let i = 0; i < strengthN && i < strengthDays.length; i++) {
       const d = strengthDays[Math.round((i * (strengthDays.length - 1)) / Math.max(1, strengthN - 1))] || strengthDays[i];
       put(d, { title: ['Kraft A – Beine schwer + Zug', 'Kraft B – Hüfte, einbeinig + Doppelstock', 'Kraft JOE – Doppelstock-Fokus'][i % 3], sport: 'strength', minutes: 60, zone: 'Kraft', description: 'Vorlage im Tab „Kraft“', kind: 'strength' });
@@ -271,11 +292,11 @@ export function generatePlan(opts, races = []) {
     let easy = Math.max(0, total - used);
     // Freie Plätze: erst jeder Tag einmal, dann (bei Doppeltagen) ein zweites Mal – höchstens 2 Einheiten pro Tag.
     const maxPerDay = opts.doubles === false ? 1 : 2;
-    const cap = (d) => (rest.has(d.dow) || d.dow === longDay ? 0 : maxPerDay - d.sessions.length);
+    const cap = (d) => (rest.has(d.dow) || d.dow === longDay || raceDows.has(d.dow) ? 0 : maxPerDay - d.sessions.length);
     const slots = [];
     for (const d of days) if (cap(d) >= 1 && !d.sessions.some((s) => s.kind === 'hard')) slots.push(d);
     for (const d of days) if (cap(d) >= (slots.includes(d) ? 2 : 1)) slots.push(d);
-    if (!slots.length) slots.push(...days.filter((d) => !rest.has(d.dow) && d.dow !== longDay));
+    if (!slots.length) slots.push(...days.filter((d) => !rest.has(d.dow) && d.dow !== longDay && !raceDows.has(d.dow)));
     let n = Math.max(0, Math.min(slots.length, Math.round(easy / 80)));
     if (n === 0 && easy >= 30) n = 1;
     let speedDone = !(keys.has('speed') && ['base', 'build', 'specific'].includes(w.phase));

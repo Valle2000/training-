@@ -122,3 +122,33 @@ test('Alltag: an Uni-Tagen nur so viel, wie in die freie Zeit passt', async () =
     assert.ok(sum <= free, `${d.date}: ${sum} > ${free}`);
   }
 });
+
+test('Rennen nach Priorität: B mit Mini-Taper und Vorbelastung, C ersetzt harte Einheit, nie hart neben Rennen', () => {
+  const rs = [
+    { id: 'a', date: '2027-03-14', name: 'Engadin', priority: 'A', distanceKm: 42 },
+    { id: 'b', date: '2027-01-16', name: 'Volkslauf', priority: 'B', distanceKm: 25 },
+    { id: 'c', date: '2026-12-12', name: 'Testrennen', priority: 'C', distanceKm: 10 },
+  ];
+  const o = { ...base, start: '2026-11-02', end: '2027-03-21', approach: 'pyramidal' };
+  const w = generatePlan(o, rs);
+  const wb = w.find((x) => x.from === '2027-01-11'), wc = w.find((x) => x.from === '2026-12-07');
+  assert.ok(wb.mini);
+  const prevB = w.find((x) => x.from === '2027-01-04');
+  assert.ok(wb.targetHours < prevB.targetHours);
+  const all = (x) => x.days.flatMap((d) => d.sessions.map((s) => ({ ...s, date: d.date })));
+  assert.ok(all(wb).some((s) => s.keyId === 'opener' && s.date === '2027-01-15'));
+  for (const [wk, race] of [[wb, '2027-01-16'], [wc, '2026-12-12']]) {
+    const hard = all(wk).filter((s) => s.kind === 'hard' && s.keyId !== 'opener');
+    for (const s of hard) assert.ok(Math.abs(Date.parse(s.date) - Date.parse(race)) > 864e5, `${s.title} ${s.date}`);
+    assert.ok(all(wk).filter((s) => s.date === race).every((s) => s.kind === 'race'));
+  }
+  const hardC = all(wc).filter((s) => s.kind === 'hard').length, hardNormal = all(w.find((x) => x.from === '2026-11-30')).filter((s) => s.kind === 'hard').length;
+  assert.ok(hardC < hardNormal, `${hardC} vs ${hardNormal}`);
+});
+
+test('Hinweise zur Rennplanung', async () => {
+  const { raceAdvice } = await import('../src/lib/season.js');
+  const adv = raceAdvice([{ name: 'X', date: '2027-01-10', priority: 'A' }, { name: 'Y', date: '2027-01-24', priority: 'A' }], '2026-11-01');
+  assert.ok(adv.some((x) => x.text.includes('Wettkampfblock')));
+  assert.ok(raceAdvice([{ name: 'Z', date: '2027-01-10', priority: 'C' }], '2026-11-01').some((x) => x.text.includes('Kein A-Rennen')));
+});

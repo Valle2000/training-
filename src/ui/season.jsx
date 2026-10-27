@@ -3,7 +3,7 @@ import { Plus, Trash2, Trophy, Flag, Wand2, Utensils } from 'lucide-react';
 import { useData, update, uid } from '../lib/store.js';
 import { today, weeks as weekStats, mondayOf, dailyLoads } from '../lib/activities.js';
 import { addDays, performanceCurve } from '../lib/metrics.js';
-import { PHASES, seasonPlan, seasonStart, gapPct, parseTime, fmtTime } from '../lib/season.js';
+import { PHASES, seasonPlan, seasonStart, gapPct, parseTime, fmtTime, PRIORITY_INFO, raceAdvice } from '../lib/season.js';
 import { SeasonChart, LineChart } from './charts.jsx';
 import { Sheet, fmtDate, fmtNum, toast } from './common.jsx';
 
@@ -100,6 +100,7 @@ export function Races({ openActivity }) {
   return (
     <>
       <button className="primary wide" style={{ marginTop: 12 }} onClick={() => setEdit({ id: uid(), date: t, name: '', priority: 'B', technique: 'Skating', distanceKm: '', goal: '', notes: '' })}><Plus size={17} />Rennen eintragen</button>
+      {raceAdvice(races, t).map((a) => <div key={a.text} className="notice" style={a.level === 'gelb' ? { background: 'var(--warnbg)', color: 'var(--warn)' } : undefined}>{a.text}</div>)}
       <h2>Kommende Rennen</h2>
       {!upcoming.length && <p className="muted">Noch keine Rennen geplant.</p>}
       {upcoming.map((r) => <button key={r.id} className="item" onClick={() => setEdit(r)}><div className="grow"><b>{r.name}</b><p>{fmtDate(r.date)} · {r.technique}{r.distanceKm ? ` · ${r.distanceKm} km` : ''}{r.goal ? ` · Ziel: ${r.goal}` : ''}</p></div><span className={`badge ${r.priority === 'A' ? 'b-kritisch' : r.priority === 'B' ? 'b-achtung' : 'b-info'}`}>{r.priority} · {PRIORITY[r.priority]}</span></button>)}
@@ -138,6 +139,7 @@ function RaceEditor({ race, activities, onClose, openActivity, t }) {
         <div><label>Technik</label><select value={r.technique} onChange={set('technique')}>{TECHNIQUE.map((x) => <option key={x}>{x}</option>)}</select></div>
         <div><label>Distanz (km)</label><input inputMode="decimal" value={r.distanceKm} onChange={set('distanceKm')} /></div>
       </div>
+      <p className="muted small">{PRIORITY_INFO[r.priority]}</p>
       <label>Ziel</label><input value={r.goal} onChange={set('goal')} placeholder="z. B. unter 2:00 h, Top 50" />
       <button className="secondary wide" style={{ marginTop: 10 }} onClick={() => { update((d) => ({ ...d, races: [...d.races.filter((x) => x.id !== r.id), { ...(d.races.find((x) => x.id === r.id) || {}), ...r }] })); setPlanOpen(true); }}><Utensils size={16} />Rennplan & Verpflegung</button>
       {planOpen && <RacePlanSheet race={r} onClose={() => setPlanOpen(false)} />}

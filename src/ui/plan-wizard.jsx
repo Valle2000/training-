@@ -1,10 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, Check, CalendarPlus, Sparkles, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useData, update, uid } from '../lib/store.js';
 import { today, weeks as weekStats } from '../lib/activities.js';
 import { addDays } from '../lib/metrics.js';
 import { sportLabel, SPORTS } from '../lib/sports.js';
-import { PHASES } from '../lib/season.js';
+import { PHASES, PRIORITY_INFO, raceAdvice } from '../lib/season.js';
 import { APPROACHES, KEY_TYPES, allOptions, makeKey, PLAN_SOURCES, GOALS, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend } from '../lib/plan-wizard.js';
 import { Sheet, fmtDate, fmtNum, toast } from './common.jsx';
 import { freeMinutes, hasSchedule, periodForWeek } from '../lib/week-adapt.js';
@@ -26,18 +26,22 @@ export function PlanWizard({ onClose }) {
   const recent = weekStats(activities, 8, t).slice(0, 7);
   const avg = Math.round(recent.reduce((a, w) => a + w.hours, 0) / (recent.length || 1)) || 10;
   const nextA = races.filter((r) => r.priority === 'A' && r.date > t).sort((a, b) => a.date.localeCompare(b.date))[0];
+  // Letztes A-Rennen der kommenden Saison (bis ca. 10 Monate voraus) bestimmt das Planungsende.
+  const lastA = races.filter((r) => r.priority === 'A' && r.date > t && r.date <= addDays(t, 300)).map((r) => r.date).sort().at(-1);
   const saved = settings.season?.wizard || {};
   const [step, setStep] = useState(0);
   const [o, setO] = useState({
     approach: 'pyramidal', startHours: avg, peakHours: Math.round(avg * 1.2),
-    end: nextA ? addDays(nextA.date, 7) : addDays(nextMonday(t), 7 * 16 - 1), restDays: [1], longDay: 7, doubles: true, strengthPerWeek: 2, keys: null, horizon: 8, profile: {},
+    end: lastA ? addDays(lastA, 7) : addDays(nextMonday(t), 7 * 16 - 1), restDays: [1], longDay: 7, doubles: true, strengthPerWeek: 2, keys: null, horizon: 8, profile: {},
     ...saved, start: saved.start && saved.start >= t ? saved.start : nextMonday(t),
   });
+  // Neue oder hochgestufte A-Rennen nach dem bisherigen Ende: Planungszeitraum bis dorthin verlängern.
+  useEffect(() => { if (lastA && addDays(lastA, 7) > o.end) setO((x) => ({ ...x, end: addDays(lastA, 7) })); }, [lastA, o.end]);
   const ap = APPROACHES.find((a) => a.id === o.approach);
   const keys = o.keys || ap.defaults;
   const pr = o.profile || {};
   const rec = recommend(pr, Number(o.startHours) || 10);
-  const plan = useMemo(() => (step >= 4 ? generatePlan({ ...o, keys, customKeys: custom, capFor: hasSchedule(settings.schedule) ? (d) => freeMinutes(d, settings.schedule) : null, periodFor: settings.schedule?.periods?.length ? (m) => periodForWeek(m, settings.schedule) : null }, races) : []), [step, o, keys, races, custom, settings.schedule]);
+  const plan = useMemo(() => (step >= 5 ? generatePlan({ ...o, keys, customKeys: custom, capFor: hasSchedule(settings.schedule) ? (d) => freeMinutes(d, settings.schedule) : null, periodFor: settings.schedule?.periods?.length ? (m) => periodForWeek(m, settings.schedule) : null }, races) : []), [step, o, keys, races, custom, settings.schedule]);
   const set = (k, v) => setO({ ...o, [k]: v });
   const toggleKey = (id) => set('keys', keys.includes(id) ? keys.filter((k) => k !== id) : [...keys, id]);
   const setPr = (k, v) => set('profile', { ...pr, [k]: v });
@@ -64,7 +68,7 @@ export function PlanWizard({ onClose }) {
     onClose();
   };
 
-  const steps = ['Über dich', 'Ansatz', 'Umfang', 'Key Sessions', 'Vorschau'];
+  const steps = ['Über dich', 'Rennen', 'Ansatz', 'Umfang', 'Key Sessions', 'Vorschau'];
   return (
     <Sheet title="Saisonplan-Assistent" onClose={onClose}>
       <div className="chips">{steps.map((s, i) => <button key={s} className={`chip${i === step ? ' on' : ''}`} onClick={() => setStep(i)}>{i + 1}. {s}</button>)}</div>
@@ -88,7 +92,9 @@ export function PlanWizard({ onClose }) {
         <p className="muted small">Lieblingssportarten kommen vor allem im Frühjahr oft dran – je nach Ernsthaftigkeit bis in den Spätsommer, bei „leistungsorientiert“ wird es ab Herbst spezifischer.</p>
       </>}
 
-      {step === 1 && <>
+      {step === 1 && <WizardRaces t={t} />}
+
+      {step === 2 && <>
         <div className="card">
           <b><Sparkles size={16} style={{ verticalAlign: -3 }} /> Empfehlung: {APPROACHES.find((a) => a.id === rec.approach).name}</b>
           <ul className="small" style={{ paddingLeft: 18, margin: '6px 0' }}>{rec.reasons.map((r) => <li key={r}>{r}</li>)}</ul>
@@ -112,7 +118,7 @@ export function PlanWizard({ onClose }) {
         ))}
       </>}
 
-      {step === 2 && <>
+      {step === 3 && <>
         <div className="grid2">
           <div><label>Stunden/Woche jetzt</label><input type="number" value={o.startHours} onChange={(e) => set('startHours', e.target.value)} /></div>
           <div><label>Spitze Stunden/Woche</label><input type="number" value={o.peakHours} onChange={(e) => set('peakHours', e.target.value)} /></div>
@@ -127,7 +133,7 @@ export function PlanWizard({ onClose }) {
         <p className="muted small">Dein Schnitt der letzten 7 Wochen: {fmtNum(recent.reduce((a, w) => a + w.hours, 0) / (recent.length || 1), 1)} h. {hasSchedule(settings.schedule) ? 'Deine Uni-/Arbeitszeiten aus „Alltag“ werden berücksichtigt – pro Tag wird nur so viel geplant, wie frei ist. ' : 'Tipp: Unter Kalender → Woche → „Alltag“ Uni/Arbeit eintragen, dann plant der Assistent nur in deine freie Zeit. '}Steigerung im 3:1-Rhythmus (3 Wochen aufbauen, 1 leichter), Tapering vor A-Rennen 2 Wochen. {nextA ? `Nächstes A-Rennen: ${nextA.name} am ${fmtDate(nextA.date)}.` : 'Tipp: A-Rennen unter „Rennen“ eintragen – dann plant der Assistent die Phasen rückwärts davon.'}</p>
       </>}
 
-      {step === 3 && <>
+      {step === 4 && <>
         <p className="muted small">Welche Schlüsseleinheiten willst du machen? Vorausgewählt passend zu „{ap.name}“. Pro Typ werden die gewählten Einheiten abgewechselt.</p>
         <button className="secondary" onClick={() => setEdit({ spec: { type: 'threshold', reps: 6, work: 10, rest: 1, unit: 'min', restUnit: 'min', sets: 1, setRest: 3, sport: 'specific', warm: 20, cool: 15, note: '' } })}><Plus size={16} />Eigene Einheit</button>
         {edit && <KeyEditor edit={edit} onClose={() => setEdit(null)} onSaved={(id) => { if (!keys.includes(id)) set('keys', [...keys, id]); setEdit(null); }} />}
@@ -149,14 +155,14 @@ export function PlanWizard({ onClose }) {
         })}
       </>}
 
-      {step === 4 && <>
+      {step === 5 && <>
         <div className="grid2">
           <div><label>In den Kalender übernehmen</label><select value={o.horizon} onChange={(e) => set('horizon', Number(e.target.value))}>{[4, 8, 12, 16].map((n) => <option key={n} value={n}>nächste {n} Wochen</option>)}<option value={0}>ganzer Zeitraum ({plan.length} Wochen)</option></select></div>
           <div><label>Ansatz</label><input value={ap.name} disabled /></div>
         </div>
         <div style={{ overflowX: 'auto' }}>
           <table className="t nowrap"><thead><tr><th>Woche</th><th>Phase</th><th>Std.</th><th>Harte Einheiten</th></tr></thead>
-            <tbody>{plan.map((w) => <tr key={w.from}><td>{fmtDate(w.from, { day: 'numeric', month: 'short' })}</td><td><i style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 3, background: PHASES[w.phase].color, marginRight: 6 }} />{PHASES[w.phase].label}{w.block ? ' · Block' : ''}{w.period ? ` · ${w.period}` : ''}</td><td>{fmtNum(w.plannedHours, 1)}</td><td>{w.days.flatMap((d) => d.sessions.filter((s) => s.kind === 'hard' || s.kind === 'race').map((s) => `${DOW[d.dow - 1]} ${s.title.split(':')[0].replace(' (vormittags)', '').replace(' (nachmittags)', '')}`)).join(', ') || '–'}</td></tr>)}</tbody>
+            <tbody>{plan.map((w) => <tr key={w.from}><td>{fmtDate(w.from, { day: 'numeric', month: 'short' })}</td><td><i style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 3, background: PHASES[w.phase].color, marginRight: 6 }} />{PHASES[w.phase].label}{w.block ? ' · Block' : ''}{w.mini ? ' · Mini-Taper' : ''}{w.period ? ` · ${w.period}` : ''}</td><td>{fmtNum(w.plannedHours, 1)}</td><td>{w.days.flatMap((d) => d.sessions.filter((s) => s.kind === 'hard' || s.kind === 'race').map((s) => `${DOW[d.dow - 1]} ${s.title.split(':')[0].replace(' (vormittags)', '').replace(' (nachmittags)', '')}`)).join(', ') || '–'}</td></tr>)}</tbody>
           </table>
         </div>
         {plan.slice(0, 2).map((w) => (
@@ -176,7 +182,7 @@ export function PlanWizard({ onClose }) {
 
       <div className="row" style={{ marginTop: 12 }}>
         {step > 0 && <button className="secondary" onClick={() => setStep(step - 1)}><ChevronLeft size={17} />Zurück</button>}
-        {step < 4 && <button className="primary" onClick={() => setStep(step + 1)}>Weiter<ChevronRight size={17} /></button>}
+        {step < 5 && <button className="primary" onClick={() => setStep(step + 1)}>Weiter<ChevronRight size={17} /></button>}
       </div>
     </Sheet>
   );
@@ -233,5 +239,48 @@ function KeyEditor({ edit, onClose, onSaved }) {
         {edit.id && <button className="secondary" onClick={remove}><Trash2 size={16} />Löschen</button>}
       </div>
     </div>
+  );
+}
+
+const TECH = ['Skating', 'Klassisch', 'Skiathlon', 'Rollski', 'Lauf', 'Rad', 'Sonstiges'];
+// Rennen festlegen und gewichten: A = Höhepunkt (Phasen + Tapering), B = Mini-Taper, C = Trainingsrennen.
+function WizardRaces({ t }) {
+  const { races } = useData();
+  const up = races.filter((r) => r.date >= t).sort((a, b) => a.date.localeCompare(b.date));
+  const [n, setN] = useState({ name: '', date: '', priority: 'B', technique: 'Skating', distanceKm: '' });
+  const setPrio = (id, priority) => update((d) => ({ ...d, races: d.races.map((r) => (r.id === id ? { ...r, priority } : r)) }));
+  const remove = (id) => { if (confirm('Rennen löschen?')) update((d) => ({ ...d, races: d.races.filter((r) => r.id !== id) })); };
+  const add = () => {
+    if (!n.name.trim() || !n.date) return toast('Name und Datum fehlen');
+    const r = { id: uid(), goal: '', notes: '', ...n, name: n.name.trim() };
+    update((d) => ({ ...d, races: [...d.races, r] }));
+    setN({ name: '', date: '', priority: 'B', technique: 'Skating', distanceKm: '' });
+  };
+  const advice = raceAdvice(races, t);
+  return (
+    <>
+      <p className="muted small">Trag deine Rennen ein und lege fest, wie wichtig sie sind – der Plan wird darauf ausgerichtet.</p>
+      {Object.entries(PRIORITY_INFO).map(([k, v]) => <p key={k} className="small" style={{ margin: '4px 0' }}><span className={`badge ${k === 'A' ? 'b-kritisch' : k === 'B' ? 'b-achtung' : 'b-info'}`}>{k}</span> {v}</p>)}
+      {up.map((r) => (
+        <div key={r.id} className="item">
+          <div className="grow"><b>{r.name}</b><p>{fmtDate(r.date)} · {r.technique}{r.distanceKm ? ` · ${r.distanceKm} km` : ''}</p></div>
+          <div className="chips" style={{ margin: 0, flex: 'none' }}>{['A', 'B', 'C'].map((k) => <button key={k} className={`chip${r.priority === k ? ' on' : ''}`} onClick={() => setPrio(r.id, k)}>{k}</button>)}</div>
+          <button className="ghost" style={{ flex: 'none' }} onClick={() => remove(r.id)} aria-label="Löschen"><Trash2 size={16} /></button>
+        </div>
+      ))}
+      {!up.length && <p className="muted small">Noch keine Rennen eingetragen.</p>}
+      {advice.map((a) => <div key={a.text} className="notice" style={a.level === 'gelb' ? { background: 'var(--warnbg)', color: 'var(--warn)' } : undefined}>{a.text}</div>)}
+      <div className="card">
+        <b className="small">Rennen hinzufügen</b>
+        <input value={n.name} onChange={(e) => setN({ ...n, name: e.target.value })} placeholder="Name, z. B. Engadin Skimarathon" style={{ marginTop: 6 }} />
+        <div className="grid2">
+          <div><label>Datum</label><input type="date" value={n.date} onChange={(e) => setN({ ...n, date: e.target.value })} /></div>
+          <div><label>Priorität</label><select value={n.priority} onChange={(e) => setN({ ...n, priority: e.target.value })}><option value="A">A – Höhepunkt</option><option value="B">B – wichtig</option><option value="C">C – Training</option></select></div>
+          <div><label>Technik</label><select value={n.technique} onChange={(e) => setN({ ...n, technique: e.target.value })}>{TECH.map((x) => <option key={x}>{x}</option>)}</select></div>
+          <div><label>Distanz (km)</label><input inputMode="decimal" value={n.distanceKm} onChange={(e) => setN({ ...n, distanceKm: e.target.value })} /></div>
+        </div>
+        <button className="secondary" onClick={add}><Plus size={16} />Hinzufügen</button>
+      </div>
+    </>
   );
 }
