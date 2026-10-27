@@ -90,6 +90,19 @@ function App() {
   );
 }
 
+// iOS-Home-Bildschirm-App: Neuere iOS-Versionen melden die Fensterhöhe um die Statusleiste zu kurz, unten bleibt
+// ein leerer Streifen. Differenz zur echten Bildschirmhöhe messen und die App-Fläche um genau so viel verlängern.
+function fixIosGap() {
+  if (!navigator.standalone) return;
+  const landscape = innerWidth > innerHeight;
+  const full = landscape ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height);
+  const gap = Math.round(full - innerHeight);
+  document.documentElement.style.setProperty('--ios-gap', gap > 0 && gap < 140 ? `${gap}px` : '0px');
+}
+fixIosGap();
+addEventListener('resize', fixIosGap);
+addEventListener('orientationchange', () => setTimeout(fixIosGap, 300));
+
 createRoot(document.getElementById('root')).render(<App />);
 // Erst den vollständigen Stand aus IndexedDB laden, dann Kennzahlen prüfen und online abgleichen –
 // sonst könnte ein unvollständiger Stand Einheiten als „gelöscht“ melden.
