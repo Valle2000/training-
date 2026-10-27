@@ -91,3 +91,19 @@ test('Workout: Dauer, Belastung, FIT-Export lässt sich wieder lesen', async () 
   assert.ok(st.some((s) => s.durationType === 'repeatUntilStepsCmplt'));
   assert.ok(toZwo(w).includes('<SteadyState Duration="480" Power="0.92"/>'));
 });
+
+test('Einheit zuschneiden: Dauer, Distanz, Startzeit, Original bleibt', async () => {
+  const { buildActivity, cropActivity } = await import('../src/lib/activities.js');
+  const settings = { hrMax: 196, hrRest: 42, lthr: 172, ftp: 300, timezone: 'Europe/Berlin' };
+  const n = 3600;
+  const { activity, series } = buildActivity({ start: '2026-08-01T08:00:00Z', sport: 'bike', distanceM: 36000, calories: 900, series: { hr: Array.from({ length: n }, (_, i) => (i < 2700 ? 140 : 100)), power: Array.from({ length: n }, (_, i) => (i < 2700 ? 200 : 0)), speed: Array(n).fill(10) } }, settings, { id: 'x' });
+  const { activity: c, series: cut } = cropActivity(activity, series, 0, 2700 / 5 - 1, settings);
+  assert.equal(c.durationS, 2700);
+  assert.equal(Math.round(c.distanceM), 27000);
+  assert.equal(c.avgHr, 140);
+  assert.equal(c.avgPower, 200);
+  assert.equal(cut.hr.length, 540);
+  assert.equal(c.original.durationS, 3600);
+  const late = cropActivity(activity, series, 120, 539, settings).activity;
+  assert.equal(late.start, '2026-08-01T08:10:00.000Z');
+});

@@ -202,3 +202,25 @@ export function compliance(plan, activities, from, to) {
     plannedLoad: items.reduce((a, p) => a + (p.load || 0), 0), actualLoad: acts.reduce((a, x) => a + (x.load || 0), 0),
   };
 }
+
+// Einheit auf einen Abschnitt zuschneiden (z. B. vergessenes Stoppen, Heimweg). Verlauf im 5-s-Raster,
+// from/to sind Indizes darin. Werte, die nur als Summe vorliegen (Distanz ohne Tempo, Kalorien), anteilig.
+export function cropActivity(a, series5, from, to, settings) {
+  const cut = Object.fromEntries(Object.entries(series5).map(([k, v]) => [k, v.slice(from, to + 1)]));
+  const total = series5.hr?.length || series5.power?.length || 1, share = (to - from + 1) / total;
+  const speedSum = cut.speed?.some((v) => v > 0) ? cut.speed.reduce((s, v) => s + (v || 0) * 5, 0) : null;
+  const base = {
+    ...a, avgHr: null, maxHr: null, avgPower: null,
+    start: new Date(Date.parse(a.start) + from * 5000).toISOString(),
+    distanceM: speedSum ?? (a.distanceM ? a.distanceM * share : null),
+    calories: a.calories ? Math.round(a.calories * share) : null,
+    ascentM: null, laps: (a.laps || []).filter((l) => l.startS >= from * 5 && l.startS < (to + 1) * 5).map((l, i) => ({ ...l, n: i + 1, startS: l.startS - from * 5 })),
+    original: a.original || { ...a, original: undefined },
+  };
+  const next = reevaluate(base, settings, cut);
+  next.date = localDate(next.start, settings.timezone);
+  next.elapsedS = next.durationS;
+  next.externalLoad = null;
+  if (!next.laps.length) next.laps = null;
+  return { activity: next, series: cut };
+}
