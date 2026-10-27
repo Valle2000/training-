@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check, Copy, Scissors, Undo2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check, Copy, Scissors, Undo2, CalendarClock } from 'lucide-react';
 import { useData, update, getData, getSeries, getLocalSeries, putSeries, uid } from '../lib/store.js';
 import { today, weeks, mondayOf, buildActivity, evaluate, estimatePlanLoad, matchPlan, compliance, cropActivity, localDate, reevaluate } from '../lib/activities.js';
 import { addDays, ZONES, cleanSeries } from '../lib/metrics.js';
@@ -11,6 +11,8 @@ import { Sheet, Seg, fmtDuration, fmtNum, fmtDate, fmtKm, toast } from './common
 import { Season, Races } from './season.jsx';
 import { Workouts } from './workouts.jsx';
 import { durationOf, workoutLoad, mainZone, describe } from '../lib/workouts.js';
+import { ScheduleSheet, AdaptCard } from './week.jsx';
+import { slotDay, freeMinutes, hasSchedule, fmtTime } from '../lib/week-adapt.js';
 import { LapsCard } from './laps.jsx';
 import { ActivityChart } from './activity-chart.jsx';
 import { fmtPace } from '../lib/laps.js';
@@ -22,6 +24,8 @@ export function Training({ openActivity, openAdd }) {
   const [view, setView] = useState('week');
   const [monday, setMonday] = useState(mondayOf(t));
   const [planItem, setPlanItem] = useState(null);
+  const [schedOpen, setSchedOpen] = useState(false);
+  const sched = hasSchedule(settings.schedule) ? settings.schedule : null;
   const sorted = useMemo(() => [...activities].sort((a, b) => b.start.localeCompare(a.start)), [activities]);
   const w12 = useMemo(() => weeks(activities, 12, t), [activities, t]);
   const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
@@ -49,16 +53,18 @@ export function Training({ openActivity, openAdd }) {
             <b style={{ flex: 'none' }}>{fmtDate(monday, { day: 'numeric', month: 'short' })} – {fmtDate(days[6], { day: 'numeric', month: 'short' })}</b>
             <button className="ghost" style={{ flex: 'none' }} onClick={() => setMonday(addDays(monday, 7))} aria-label="Nächste Woche"><ChevronRight /></button>
           </div>
+          {monday === mondayOf(t) && <AdaptCard />}
           <div className="week">
-            {days.map((d) => (
+            {days.map((d) => { const open = plan.filter((p) => p.date === d && !p.done && !(d <= t && matchPlan(p, activities))); const slot = sched ? slotDay(d, open, sched) : null; return (
               <div key={d} className={`day${d === t ? ' today' : ''}`} onClick={(e) => e.target === e.currentTarget && setPlanItem({ date: d })}>
                 <b onClick={() => setPlanItem({ date: d })}>{fmtDate(d, { weekday: 'short', day: 'numeric' })}</b>
                 {activities.filter((a) => a.date === d).map((a) => <div key={a.id} className="a" onClick={() => openActivity(a)}>{Math.round(a.durationS / 60)}′ {sportLabel(a.sport)}</div>)}
-                {plan.filter((p) => p.date === d && !p.done && !(d <= t && matchPlan(p, activities))).map((p) => <div key={p.id} className={`p${d < t ? ' missed' : ''}`} onClick={() => setPlanItem(p)}>{p.minutes}′ {p.title || sportLabel(p.sport)}</div>)}
+                {open.map((p) => <div key={p.id} className={`p${d < t ? ' missed' : ''}`} style={slot?.overflow.includes(p.id) && d >= t ? { borderColor: 'var(--bad)' } : undefined} onClick={() => setPlanItem(p)}>{slot?.slots[p.id] && d >= t && <span style={{ display: 'block', fontWeight: 700 }}>{fmtTime(slot.slots[p.id].from)}</span>}{p.minutes}′ {p.title || sportLabel(p.sport)}</div>)}
+                {sched && d >= t && <div className="muted" style={{ fontSize: 11 }}>frei {fmtNum(freeMinutes(d, sched) / 60, 1)} h</div>}
               </div>
-            ))}
+            ); })}
           </div>
-          <p className="muted small">Tippe auf einen Tag, um eine Einheit zu planen. Gestrichelt = geplant, durchgestrichen = verpasst.</p>
+          <p className="muted small">Tippe auf einen Tag, um eine Einheit zu planen. Gestrichelt = geplant, durchgestrichen = verpasst.{sched ? ' Uhrzeit = Vorschlag in deiner freien Zeit, rot umrandet = passt nicht in den Tag.' : ''}</p>
           <div className="stats">
             <div><b>{fmtNum(comp.actualMin / 60, 1)}<small className="muted">/{fmtNum(comp.plannedMin / 60, 1)}</small></b><span>Stunden Ist/Soll</span></div>
             <div><b>{fmtNum(comp.actualLoad)}<small className="muted">/{fmtNum(comp.plannedLoad)}</small></b><span>Belastung Ist/Soll</span></div>
@@ -67,6 +73,7 @@ export function Training({ openActivity, openAdd }) {
           <div className="row">
             <button className="secondary" onClick={() => setPlanItem({ date: days.find((d) => d >= t) || days[0] })}><Plus size={17} />Einheit planen</button>
             <button className="secondary" onClick={copyLastWeek}><Copy size={17} />Vorwoche kopieren</button>
+            <button className="secondary" onClick={() => setSchedOpen(true)}><CalendarClock size={17} />Alltag</button>
           </div>
           <div className="card">
             <h3 style={{ marginTop: 0 }}>Zonen dieser Woche</h3>
@@ -102,6 +109,7 @@ export function Training({ openActivity, openAdd }) {
       {view === 'season' && <Season />}
       {view === 'races' && <Races openActivity={openActivity} />}
       {view === 'workouts' && <Workouts />}
+      {schedOpen && <ScheduleSheet onClose={() => setSchedOpen(false)} />}
       {planItem && <PlanEditor item={planItem} onClose={() => setPlanItem(null)} />}
     </>
   );

@@ -218,17 +218,20 @@ export function generatePlan(opts, races = []) {
     const total = w.targetHours * 60;
     let used = 0;
     const put = (day, s) => { day.sessions.push(s); used += s.minutes; };
+    // Freie Zeit des Tages (Alltag: Uni, Arbeit …); zwischen zwei Einheiten 30 min Abstand.
+    const room = (day) => (opts.capFor ? opts.capFor(day.date) - day.sessions.reduce((a, x) => a + x.minutes, 0) - (day.sessions.length ? 30 : 0) : Infinity);
     // 1) Harte Einheiten auf die Wunschtage (Ruhetag und langer Tag ausgenommen, sonst nächster freier Tag).
     const hardUsed = new Set();
     hardSlots.forEach((slot, k) => {
       let dow = hardDays[k] ?? hardDays[hardDays.length - 1] ?? 3;
-      for (let tries = 0; tries < 7 && (!free(dow) || hardUsed.has(dow)); tries++) dow = (dow % 7) + 1;
+      const need = slot === 'dt' ? 70 : 60;
+      for (let tries = 0; tries < 7 && (!free(dow) || hardUsed.has(dow) || room(days[dow - 1]) < need); tries++) dow = (dow % 7) + 1;
       hardUsed.add(dow);
       const day = days[dow - 1];
       if (slot === 'dt') {
         const am = pickByType('dt_am', rot) || pickByType('threshold', rot), pm = pickByType('dt_pm', rot) || pickByType('threshold', rot + 1);
         if (am) put(day, session(am, day.date, rot++, 'vormittags'));
-        if (pm && opts.doubles !== false) put(day, session(pm, day.date, rot++, 'nachmittags'));
+        if (pm && opts.doubles !== false && room(day) >= pm.minutes) put(day, session(pm, day.date, rot++, 'nachmittags'));
       } else if (slot === 'opener') {
         const race = (w.races || [])[0];
         const d = race ? days.find((x) => x.date === addDays(race.date, -1)) || day : day;
@@ -246,13 +249,13 @@ export function generatePlan(opts, races = []) {
     // 2) Lange Einheit (ca. 22 % der Woche, 1,5–3,5 h), nicht in Renn-/Taperwochen mit Rennen am Wochenende.
     const raceOnLong = (w.races || []).some((r) => days[longDay - 1]?.date === r.date);
     if (keys.has('long') && !raceOnLong && !['race', 'recovery'].includes(w.phase)) {
-      const min = Math.round(Math.min(210, Math.max(90, total * 0.22)) / 15) * 15;
-      put(days[longDay - 1], { title: 'Lange Grundlage', sport: specificSport(w.from, 1), minutes: min, zone: 'I1', description: 'Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)', kind: 'long' });
+      const min = Math.round(Math.min(210, room(days[longDay - 1]), Math.max(90, total * 0.22)) / 15) * 15;
+      if (min >= 60) put(days[longDay - 1], { title: 'Lange Grundlage', sport: specificSport(w.from, 1), minutes: min, zone: 'I1', description: 'Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)', kind: 'long' });
     }
     // 3) Kraft auf Tage ohne harte Einheit.
     // Kraft: Vorbereitung wie gewählt, ab Wettkampfvorbereitung und in Erholungswochen höchstens 1× (Erhalt).
     const strengthN = ['base', 'build'].includes(w.phase) ? opts.strengthPerWeek ?? 2 : Math.min(1, opts.strengthPerWeek ?? 2);
-    const strengthDays = days.filter((d) => !rest.has(d.dow) && d.dow !== longDay && !d.sessions.length);
+    const strengthDays = days.filter((d) => !rest.has(d.dow) && d.dow !== longDay && !d.sessions.length && room(d) >= 60);
     for (let i = 0; i < strengthN && i < strengthDays.length; i++) {
       const d = strengthDays[Math.round((i * (strengthDays.length - 1)) / Math.max(1, strengthN - 1))] || strengthDays[i];
       put(d, { title: ['Kraft A – Beine schwer + Zug', 'Kraft B – Hüfte, einbeinig + Doppelstock', 'Kraft JOE – Doppelstock-Fokus'][i % 3], sport: 'strength', minutes: 60, zone: 'Kraft', description: 'Vorlage im Tab „Kraft“', kind: 'strength' });
@@ -274,8 +277,8 @@ export function generatePlan(opts, races = []) {
     const share = specificShare(w.phase, w.from, pr);
     for (let i = 0; i < n; i++) {
       const d = slots[i];
-      const min = Math.round(Math.min(150, Math.max(40, easy / (n - i))) / 5) * 5;
-      if (min < 30) break;
+      const min = Math.floor(Math.min(150, room(d), Math.max(40, easy / (n - i))) / 5) * 5;
+      if (min < 30) { if (room(d) < 30) continue; break; }
       const specific = (i / Math.max(1, n)) < share;
       const s = { title: 'Locker', sport: specific ? specificSport(d.date, i + (pr.weak?.includes('classic') ? 1 : 0)) : generalSport(pr, i + rot), minutes: min, zone: 'I1', description: 'Grundlage I1, wirklich locker', kind: 'easy' };
       if (specific && techLeft > 0) { s.title = 'Locker + Technik'; s.description = `Grundlage I1 mit Technikübungen (${pr.weak?.includes('classic') ? 'Klassisch: Abstoß, Gleiten auf einem Ski' : 'Skating: Gewichtsverlagerung, Eins-zu-eins, ohne Stöcke'}), gern Video`; techLeft--; }

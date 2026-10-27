@@ -112,3 +112,13 @@ test('Katalog: Dauer aus Wiederholungen, eigene Double-Threshold-Einheiten im Pl
   assert.ok(s.some((x) => x.keyId === 'c_am' && x.minutes === 100));
   assert.ok(s.some((x) => x.keyId === 'c_pm' && x.sport === 'run'));
 });
+
+test('Alltag: an Uni-Tagen nur so viel, wie in die freie Zeit passt', async () => {
+  const { freeMinutes } = await import('../src/lib/week-adapt.js');
+  const schedule = { start: '06:30', end: '21:30', buffer: 15, blocks: [{ id: 'u', dows: [2, 3, 4, 5], from: '08:00', to: '19:00' }] };
+  const w = generatePlan({ ...base, approach: 'pyramidal', capFor: (d) => freeMinutes(d, schedule) }, races);
+  for (const x of w) for (const d of x.days) {
+    const free = freeMinutes(d.date, schedule), sum = d.sessions.reduce((a, s) => a + s.minutes, 0) + (d.sessions.length > 1 ? 30 : 0);
+    assert.ok(sum <= free, `${d.date}: ${sum} > ${free}`);
+  }
+});

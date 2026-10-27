@@ -7,6 +7,7 @@ import { sportLabel, SPORTS } from '../lib/sports.js';
 import { PHASES } from '../lib/season.js';
 import { APPROACHES, KEY_TYPES, allOptions, makeKey, PLAN_SOURCES, GOALS, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend } from '../lib/plan-wizard.js';
 import { Sheet, fmtDate, fmtNum, toast } from './common.jsx';
+import { freeMinutes, hasSchedule } from '../lib/week-adapt.js';
 
 const DOW = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 // Gruppen im Katalog; Intervalle nach Zone getrennt.
@@ -36,7 +37,7 @@ export function PlanWizard({ onClose }) {
   const keys = o.keys || ap.defaults;
   const pr = o.profile || {};
   const rec = recommend(pr, Number(o.startHours) || 10);
-  const plan = useMemo(() => (step >= 4 ? generatePlan({ ...o, keys, customKeys: custom }, races) : []), [step, o, keys, races, custom]);
+  const plan = useMemo(() => (step >= 4 ? generatePlan({ ...o, keys, customKeys: custom, capFor: hasSchedule(settings.schedule) ? (d) => freeMinutes(d, settings.schedule) : null }, races) : []), [step, o, keys, races, custom, settings.schedule]);
   const set = (k, v) => setO({ ...o, [k]: v });
   const toggleKey = (id) => set('keys', keys.includes(id) ? keys.filter((k) => k !== id) : [...keys, id]);
   const setPr = (k, v) => set('profile', { ...pr, [k]: v });
@@ -123,7 +124,7 @@ export function PlanWizard({ onClose }) {
         <label>Ruhetage</label>
         <div className="chips">{DOW.map((d, i) => <button key={d} className={`chip${o.restDays.includes(i + 1) ? ' on' : ''}`} onClick={() => set('restDays', o.restDays.includes(i + 1) ? o.restDays.filter((x) => x !== i + 1) : [...o.restDays, i + 1])}>{d}</button>)}</div>
         <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontWeight: 400, marginTop: 8 }}><input type="checkbox" checked={o.doubles !== false} onChange={(e) => set('doubles', e.target.checked)} style={{ width: 18, height: 18 }} />Zwei Einheiten an einem Tag erlaubt</label>
-        <p className="muted small">Dein Schnitt der letzten 7 Wochen: {fmtNum(recent.reduce((a, w) => a + w.hours, 0) / (recent.length || 1), 1)} h. Steigerung im 3:1-Rhythmus (3 Wochen aufbauen, 1 leichter), Tapering vor A-Rennen 2 Wochen. {nextA ? `Nächstes A-Rennen: ${nextA.name} am ${fmtDate(nextA.date)}.` : 'Tipp: A-Rennen unter „Rennen“ eintragen – dann plant der Assistent die Phasen rückwärts davon.'}</p>
+        <p className="muted small">Dein Schnitt der letzten 7 Wochen: {fmtNum(recent.reduce((a, w) => a + w.hours, 0) / (recent.length || 1), 1)} h. {hasSchedule(settings.schedule) ? 'Deine Uni-/Arbeitszeiten aus „Alltag“ werden berücksichtigt – pro Tag wird nur so viel geplant, wie frei ist. ' : 'Tipp: Unter Kalender → Woche → „Alltag“ Uni/Arbeit eintragen, dann plant der Assistent nur in deine freie Zeit. '}Steigerung im 3:1-Rhythmus (3 Wochen aufbauen, 1 leichter), Tapering vor A-Rennen 2 Wochen. {nextA ? `Nächstes A-Rennen: ${nextA.name} am ${fmtDate(nextA.date)}.` : 'Tipp: A-Rennen unter „Rennen“ eintragen – dann plant der Assistent die Phasen rückwärts davon.'}</p>
       </>}
 
       {step === 3 && <>

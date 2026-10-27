@@ -7,6 +7,7 @@ import { getAccessCode, setAccessCode, getOwnKey, setOwnKey } from '../lib/ai.js
 import { fmtDate, toast } from './common.jsx';
 import { SPORTS } from '../lib/sports.js';
 import { AccountCard } from './account.jsx';
+import { ThresholdCard } from './week.jsx';
 
 // iPad meldet sich als Mac, hat aber einen Touchscreen; Safari auf iOS kann keine Ordner auswählen.
 const IOS = typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1));
@@ -67,6 +68,7 @@ export function Settings() {
   return (
     <>
       <AccountCard />
+      <ThresholdCard onApplied={(items) => setS((prev) => ({ ...prev, ...Object.fromEntries(items.map((x) => [x.key, String(x.value)])) }))} />
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Athlet</h3>
         <div className="grid2">

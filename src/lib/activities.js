@@ -188,7 +188,7 @@ export function coachSummary(data, t) {
     athlet: {
       sport: 'Skilanglauf', ftp: settings.ftp, laktatschwellenPuls: settings.lthr, maxPuls: settings.hrMax, ruhePuls: settings.hrRest,
       gewichtKg: settings.weightKg, geschlecht: settings.sex === 'f' ? 'weiblich' : 'männlich', alter: settings.age,
-      ziele: settings.goals, wettkaempfe: settings.races, strategie: settings.strategy, verfuegbarkeit: settings.availability,
+      ziele: settings.goals, wettkaempfe: settings.races, strategie: settings.strategy, verfuegbarkeit: settings.availability, alltag: (settings.schedule?.blocks || []).map((b) => `${b.label || 'Termin'} ${(b.dows || []).map((d) => ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'][d - 1]).join('/')} ${b.from}–${b.to}`).join('; ') || undefined,
     },
     formHeute: now ? { fitness: r1(now.fitness), ermuedung: r1(now.fatigue), form: r1(now.form) } : null,
     wochen: weeks(activities, 12, t).map((w) => ({
