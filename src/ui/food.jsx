@@ -12,6 +12,7 @@ import { NUTRIENTS, REFERENCE } from '../lib/foods.js';
 import { GUIDE, NUTRITION_SOURCES, sweatRate } from '../lib/nutrition-guide.js';
 import { kiPost } from '../lib/ai.js';
 import { Sheet, Seg, fmtDate, toast } from './common.jsx';
+import { AiQuality, AiCost, aiChoice, logAiCost } from './ai-quality.jsx';
 
 export function Food() {
   const data = useData();
@@ -199,7 +200,8 @@ function AiPlan({ data, t, prefs, setPref, weight, open }) {
       });
       const vorlieben = { ernaehrungsform: prefs.diet || 'alles', unvertraeglichkeiten: prefs.avoid || '', mag: prefs.likes || '', kochzeitMinMax: Number(prefs.cookTime) || 30, mahlzeitenProTag: Number(prefs.meals) || 5, portionenFuer: Number(prefs.people) || 1, budget: prefs.budget || 'normal', gewichtKg: weight || undefined, geschlecht: settings.sex === 'f' ? 'weiblich' : 'männlich', schweissrate: prefs.sweat ? { literProStunde: prefs.sweat.perHour, natriumMgProLiter: prefs.sweat.sodiumPerL } : undefined, trainLowErlaubt: prefs.trainLow !== false, lieblingsrezepte: recipes.slice(-10).map((r) => r.name) };
       const katalog = CATALOG.map((r) => `${r.name} [${r.slots.join('/')}; ${r.ctx.join('/')}; ${r.diet}]`);
-      const result = await kiPost('/api/ernaehrung', { tage, vorlieben, katalog });
+      const result = await kiPost('/api/ernaehrung', { tage, vorlieben, katalog, ...aiChoice(settings, 'food') });
+      logAiCost('food', result, t);
       update((d) => ({ ...d, food: { id: uid(), created: t, ...result } }));
       setSub('plan');
     } catch (e) { setError(e.message); } finally { setBusy(false); }
@@ -222,10 +224,12 @@ function AiPlan({ data, t, prefs, setPref, weight, open }) {
         <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontWeight: 400, marginTop: 10 }}><input type="checkbox" checked={prefs.trainLow !== false} onChange={(e) => setPref('trainLow', e.target.checked)} style={{ width: 18, height: 18 }} />Train-Low-Vorschläge an lockeren Tagen</label>
       </details>
       <Seg value={String(days)} onChange={(v) => setDays(Number(v))} options={[['1', '1 Tag'], ['3', '3 Tage'], ['7', '7 Tage']]} />
+      <AiQuality kind="food" t={t} />
       <button className="primary wide" onClick={generate} disabled={busy || !weight} style={{ marginTop: 10 }}><ChefHat size={18} className={busy ? 'spin' : ''} />{busy ? 'Plane Mahlzeiten …' : 'Essensplan mit Rezepten erstellen'}</button>
       {error && <div className="notice" style={{ color: 'var(--bad)' }}>{error}</div>}
       {food && <div style={{ marginTop: 12 }}><Seg value={sub} onChange={setSub} options={[['plan', 'Plan'], ['shop', 'Einkauf']]} /></div>}
       {sub === 'plan' && food && <>
+        <AiCost result={food} />
         {food.tage.map((d) => (
           <div key={d.datum} className="card">
             <h3 style={{ marginTop: 0 }}>{fmtDate(d.datum)}</h3>

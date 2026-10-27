@@ -3,6 +3,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { TOPICS } from '../src/lib/knowledge.js';
+import { AI_MODELS, AI_EFFORTS, modelById, costOf } from '../src/lib/ai-models.js';
 
 const MODEL = 'claude-opus-5-5';
 
@@ -100,13 +101,17 @@ function client() {
   return new Anthropic({ apiKey });
 }
 
-async function askClaude({ system, schema, content, effort }) {
+// Modell und Gründlichkeit wählt die App (Einstellungen); nur bekannte Werte zulassen.
+const pickModel = (id) => (AI_MODELS.some((m) => m.id === id) ? id : MODEL);
+const pickEffort = (e, fallback) => (AI_EFFORTS.some(([k]) => k === e) ? e : fallback);
+
+async function askClaude({ system, schema, content, effort, model = MODEL }) {
+  const m = modelById(model);
   const response = await client().beta.messages.stream({
-    model: MODEL,
+    model,
     max_tokens: 64000,
-    // Lehnt das Modell ab, springt automatisch ein passendes Ersatzmodell ein.
-    betas: ['server-side-fallback-2026-07-01'],
-    fallbacks: 'default',
+    // Lehnt das Modell ab, springt automatisch ein passendes Ersatzmodell ein (nicht bei Haiku verfügbar).
+    ...(m.fallback ? { betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' } : {}),
     cache_control: { type: 'ephemeral' },
     system,
     output_config: { effort, format: { type: 'json_schema', schema } },
@@ -118,21 +123,23 @@ async function askClaude({ system, schema, content, effort }) {
   if (response.stop_reason === 'refusal') throw httpError(422, 'Die KI hat die Anfrage abgelehnt.');
   if (response.stop_reason === 'max_tokens') throw httpError(502, 'Antwort wurde abgeschnitten.');
   const text = response.content.filter((b) => b.type === 'text').map((b) => b.text).join('');
-  return { ...JSON.parse(text), model: response.model };
+  const u = response.usage || {};
+  const usage = { input: u.input_tokens || 0, output: u.output_tokens || 0, cacheRead: u.cache_read_input_tokens || 0, cacheWrite: u.cache_creation_input_tokens || 0 };
+  return { ...JSON.parse(text), model: response.model, usage, costUsd: costOf(response.model, usage) };
 }
 
 async function coach(body) {
-  const { daten, frage } = body;
+  const { daten, frage, model, effort } = body;
   if (!daten) throw httpError(400, 'Trainingsdaten fehlen');
   const content = `Trainingsdaten (JSON):\n${JSON.stringify(daten)}\n\n${frage ? `Frage des Athleten: ${frage}` : 'Analysiere mein Training und erstelle den Plan für die nächsten 7 Tage.'}`;
-  return askClaude({ system: `${COACH_SYSTEM}\n\nWissensbasis der App (nutze sie; Erkenntnisse aus anderen Sportarten immer mit Übertrag auf den Langlauf; Evidenzstärke ehrlich nennen):\n\n${KNOWLEDGE}`, schema: COACH_SCHEMA, content, effort: 'high' });
+  return askClaude({ system: `${COACH_SYSTEM}\n\nWissensbasis der App (nutze sie; Erkenntnisse aus anderen Sportarten immer mit Übertrag auf den Langlauf; Evidenzstärke ehrlich nennen):\n\n${KNOWLEDGE}`, schema: COACH_SCHEMA, content, effort: pickEffort(effort, 'high'), model: pickModel(model) });
 }
 
 async function food(body) {
-  const { tage, vorlieben } = body;
+  const { tage, vorlieben, model, effort } = body;
   if (!tage?.length) throw httpError(400, 'Tage fehlen');
   const content = `Tagesziele und Training (JSON):\n${JSON.stringify(tage)}\n\nVorlieben und Rahmen:\n${JSON.stringify(vorlieben || {})}${Array.isArray(body.katalog) ? `\n\nRezeptkatalog der App:\n${body.katalog.slice(0, 150).map((x) => String(x).slice(0, 160)).join('\n')}` : ''}\n\nErstelle den Ernährungsplan mit Rezepten und Einkaufsliste.`;
-  return askClaude({ system: FOOD_SYSTEM, schema: FOOD_SCHEMA, content, effort: 'medium' });
+  return askClaude({ system: FOOD_SYSTEM, schema: FOOD_SCHEMA, content, effort: pickEffort(effort, 'medium'), model: pickModel(model) });
 }
 
 const routes = { '/api/coach': coach, '/api/ernaehrung': food };

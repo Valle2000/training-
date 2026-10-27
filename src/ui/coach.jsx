@@ -8,6 +8,7 @@ import { sportLabel } from '../lib/sports.js';
 import { kiPost } from '../lib/ai.js';
 import { fmtDate, toast, Seg } from './common.jsx';
 import { TOPICS, FAQ, EVIDENCE_LABEL } from '../lib/knowledge.js';
+import { AiQuality, AiCost, aiChoice, logAiCost } from './ai-quality.jsx';
 
 export const DEFAULT_STRATEGY = 'Aktuell ca. 15 h Ausdauer pro Woche plus 2 Krafteinheiten (zusammen ca. 2 h). Bald möchte ich Double-Threshold-Tage einbauen und später auch etwas mehr Intensität.';
 
@@ -86,7 +87,8 @@ function CoachAi() {
       const start = ss.start || seasonStart(t);
       const wk = seasonPlan(data.races, { start, end: ss.end || addDays(addDays(start, 365), -1), baseHours: base, peakHours: peak });
       daten.saison = wk.filter((w) => w.to >= t).slice(0, 4).map((w) => ({ ab: w.from, phase: PHASES[w.phase].label, zielStunden: w.targetHours }));
-      const result = await kiPost('/api/coach', { daten, frage: question });
+      const result = await kiPost('/api/coach', { daten, frage: question, ...aiChoice(data.settings, 'coach') });
+      logAiCost('coach', result, t);
       const entry = { id: uid(), date: t, question, result };
       update((d) => ({ ...d, coach: [...d.coach, entry].slice(-20) }));
       setOpenId(entry.id);
@@ -109,6 +111,7 @@ function CoachAi() {
       <textarea value={strategy} onChange={(e) => setStrategy(e.target.value)} rows={4} />
       <label>Frage (optional)</label>
       <textarea value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="z. B. Wie baue ich den ersten Double-Threshold-Tag ein? Lieber Rollski oder Laufen?" rows={2} />
+      <AiQuality kind="coach" t={today(settings.timezone)} />
       <button className="primary wide" onClick={run} disabled={busy} style={{ marginTop: 12 }}><BrainCircuit size={18} className={busy ? 'spin' : ''} />{busy ? 'Analysiere … (bis zu 1–2 Minuten)' : 'Analyse und Wochenplan'}</button>
       {error && <div className="notice" style={{ color: 'var(--bad)' }}>{error}</div>}
 
@@ -133,6 +136,7 @@ function Result({ entry, onAdopt }) {
     <div className="card">
       <p className="muted small" style={{ marginTop: 0 }}>{fmtDate(entry.date)} {entry.question && `· „${entry.question}“`}</p>
       <p><b>{r.zusammenfassung}</b></p>
+      <AiCost result={r} />
       {r.warnungen?.length > 0 && <div className="notice" style={{ background: 'var(--badbg)', color: 'var(--bad)' }}>{r.warnungen.map((w, i) => <div key={i}>⚠ {w}</div>)}</div>}
       {r.analyse?.map((a, i) => (
         <div key={i} style={{ borderTop: '1px solid var(--line)', padding: '8px 0' }}>
