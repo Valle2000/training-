@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Activity, CalendarDays, Dumbbell, Utensils, BrainCircuit, BarChart3, Settings as Gear } from 'lucide-react';
 import './style.css';
@@ -52,7 +52,8 @@ function App() {
   useEffect(() => onSaveError(setSaveErr), []);
   // Vorschau-Adressen von Vercel haben einen eigenen, leeren Speicher.
   const wrongHost = typeof __APP_URL__ === 'string' && __APP_URL__ && !location.origin.startsWith(__APP_URL__) && !/localhost|127\.0\.0\.1/.test(location.hostname);
-  useEffect(() => { scrollTo(0, 0); }, [tab]);
+  const scroller = useRef(null);
+  useEffect(() => { if (scroller.current) scroller.current.scrollTop = 0; }, [tab]);
 
   const common = { go: setTab, openActivity: setActivity, openAdd: () => setAdding(true) };
   return (
@@ -64,6 +65,7 @@ function App() {
           <button className={`pill${tab === 'more' ? ' on' : ''}`} onClick={() => setTab('more')} aria-label="Mehr: Einstellungen, Material, Gesundheit"><Gear size={16} />Mehr</button>
         </div>
       </header>
+      <div className="scroller" ref={scroller}>
       <main>
         {saveErr && <div className="notice" style={{ background: 'var(--badbg)', color: 'var(--bad)' }}><b>Achtung:</b> {saveErr} Bitte unter Mehr → Einstellungen anmelden (Online-Abgleich) oder ein Backup machen.</div>}
         {wrongHost && <div className="notice" style={{ background: 'var(--warnbg)', color: 'var(--warn)' }}><b>Andere Adresse:</b> Du nutzt {location.host}. Daten liegen je Adresse getrennt – öffne die App über <a href={__APP_URL__}>{__APP_URL__.replace('https://', '')}</a>{' '}oder melde dich an, dann sind sie überall gleich.</div>}
@@ -77,6 +79,7 @@ function App() {
         {tab === 'more' && <More />}
         </Suspense>
       </main>
+      </div>
       <nav>
         {TABS.map(([id, label, Icon]) => <button key={id} className={`nav${tab === id ? ' active' : ''}`} onClick={() => setTab(id)}><Icon size={21} />{label}</button>)}
       </nav>
