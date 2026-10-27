@@ -219,3 +219,16 @@ test('Rhythmus und Abstand: 3:1 lässt jede 4. Woche Double Threshold aus, Absta
   for (const c of suggestHardDays(2, { restDays: [1], longDay: 7, minGap: 2 })) assert.ok(Math.abs(c[0] - c[1]) >= 2 && 7 - Math.abs(c[0] - c[1]) >= 2, c.join());
   assert.ok(checkHardDays([3, 4], { needed: 2, minGap: 2 }).some((x) => x.includes('zu nah')));
 });
+
+test('Nur bei Bedarf zwei Einheiten am Tag; Kraft nie am Tag vor einer harten Einheit', () => {
+  const w = generatePlan({ ...base, start: '2026-11-02', end: '2027-02-28', approach: 'norwegian', dtDays: 2, hardDays: [3, 6], strengthPerWeek: 2, doubles: false }, []);
+  for (const x of w) {
+    for (const d of x.days) {
+      const hard = d.sessions.filter((s) => s.kind === 'hard').length;
+      const easy = d.sessions.filter((s) => s.kind === 'easy' || s.kind === 'long').length;
+      if (!(hard === 2)) assert.ok(d.sessions.length <= 1 || (hard === 0 && easy <= 1), `${d.date}: ${d.sessions.map((s) => s.title)}`);
+      const next = x.days[d.dow];
+      if (next && next.sessions.some((s) => s.kind === 'hard')) assert.ok(!d.sessions.some((s) => s.kind === 'strength'), `Kraft vor Intervall am ${d.date}`);
+    }
+  }
+});
