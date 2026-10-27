@@ -5,6 +5,7 @@ import { buildActivity, findDuplicate, localDate, estimatePlanLoad, renameTitle 
 import { sportFromConcept2, polarSport, polarSportId } from './sports.js';
 import { readExport, zipEntries, zipEntriesSync, importable, parseStravaCsv, stravaSport } from './importers.js';
 import { recomputeAll } from './recompute.js';
+import { tempoGroup } from './sport-buckets.js';
 import { deleteRemoteSeries, forgetSeriesPushed } from './cloud-sync.js';
 import { lapsFromConcept2, lapsFromSeries, pacePer, concept2Title, isAutoC2Title } from './laps.js';
 
@@ -101,6 +102,22 @@ function notePolarTitle(title, sport) {
   const cur = unknownPolar.get(key) || { id: key, kind: 'title', name: title, count: 0, example: null };
   cur.count++;
   unknownPolar.set(key, cur);
+}
+// Einheiten ohne Sportnummer und Titel: nach Tempo und Jahreszeit fragen.
+function noteTempo(group, sport) {
+  if (!group || sport !== 'other') return;
+  const key = `tempo:${group}`;
+  const cur = unknownPolar.get(key) || { id: key, kind: 'tempo', name: group, count: 0, example: null };
+  cur.count++;
+  unknownPolar.set(key, cur);
+}
+// Bestehende Sonstiges-Einheiten dieser Gruppen zur Abfrage anbieten (z. B. aus der Sonstiges-Liste).
+export function askTempoGroups(activities) {
+  for (const a of activities) {
+    if (a.sport !== 'other' || a.polarSportId != null || a.title) continue;
+    noteTempo(tempoGroup({ distanceM: a.distanceM, durationS: a.durationS, start: a.start }), 'other');
+  }
+  flushPolarAsk();
 }
 const askPolar = (ex, sport) => notePolar(ex.sport?.id, sport, { name: ex.detailed_sport_info ?? ex['detailed-sport-info'] ?? null, example: ex.name ?? null });
 // Nach einem Datei-Import: gleiche Abfrage wie beim Abgleich.
@@ -407,10 +424,14 @@ export async function importFiles(files, onProgress) {
     // Selbst zugeordnete Polar-Sportnummern (Einstellungen) haben Vorrang.
     const mapped = raw.polarSportId != null && d.settings.polarSportMap?.[raw.polarSportId];
     const byTitle = !raw.polarSportId && raw.title ? d.settings.sportByTitle?.[raw.title] : null;
+    const tg = !raw.polarSportId && !raw.title ? tempoGroup({ distanceM: raw.distanceM, durationS: raw.timerS ?? raw.elapsedS, start: raw.start }) : null;
+    const byTempo = tg ? d.settings.sportByTempo?.[tg] : null;
     if (mapped) raw.sport = mapped;
     else if (byTitle) raw.sport = byTitle;
     else if (raw.polarSportId != null) notePolar(raw.polarSportId, raw.sport, { name: raw.polarSportName ?? null, example: raw.title || null });
-    else notePolarTitle(raw.title, raw.sport);
+    else if (raw.title) notePolarTitle(raw.title, raw.sport);
+    else if (byTempo) raw.sport = byTempo;
+    else if (tg) noteTempo(tg, raw.sport);
     // Geplante Polar-Einheiten gehören in den Kalender (Soll), nicht zu den absolvierten Einheiten.
     if (raw.planned) {
       const date = localDate(raw.start, d.settings.timezone), minutes = Math.round((raw.elapsedS || 0) / 60);
@@ -529,6 +550,15 @@ export async function deleteActivities(ids) {
   for (const id of ids) await deleteSeries(id);
   await deleteRemoteSeries(ids).catch(() => {});
   return ids.length;
+}
+
+// Sportart nach Tempo-Gruppe festlegen: gilt für bestehende und künftige Einheiten dieser Gruppe.
+export async function mapSportByTempo(group, sport) {
+  update((d) => ({
+    ...d, settings: { ...d.settings, sportByTempo: { ...(d.settings.sportByTempo || {}), [group]: sport } },
+    activities: d.activities.map((a) => (a.sport === 'other' && a.polarSportId == null && !a.title && tempoGroup({ distanceM: a.distanceM, durationS: a.durationS, start: a.start }) === group ? { ...a, sport } : a)),
+  }));
+  return recomputeAll();
 }
 
 // Sportart nach Name der Einheit festlegen (ohne Sportnummer): gilt für bestehende und künftige Einheiten mit diesem Namen.

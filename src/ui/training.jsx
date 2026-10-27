@@ -5,7 +5,7 @@ import { today, weeks, mondayOf, buildActivity, evaluate, estimatePlanLoad, matc
 import { addDays, ZONES, cleanSeries } from '../lib/metrics.js';
 import { SPORTS, sportLabel, guessSport } from '../lib/sports.js';
 import { recomputeAll } from '../lib/recompute.js';
-import { importFiles, deleteActivities, mapPolarSport } from '../lib/sync.js';
+import { importFiles, deleteActivities, mapPolarSport, askTempoGroups } from '../lib/sync.js';
 import { deleteRemoteSeries } from '../lib/cloud-sync.js';
 import { ZoneWeeks, ZoneBar, LineChart, ZONE_COLORS } from './charts.jsx';
 import { Sheet, Seg, fmtDuration, fmtNum, fmtDate, fmtKm, toast } from './common.jsx';
@@ -450,6 +450,7 @@ function OtherTools({ list }) {
       <b className="small">Sonstiges zuordnen</b>
       <p className="muted small">{recognizable.length} von {list.length} lassen sich aus Titel oder Notiz erkennen.</p>
       <button className="secondary wide" disabled={busy || !recognizable.length} onClick={() => apply(recognizable, 'erkannt und umgestellt')}><Wand2 size={16} />Aus Titel erkennen ({recognizable.length})</button>
+      <button className="secondary wide" style={{ marginTop: 8 }} disabled={!list.length} onClick={() => askTempoGroups(list)}><Wand2 size={16} />Nach Tempo und Jahreszeit fragen</button>
       <button className="secondary wide" style={{ marginTop: 8 }} disabled={!list.length} onClick={exportList}><Download size={16} />Liste als JSON ({list.length})</button>
       <button className="ghost wide" style={{ marginTop: 8, color: '#ffc9bf' }} disabled={busy || !list.length} onClick={removeAll}><Trash2 size={16} />Alle {list.length} Sonstiges löschen</button>
       <label style={{ marginTop: 10 }}>Oder alle {list.length} sichtbaren auf eine Sportart setzen</label>
