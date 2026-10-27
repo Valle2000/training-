@@ -20,7 +20,7 @@ function summarize(points, extra) {
     distanceM: extra.distanceM ?? null, calories: extra.calories ?? null, ascentM: extra.ascentM ?? null,
     avgHr: extra.avgHr ?? avg(hrs), maxHr: extra.maxHr ?? (hrs.length ? Math.max(...hrs) : null),
     avgPower: extra.avgPower ?? (pws.some(Boolean) ? avg(pws) : null),
-    title: extra.title || '', notes: extra.notes || '', laps: extra.laps || null, athlete: extra.athlete || null, externalLoad: extra.externalLoad ?? null, recorded: extra.recorded ?? true,
+    title: extra.title || '', notes: extra.notes || '', laps: extra.laps || null, athlete: extra.athlete || null, externalLoad: extra.externalLoad ?? null, recorded: extra.recorded ?? true, planned: !!extra.planned, polarSportId: extra.polarSportId ?? null,
     series: points.length > 30 ? toSeries(points) : null,
   };
 }
@@ -178,6 +178,9 @@ export function parsePolarJsonV2(obj) {
     avgPower: num(stats.STATISTICS_TYPE_POWER?.avg ?? stats.STATISTICS_TYPE_CYCLING_POWER?.avg) ?? undefined,
     externalLoad: num(ex.trainingLoad ?? obj.trainingLoad),
     recorded: !!(obj.deviceId || obj.product || hasData),
+    // Geplante Einheit (in Polar Flow eingetragenes Ziel): keine Uhr, keine Messwerte, keine Distanz, kein Puls.
+    planned: !(obj.deviceId || obj.product || hasData) && !num(ex.distanceMeters ?? obj.distanceMeters) && !num(stats.STATISTICS_TYPE_HEART_RATE?.avg),
+    polarSportId: ex.sport?.id ?? obj.sport?.id ?? null,
   });
 }
 

@@ -1,7 +1,7 @@
 // Abgleich mit Polar, Concept2 (ErgData/Logbook) und Wahoo über /api/connect.
-import { getData, update, putSeries, deleteSeries } from './store.js';
+import { getData, update, putSeries, deleteSeries, uid } from './store.js';
 import { toSeries } from './series.js';
-import { buildActivity, findDuplicate, localDate } from './activities.js';
+import { buildActivity, findDuplicate, localDate, estimatePlanLoad } from './activities.js';
 import { sportFromConcept2, polarSport } from './sports.js';
 import { readExport, zipEntries, zipEntriesSync, importable } from './importers.js';
 import { recomputeAll } from './recompute.js';
@@ -310,12 +310,24 @@ export async function syncHistory(provider, onProgress) {
 // Dateien von Hand: FIT, TCX, GPX, Polar-CSV, Polar-Konto-Export (JSON) und ZIP-Archive mit solchen Dateien.
 // Auch für sehr große Exporte (tausende Einheiten): ZIPs werden Datei für Datei gelesen, gespeichert wird in Paketen.
 export async function importFiles(files, onProgress) {
-  let added = 0, dup = 0, failed = 0, done = 0, refreshed = 0;
+  let added = 0, dup = 0, failed = 0, done = 0, refreshed = 0, planned = 0;
   const errors = [], pending = [];
   const fail = (name, e) => { failed++; if (errors.length < 3) errors.push(`${name.split('/').pop()}: ${e?.message || e}`); };
   const flush = () => { if (!pending.length) return; const batch = pending.splice(0); update((x) => ({ ...x, activities: [...x.activities, ...batch] })); };
   const add = async (raw) => {
     const d = getData(), cand = { ...raw, durationS: raw.elapsedS };
+    // Selbst zugeordnete Polar-Sportnummern (Einstellungen) haben Vorrang.
+    const mapped = raw.polarSportId != null && d.settings.polarSportMap?.[raw.polarSportId];
+    if (mapped) raw.sport = mapped;
+    // Geplante Polar-Einheiten gehören in den Kalender (Soll), nicht zu den absolvierten Einheiten.
+    if (raw.planned) {
+      const date = localDate(raw.start, d.settings.timezone), minutes = Math.round((raw.elapsedS || 0) / 60);
+      if (d.plan.some((p) => p.date === date && p.title === raw.title && p.source === 'polar')) return false;
+      const item = { id: uid(), date, sport: raw.sport, title: raw.title || '', description: raw.notes || '', minutes, zone: 'I1', load: estimatePlanLoad(minutes, 'I1'), source: 'polar', done: false };
+      update((x) => ({ ...x, plan: [...x.plan, item] }));
+      planned++;
+      return false;
+    }
     if (findDuplicate(pending, cand)) return false;
     const old = findDuplicate(d.activities, cand);
     if (old) {
@@ -332,6 +344,7 @@ export async function importFiles(files, onProgress) {
     const { activity, series } = buildActivity({ ...raw, source: 'upload' }, d.settings);
     activity.importFormat = raw.importFormat;
     activity.importFile = raw.importFile;
+    if (raw.polarSportId != null) activity.polarSportId = String(raw.polarSportId);
     if (series) await putSeries(activity.id, series);
     pending.push(activity);
     if (pending.length >= 25) flush();
@@ -359,7 +372,7 @@ export async function importFiles(files, onProgress) {
       raw.importFormat = ['json', 'csv'].includes(ext) ? (raw.recorded === false ? 'polar-plan' : 'polar') : ext;
       raw.importFile = name.split('/').pop();
       if (raw.athlete && (!profile || raw.athlete.date > profile.date)) { profile = raw.athlete; applyProfile(); }
-      try { const r0 = refreshed; if (await add(raw)) added++; else if (refreshed === r0) dup++; } catch (e) { fail(name, e); }
+      try { const r0 = refreshed, p0 = planned; if (await add(raw)) added++; else if (refreshed === r0 && planned === p0) dup++; } catch (e) { fail(name, e); }
       if (++done % 10 === 0) onProgress?.(`${done} Einheiten verarbeitet · ${added} neu · ${dup} schon vorhanden${failed ? ` · ${failed} nicht lesbar` : ''}`);
     }
     await new Promise((r) => setTimeout(r, 0)); // Anzeige aktualisieren lassen
@@ -386,7 +399,7 @@ export async function importFiles(files, onProgress) {
   }
   // Profilwerte übernommen: alle Einheiten (auch schon vorhandene und übersprungene) einheitlich neu berechnen.
   if (filled.size) { onProgress?.('Berechne mit deinem aktuellen Polar-Profil neu …'); await recomputeAll(); }
-  return { added, dup, failed, errors, refreshed, filled: [...filled] };
+  return { added, dup, failed, errors, refreshed, planned, filled: [...filled] };
 }
 
 // Mehrere Einheiten löschen (z. B. einen fehlerhaften Import): lokal, und beim nächsten Abgleich auch in Supabase.
@@ -396,6 +409,15 @@ export async function deleteActivities(ids) {
   for (const id of ids) await deleteSeries(id);
   await deleteRemoteSeries(ids).catch(() => {});
   return ids.length;
+}
+
+// Unbekannte Polar-Sportnummer einer Sportart zuordnen: gilt für vorhandene und künftige Importe.
+export async function mapPolarSport(id, sport) {
+  update((d) => ({
+    ...d, settings: { ...d.settings, polarSportMap: { ...(d.settings.polarSportMap || {}), [id]: sport } },
+    activities: d.activities.map((a) => (String(a.polarSportId) === String(id) ? { ...a, sport } : a)),
+  }));
+  return recomputeAll();
 }
 
 export { localDate };

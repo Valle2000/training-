@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Link2, Unlink, Download, Upload, RefreshCw, History } from 'lucide-react';
 import { useData, update, getData } from '../lib/store.js';
 import { recomputeAll } from '../lib/recompute.js';
-import { PROVIDERS, startConnect, disconnect, importFiles, testConnection, syncHistory, reloadConcept2, deleteActivities } from '../lib/sync.js';
+import { PROVIDERS, startConnect, disconnect, importFiles, testConnection, syncHistory, reloadConcept2, deleteActivities, mapPolarSport } from '../lib/sync.js';
 import { getAccessCode, setAccessCode, getOwnKey, setOwnKey } from '../lib/ai.js';
 import { fmtDate, toast } from './common.jsx';
+import { SPORTS } from '../lib/sports.js';
 import { AccountCard } from './account.jsx';
 
 // iPad meldet sich als Mac, hat aber einen Touchscreen; Safari auf iOS kann keine Ordner auswählen.
@@ -108,7 +109,8 @@ export function Settings() {
         {IOS ? <p className="small muted">iPad/iPhone: Ordner lassen sich hier nicht direkt wählen. In der Dateien-App den Ordner lange drücken → „Komprimieren“ und die ZIP oben auswählen (den Polar-Export kannst du auch direkt als ZIP nehmen, ohne ihn zu entpacken). Während des Imports die App im Vordergrund lassen.</p>
           : <label className="secondary wide" style={{ cursor: 'pointer', marginTop: 8 }}><Upload size={17} />Ganzen Ordner wählen<input type="file" webkitdirectory="" directory="" multiple hidden onChange={upload} disabled={!!progress} /></label>}
         {progress && <div className="notice">{progress}<br /><span className="small">App geöffnet lassen – große Exporte dauern einige Minuten.</span></div>}
-        {result && <div className="notice"><b>{result.added} importiert</b>{result.refreshed > 0 && ` · ${result.refreshed} ergänzt`} · {result.dup} schon vorhanden · {result.failed} nicht lesbar{result.errors?.length > 0 && <div className="small" style={{ marginTop: 4, wordBreak: 'break-word' }}>{result.errors.join(' · ')}</div>}{result.filled?.length > 0 && <div className="small" style={{ marginTop: 4 }}>Aus deinem Polar-Profil übernommen: {result.filled.map((k) => ({ hrMax: 'Maximalpuls', hrRest: 'Ruhepuls', lthr: 'Schwellenpuls', ftp: 'FTP', weightKg: 'Gewicht', sex: 'Geschlecht' }[k])).join(', ')} – bitte oben prüfen.</div>}{result.added > 0 && <div className="small" style={{ marginTop: 4 }}>Die Verläufe werden im Hintergrund nach Supabase hochgeladen (wenn angemeldet).</div>}</div>}
+        {result && <div className="notice"><b>{result.added} importiert</b>{result.refreshed > 0 && ` · ${result.refreshed} ergänzt`}{result.planned > 0 && ` · ${result.planned} geplante in den Kalender`} · {result.dup} schon vorhanden · {result.failed} nicht lesbar{result.errors?.length > 0 && <div className="small" style={{ marginTop: 4, wordBreak: 'break-word' }}>{result.errors.join(' · ')}</div>}{result.filled?.length > 0 && <div className="small" style={{ marginTop: 4 }}>Aus deinem Polar-Profil übernommen: {result.filled.map((k) => ({ hrMax: 'Maximalpuls', hrRest: 'Ruhepuls', lthr: 'Schwellenpuls', ftp: 'FTP', weightKg: 'Gewicht', sex: 'Geschlecht' }[k])).join(', ')} – bitte oben prüfen.</div>}{result.added > 0 && <div className="small" style={{ marginTop: 4 }}>Die Verläufe werden im Hintergrund nach Supabase hochgeladen (wenn angemeldet).</div>}</div>}
+        <PolarSports activities={activities} />
         <ul className="small muted" style={{ paddingLeft: 18, lineHeight: 1.55 }}>
           <li><b>Polar:</b> Die Schnittstelle liefert nur Einheiten ab der Verbindung. Ältere Einheiten in Polar Flow (Web) im Tagebuch öffnen → Exportieren (TCX, CSV oder FIT, mehrere auch als ZIP). Den Komplett-Export deines Kontos (account.polar.com, JSON im ZIP) kann die App auch lesen – das Format ist nicht offiziell beschrieben, schick mir eine Rückmeldung, falls Einheiten fehlen.</li>
           <li><b>Concept2 / ErgData:</b> Nach dem Verbinden oben „Ganze Historie“ antippen.</li>
@@ -176,5 +178,30 @@ function DeleteBySource({ activities }) {
       })}
       <p className="muted small">Tipp: Vorher ein Backup machen. Danach den Export einfach neu importieren.</p>
     </details>
+  );
+}
+
+// Polar-Sportnummern, die die App nicht kennt („Sonstiges“): selbst zuordnen, gilt auch für spätere Importe.
+function PolarSports({ activities }) {
+  const [busy, setBusy] = useState(false);
+  const unknown = {};
+  for (const a of activities) if (a.polarSportId != null && a.sport === 'other') (unknown[a.polarSportId] ||= []).push(a);
+  const list = Object.entries(unknown);
+  if (!list.length) return null;
+  const set = async (id, sport) => { setBusy(true); await mapPolarSport(id, sport); setBusy(false); toast('Sportart zugeordnet'); };
+  return (
+    <div className="notice">
+      <b>Unbekannte Polar-Sportarten</b>
+      <p className="small">Diese Einheiten stehen als „Sonstiges“ da. Wähle die richtige Sportart – das gilt für alle Einheiten mit dieser Nummer und für spätere Importe.</p>
+      {list.map(([id, acts]) => (
+        <div key={id} className="row" style={{ alignItems: 'center', marginTop: 6 }}>
+          <span className="small" style={{ flex: '2 1 160px' }}>Nr. {id} · {acts.length} Einheiten{acts.find((a) => a.title) ? ` (z. B. „${acts.find((a) => a.title).title}“)` : ''}</span>
+          <select style={{ flex: '1 1 140px' }} value="" disabled={busy} onChange={(e) => e.target.value && set(id, e.target.value)}>
+            <option value="">Sportart wählen …</option>
+            {SPORTS.filter((s) => s.id !== 'other').map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+          </select>
+        </div>
+      ))}
+    </div>
   );
 }
