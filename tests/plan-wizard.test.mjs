@@ -41,7 +41,8 @@ test('Gewählte Key Sessions, Polarisiert ohne Schwelle, Block-Woche, Kalenderei
 
 test('Profil: Empfehlung nach Zielen, Stil und Schwächen', async () => {
   const { recommend } = await import('../src/lib/plan-wizard.js');
-  assert.equal(recommend({ weak: ['threshold'], seriousness: 'ambitious' }, 10).approach, 'norwegian');
+  assert.equal(recommend({ weak: ['threshold'], seriousness: 'ambitious' }, 10).approach, 'threshold');
+  assert.equal(recommend({ weak: ['threshold'], seriousness: 'performance' }, 14).approach, 'norwegian');
   assert.equal(recommend({ style: 'varied', seriousness: 'performance' }, 12).approach, 'block');
   assert.equal(recommend({ goal: 'fitness' }, 14).approach, 'polarized');
   const r = recommend({ weak: ['strength', 'hills'], style: 'steady', likes: ['bike'] }, 12);
@@ -67,6 +68,31 @@ test('Profil: Rad gern → mehr Rad im Frühjahr, Plan bleibt gültig', () => {
   const o = { ...base, start: '2027-05-03', end: '2027-07-25', approach: 'pyramidal' };
   const count = (w) => w.flatMap((x) => x.days.flatMap((d) => d.sessions)).filter((s) => s.sport === 'bike' || s.sport === 'cycling').length;
   const plain = generatePlan(o, []);
-  const liked = generatePlan({ ...o, profile: { likes: ['bike'], seriousness: 'fun' } }, []);
+  const liked = generatePlan({ ...o, profile: { likes: ['bike'], seriousness: 'performance' } }, []);
   assert.ok(count(liked) > count(plain), `${count(liked)} vs ${count(plain)}`);
+});
+
+test('Schwellenbetont: 2× Schwelle pro Woche, I4 und I5 je ca. 1× pro Zyklus, nicht in der Entlastungswoche', () => {
+  const w = generatePlan({ ...base, start: '2026-11-02', end: '2027-01-31', approach: 'threshold' }, []).filter((x) => x.phase === 'build' || x.phase === 'base');
+  const hard = (x) => x.days.flatMap((d) => d.sessions.filter((s) => s.kind === 'hard'));
+  w.forEach((x, i) => {
+    const deload = i > 0 && x.targetHours < w[i - 1].targetHours * 0.85;
+    assert.equal(hard(x).filter((s) => s.zone === 'I3').length, deload ? 1 : 2, x.from);
+    if (deload) assert.ok(!hard(x).some((s) => s.zone === 'I4' || s.zone === 'I5'), x.from);
+  });
+  const i5 = w.filter((x) => hard(x).some((s) => s.zone === 'I5')).length, i4 = w.filter((x) => hard(x).some((s) => s.zone === 'I4')).length;
+  if (w.some((x) => x.phase === 'build')) { assert.ok(i5 >= 1 && i5 <= Math.ceil(w.length / 4)); assert.ok(i4 <= Math.ceil(w.length / 2)); }
+  assert.ok(hard(w[0]).some((s) => /6×10|3×20|6×8/.test(s.title)));
+});
+
+test('Nicht so ernst: lockere Einheiten mit freier Sportart, leistungsorientiert fest', async () => {
+  const { flexible } = await import('../src/lib/plan-wizard.js');
+  assert.equal(flexible({ seriousness: 'fun' }, '2027-05-10'), true);
+  assert.equal(flexible({ seriousness: 'fun' }, '2027-01-10'), false);
+  assert.equal(flexible({ seriousness: 'ambitious' }, '2027-08-10'), false);
+  assert.equal(flexible({ seriousness: 'performance' }, '2027-05-10'), false);
+  const o = { ...base, start: '2027-05-03', end: '2027-06-27', approach: 'polarized' };
+  const free = (p) => generatePlan({ ...o, profile: p }, []).flatMap((x) => x.days.flatMap((d) => d.sessions)).filter((s) => s.title === 'Locker nach Lust').length;
+  assert.ok(free({ seriousness: 'fun', likes: ['bike', 'run'] }) > 0);
+  assert.equal(free({ seriousness: 'performance' }), 0);
 });

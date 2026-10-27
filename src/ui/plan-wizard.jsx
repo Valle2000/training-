@@ -171,7 +171,7 @@ export function PlanWizard({ onClose }) {
   );
 }
 
-const SLOT_LABEL = { dt: 'Double-Threshold-Tag', threshold: 'Schwelle', hit: 'hart', race: 'Wettkampftempo', opener: 'Vorbelastung' };
+const SLOT_LABEL = { rot: 'I4 bzw. I5 je ca. 1× in 4 Wochen', dt: 'Double-Threshold-Tag', threshold: 'Schwelle', hit: 'hart', race: 'Wettkampftempo', opener: 'Vorbelastung' };
 function fmtSlots(slots) {
   if (slots === 'block') return 'alle 4 Wochen 5× hart, sonst 1 Schwelle + 1 hart';
   if (!slots?.length) return 'keine';

@@ -27,6 +27,13 @@ export const APPROACHES = [
     days: { hard: [2, 4, 6] }, sources: ['casado23'], defaults: ['dt_am', 'dt_pm', 'hit_hill', 'race_pace', 'speed', 'long'],
   },
   {
+    id: 'threshold', name: 'Schwellenbetont (aktueller Trend)', evidence: 'gering bis mittel',
+    short: 'Sehr viel Schwelle (2 Einheiten pro Woche, Klassiker wie 6×10, 3×20, 6×8 min), I4 und I5 (z. B. 30/15) je nur etwa einmal in 3–4 Wochen.',
+    detail: 'So trainieren inzwischen viele Langläufer und Läufer: die Schwelle (I3, Laktat ca. 2–4 mmol/l) ist der Hauptreiz, weil sie viel Wirkung bei überschaubarer Erholungszeit bringt und große Mengen erlaubt. Harte Intervalle (I4) kommen nur ab und zu dazu, sehr harte (I5) nur alle paar Wochen als Spitze. Wichtig: die Schwelle wirklich kontrolliert laufen – lieber etwas zu locker als zu hart, sonst wird es ein verstecktes I4. Studienlage: Beschreibungen von Weltklasse-Athleten und Trainern, wenige kontrollierte Studien.',
+    phases: { base: ['threshold', 'threshold'], build: ['threshold', 'threshold', 'rot'], specific: ['threshold', 'threshold', 'rot'], taper: ['threshold', 'race'], race: ['opener'], recovery: [], transition: ['threshold'] },
+    days: { hard: [2, 4, 6] }, sources: ['casado23', 'walther23', 'sandbakk17'], defaults: ['thr_6x10', 'thr_3x20s', 'thr_6x8', 'hit_5x4', 'hit_30_15', 'race_pace', 'speed', 'long'],
+  },
+  {
     id: 'pyramidal', name: 'Weltklasse-Langlauf (pyramidal, ~90 % locker)', evidence: 'mittel',
     short: 'Wie norwegische Weltklasse-Langläufer: sehr viel locker (oft Doppelstock), 1 Schwelleneinheit und 1 harte Einheit pro Woche, später Wettkampftempo.',
     detail: 'Analysen von Olympiasiegern zeigen rund 90 % lockeres Training, 3–5 % Schwelle und 4–6 % hart; gesteigert wird über Jahre vor allem der lockere und mittlere Umfang. Viele lange Einheiten, viel Rollski/Ski. Gut geeignet bei hohem Umfang (12–20 h/Woche).',
@@ -61,11 +68,14 @@ export const KEY_OPTIONS = [
   { id: 'dt_am', type: 'dt_am', name: 'Double Threshold morgens: 5×6 min', minutes: 70, zone: 'I3', sport: 'specific', desc: '20 min ein, 5×6 min Schwelle (Laktat 2–3 mmol/l), 1 min Pause, 15 min aus' },
   { id: 'dt_pm', type: 'dt_pm', name: 'Double Threshold abends: 10×3 min', minutes: 60, zone: 'I3', sport: 'run', desc: '15 min ein, 10×3 min Schwelle (Laktat 2,5–3,5 mmol/l), 1 min Pause, 10 min aus' },
   { id: 'thr_4x8', type: 'threshold', name: 'Schwelle: 4×8 min', minutes: 75, zone: 'I3', sport: 'specific', desc: '20 min ein, 4×8 min Schwelle, 2 min Pause, 15 min aus' },
+  { id: 'thr_6x10', type: 'threshold', name: 'Schwelle: 6×10 min', minutes: 105, zone: 'I3', sport: 'specific', desc: '20 min ein, 6×10 min Schwelle, 1–2 min Pause, 15 min aus' },
+  { id: 'thr_3x20s', type: 'threshold', name: 'Schwelle: 3×20 min', minutes: 105, zone: 'I3', sport: 'specific', desc: '20 min ein, 3×20 min an der unteren Schwelle, 2–3 min Pause, 15 min aus' },
+  { id: 'thr_6x8', type: 'threshold', name: 'Schwelle: 6×8 min', minutes: 95, zone: 'I3', sport: 'specific', desc: '20 min ein, 6×8 min Schwelle, 1–2 min Pause, 15 min aus' },
   { id: 'thr_3x20', type: 'threshold', name: 'SkiErg 3×20 min', minutes: 106, zone: 'I3', sport: 'skierg', desc: '20 min ein, 3×20 min an der unteren Schwelle (2 min Pause), 20 min aus' },
   { id: 'thr_3x10', type: 'threshold', name: 'SkiErg Schwelle: 3×10 min', minutes: 56, zone: 'I3', sport: 'skierg', desc: '12 min ein, 3×10 min Schwelle, 2 min Pause, 10 min aus' },
-  { id: 'hit_5x4', type: 'hit', name: 'VO2max: 5×4 min', minutes: 70, zone: 'I4', sport: 'specific', desc: '20 min ein, 5×4 min hart (I4), 3 min Pause, 15 min aus' },
-  { id: 'hit_hill', type: 'hit', name: 'Bergintervalle Skigang: 6×5 min', minutes: 80, zone: 'I4', sport: 'hike', desc: '20 min ein, 6×5 min Skigang mit Stöcken bergauf (I4), locker zurück, 15 min aus' },
-  { id: 'hit_30_15', type: 'hit', name: 'Kurze Intervalle: 3×(13×30/15 s)', minutes: 60, zone: 'I5', sport: 'bike', desc: '15 min ein, 3 Serien à 13× 30 s hart / 15 s locker, 3 min Serienpause, 10 min aus (Rønnestad)' },
+  { id: 'hit_5x4', type: 'hit', name: 'VO2max (I4): 5×4 min', minutes: 70, zone: 'I4', sport: 'specific', desc: '20 min ein, 5×4 min hart (I4), 3 min Pause, 15 min aus' },
+  { id: 'hit_hill', type: 'hit', name: 'Bergintervalle Skigang (I4): 6×5 min', minutes: 80, zone: 'I4', sport: 'hike', desc: '20 min ein, 6×5 min Skigang mit Stöcken bergauf (I4), locker zurück, 15 min aus' },
+  { id: 'hit_30_15', type: 'hit', name: 'VO2max kurz (I5): 3×(13×30/15 s)', minutes: 60, zone: 'I5', sport: 'bike', desc: '15 min ein, 3 Serien à 13× 30 s hart / 15 s locker, 3 min Serienpause, 10 min aus (Rønnestad)' },
   { id: 'race_pace', type: 'race', name: 'Wettkampftempo: 4×6 min', minutes: 70, zone: 'I4', sport: 'specific', desc: '20 min ein, 4×6 min im geplanten Renntempo, 3 min Pause, 15 min aus' },
   { id: 'opener', type: 'opener', name: 'Vorbelastung: 30 min + 4×1 min + Sprints', minutes: 45, zone: 'I2', sport: 'specific', desc: '30 min locker, 4×1 min zügig, 3 kurze Sprints – 1–2 Tage vor dem Rennen' },
   { id: 'speed', type: 'speed', name: 'Steigerungen/Sprints in einer lockeren Einheit', minutes: 0, zone: 'I1', sport: 'specific', desc: 'In einer lockeren Einheit 6–8× 10–15 s Sprint, volle Pause – Technik und Schnelligkeit' },
@@ -102,6 +112,15 @@ function generalSport(pr = {}, i) {
   return (pool.length ? pool : OTHER)[i % (pool.length || OTHER.length)];
 }
 
+const SPORT_NAME = { bike: 'Rad', run: 'Laufen', rollerski: 'Rollski', skierg: 'SkiErg', hike: 'Berglauf/Wandern', row: 'Rudern', swim: 'Schwimmen' };
+const sportName = (x) => SPORT_NAME[x];
+export function flexible(pr = {}, date) {
+  const m = Number(date.slice(5, 7));
+  if (pr.seriousness === 'fun' || pr.goal === 'fitness') return ![12, 1, 2, 3].includes(m);
+  if (pr.seriousness === 'ambitious') return [4, 5, 6].includes(m);
+  return false;
+}
+
 // Optionen: approach, startHours, peakHours, start, end, restDays ([1] = Montag), longDay (7 = Sonntag), doubles, strengthPerWeek, keys (IDs)
 export function generatePlan(opts, races = []) {
   const ap = APPROACHES.find((a) => a.id === opts.approach) || APPROACHES[0];
@@ -111,7 +130,8 @@ export function generatePlan(opts, races = []) {
   // Wiedereinstieg: höchstens +10 % pro Woche, alle 4 Wochen leichter.
   if (ap.id === 'base') weeks.forEach((w, i) => { w.targetHours = Math.round(Math.min(Number(opts.peakHours) || 14, (Number(opts.startHours) || 8) * 1.1 ** i) * (i % 4 === 3 ? 0.75 : 1) * 10) / 10; });
   const pickByType = (type, k) => { const list = KEY_OPTIONS.filter((o) => o.type === type && keys.has(o.id)); return list.length ? list[k % list.length] : null; };
-  let rot = 0, buildIdx = 0;
+  let rot = 0, buildIdx = 0, rotIdx = 0, prevHours = null;
+  const pickHit = (zone, k) => { const list = KEY_OPTIONS.filter((o) => o.type === 'hit' && o.zone === zone && keys.has(o.id)); return list.length ? list[k % list.length] : null; };
   return weeks.map((w) => {
     let hardSlots = ap.phases[w.phase] ?? [];
     let hardDays = ap.days.hard;
@@ -120,6 +140,16 @@ export function generatePlan(opts, races = []) {
       hardSlots = blockWeek ? ['hit', 'hit', 'hit', 'hit', 'hit'] : w.phase === 'specific' ? ['threshold', 'race'] : ['threshold', 'hit'];
       if (blockWeek) { hardDays = ap.days.block; w.targetHours = Math.round(w.targetHours * 0.85 * 10) / 10; w.block = true; }
     }
+    // 'rot': pro 4-Wochen-Zyklus einmal I4 (bzw. Wettkampftempo in der Wettkampfvorbereitung) und einmal I5,
+    // nie in der Entlastungswoche (deutlich weniger Stunden als die Vorwoche).
+    const deload = prevHours != null && w.targetHours < prevHours * 0.85;
+    prevHours = w.targetHours;
+    if (Array.isArray(hardSlots) && hardSlots.includes('rot')) {
+      const r = deload ? -1 : rotIdx++ % 3;
+      const what = r === 2 ? 'i5' : r === 0 ? (w.phase === 'specific' ? 'race' : 'i4') : null;
+      hardSlots = hardSlots.flatMap((x) => (x === 'rot' ? (what ? [what] : []) : [x]));
+    }
+    if (deload && ap.id === 'threshold') hardSlots = hardSlots.slice(0, 1);
     const rest = new Set(opts.restDays || [1]), longDay = Number(opts.longDay) || 7;
     const days = Array.from({ length: 7 }, (_, i) => ({ dow: i + 1, date: addDays(w.from, i), sessions: [] }));
     const free = (dow) => !rest.has(dow) && dow !== longDay;
@@ -141,6 +171,9 @@ export function generatePlan(opts, races = []) {
         const race = (w.races || [])[0];
         const d = race ? days.find((x) => x.date === addDays(race.date, -1)) || day : day;
         put(d, session(optionById('opener'), d.date, rot++));
+      } else if (slot === 'i4' || slot === 'i5') {
+        const o = pickHit(slot.toUpperCase(), rot) || pickHit(slot === 'i5' ? 'I4' : 'I5', rot) || pickByType('hit', rot);
+        if (o) put(day, session(o, day.date, rot++));
       } else {
         const o = pickByType(slot, rot) || pickByType(slot === 'race' ? 'hit' : slot === 'hit' ? 'threshold' : 'hit', rot);
         if (o) put(day, session(o, day.date, rot++));
@@ -185,6 +218,13 @@ export function generatePlan(opts, races = []) {
       const s = { title: 'Locker', sport: specific ? specificSport(d.date, i + (pr.weak?.includes('classic') ? 1 : 0)) : generalSport(pr, i + rot), minutes: min, zone: 'I1', description: 'Grundlage I1, wirklich locker', kind: 'easy' };
       if (specific && techLeft > 0) { s.title = 'Locker + Technik'; s.description = `Grundlage I1 mit Technikübungen (${pr.weak?.includes('classic') ? 'Klassisch: Abstoß, Gleiten auf einem Ski' : 'Skating: Gewichtsverlagerung, Eins-zu-eins, ohne Stöcke'}), gern Video`; techLeft--; }
       if (!speedDone && specific && s.title === 'Locker') { s.title = 'Locker + Sprints'; s.description = 'Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause'; speedLeft--; if (speedLeft <= 0) speedDone = true; }
+      // Wer es nicht so ernst nimmt, legt die Sportart nicht fest: locker nach Lust (Spaß-Fokus außerhalb des Winters,
+      // ambitioniert im Frühjahr/Frühsommer). Leistungsorientierte bekommen feste Sportarten.
+      if (!specific && s.title === 'Locker' && flexible(pr, d.date)) {
+        const liked = (pr.likes || []).map((x) => sportName(x)).filter(Boolean);
+        s.sport = 'other'; s.title = 'Locker nach Lust';
+        s.description = `Grundlage I1 – Sportart frei: ${liked.length ? liked.join(', ') + ' oder was sonst Spaß macht' : 'Rad, Laufen, Rollski, Wandern, Schwimmen … was Spaß macht'}`;
+      }
       put(d, s); easy -= min;
     }
     for (const d of days) if (rest.has(d.dow) && !d.sessions.length) d.rest = true;
@@ -223,15 +263,16 @@ export function recommend(pr = {}, hours = 10) {
   } else if (pr.style === 'varied' && hours >= 8 && pr.seriousness !== 'fun') {
     approach = 'block';
     reasons.push('Du magst Abwechslung mit harten Phasen: Block-Periodisierung bündelt die Intensität in einzelne Wochen – bei Trainierten mindestens so wirksam wie gleichmäßig verteilte Intervalle (Rønnestad; Metaanalyse Mølmen 2019).');
-  } else if (weak.includes('threshold') && hours >= 9) {
-    approach = 'norwegian';
-    reasons.push('Schwäche an der Schwelle bei solidem Umfang: viel kontrollierte Schwelle (Double Threshold) trainiert genau das – Laktat bzw. Puls dabei im Griff halten.');
   } else if (weak.includes('vo2') && hours < 12) {
     approach = 'polarized';
     reasons.push('Schwäche bei harten Intervallen: polarisiert mit zwei harten Einheiten pro Woche setzt dort den Schwerpunkt.');
-  } else if (hours >= 12) {
-    approach = 'pyramidal';
-    reasons.push('Bei hohem Umfang hat sich der Weltklasse-Ansatz bewährt: sehr viel locker, 1 Schwelle und 1 harte Einheit, später Wettkampftempo.');
+  } else if (weak.includes('threshold') && hours >= 12 && pr.seriousness === 'performance') {
+    approach = 'norwegian';
+    reasons.push('Schwäche an der Schwelle bei hohem Umfang: Double Threshold (zwei Schwelleneinheiten an einem Tag) bringt die meiste Schwellenzeit – Laktat bzw. Puls dabei im Griff halten.');
+  } else if (hours >= 7) {
+    approach = 'threshold';
+    reasons.push('So trainieren inzwischen die meisten: viel kontrollierte Schwelle (Klassiker 6×10, 3×20, 6×8 min), I4 und I5 wie 30/15 nur je etwa einmal in 3–4 Wochen. Viel Wirkung bei gut planbarer Erholung.');
+    if (weak.includes('threshold')) reasons.push('Passt genau zu deiner Schwäche an der Schwelle.');
   } else {
     approach = 'polarized';
     reasons.push('Bei begrenzter Zeit bringt das 80/20-Schema viel Wirkung mit wenig Planungsaufwand.');
@@ -241,7 +282,7 @@ export function recommend(pr = {}, hours = 10) {
   if (pr.style === 'varied') reasons.push('Ausgeprägte Wellen: dritte Woche ca. 10 % über dem Schnitt, Entlastungswoche ca. 60 %. Auf Erholung, Schlaf und Essen in den großen Wochen achten.');
   if (pr.style === 'any') reasons.push('Empfehlung: eher gleichmäßig mit Entlastung alle 3–4 Wochen – Kontinuität schlägt einzelne „krasse“ Wochen, vor allem ohne Trainer.');
   const keys = new Set(APPROACHES.find((a) => a.id === approach).defaults);
-  if (weak.includes('threshold')) { keys.add('thr_4x8'); keys.add('thr_3x20'); }
+  if (weak.includes('threshold')) { keys.add('thr_6x10'); keys.add('thr_3x20s'); }
   if (weak.includes('vo2')) { keys.add('hit_5x4'); keys.add('hit_30_15'); }
   if (weak.includes('hills')) { keys.add('hit_hill'); reasons.push('Bergauf als Schwäche: Bergintervalle im Skigang mit Stöcken sind fest eingeplant.'); }
   if (weak.includes('sprint')) { keys.add('speed'); reasons.push('Sprint als Schwäche: zwei Einheiten pro Woche mit kurzen Sprints (volle Pause, Technik sauber).'); }
@@ -250,6 +291,7 @@ export function recommend(pr = {}, hours = 10) {
   if (strong.length) reasons.push(`Stärken (${strong.map((x) => ABILITIES.find((a) => a[0] === x)?.[1]).filter(Boolean).join(', ')}) erhalten – sie brauchen weniger, aber regelmäßige Reize.`);
   const likes = pr.likes || [];
   if (likes.length) reasons.push(`Lieblingstraining (${likes.map((x) => MODES.find((m) => m[0] === x)?.[1]).join(', ')}): ${pr.seriousness === 'performance' ? 'im Frühjahr und Frühsommer viel davon, ab Spätsommer wird es spezifischer (Rollski/Ski).' : 'bleibt bis in den Spätsommer fester Bestandteil – Spaß hält dich dran, und das ist der wichtigste Faktor.'}`);
+  if (flexible(pr, '2027-05-01')) reasons.push(pr.seriousness === 'ambitious' ? 'Im Frühjahr und Frühsommer sind die lockeren Einheiten „nach Lust“ – die Sportart legst du spontan fest, ab Sommer wird es konkreter.' : 'Lockere Einheiten außerhalb des Winters sind „nach Lust“ – die Sportart legst du spontan fest, es zählt die Zeit in Zone 1.');
   if (pr.goal === 'long') reasons.push('Langdistanz: lange Einheiten mit viel Doppelstock und Verpflegung üben sind zentral.');
   if (pr.goal === 'short') reasons.push('Kurze Rennen: mehr Wettkampftempo und Sprints in der Wettkampfvorbereitung.');
   return { approach, keys: [...keys], strengthPerWeek: weak.includes('strength') ? 3 : pr.seriousness === 'fun' ? 1 : 2, reasons };
