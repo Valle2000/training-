@@ -42,3 +42,11 @@ test('Strava-Export: Dubletten, Watt-Zusammenführung, Namen', async () => {
   assert.equal(ski.sport, 'rollerski_classic');
   assert.equal(ski.notes, 'locker, schön');
 });
+
+test('Strava-CSV: Bewegungszeit und Gesamtzeit werden übernommen', async () => {
+  const { parseStravaCsv } = await import('../src/lib/importers.js');
+  const csv = 'Activity ID,Activity Date,Activity Name,Activity Type,Elapsed Time,Moving Time,Filename\n1,x,Morgenrunde,Ride,4500,3600,activities/1.fit.gz\n';
+  const r = parseStravaCsv(csv);
+  assert.equal(r['1.fit.gz'].movingS, 3600);
+  assert.equal(r['1.fit.gz'].elapsedS, 4500);
+});

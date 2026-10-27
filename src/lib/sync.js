@@ -446,17 +446,21 @@ export async function importFiles(files, onProgress) {
   }
   // Strava: Namen und Sportarten aus activities.csv übernehmen (die Datei kann im Archiv vor oder nach den Einheiten liegen).
   let sportChanged = false;
+  let durationChanged = false;
   if (strava) {
     update((x) => ({ ...x, activities: x.activities.map((a) => {
       const s = a.source === 'upload' && a.importFile && strava[a.importFile];
       if (!s) return a;
       const sport = stravaSport(s.type, s.name); // die in Strava gewählte Sportart ist meist genauer als die Gerätedatei
       if (sport !== 'other' && sport !== a.sport) sportChanged = true;
-      return { ...a, title: a.title && !/^(morning|afternoon|evening|lunch|night)\b/i.test(a.title) ? a.title : renameTitle(s.name, x.settings), notes: a.notes || s.notes, sport: sport === 'other' ? a.sport : sport };
+      // Dauer wie in Strava: Bewegungszeit als Zeit auf der Uhr, Gesamtzeit als Elapsed.
+      const timerChanged = !!s.movingS && s.movingS !== a.timerS;
+      if (timerChanged) durationChanged = true;
+      return { ...a, title: a.title && !/^(morning|afternoon|evening|lunch|night)\b/i.test(a.title) ? a.title : renameTitle(s.name, x.settings), notes: a.notes || s.notes, sport: sport === 'other' ? a.sport : sport, ...(s.movingS ? { timerS: s.movingS } : {}), ...(s.elapsedS ? { elapsedS: s.elapsedS } : {}) };
     }) }));
   }
   // Profilwerte übernommen: alle Einheiten (auch schon vorhandene und übersprungene) einheitlich neu berechnen.
-  if (filled.size || sportChanged) { onProgress?.('Berechne Belastung und Zonen neu …'); await recomputeAll(); }
+  if (filled.size || sportChanged || durationChanged) { onProgress?.('Berechne Belastung und Zonen neu …'); await recomputeAll(); }
   return { added, dup, failed, errors, refreshed, planned, filled: [...filled] };
 }
 

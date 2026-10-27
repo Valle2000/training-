@@ -354,11 +354,14 @@ export function parseStravaCsv(text) {
   const head = rows[0] || [];
   const col = (re) => head.findIndex((h) => re.test(h.trim()));
   const iFile = col(/^filename$/i), iName = col(/^activity name$/i), iType = col(/^activity type$/i), iDesc = col(/^activity description$/i);
+  const iMove = col(/^moving time$/i), iElapsed = col(/^elapsed time$/i);
   if (iFile < 0 || iName < 0) return null;
   const out = {};
   for (const r of rows.slice(1)) {
     const f = (r[iFile] || '').split('/').pop();
-    if (f) out[f] = { name: r[iName] || '', type: r[iType] || '', notes: iDesc >= 0 ? r[iDesc] || '' : '' };
+    // Bewegungszeit und Gesamtzeit wie in Strava (Sekunden) – die Bewegungszeit entspricht der Zeit auf der Uhr mit Autostopp.
+    const num = (i) => (i >= 0 && r[i] && Number.isFinite(Number(String(r[i]).replace(',', '.'))) ? Number(String(r[i]).replace(',', '.')) : null);
+    if (f) out[f] = { name: r[iName] || '', type: r[iType] || '', notes: iDesc >= 0 ? r[iDesc] || '' : '', movingS: num(iMove), elapsedS: num(iElapsed) };
   }
   return out;
 }
