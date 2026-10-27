@@ -429,11 +429,19 @@ function OtherTools({ list }) {
     await recomputeAll();
     setBusy(false);
   };
+  const removeAll = async () => {
+    if (!list.length) return;
+    if (!confirm(`${list.length} Sonstiges-Einheiten löschen? Notizen, RPE und Laktat dieser Einheiten gehen verloren. Das gilt auch für Supabase und andere Geräte.`)) return;
+    setBusy(true);
+    try { toast(`${await deleteActivities(list.map((a) => a.id))} Einheiten gelöscht`); } catch (e) { toast(e.message); }
+    setBusy(false);
+  };
   return (
     <div className="card">
       <b className="small">Sonstiges zuordnen</b>
       <p className="muted small">{recognizable.length} von {list.length} lassen sich aus Titel oder Notiz erkennen.</p>
       <button className="secondary wide" disabled={busy || !recognizable.length} onClick={() => apply(recognizable, 'erkannt und umgestellt')}><Wand2 size={16} />Aus Titel erkennen ({recognizable.length})</button>
+      <button className="ghost wide" style={{ marginTop: 8, color: '#ffc9bf' }} disabled={busy || !list.length} onClick={removeAll}><Trash2 size={16} />Alle {list.length} Sonstiges löschen</button>
       <label style={{ marginTop: 10 }}>Oder alle {list.length} sichtbaren auf eine Sportart setzen</label>
       <div className="row" style={{ flexWrap: 'nowrap' }}>
         <select value={target} onChange={(e) => setTarget(e.target.value)}><option value="">–</option>{SPORTS.filter((x) => x.id !== 'other').map((x) => <option key={x.id} value={x.id}>{x.label}</option>)}</select>
