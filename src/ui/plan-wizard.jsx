@@ -136,6 +136,12 @@ export function PlanWizard({ onClose }) {
         <label>Krafttraining bevorzugt an</label>
         <div className="chips">{DOW.map((d, i) => <button key={d} className={`chip${(o.strengthDays || []).includes(i + 1) ? ' on' : ''}`} onClick={() => set('strengthDays', (o.strengthDays || []).includes(i + 1) ? o.strengthDays.filter((x) => x !== i + 1) : [...(o.strengthDays || []), i + 1].sort())}>{d}</button>)}</div>
         <p className="muted small">Kraft kommt nie am Tag vor einer harten Einheit. Ist kein bevorzugter Tag frei, nimmt der Plan den nächsten passenden.</p>
+        <label>Tage ohne Ski (Winter)</label>
+        <div className="chips">{DOW.map((d, i) => <button key={d} className={`chip${(o.noSkiDays || []).includes(i + 1) ? ' on' : ''}`} onClick={() => set('noSkiDays', (o.noSkiDays || []).includes(i + 1) ? o.noSkiDays.filter((x) => x !== i + 1) : [...(o.noSkiDays || []), i + 1].sort())}>{d}</button>)}</div>
+        <p className="muted small">Im Winter ersetzen Laufen oder SkiErg an diesen Tagen die Ski-Einheiten, z. B. Donnerstag und Freitag. Pro Tag bleibt höchstens eine Ski-Einheit.</p>
+        <label>Double Threshold morgens an</label>
+        <div className="chips">{[['auto', 'Automatisch (SkiErg im Winter)'], ['skierg', 'SkiErg'], ['ski', 'Ski/Rollski'], ['bike', 'Rad']].map(([v, l]) => <button key={v} className={`chip${(o.dtAmSport || 'auto') === v ? ' on' : ''}`} onClick={() => setO({ ...o, dtAmSport: v })}>{l}</button>)}</div>
+        <p className="muted small">Die Abendeinheit des Double Threshold bleibt beim Laufen, damit der Tag nicht doppelt Ski ist. Morgens am SkiErg ist gelenkschonend und zeiteffizient.</p>
         <p className="muted small">Dein Schnitt der letzten 7 Wochen: {fmtNum(recent.reduce((a, w) => a + w.hours, 0) / (recent.length || 1), 1)} h. {hasSchedule(settings.schedule) ? 'Deine Uni-/Arbeitszeiten aus „Alltag“ werden berücksichtigt – pro Tag wird nur so viel geplant, wie frei ist. ' : 'Tipp: Unter Kalender → Woche → „Alltag“ Uni/Arbeit eintragen, dann plant der Assistent nur in deine freie Zeit. '}Steigerung im 3:1-Rhythmus (3 Wochen aufbauen, 1 leichter), Tapering vor A-Rennen 2 Wochen. {nextA ? `Nächstes A-Rennen: ${nextA.name} am ${fmtDate(nextA.date)}.` : 'Tipp: A-Rennen unter „Rennen“ eintragen – dann plant der Assistent die Phasen rückwärts davon.'}</p>
       </>}
 

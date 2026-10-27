@@ -268,3 +268,13 @@ test('Winter: mindestens 2,5 h Laufen pro Woche, ohne Anfahrt zur Loipe', () => 
   const off = generatePlan({ ...base, start: '2026-12-07', end: '2026-12-27', approach: 'pyramidal', winterRunHours: 0 }, []);
   assert.ok(off.flatMap((x) => x.days).flatMap((d) => d.sessions).filter((s) => s.title.startsWith('Laufen (Winter')).length === 0);
 });
+
+test('Winter: eine Ski-Einheit pro Tag, Double Threshold morgens am SkiErg, Tage ohne Ski', () => {
+  const isSki = (sp) => /^(xc_|rollerski_)/.test(sp);
+  const w = generatePlan({ ...base, start: '2026-12-07', end: '2027-02-28', approach: 'norwegian', dtDays: 2, hardDays: [2, 6], longDay: 7, noSkiDays: [4, 5], strengthPerWeek: 2 }, []);
+  const days = w.flatMap((x) => x.days);
+  for (const d of days) assert.ok(d.sessions.filter((s) => isSki(s.sport)).length <= 1, `${d.date}: mehr als ein Ski`);
+  for (const d of days.filter((x) => [4, 5].includes(x.dow))) assert.ok(!d.sessions.some((s) => isSki(s.sport)), `${d.date}: Ski an Tag ohne Ski`);
+  const am = days.flatMap((d) => d.sessions).filter((s) => /Double Threshold morgens/.test(s.title));
+  assert.ok(am.length > 0 && am.every((s) => s.sport === 'skierg'), 'DT morgens SkiErg');
+});

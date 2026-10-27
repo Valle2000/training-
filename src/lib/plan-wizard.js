@@ -370,7 +370,16 @@ export function generatePlan(opts, races = []) {
     const hardOk = (dow) => free(dow) && !blocked.has(dow);
     const total = w.targetHours * 60;
     let used = 0;
-    const put = (day, s) => { day.sessions.push(s); used += s.minutes; };
+    // Winter: höchstens eine Ski-Einheit am Tag; an Tagen ohne Ski (Einstellung) Laufen bzw. SkiErg statt Ski.
+    const isSki = (sp) => /^(xc_|rollerski_)/.test(sp || '');
+    const noSki = new Set(opts.noSkiDays || []);
+    const put = (day, s) => {
+      if (winter(day.date) && isSki(s.sport)) {
+        if (noSki.has(day.dow)) s.sport = s.kind === 'hard' ? 'skierg' : 'run';
+        else if (day.sessions.some((x) => isSki(x.sport))) s.sport = s.kind === 'hard' ? 'skierg' : 'run';
+      }
+      day.sessions.push(s); used += s.minutes;
+    };
     // Freie Zeit des Tages (Alltag: Uni, Arbeit …); zwischen zwei Einheiten 30 min Abstand.
     const room = (day) => (opts.capFor ? opts.capFor(day.date) - day.sessions.reduce((a, x) => a + x.minutes, 0) - (day.sessions.length ? 30 : 0) : Infinity);
     // 1) Harte Einheiten auf die Wunschtage (Ruhetag und langer Tag ausgenommen, sonst nächster freier Tag).
@@ -396,6 +405,10 @@ export function generatePlan(opts, races = []) {
           const x = sess(am, day.date, rot++, 'vormittags');
           // Double Threshold getrennt: morgens Rad (gelenkschonend), abends Laufen – im Laufen-Schwerpunkt.
           if (fSport === 'run' && opts.dtSplit !== false && x.sport !== 'bike' && am.sport === 'specific') x.sport = 'bike';
+          // Morgens Double Threshold am SkiErg (Winter-Standard) oder Ski oder Rad – nach Einstellung.
+          const amPref = opts.dtAmSport || 'auto';
+          if (am.sport === 'specific' && (amPref === 'skierg' || (amPref === 'auto' && winter(day.date) && !fSport))) x.sport = 'skierg';
+          if (am.sport === 'specific' && amPref === 'bike') x.sport = 'bike';
           put(day, x);
         }
         if (twice && pm && room(day) >= pm.minutes) {
