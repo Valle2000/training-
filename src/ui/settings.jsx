@@ -133,6 +133,11 @@ export function Settings() {
         <h3 style={{ marginTop: 0 }}>Daten</h3>
         <p className="muted small">{activities.length} Einheiten auf diesem Gerät. Ohne Anmeldung liegt alles nur in diesem Browser – dann regelmäßig ein Backup machen.</p>
         <DeleteBySource activities={activities} />
+        {Object.keys(settings.titleRules || {}).length > 0 && <details style={{ margin: '0 0 12px' }}>
+          <summary className="small" style={{ cursor: 'pointer' }}>Umbenennen-Regeln ({Object.keys(settings.titleRules).length})</summary>
+          {Object.entries(settings.titleRules).map(([from, to]) => <div key={from} className="item"><div className="grow"><p>„{from}“ → <b>{to}</b></p></div><button className="ghost" style={{ flex: 'none' }} onClick={() => update((d) => { const r = { ...d.settings.titleRules }; delete r[from]; return { ...d, settings: { ...d.settings, titleRules: r } }; })}>Entfernen</button></div>)}
+          <p className="muted small">Neue Regeln entstehen, wenn du eine Einheit umbenennst und „alle umbenennen“ bestätigst.</p>
+        </details>}
         <div className="row">
           <button className="secondary" onClick={exportData}><Download size={17} />Backup</button>
           <label className="secondary" style={{ cursor: 'pointer' }}><RefreshCw size={17} />Einspielen<input type="file" accept=".json" hidden onChange={importData} /></label>

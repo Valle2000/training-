@@ -11,7 +11,7 @@ import { More } from './ui/more.jsx';
 import { Analysis } from './ui/analysis.jsx';
 import { Toast, toast } from './ui/common.jsx';
 import { handleConnectReturn, PROVIDERS } from './lib/sync.js';
-import { migrateMetrics } from './lib/recompute.js';
+import { migrateMetrics, migrateTitles } from './lib/recompute.js';
 import { startCloudSync } from './lib/cloud-sync.js';
 import { SyncBadge } from './ui/account.jsx';
 import { hydrate, onSaveError } from './lib/store.js';
@@ -70,6 +70,6 @@ function App() {
 createRoot(document.getElementById('root')).render(<App />);
 // Erst den vollständigen Stand aus IndexedDB laden, dann Kennzahlen prüfen und online abgleichen –
 // sonst könnte ein unvollständiger Stand Einheiten als „gelöscht“ melden.
-hydrate().finally(() => { migrateMetrics(); startCloudSync(); });
+hydrate().finally(() => { migrateTitles(); migrateMetrics(); startCloudSync(); });
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) navigator.serviceWorker.register('/sw.js').catch(() => {});

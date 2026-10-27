@@ -241,6 +241,7 @@ function KeySessions({ activities, openActivity }) {
 
 function KeyDetail({ ks, activities, openActivity, onEdit }) {
   const rows = keySessionRows(activities, ks);
+  const part = ks.laps ? `Runden ${ks.laps}` : `beste ${fmtDur(ks.intervalSec || 300)}`;
   const hasPower = rows.some((r) => r.intervalPower), hasLac = rows.some((r) => r.lactateAvg);
   const T = ({ k, lower, label }) => {
     const v = trend(rows, k, lower);
@@ -250,16 +251,16 @@ function KeyDetail({ ks, activities, openActivity, onEdit }) {
   return (
     <div className="card">
       <div className="row" style={{ justifyContent: 'space-between' }}><h3 style={{ margin: 0, flex: 'none' }}>{ks.name}</h3><button className="ghost" style={{ flex: 'none' }} onClick={onEdit}>Bearbeiten</button></div>
-      <p className="muted small">{ks.sport ? sportLabel(ks.sport) : 'alle Sportarten'} · Stichwörter: {ks.keywords || '–'} · Vergleichsdauer {fmtDur(ks.intervalSec || 300)}{ks.description ? ` · ${ks.description}` : ''}</p>
+      <p className="muted small">{ks.sport ? sportLabel(ks.sport) : 'alle Sportarten'} · Stichwörter: {ks.keywords || '–'} · Auswertung: {part}{ks.description ? ` · ${ks.description}` : ''}</p>
       {!rows.length ? <p className="muted">Noch keine passenden Einheiten. Gib deinen Einheiten einen Titel mit einem der Stichwörter oder ordne sie in der Einheit zu.</p> : <>
         <div className="stats">
           <div><b>{rows.length}</b><span>Einheiten</span></div>
-          {hasPower ? <T k="intervalPower" label={`Leistung ${fmtDur(ks.intervalSec || 300)}`} /> : <T k="intervalHr" lower label="Puls" />}
+          {hasPower ? <T k="intervalPower" label={`Leistung ${part}`} /> : <T k="intervalHr" lower label="Puls" />}
           {hasPower ? <T k="intervalRatio" label="Watt pro Puls" /> : hasLac ? <T k="lactateAvg" lower label="Laktat" /> : <T k="rpe" lower label="RPE" />}
         </div>
         <LineChart labels={rows.map((r) => r.date)} xFormat={(d) => fmtDate(d, { day: 'numeric', month: 'numeric' })} series={[
-          ...(hasPower ? [{ label: `Beste ${fmtDur(ks.intervalSec || 300)} (W)`, values: rows.map((r) => r.intervalPower), color: 'var(--fit)', dots: true }] : []),
-          { label: `Puls über ${fmtDur(ks.intervalSec || 300)}`, values: rows.map((r) => r.intervalHr ?? r.avgHr), color: 'var(--fat)', dots: true },
+          ...(hasPower ? [{ label: `${part} (W)`, values: rows.map((r) => r.intervalPower), color: 'var(--fit)', dots: true }] : []),
+          { label: `Puls ${part}`, values: rows.map((r) => r.intervalHr ?? r.avgHr), color: 'var(--fat)', dots: true },
         ]} />
         {hasLac && <LineChart labels={rows.map((r) => r.date)} xFormat={(d) => fmtDate(d, { day: 'numeric', month: 'numeric' })} series={[{ label: 'Laktat Ø (mmol/l)', values: rows.map((r) => r.lactateAvg), color: 'var(--z3)', dots: true }]} />}
         <div style={{ overflowX: 'auto' }}>
@@ -290,6 +291,8 @@ function KeyEditor({ ks, onClose, onSaved }) {
         <div><label>Sportart</label><select value={k.sport} onChange={(e) => setK({ ...k, sport: e.target.value })}><option value="">alle</option>{SPORTS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}</select></div>
         <div><label>Vergleichsdauer (Sek.)</label><input type="number" value={k.intervalSec} onChange={(e) => setK({ ...k, intervalSec: e.target.value })} /></div>
       </div>
+      <label>Nur diese Runden auswerten (optional)</label><input value={k.laps || ''} onChange={(e) => setK({ ...k, laps: e.target.value })} placeholder="z. B. 2-4 für die 3×20 min ohne Ein- und Auslaufen" />
+      <p className="muted small">Mit Runden: Ø Watt und Ø Puls nur über diese Runden (z. B. Concept2-Intervalle). Ohne: bester Abschnitt der Vergleichsdauer.</p>
       <label>Stichwörter im Titel (mit Komma getrennt)</label><input value={k.keywords} onChange={(e) => setK({ ...k, keywords: e.target.value })} placeholder="5x6, schwelle" />
       <label>Beschreibung</label><textarea value={k.description} onChange={(e) => setK({ ...k, description: e.target.value })} />
       <div className="row" style={{ marginTop: 12 }}>

@@ -24,3 +24,14 @@ export function migrateMetrics() {
   if (d.activities.length && d.settings.metricsVersion !== METRICS_VERSION) return recomputeAll();
   return null;
 }
+
+// Umbenennen-Regeln auf vorhandene Einheiten anwenden; einmalig die 3×20-Regel für Concept2 anlegen.
+const DEFAULT_RULES = { '20:00, 2×20:00/2:00r, 2×20:00': '3x20min' };
+export function migrateTitles() {
+  const d = getData();
+  const rules = d.settings.titleRulesSeeded ? d.settings.titleRules || {} : { ...DEFAULT_RULES, ...(d.settings.titleRules || {}) };
+  const hits = d.activities.filter((a) => rules[a.title]);
+  if (!hits.length && d.settings.titleRulesSeeded) return 0;
+  update((x) => ({ ...x, settings: { ...x.settings, titleRules: rules, titleRulesSeeded: true }, activities: x.activities.map((a) => (rules[a.title] ? { ...a, title: rules[a.title] } : a)) }));
+  return hits.length;
+}

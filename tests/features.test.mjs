@@ -107,3 +107,14 @@ test('Einheit zuschneiden: Dauer, Distanz, Startzeit, Original bleibt', async ()
   const late = cropActivity(activity, series, 120, 539, settings).activity;
   assert.equal(late.start, '2026-08-01T08:10:00.000Z');
 });
+
+test('Key Session: nur Runden 2–4 auswerten (3×20 min ohne Ein-/Auslaufen)', async () => {
+  const { keySessionRows, parseLapRange } = await import('../src/lib/keysessions.js');
+  assert.deepEqual(parseLapRange('2-4'), [2, 3, 4]);
+  assert.deepEqual(parseLapRange('1, 3-4'), [1, 3, 4]);
+  const laps = [{ n: 1, durationS: 1200, avgPower: 120, avgHr: 120 }, ...[2, 3, 4].map((n) => ({ n, durationS: 1200, avgPower: 200 + n, avgHr: 150 })), { n: 5, durationS: 1200, avgPower: 100, avgHr: 115 }];
+  const rows = keySessionRows([{ id: 'a', date: '2026-10-01', sport: 'skierg', title: '3x20min', laps, durationS: 6000 }], { id: 'k', sport: 'skierg', keywords: '3x20', laps: '2-4', intervalSec: 1200 });
+  assert.equal(rows[0].intervalPower, 203);
+  assert.equal(rows[0].intervalHr, 150);
+  assert.equal(rows[0].fromLaps, true);
+});

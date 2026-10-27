@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check, Copy, Scissors, Undo2 } from 'lucide-react';
-import { useData, update, getSeries, getLocalSeries, putSeries, uid } from '../lib/store.js';
+import { useData, update, getData, getSeries, getLocalSeries, putSeries, uid } from '../lib/store.js';
 import { today, weeks, mondayOf, buildActivity, evaluate, estimatePlanLoad, matchPlan, compliance, cropActivity, localDate, reevaluate } from '../lib/activities.js';
 import { addDays, ZONES, cleanSeries } from '../lib/metrics.js';
 import { SPORTS, sportLabel } from '../lib/sports.js';
@@ -175,10 +175,17 @@ export function ActivitySheet({ activity, onClose }) {
       next.start = new Date(`${when.date}T${when.time}:00`).toISOString();
       next.date = localDate(next.start, tz);
     }
+    // Titel geändert und weitere Einheiten heißen genauso (z. B. Concept2-Aufbau): alle umbenennen und als Regel merken.
+    const same = activity.title && next.title !== activity.title ? getData().activities.filter((x) => x.id !== a.id && x.title === activity.title) : [];
+    const renameAll = same.length > 0 && confirm(`${same.length} weitere Einheit(en) heißen „${activity.title}“. Alle in „${next.title}“ umbenennen und künftige Importe automatisch so nennen?`);
     if (!activity.hasSeries) next = { ...next, elapsedS: next.durationS, ...evaluate({ ...next, durationS: next.durationS }, settings) };
     else if (next.sport !== activity.sport) { const s5 = await getSeries(a.id); if (s5) next = reevaluate(next, settings, s5); } // Sportart bestimmt FTP und Watt-Belastung
-    update((d) => ({ ...d, activities: d.activities.map((x) => (x.id === a.id ? next : x)) }));
-    toast('Gespeichert');
+    update((d) => ({
+      ...d,
+      settings: renameAll ? { ...d.settings, titleRules: { ...(d.settings.titleRules || {}), [activity.title]: next.title } } : d.settings,
+      activities: d.activities.map((x) => (x.id === a.id ? next : renameAll && x.title === activity.title ? { ...x, title: next.title } : x)),
+    }));
+    toast(renameAll ? `${same.length + 1} Einheiten umbenannt` : 'Gespeichert');
     onClose();
   };
   const remove = async () => {

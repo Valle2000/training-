@@ -5,7 +5,7 @@ import { buildActivity, findDuplicate, localDate, estimatePlanLoad } from './act
 import { sportFromConcept2, polarSport } from './sports.js';
 import { readExport, zipEntries, zipEntriesSync, importable } from './importers.js';
 import { recomputeAll } from './recompute.js';
-import { deleteRemoteSeries } from './cloud-sync.js';
+import { deleteRemoteSeries, forgetSeriesPushed } from './cloud-sync.js';
 import { lapsFromConcept2, lapsFromSeries, pacePer, concept2Title, isAutoC2Title } from './laps.js';
 
 // FIT-Bibliothek ist groß und wird erst geladen, wenn eine FIT-Datei kommt.
@@ -219,7 +219,7 @@ export async function reloadConcept2(onProgress) {
   const oldId = Object.fromEntries(old.map((a) => [a.externalId, a.id]));
   for (const f of fresh) { if (oldId[f.activity.externalId]) f.activity.id = oldId[f.activity.externalId]; if (f.series) await putSeries(f.activity.id, f.series); }
   // Neue Verläufe beim nächsten Online-Abgleich erneut hochladen.
-  try { const m = JSON.parse(localStorage.getItem('trainings-app-sync-meta') || '{}'); for (const f of fresh) delete m.seriesPushed?.[f.activity.id]; localStorage.setItem('trainings-app-sync-meta', JSON.stringify(m)); } catch { /* ohne Konto egal */ }
+  forgetSeriesPushed(fresh.map((f) => f.activity.id));
   const freshIds = new Set(fresh.map((f) => f.activity.externalId));
   update((d) => ({ ...d, activities: [...d.activities.filter((a) => a.source !== 'concept2' || !freshIds.has(a.externalId)), ...fresh.map((f) => f.activity)] }));
   return fresh.length;

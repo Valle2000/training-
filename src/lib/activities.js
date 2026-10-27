@@ -64,7 +64,7 @@ export function buildActivity(raw, settings, extra = {}) {
     id: extra.id || Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
     source: raw.source || 'upload', externalId: raw.externalId ?? null,
     start: raw.start, date: localDate(raw.start, settings.timezone), sport: raw.sport,
-    title: raw.title || '', notes: raw.notes || '', rpe: raw.rpe ?? null, lactate: raw.lactate || '',
+    title: renameTitle(raw.title || '', settings), notes: raw.notes || '', rpe: raw.rpe ?? null, lactate: raw.lactate || '',
     zone: raw.zone || null, elapsedS: raw.elapsedS ?? raw.durationS ?? null,
     distanceM: raw.distanceM ?? null, avgHr: round(raw.avgHr), maxHr: round(raw.maxHr), avgPower: round(raw.avgPower),
     calories: raw.calories ?? null, ascentM: raw.ascentM ?? null, strengthId: raw.strengthId ?? null,
@@ -74,6 +74,9 @@ export function buildActivity(raw, settings, extra = {}) {
   return { activity, series: raw.series ? thin(raw.series) : null };
 }
 const round = (v) => (v == null ? null : Math.round(v));
+
+// Umbenennen-Regeln (Einstellungen): z. B. „20:00, 2×20:00/2:00r, 2×20:00“ → „3x20min“. Gilt für neue Importe.
+export const renameTitle = (title, settings = {}) => settings.titleRules?.[title] || title;
 
 // Neuberechnung (z. B. nach geänderter Schwelle). Verlauf liegt nur ausgedünnt (5 s) vor → hochrechnen.
 export function reevaluate(a, settings, series5) {
