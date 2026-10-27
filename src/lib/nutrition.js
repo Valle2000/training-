@@ -21,7 +21,8 @@ export function dayTargets({ weightKg, minutes = 0, hardMinutes = 0, strength = 
 }
 
 // ——— Tagestipp und Tagesvorschlag aus dem Katalog ———
-import { CATALOG, fitsDiet } from './recipes.js';
+import { CATALOG, fitsDiet, scaleFor } from './recipes.js';
+import { nutrientsOf } from './foods.js';
 
 const sum = (list, k) => list.reduce((a, x) => a + (x[k] || 0), 0);
 const isEndurance = (x) => x.sport !== 'strength' && x.sport !== 'mobility';
@@ -46,6 +47,8 @@ const MICRO_ROTATION = [
   { key: 'calcium', title: 'Calcium für die Knochen', text: 'Milchprodukte, angereicherte Pflanzendrinks, Sardinen mit Gräten oder Grünkohl – 1000 mg am Tag schützen zusammen mit genug Energie vor Stressfrakturen.' },
   { key: 'omega3', title: 'Omega-3', text: 'Heute Fisch oder Leinöl/Walnüsse einbauen. 1–2 Fischmahlzeiten pro Woche decken EPA/DHA.' },
   { key: 'magnesium', title: 'Magnesium und Kalium', text: 'Haferflocken, Kürbiskerne, Hülsenfrüchte, Kartoffeln und Bananen – gerade an umfangreichen Tagen mit viel Schweiß.' },
+  { key: 'b1', title: 'B-Vitamine', text: 'Viel Training = mehr Energieumsatz = mehr B1/B2/B6. Vollkorn, Haferflocken, Hülsenfrüchte, Milchprodukte und Sonnenblumenkerne decken das – Weißmehl und Zucker kaum.' },
+  { key: 'vita', title: 'Vitamin A und Beta-Carotin', text: 'Karotten, Süßkartoffeln, Kürbis, Spinat oder Grünkohl – mit etwas Fett gegessen wird Beta-Carotin besser aufgenommen. Gut fürs Immunsystem in der Infektzeit.' },
   { key: 'bunt', title: 'Bunt statt Pillen', text: 'Fünf Portionen Obst und Gemüse in verschiedenen Farben. Hochdosierte Antioxidantien-Präparate können Trainingsanpassungen dämpfen.' },
 ];
 const dayOfYear = (iso) => Math.floor((Date.parse(iso) - Date.parse(iso.slice(0, 4) + '-01-01')) / 864e5);
@@ -76,12 +79,12 @@ export function nutritionTips({ date, today = [], tomorrow = [], weightKg, heat 
 }
 
 // Tagesvorschlag aus dem Katalog, abgestimmt auf Training heute und morgen. seed sorgt für Abwechslung.
-export function suggestDay({ today = [], tomorrow = [], diet = 'alles', heat = false, seed = 0, trainLow = true }) {
+export function suggestDay({ today = [], tomorrow = [], diet = 'alles', heat = false, seed = 0, trainLow = true, offsets = {} }) {
   const t = dayKind(today), n = dayKind(tomorrow);
   const used = new Set();
   // Rote-Bete-Shot und Carboloading-Baustein nur gezielt (Rennen), nicht im Alltagsvorschlag.
   const SPECIAL = new Set(['rote-bete-shot', 'carboload-tag', 'quark-abend-casein']);
-  const take = (list, k) => { const r = list[(seed + k) % list.length]; if (r) used.add(r.id); return r; };
+  const take = (list, k) => { const r = list[((seed + k) % list.length + list.length) % list.length]; if (r) used.add(r.id); return r; };
   const free = (r) => !used.has(r.id) && !SPECIAL.has(r.id) && fitsDiet(r, diet);
   const pick = (slot, ctxs, k = 0) => {
     for (const ctx of ctxs) {
@@ -91,17 +94,72 @@ export function suggestDay({ today = [], tomorrow = [], diet = 'alles', heat = f
     const any = CATALOG.filter((r) => r.slots.includes(slot) && free(r));
     return take(any.length ? any : CATALOG.filter((r) => r.slots.includes(slot) && fitsDiet(r, diet)), k);
   };
-  const lowOk = trainLow && !t.isHard && !t.rest && t.minutes <= 90 && t.morning !== false && !heat;
   const meals = [];
-  meals.push({ slot: 'fruehstueck', label: 'Frühstück', r: pick('fruehstueck', t.isHard || t.isLong ? ['hart'] : lowOk ? ['trainlow', 'locker'] : t.rest ? ['ruhetag'] : ['locker']) });
-  if (!t.rest && t.morning === false) meals.push({ slot: 'mittag', label: 'Mittagessen (3 h vorher)', r: pick('mittag', t.isHard ? ['hart'] : ['locker']) });
-  if (!t.rest && (t.isHard || t.morning === false)) meals.push({ slot: 'vorher', label: 'Snack vor dem Training', r: pick('vorher', t.isHard ? ['hart'] : ['locker'], 1) });
-  if (t.longest >= 75) meals.push({ slot: 'waehrend', label: 'Unterwegs', r: pick('waehrend', heat ? ['hitze'] : t.isHard || t.longest >= 150 ? ['hart'] : ['locker']) });
-  if (t.isHard || t.minutes >= 90) meals.push({ slot: 'nachher', label: 'Direkt danach', r: pick('nachher', heat ? ['hitze', 'hart'] : ['hart', 'locker']) });
-  if (t.morning !== false || t.rest) meals.push({ slot: 'mittag', label: 'Mittagessen', r: pick('mittag', t.isHard || t.minutes >= 90 ? ['hart'] : n.isHard ? ['hart', 'locker'] : t.rest ? ['ruhetag', 'trainlow'] : ['locker', 'trainlow'], 2) });
-  meals.push({ slot: 'snack', label: 'Snack', r: pick('snack', t.rest ? ['ruhetag'] : t.isHard ? ['hart', 'locker'] : ['locker'], 3) });
-  const eveningCtx = n.isHard || n.isLong || t.isHard || t.minutes >= 150 ? ['hart'] : n.rest ? ['ruhetag', 'locker'] : trainLow && !t.isHard && n.minutes <= 90 ? ['trainlow', 'locker'] : ['locker', 'hart'];
-  meals.push({ slot: 'abend', label: n.isHard || n.isLong ? 'Abendessen (Speicher für morgen füllen)' : 'Abendessen', r: pick('abend', eveningCtx, 4) });
-  if (t.isHard || t.strength) meals.push({ slot: 'snack', label: 'Vor dem Schlafen', r: CATALOG.find((r) => r.id === 'quark-abend-casein' && fitsDiet(r, diet)) || pick('snack', ['ruhetag', 'locker'], 5) });
+  // role: Aufgabe der Mahlzeit im Tag (für die Verteilung), offsets[role] tauscht einzelne Rezepte.
+  const add = (role, slot, label, ctxs, k = 0) => meals.push({ role, slot, label, r: pick(slot, ctxs, k + (offsets[role] || 0)) });
+  const lowOk = trainLow && !t.isHard && !t.rest && t.minutes <= 90 && t.morning !== false && !heat;
+  add('breakfast', 'fruehstueck', 'Frühstück', t.isHard || t.isLong ? ['hart'] : lowOk ? ['trainlow', 'locker'] : ['locker', 'ruhetag']);
+  if (!t.rest && t.morning === false) add('preLunch', 'mittag', 'Mittagessen (3 h vor dem Training)', t.isHard ? ['hart'] : ['locker']);
+  if (!t.rest && (t.isHard || t.morning === false)) add('pre', 'vorher', t.double ? 'Snack vor der 2. Einheit' : 'Snack vor dem Training', t.isHard ? ['hart'] : ['locker'], 1);
+  if (t.longest >= 75) add('during', 'waehrend', `Unterwegs (${String(Math.round(t.longest / 6) / 10).replace('.', ',')} h Einheit)`, heat ? ['hitze'] : t.isHard || t.longest >= 150 ? ['hart'] : ['locker']);
+  if (t.isHard || t.minutes >= 90) add('post', 'nachher', t.double ? 'Direkt nach der 1. Einheit' : 'Direkt danach', heat ? ['hitze', 'hart'] : ['hart', 'locker']);
+  if (t.morning !== false || t.rest) add('lunch', 'mittag', 'Mittagessen', t.isHard || t.minutes >= 90 ? ['hart'] : n.isHard ? ['hart', 'locker'] : t.rest ? ['locker', 'ruhetag'] : ['locker', 'trainlow'], 2);
+  add('snack', 'snack', 'Snack', t.isHard ? ['hart', 'locker'] : ['locker', 'ruhetag'], 3);
+  const eveningCtx = n.isHard || n.isLong || t.isHard || t.minutes >= 150 ? ['hart'] : n.rest || t.rest ? ['locker', 'ruhetag'] : trainLow && !t.isHard && n.minutes <= 90 ? ['trainlow', 'locker'] : ['locker', 'hart'];
+  add('dinner', 'abend', n.isHard || n.isLong ? 'Abendessen (Speicher für morgen füllen)' : 'Abendessen', eveningCtx, 4);
+  if (t.isHard || t.strength) {
+    const q = CATALOG.find((r) => r.id === 'quark-abend-casein' && fitsDiet(r, diet));
+    if (q && !offsets.bed) meals.push({ role: 'bed', slot: 'snack', label: 'Vor dem Schlafen', r: q });
+    else add('bed', 'snack', 'Vor dem Schlafen', ['ruhetag', 'locker'], 5);
+  }
   return meals.filter((m) => m.r);
+}
+
+// Tagesplan: Tagesbedarf auf die Mahlzeiten verteilen (nach Trainingszeitpunkt und -art) und jede Portion so
+// skalieren, dass sie ihr Mahlzeitenziel trifft. Kohlenhydrate: feste Mengen rund ums Training (vorher, während,
+// danach), der Rest auf die Hauptmahlzeiten; Eiweiß ca. 0,3–0,4 g/kg pro Hauptmahlzeit.
+export function planDay({ today = [], tomorrow = [], targets, weightKg, diet, heat, seed, trainLow, offsets }) {
+  const w = Number(weightKg) || 70, t = dayKind(today), n = dayKind(tomorrow);
+  const meals = suggestDay({ today, tomorrow, diet, heat, seed, trainLow, offsets });
+  if (!targets) return { meals: meals.map((m) => ({ ...m, factor: scaleFor(w) })), totals: null, targets: null };
+  const hours = Math.max(1, t.longest / 60);
+  const fixedCarb = {
+    breakfast: t.isHard || t.isLong ? (t.morning === false ? 1.2 : 1.5) : t.rest ? null : (t.morning !== false && trainLow && !t.isHard && t.minutes <= 90 ? 0.5 : null),
+    preLunch: t.isHard ? 1.5 : 1.0, pre: 0.6, during: (targets.duringPerHour || 30) / w * hours, post: t.isHard || t.double ? 1.0 : 0.8, bed: 0.3,
+  };
+  const share = { breakfast: 1, lunch: 1.2, snack: 0.5, dinner: n.isHard || n.isLong || t.isHard ? 1.5 : trainLow && !t.isHard && !n.isHard && !n.rest && n.minutes <= 90 ? 0.6 : 1.1, preLunch: 1 };
+  const protein = { breakfast: 0.35, preLunch: 0.3, pre: 0.05, during: 0, post: 0.3, lunch: 0.4, snack: 0.2, dinner: 0.4, bed: 0.4 };
+  const carbT = {};
+  let rest = targets.carbs;
+  for (const m of meals) if (fixedCarb[m.role] != null) { carbT[m.role] = fixedCarb[m.role] * w; rest -= carbT[m.role]; }
+  const flex = meals.filter((m) => carbT[m.role] == null);
+  const shareSum = flex.reduce((a, m) => a + (share[m.role] || 1), 0) || 1;
+  for (const m of flex) carbT[m.role] = Math.max(15, (Math.max(0, rest) * (share[m.role] || 1)) / shareSum);
+  const out = meals.map((m) => {
+    const base = nutrientsOf(m.r.items); // Rezept wie geschrieben (70-kg-Menge, Faktor 1)
+    const goal = { kh: carbT[m.role], eiweiss: (protein[m.role] ?? 0.3) * w };
+    // Kohlenhydratarme Rezepte nach Eiweiß skalieren, sonst nach Kohlenhydraten; Grenzen halten Portionen realistisch.
+    const byProtein = (base.kh < 20 || m.role === 'bed') && goal.eiweiss > 0;
+    const raw = byProtein ? goal.eiweiss / Math.max(1, base.eiweiss) : goal.kh / Math.max(1, base.kh);
+    const factor = Math.round(Math.min(m.role === 'during' ? 5 : 2.5, Math.max(0.5, raw)) * 20) / 20; // unterwegs: Menge für die ganze Einheit
+    const got = nutrientsOf(m.r.items.map(([k, g]) => [k, g * factor]));
+    return { ...m, factor, goal, got };
+  });
+  const sumUp = () => out.reduce((a, m) => ({ kcal: a.kcal + m.got.kcal, kh: a.kh + m.got.kh, eiweiss: a.eiweiss + m.got.eiweiss, fett: a.fett + m.got.fett }), { kcal: 0, kh: 0, eiweiss: 0, fett: 0 });
+  let totals = sumUp();
+  // Deutlich über dem Energiebedarf (eiweiß-/fettreiche Rezepte)? Hauptmahlzeiten und Snacks etwas kleiner.
+  if (totals.kcal > targets.kcal * 1.08) {
+    const flexible = out.filter((m) => ['lunch', 'dinner', 'snack', 'breakfast'].includes(m.role) && fixedCarb[m.role] == null);
+    const flexKcal = flexible.reduce((a, m) => a + m.got.kcal, 0);
+    const ratio = flexKcal ? Math.max(0.6, (targets.kcal * 1.03 - (totals.kcal - flexKcal)) / flexKcal) : 1;
+    for (const m of flexible) { m.factor = Math.round(Math.max(0.5, m.factor * ratio) * 20) / 20; m.got = nutrientsOf(m.r.items.map(([k, g]) => [k, g * m.factor])); }
+    totals = sumUp();
+  }
+  // Was noch fehlt, mit einfachen Ergänzungen auffüllen.
+  const extras = [];
+  const khGap = targets.carbs - totals.kh, eGap = targets.protein - totals.eiweiss;
+  if (khGap > 30) extras.push(`+${Math.round(khGap)} g Kohlenhydrate ergänzen, z. B. ${Math.max(1, Math.round(khGap / 20))} Scheibe(n) Brot, eine Banane (20 g) oder 100 ml Saft (10 g) – am besten zu den Mahlzeiten rund ums Training.`);
+  if (eGap > 15) extras.push(`+${Math.round(eGap)} g Eiweiß ergänzen, z. B. ${Math.round(eGap / 12 * 100 / 50) * 50} g Skyr oder Magerquark.`);
+  if (khGap < -60) extras.push(`Etwa ${Math.round(-khGap)} g Kohlenhydrate über dem Ziel – Portionen Reis, Nudeln oder Brot etwas kleiner nehmen.`);
+  return { meals: out, totals, targets, extras };
 }

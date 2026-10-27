@@ -79,6 +79,20 @@ export const GUIDE = [
     practice: 'Jedes Katalogrezept zeigt, welche Mikronährstoffe es gut abdeckt. Lass einmal im Jahr (vor der Saison) Ferritin, Hb, Vitamin D und B12 bestimmen.',
   },
   {
+    id: 'vitamine', title: 'Vitamine im Überblick', sources: ['thomas16', 'owens18', 'merry16'],
+    points: [
+      'B-Vitamine (B1, B2, B6): Helfer im Energiestoffwechsel – der Bedarf steigt mit dem Umsatz (B1 ca. 0,5 mg je 1000 kcal). Bei viel Training und ausreichender Kost (Vollkorn, Haferflocken, Hülsenfrüchte, Milchprodukte, Fleisch, Nüsse, Sonnenblumenkerne) meist gedeckt. Wer viel Weißmehl, Zucker und Sportnahrung isst, kommt eher knapp.',
+      'B12: fast nur in tierischen Lebensmitteln (Fisch, Fleisch, Eier, Milch). Vegan/fast vegan unbedingt ergänzen und Spiegel prüfen.',
+      'Folat: grünes Blattgemüse, Hülsenfrüchte, Vollkorn – wichtig für die Blutbildung (zusammen mit Eisen und B12).',
+      'Vitamin D: im Winterhalbjahr selten ausreichend. Spiegel messen; bei Mangel nach Rücksprache 1000–2000 IE/Tag. Fisch und Eier helfen.',
+      'Vitamin C: Obst, Paprika, Beeren, Kiwi, Kartoffeln. Verbessert die Eisenaufnahme. Normale Mengen (100–200 mg) sind gut; hochdosiert (≥ 1 g) dauerhaft kann Trainingsanpassungen dämpfen.',
+      'Vitamin E: Pflanzenöle (Raps, Sonnenblume), Nüsse, Sonnenblumenkerne. Hochdosierte Präparate bringen keinen Leistungsvorteil und können ebenfalls Anpassungen dämpfen.',
+      'Vitamin A: Karotten, Süßkartoffeln, Kürbis, Spinat, Grünkohl (als Beta-Carotin) sowie Milchprodukte und Eier – für Immunsystem und Schleimhäute.',
+      'Vitamin K: grünes Gemüse – wichtig für die Knochen, meist problemlos gedeckt.',
+    ],
+    practice: 'Die Rezepte zeigen jetzt auch A, E, B1, B2 und B6. Faustregel: bunt, Vollkorn, Hülsenfrüchte, Nüsse, 1–2× Fisch pro Woche – dann braucht es außer bei nachgewiesenem Mangel (D, B12, Eisen) keine Präparate.',
+  },
+  {
     id: 'trinken', title: 'Trinken und Elektrolyte', sources: ['sawka07', 'thomas16'],
     points: [
       'Ziel: Gewichtsverlust durch Schwitzen in einer Einheit unter ca. 2 % halten. Mehr zu trinken als man verliert (Gewichtszunahme) ist ebenfalls schlecht (Hyponatriämie).',

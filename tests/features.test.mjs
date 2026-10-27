@@ -118,3 +118,15 @@ test('Key Session: nur Runden 2–4 auswerten (3×20 min ohne Ein-/Auslaufen)', 
   assert.equal(rows[0].intervalHr, 150);
   assert.equal(rows[0].fromLaps, true);
 });
+
+test('Umfangsbetontes Belastungsmodell (Lucia-TRIMP)', async () => {
+  const { luciaLoad } = await import('../src/lib/metrics.js');
+  const { evaluate } = await import('../src/lib/activities.js');
+  assert.equal(luciaLoad({ I1: 3600, I2: 0, I3: 0, I4: 0, I5: 0 }), 50);
+  assert.equal(luciaLoad({ I1: 0, I2: 0, I3: 3600, I4: 0, I5: 0 }), 100);
+  const hr = Array(3600).fill(130);
+  const base = { sport: 'run', series: { hr } }, st = { hrMax: 196, hrRest: 42, lthr: 172 };
+  const std = evaluate(base, st), vol = evaluate(base, { ...st, loadModel: 'lucia' });
+  assert.equal(vol.loadSource, 'lucia');
+  assert.ok(vol.load > std.load, `${vol.load} > ${std.load}`);
+});

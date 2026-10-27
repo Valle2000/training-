@@ -4,7 +4,7 @@ import { useData, update, uid } from '../lib/store.js';
 import { today } from '../lib/activities.js';
 import { addDays } from '../lib/metrics.js';
 import { sportLabel } from '../lib/sports.js';
-import { dayTargets, suggestDay } from '../lib/nutrition.js';
+import { dayTargets, planDay } from '../lib/nutrition.js';
 import { trainingOf, tipsFor } from '../lib/food-day.js';
 import { CATALOG, SLOTS, CONTEXTS, filterCatalog, toRecipe, recipeNutrients, highlights } from '../lib/recipes.js';
 import { NUTRIENTS, REFERENCE } from '../lib/foods.js';
@@ -58,8 +58,8 @@ export function Food() {
         </div>
       ))}
 
-      <div style={{ marginTop: 14 }}><Seg value={view} onChange={setView} options={[['heute', 'Vorschlag'], ['katalog', `Rezepte (${CATALOG.length})`], ['wissen', 'Wissen'], ['ki', 'KI-Plan'], ['fav', `Favoriten (${recipes.length})`]]} /></div>
-      {view === 'heute' && <DaySuggestion data={data} t={t} prefs={prefs} heat={heat} weight={weight} open={setRecipe} />}
+      <div style={{ marginTop: 14 }}><Seg value={view} onChange={setView} options={[['heute', 'Tagesplan'], ['katalog', `Rezepte (${CATALOG.length})`], ['wissen', 'Wissen'], ['ki', 'KI-Plan'], ['fav', `Favoriten (${recipes.length})`]]} /></div>
+      {view === 'heute' && <DaySuggestion data={data} t={t} prefs={prefs} weight={weight} open={setRecipe} />}
       {view === 'katalog' && <Catalog prefs={prefs} weight={weight} open={setRecipe} sex={settings.sex} />}
       {view === 'wissen' && <Knowledge prefs={prefs} setPref={setPref} />}
       {view === 'ki' && <AiPlan data={data} t={t} prefs={prefs} setPref={setPref} weight={weight} open={setRecipe} />}
@@ -70,24 +70,50 @@ export function Food() {
   );
 }
 
-// Tagesvorschlag aus dem Katalog, passend zu Training heute und morgen.
-function DaySuggestion({ data, t, prefs, heat, weight, open }) {
+// Tagesplan aus dem Katalog: Bedarf je nach Einheiten auf die Mahlzeiten verteilt, Portionen darauf berechnet.
+function DaySuggestion({ data, t, prefs, weight, open }) {
+  const [date, setDate] = useState(t);
   const [seed, setSeed] = useState(() => Number(t.replaceAll('-', '')) % 97);
-  const meals = suggestDay({ today: trainingOf(t, data), tomorrow: trainingOf(addDays(t, 1), data), diet: prefs.diet || 'alles', heat, seed, trainLow: prefs.trainLow !== false });
-  const total = meals.reduce((acc, m) => { const n = recipeNutrients(m.r, weight); return { kcal: acc.kcal + n.kcal, kh: acc.kh + n.kh, eiweiss: acc.eiweiss + n.eiweiss }; }, { kcal: 0, kh: 0, eiweiss: 0 });
+  const [offsets, setOffsets] = useState({});
+  const days = Array.from({ length: 7 }, (_, i) => addDays(t, i));
+  const today = trainingOf(date, data), tomorrow = trainingOf(addDays(date, 1), data);
+  const end = today.filter((x) => x.sport !== 'strength');
+  const targets = dayTargets({ weightKg: weight, minutes: end.reduce((a, x) => a + x.minutes, 0), hardMinutes: today.reduce((a, x) => a + x.hard, 0), strength: today.some((x) => x.sport === 'strength'), longestMinutes: Math.max(0, ...end.map((x) => x.minutes)) });
+  const plan = planDay({ today, tomorrow, targets, weightKg: weight, diet: prefs.diet || 'alles', heat: prefs.heatDate === date, seed, trainLow: prefs.trainLow !== false, offsets });
+  const pick = (d) => { setDate(d); setOffsets({}); };
+  const Bar = ({ label, got, goal, unit }) => {
+    const pct = goal ? got / goal : 0;
+    return (
+      <div className="row" style={{ alignItems: 'center', fontSize: 12, margin: '3px 0', flexWrap: 'nowrap' }}>
+        <span style={{ flex: '0 0 92px' }}>{label}</span>
+        <span style={{ flex: 1, height: 8, background: 'var(--line)', borderRadius: 4, overflow: 'hidden' }}><i style={{ display: 'block', height: '100%', width: `${Math.min(1, pct) * 100}%`, background: pct >= 0.9 && pct <= 1.15 ? 'var(--good)' : 'var(--form)' }} /></span>
+        <span className="muted nowrap" style={{ flex: '0 0 auto', minWidth: 110, textAlign: 'right' }}>{Math.round(got)} / {Math.round(goal)} {unit}</span>
+      </div>
+    );
+  };
   return (
     <>
-      <p className="muted small" style={{ marginTop: 10 }}>Aus dem Rezeptkatalog, abgestimmt auf dein Training heute und morgen{prefs.diet && prefs.diet !== 'alles' ? ` (${prefs.diet})` : ''}. Mengen für {weight || 70} kg.</p>
-      {meals.map((m, i) => {
-        const n = recipeNutrients(m.r, weight);
-        return (
-          <button key={i} className="item" onClick={() => open(toRecipe(m.r, weight))}>
-            <div className="grow"><span className="muted small">{m.label}</span><b style={{ display: 'block' }}>{m.r.name}</b><p>{m.r.min} min · {Math.round(n.kcal)} kcal · KH {Math.round(n.kh)} g · Eiweiß {Math.round(n.eiweiss)} g</p></div>
+      <div className="chips" style={{ marginTop: 10 }}>{days.map((d) => <button key={d} className={`chip${d === date ? ' on' : ''}`} onClick={() => pick(d)}>{d === t ? 'Heute' : fmtDate(d, { weekday: 'short', day: 'numeric' })}</button>)}</div>
+      <p className="muted small">{today.length ? today.map((x) => `${x.time ? x.time + ' ' : ''}${x.minutes}′ ${x.race ? 'Rennen' : sportLabel(x.sport)}${x.hard ? ` (${x.hard}′ hart)` : ''}`).join(' · ') : 'Kein Training'}{tomorrow.length ? ` · morgen: ${tomorrow.map((x) => `${x.minutes}′ ${x.race ? 'Rennen' : sportLabel(x.sport)}`).join(', ')}` : ''}. Uhrzeiten aus Einheiten oder „Übliche Trainingszeit“ (KI-Plan → Vorlieben).</p>
+      {plan.totals && <div className="card">
+        <b className="small">Tag gesamt (Portionen unten eingerechnet)</b>
+        <Bar label="Energie" got={plan.totals.kcal} goal={plan.targets.kcal} unit="kcal" />
+        <Bar label="Kohlenhydrate" got={plan.totals.kh} goal={plan.targets.carbs} unit="g" />
+        <Bar label="Eiweiß" got={plan.totals.eiweiss} goal={plan.targets.protein} unit="g" />
+        <Bar label="Fett" got={plan.totals.fett} goal={plan.targets.fat} unit="g" />
+        {plan.extras?.map((e, i) => <p key={i} className="small" style={{ margin: '6px 0 0' }}>• {e}</p>)}
+      </div>}
+      {plan.meals.map((m, i) => (
+        <div key={i} className="item">
+          <button className="grow ghost" style={{ display: 'block', textAlign: 'left', padding: 0, color: 'var(--ink)', fontWeight: 400 }} onClick={() => open(toRecipe(m.r, weight, m.factor))}>
+            <span className="muted small">{m.label}</span><b style={{ display: 'block' }}>{m.r.name}</b>
+            <p style={{ margin: 0 }}>{String(m.factor).replace('.', ',')}× Portion · {m.got ? `${Math.round(m.got.kcal)} kcal · KH ${Math.round(m.got.kh)} g${m.goal ? ` (Ziel ${Math.round(m.goal.kh)})` : ''} · Eiweiß ${Math.round(m.got.eiweiss)} g` : `${m.r.min} min`}</p>
           </button>
-        );
-      })}
-      <p className="small muted">Zusammen ca. {Math.round(total.kcal)} kcal, {Math.round(total.kh)} g KH, {Math.round(total.eiweiss)} g Eiweiß – mit Brot, Obst oder größeren Portionen an den Tagesbedarf oben anpassen.</p>
-      <button className="secondary wide" onClick={() => setSeed(seed + 1)}><Shuffle size={16} />Andere Vorschläge</button>
+          <button className="ghost" style={{ flex: 'none' }} aria-label="Anderes Rezept" title="Anderes Rezept" onClick={() => setOffsets({ ...offsets, [m.role]: (offsets[m.role] || 0) + 1 })}><Shuffle size={16} /></button>
+        </div>
+      ))}
+      <p className="small muted">So rechnet der Plan: rund ums Training feste Kohlenhydratmengen (vor harten Einheiten ca. 1–1,5 g/kg, unterwegs nach Dauer, danach ca. 1 g/kg), Eiweiß 0,3–0,4 g/kg pro Hauptmahlzeit, der Rest des Tagesbedarfs auf Mittag, Abend und Snacks – vor harten Tagen mehr am Abend, vor Train Low weniger. Die Portionen werden darauf skaliert.</p>
+      <button className="secondary wide" onClick={() => { setSeed(seed + 1); setOffsets({}); }}><Shuffle size={16} />Alle Rezepte neu mischen</button>
     </>
   );
 }

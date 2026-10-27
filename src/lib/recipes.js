@@ -339,8 +339,8 @@ export function highlights(n, sex = 'm', min = 0.25) {
 }
 
 // In das Rezeptformat der App (wie KI-Rezepte) umwandeln – für Anzeige und Favoriten.
-export function toRecipe(r, weightKg) {
-  const f = scaleFor(weightKg), n = recipeNutrients(r, weightKg);
+export function toRecipe(r, weightKg, factor = null) {
+  const f = factor ?? scaleFor(weightKg), n = nutrientsOf(r.items.map(([k, g]) => [k, g * f]));
   return {
     name: r.name, catalogId: r.id, portionen: 1, zeitMin: r.min,
     zutaten: r.items.map(([k, g]) => ({ menge: '', zutat: amountText(k, g * f) })),

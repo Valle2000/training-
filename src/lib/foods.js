@@ -2,7 +2,7 @@
 // Damit rechnet der Rezeptkatalog Makros und Mikronährstoffe selbst aus, statt sie zu schätzen.
 // Spalten: kcal, KH, Eiweiß, Fett, Ballaststoffe (g) · Eisen, Magnesium, Calcium, Kalium, Zink, Vitamin C, Natrium (mg)
 //          · Folat, Vitamin D, B12 (µg) · Omega-3 (g)
-const COLS = ['kcal', 'kh', 'eiweiss', 'fett', 'ballast', 'eisen', 'magnesium', 'calcium', 'kalium', 'zink', 'vitc', 'natrium', 'folat', 'vitd', 'b12', 'omega3'];
+const BASE_COLS = ['kcal', 'kh', 'eiweiss', 'fett', 'ballast', 'eisen', 'magnesium', 'calcium', 'kalium', 'zink', 'vitc', 'natrium', 'folat', 'vitd', 'b12', 'omega3'];
 
 // name, Stückgewicht (g, optional), Werte in Spaltenreihenfolge
 const RAW = {
@@ -138,13 +138,54 @@ const RAW = {
   wasser: ['Wasser', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 };
 
-export const FOODS = Object.fromEntries(Object.entries(RAW).map(([k, [name, piece, ...v]]) => [k, { name, piece, ...Object.fromEntries(COLS.map((c, i) => [c, v[i]])) }]));
+// Weitere Vitamine je 100 g: A (µg Retinol-Äquivalent), E (mg), B1, B2, B6 (mg) – Richtwerte (BLS/USDA, gerundet).
+const VIT = {
+  hafer: [0, 0.7, 0.6, 0.15, 0.12], dinkelnudeln: [0, 0.5, 0.35, 0.1, 0.2], nudeln: [0, 0.1, 0.1, 0.05, 0.1], reis: [0, 0.1, 0.07, 0.03, 0.15],
+  vollkornreis: [0, 0.7, 0.4, 0.09, 0.5], hirse: [0, 0.1, 0.43, 0.11, 0.52], quinoa: [1, 2.4, 0.36, 0.32, 0.49], couscous: [0, 0.1, 0.16, 0.08, 0.11],
+  gnocchi: [0, 0.1, 0.08, 0.03, 0.15], kartoffel: [0, 0.05, 0.1, 0.03, 0.3], suesskartoffel: [709, 0.3, 0.08, 0.06, 0.2], roggenbrot: [0, 0.5, 0.18, 0.1, 0.15],
+  dinkelbrot: [0, 0.6, 0.25, 0.1, 0.15], broetchen: [0, 0.3, 0.1, 0.05, 0.07], toast: [0, 0.3, 0.1, 0.06, 0.07], knaecke: [0, 0.8, 0.25, 0.15, 0.3],
+  cornflakes: [0, 0.1, 0.03, 0.04, 0.05], reiswaffel: [0, 0.5, 0.1, 0.05, 0.2], wraps: [0, 0.3, 0.4, 0.2, 0.05],
+  linsen: [2, 0.5, 0.87, 0.21, 0.4], kichererbsen: [1, 0.3, 0.1, 0.05, 0.1], bohnen: [0, 0.9, 0.1, 0.05, 0.1], kidney: [0, 0.2, 0.1, 0.05, 0.05],
+  tofu: [0, 0.01, 0.08, 0.05, 0.05], tempeh: [0, 0, 0.08, 0.36, 0.22], edamame: [9, 0.7, 0.2, 0.16, 0.1], hummus: [1, 0.8, 0.09, 0.05, 0.2],
+  huhn: [9, 0.2, 0.07, 0.1, 0.6], pute: [5, 0.1, 0.05, 0.1, 0.6], rind: [0, 0.4, 0.07, 0.2, 0.4], lachs: [15, 3, 0.2, 0.15, 0.6],
+  raeucherlachs: [25, 1.3, 0.02, 0.1, 0.28], forelle: [15, 1.5, 0.15, 0.1, 0.35], thunfisch: [15, 0.3, 0.03, 0.05, 0.35], sardinen: [30, 2, 0.08, 0.23, 0.17],
+  ei: [160, 1.1, 0.07, 0.4, 0.15], quark: [2, 0.01, 0.04, 0.3, 0.05], skyr: [5, 0, 0.03, 0.25, 0.05], joghurt: [30, 0.1, 0.03, 0.18, 0.05],
+  griechjoghurt: [90, 0.2, 0.03, 0.2, 0.05], sojajoghurt: [0, 0.3, 0.03, 0.2, 0.05], milch: [20, 0.04, 0.04, 0.18, 0.04], hafermilch: [0, 0.1, 0.02, 0.1, 0.01],
+  sojamilch: [0, 0.2, 0.06, 0.2, 0.04], kefir: [30, 0.1, 0.04, 0.17, 0.05], buttermilch: [10, 0.02, 0.03, 0.16, 0.04], mozzarella: [180, 0.4, 0.03, 0.25, 0.04],
+  feta: [125, 0.2, 0.15, 0.84, 0.42], parmesan: [230, 0.7, 0.04, 0.35, 0.1], huettenkaese: [40, 0.02, 0.03, 0.16, 0.05], whey: [0, 0.1, 0.1, 0.3, 0.1],
+  butter: [680, 2.3, 0.01, 0.03, 0], olivenoel: [0, 14, 0, 0, 0], rapsoel: [0, 17, 0, 0, 0], leinoel: [0, 0.5, 0, 0, 0],
+  mandelmus: [0, 24, 0.04, 0.94, 0.1], erdnussmus: [0, 9, 0.15, 0.1, 0.55], mandeln: [0, 26, 0.2, 1.1, 0.14], walnuss: [1, 0.7, 0.34, 0.15, 0.54],
+  cashew: [0, 0.9, 0.42, 0.06, 0.42], paranuss: [0, 5.7, 0.62, 0.04, 0.1], kuerbiskerne: [1, 2.2, 0.27, 0.15, 0.14], sonnenblumen: [3, 35, 1.5, 0.36, 1.3],
+  chia: [2, 0.5, 0.62, 0.17, 0.3], leinsamen: [0, 0.3, 1.6, 0.16, 0.47], hanf: [1, 0.8, 1.3, 0.29, 0.6], tahin: [3, 0.3, 1.2, 0.47, 0.15],
+  banane: [3, 0.1, 0.03, 0.07, 0.37], apfel: [3, 0.2, 0.02, 0.03, 0.04], birne: [1, 0.1, 0.01, 0.03, 0.03], orange: [11, 0.2, 0.09, 0.04, 0.06],
+  kiwi: [4, 1.5, 0.03, 0.03, 0.06], blaubeeren: [3, 0.6, 0.04, 0.04, 0.05], himbeeren: [2, 0.9, 0.03, 0.04, 0.06], kirschen: [3, 0.1, 0.03, 0.03, 0.05],
+  erdbeeren: [1, 0.3, 0.02, 0.02, 0.05], mango: [54, 0.9, 0.03, 0.04, 0.12], ananas: [3, 0, 0.08, 0.03, 0.11], trauben: [3, 0.2, 0.07, 0.07, 0.09],
+  zitrone: [1, 0.2, 0.02, 0.02, 0.05], orangensaft: [10, 0.04, 0.09, 0.03, 0.04], rosinen: [0, 0.1, 0.1, 0.13, 0.17], datteln: [1, 0.05, 0.05, 0.07, 0.17],
+  aprikosen: [180, 4.3, 0.02, 0.07, 0.14], brokkoli: [31, 0.8, 0.07, 0.12, 0.18], spinat: [469, 2, 0.08, 0.19, 0.2], rucola: [119, 0.4, 0.04, 0.09, 0.07],
+  feldsalat: [350, 0.6, 0.07, 0.08, 0.27], salat: [150, 0.2, 0.07, 0.07, 0.08], gruenkohl: [500, 1.5, 0.1, 0.13, 0.27], paprika: [157, 1.6, 0.05, 0.09, 0.29],
+  tomate: [42, 0.5, 0.04, 0.02, 0.08], gurke: [5, 0.03, 0.03, 0.03, 0.04], zucchini: [10, 0.1, 0.05, 0.09, 0.16], karotte: [835, 0.7, 0.07, 0.06, 0.14],
+  rotebete: [2, 0.04, 0.03, 0.04, 0.07], rotebetesaft: [1, 0, 0.02, 0.02, 0.05], pilze: [0, 0, 0.08, 0.4, 0.1], zwiebel: [0, 0, 0.05, 0.03, 0.12],
+  erbsen: [50, 0.1, 0.27, 0.1, 0.1], mais: [10, 0.1, 0.03, 0.06, 0.05], kuerbis: [300, 1.1, 0.05, 0.1, 0.06], fenchel: [7, 0.3, 0.03, 0.03, 0.05],
+  avocado: [7, 2.1, 0.07, 0.13, 0.26], passata: [30, 1.3, 0.03, 0.04, 0.1], ingwer: [0, 0.3, 0.03, 0.03, 0.16],
+  honig: [0, 0, 0, 0.04, 0.02], ahornsirup: [0, 0, 0.07, 1.27, 0], marmelade: [1, 0.1, 0.01, 0.02, 0.02], schoko: [2, 0.6, 0.03, 0.08, 0.04],
+  kakao: [0, 0.1, 0.08, 0.24, 0.12], bruehe: [0, 0, 0, 0, 0], salz: [0, 0, 0, 0, 0], sojasauce: [0, 0, 0.06, 0.17, 0.2], kokosmilch: [0, 0.2, 0.03, 0, 0.03],
+  pesto: [100, 4, 0.02, 0.1, 0.05], kokoswasser: [0, 0, 0.03, 0.06, 0.03], sportpulver: [0, 0, 0, 0, 0], gel: [0, 0, 0, 0, 0],
+  riegel: [0, 1, 0.2, 0.05, 0.05], brezel: [0, 0.3, 0.4, 0.3, 0.05], wasser: [0, 0, 0, 0, 0],
+};
+const VIT_COLS = ['vita', 'vite', 'b1', 'b2', 'b6'];
+const COLS = [...BASE_COLS, ...VIT_COLS];
+
+export const FOODS = Object.fromEntries(Object.entries(RAW).map(([k, [name, piece, ...v]]) => [k, {
+  name, piece, ...Object.fromEntries(BASE_COLS.map((c, i) => [c, v[i]])), ...Object.fromEntries(VIT_COLS.map((c, i) => [c, VIT[k]?.[i] ?? 0])),
+}]));
+export const MISSING_VITAMINS = Object.keys(RAW).filter((k) => !VIT[k]);
 
 // Tagesreferenz (DGE, Männer 19–50 J.; Natrium ohne festen Bedarf). Sportler brauchen bei Eisen
-// teils bis zu 30–70 % mehr (IOC), bei Natrium je nach Schweißverlust deutlich mehr.
+// teils bis zu 30–70 % mehr (IOC), bei Natrium je nach Schweißverlust deutlich mehr; B1 und B2 steigen mit
+// dem Energieumsatz (B1 ca. 0,5 mg je 1000 kcal) – bei 4000 kcal also eher 2 mg.
 export const REFERENCE = {
-  m: { ballast: 30, eisen: 11, magnesium: 350, calcium: 1000, kalium: 4000, zink: 14, vitc: 110, folat: 300, vitd: 20, b12: 4, omega3: 1.6 },
-  f: { ballast: 30, eisen: 14, magnesium: 300, calcium: 1000, kalium: 4000, zink: 8, vitc: 95, folat: 300, vitd: 20, b12: 4, omega3: 1.3 },
+  m: { ballast: 30, eisen: 11, magnesium: 350, calcium: 1000, kalium: 4000, zink: 14, vitc: 110, folat: 300, vitd: 20, b12: 4, omega3: 1.6, vita: 850, vite: 14, b1: 1.3, b2: 1.4, b6: 1.6 },
+  f: { ballast: 30, eisen: 14, magnesium: 300, calcium: 1000, kalium: 4000, zink: 8, vitc: 95, folat: 300, vitd: 20, b12: 4, omega3: 1.3, vita: 700, vite: 12, b1: 1.0, b2: 1.1, b6: 1.4 },
 };
 
 export const NUTRIENTS = {
@@ -152,6 +193,8 @@ export const NUTRIENTS = {
   calcium: { label: 'Calcium', unit: 'mg' }, kalium: { label: 'Kalium', unit: 'mg' }, zink: { label: 'Zink', unit: 'mg' },
   vitc: { label: 'Vitamin C', unit: 'mg' }, folat: { label: 'Folat', unit: 'µg' }, vitd: { label: 'Vitamin D', unit: 'µg' },
   b12: { label: 'Vitamin B12', unit: 'µg' }, omega3: { label: 'Omega-3', unit: 'g' }, natrium: { label: 'Natrium', unit: 'mg' },
+  vita: { label: 'Vitamin A', unit: 'µg' }, vite: { label: 'Vitamin E', unit: 'mg' }, b1: { label: 'Vitamin B1', unit: 'mg' },
+  b2: { label: 'Vitamin B2', unit: 'mg' }, b6: { label: 'Vitamin B6', unit: 'mg' },
 };
 
 // Summe der Nährwerte für [[Lebensmittel, Gramm], …].

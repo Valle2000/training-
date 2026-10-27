@@ -1,5 +1,5 @@
 // Einheiten anlegen, Dubletten erkennen, Auswertungen über Tage und Wochen.
-import { computeLoad, zoneSeconds, performanceCurve, addDays, ZONES, seriesStats, cleanSeries } from './metrics.js';
+import { computeLoad, luciaLoad, zoneSeconds, performanceCurve, addDays, ZONES, seriesStats, cleanSeries } from './metrics.js';
 import { tolerance, seasonTable } from './longterm.js';
 import { sportById } from './sports.js';
 import { thin } from './series.js';
@@ -39,11 +39,13 @@ export function evaluate(raw, settings) {
   let zones = series?.hr?.some(Boolean) ? zoneSeconds(series.hr, athlete.hrMax, settings.zoneHr) : null;
   // Ohne Verlauf: ganze Dauer der Zone des Durchschnittspulses bzw. der manuell gewählten Zone zuordnen.
   if (!zones && raw.zone) zones = { I1: 0, I2: 0, I3: 0, I4: 0, I5: 0, [raw.zone]: movingS };
+  // Wahlweise umfangsbetontes Zonenmodell (Einstellungen → Belastungsmodell), wenn Pulszonen vorliegen.
+  const lucia = settings.loadModel === 'lucia' && raw.sport !== 'strength' && zones ? luciaLoad(zones) : null;
   return {
     durationS: movingS,
-    // Ohne Puls, Watt und RPE: Polars eigene Trainingsbelastung aus dem Export (grobe Näherung).
-    load: res.load != null ? Math.round(res.load * 10) / 10 : raw.externalLoad ?? null,
-    loadSource: res.load != null ? res.source : raw.externalLoad != null ? 'polar' : res.source,
+      // Ohne Puls, Watt und RPE: Polars eigene Trainingsbelastung aus dem Export (grobe Näherung).
+    load: lucia != null ? Math.round(lucia * 10) / 10 : res.load != null ? Math.round(res.load * 10) / 10 : raw.externalLoad ?? null,
+    loadSource: lucia != null ? 'lucia' : res.load != null ? res.source : raw.externalLoad != null ? 'polar' : res.source,
     np: res.np ? Math.round(res.np) : null,
     intensity: res.intensity ? Math.round(res.intensity * 100) / 100 : null,
     trimp: res.trimp ? Math.round(res.trimp) : null,

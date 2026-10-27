@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { TrendingUp, TrendingDown, Plus, Trash2 } from 'lucide-react';
 import { useData, update, uid } from '../lib/store.js';
 import { today, curve as formCurve, ftpFor } from '../lib/activities.js';
-import { ZONES, POWER_ZONES, CURVE_DURATIONS } from '../lib/metrics.js';
+import { ZONES, POWER_ZONES, CURVE_DURATIONS, addDays } from '../lib/metrics.js';
 import { SPORTS, sportLabel } from '../lib/sports.js';
 import { PRESETS, SPORT_FILTERS, periodRange, previousRange, inRange, totals, buckets, delta, bestCurve, estimateFtp, rampRate, rolling, intensityShare, fmtDur, KEY_DURATIONS, daysBetween } from '../lib/analysis.js';
 import { KEY_TEMPLATES, keySessionRows, trend } from '../lib/keysessions.js';
@@ -188,6 +188,7 @@ function Recovery({ activities, plan, wellness, range, t, acts }) {
       </div>
       {ramp != null && ramp > 8 && <div className="notice">Fitness steigt um mehr als 8 Punkte pro Woche – das ist ein steiler Anstieg; auf Erholung und Infekte achten (große Belastungssprünge gehen bei Langläufern mit mehr Infekten einher, Svendsen et al. 2016).</div>}
       <div className="card"><h3 style={{ marginTop: 0 }}>Fitness, Ermüdung, Form</h3><FormChart days={shown} /></div>
+      <HoursFitness activities={activities} labels={labels} />
       <div className="card">
         <h3 style={{ marginTop: 0 }}>HRV und Form</h3>
         {hrv.some(Boolean) ? <LineChart labels={labels} xFormat={(d) => fmtDate(d, { day: 'numeric', month: 'numeric' })} series={[
@@ -300,5 +301,36 @@ function KeyEditor({ ks, onClose, onSaved }) {
         {k.id && <button className="danger" onClick={remove}><Trash2 size={17} />Löschen</button>}
       </div>
     </Sheet>
+  );
+}
+
+// Umfang als eigene „Fitness“: Stunden der letzten 7 Tage und Wochenschnitt über 42 Tage (wie CTL, nur in Stunden).
+// Belastungsmodelle gewichten lockeren Umfang unterschiedlich – die Stunden zeigen ihn ungewichtet.
+function HoursFitness({ activities, labels }) {
+  const data = useMemo(() => {
+    const perDay = {};
+    for (const a of activities) if (a.sport !== 'strength') perDay[a.date] = (perDay[a.date] || 0) + (a.durationS || 0) / 3600;
+    const lowPerDay = {};
+    for (const a of activities) if (a.zones) lowPerDay[a.date] = (lowPerDay[a.date] || 0) + ((a.zones.I1 || 0) + (a.zones.I2 || 0)) / 3600;
+    const sumBack = (map, d, n) => { let s = 0; for (let i = 0; i < n; i++) s += map[addDays(d, -i)] || 0; return s; };
+    return labels.map((d) => ({ d, week: sumBack(perDay, d, 7), avg: (sumBack(perDay, d, 42) / 42) * 7, low: (sumBack(lowPerDay, d, 42) / 42) * 7 }));
+  }, [activities, labels]);
+  if (!data.length || !data.some((x) => x.week > 0)) return null;
+  const last = data.at(-1);
+  return (
+    <div className="card">
+      <h3 style={{ marginTop: 0 }}>Umfang: Stunden pro Woche</h3>
+      <div className="stats">
+        <div><b>{fmtNum(last.week, 1)}</b><span>letzte 7 Tage</span></div>
+        <div><b>{fmtNum(last.avg, 1)}</b><span>Ø Woche (42 Tage)</span></div>
+        <div><b>{fmtNum(last.low, 1)}</b><span>davon I1–I2 (Ø/Woche)</span></div>
+      </div>
+      <LineChart labels={data.map((x) => x.d)} xFormat={(d) => fmtDate(d, { day: 'numeric', month: 'numeric' })} shared series={[
+        { label: 'Stunden letzte 7 Tage', values: data.map((x) => x.week), color: 'var(--accent)' },
+        { label: 'Ø Woche (42 Tage)', values: data.map((x) => x.avg), color: 'var(--fit)', width: 2.4 },
+        { label: 'davon locker I1–I2', values: data.map((x) => x.low), color: 'var(--z2)', dashed: true },
+      ]} />
+      <p className="muted small">Die Fitness-Kurve oben gewichtet nach Intensität. Hier zählt jede Stunde gleich – die aerobe Basis wächst vor allem über den lockeren Umfang. Wer ihn stärker in Fitness und Form sehen will: unter Einstellungen das Belastungsmodell „Umfangsbetont“ wählen.</p>
+    </div>
   );
 }

@@ -72,6 +72,7 @@ export function Settings() {
         <div className="grid2">
           {FIELDS.map(([k, l, ph]) => <div key={k}><label>{l}</label><input inputMode="decimal" value={s[k] ?? ''} placeholder={ph} onChange={(e) => setS({ ...s, [k]: e.target.value })} /></div>)}
           <div><label>Geschlecht (TRIMP)</label><select value={s.sex || 'm'} onChange={(e) => setS({ ...s, sex: e.target.value })}><option value="m">männlich</option><option value="f">weiblich</option></select></div>
+          <div><label>Belastungsmodell</label><select value={s.loadModel || 'standard'} onChange={(e) => setS({ ...s, loadModel: e.target.value })}><option value="standard">Standard (Watt-TSS / Puls-TRIMP)</option><option value="lucia">Umfangsbetont (Zonen, Lucia)</option></select></div>
           <div><label>Zeitzone</label><input value={s.timezone || 'Europe/Berlin'} onChange={(e) => setS({ ...s, timezone: e.target.value })} /></div>
         </div>
         {!s.hrMax && maxSeen > 150 && <p className="small">Höchster Puls in deinen Einheiten: <b>{maxSeen}</b> <button className="ghost" style={{ display: 'inline', padding: 0 }} onClick={() => setS({ ...s, hrMax: String(maxSeen) })}>als Maximalpuls übernehmen</button> <span className="muted">(ein echter Test oder Wettkampf ist genauer)</span></p>}
@@ -79,6 +80,7 @@ export function Settings() {
         <textarea value={s.goals || ''} onChange={(e) => setS({ ...s, goals: e.target.value })} placeholder="z. B. Hauptziel Engadin Skimarathon März, Volkslauf-Serie im Januar" />
         <label>Verfügbarkeit</label>
         <input value={s.availability || ''} onChange={(e) => setS({ ...s, availability: e.target.value })} placeholder="z. B. Mo–Fr morgens 1 h + abends 1,5 h, Wochenende lang" />
+        {s.loadModel === 'lucia' && <p className="muted small">Umfangsbetont: Minuten in I1–I2 zählen ×1, I3 ×2, I4–I5 ×3 (Lucia-TRIMP), 1 h an der Schwelle = 100. Lockerer Umfang wiegt damit mehr als bei TSS oder Strava. Gilt für alle Einheiten mit Pulsverlauf; Fitness und Form ändern sich entsprechend.</p>}
         <p className="muted small">Zonen nach Olympiatoppen (% Maximalpuls): I1 55–72, I2 72–82, I3 82–87, I4 87–92, I5 &gt; 92. Den Maximalpuls am besten aus einem Test oder Wettkampf nehmen.</p>
         <button className="primary wide" onClick={save}>Speichern und neu berechnen</button>
       </div>

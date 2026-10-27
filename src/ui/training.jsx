@@ -225,7 +225,7 @@ export function ActivitySheet({ activity, onClose }) {
     <Sheet title={a.title || sportLabel(a.sport)} onClose={onClose}>
       <p className="muted">{fmtDate(a.date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} · {new Date(a.start).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} · Quelle: {a.source}</p>
       <div className="stats">
-        <div><b>{fmtNum(a.load)}</b><span>Belastung ({{ power: 'Watt', hr: 'Puls', hr_avg: 'Ø Puls', rpe: 'RPE', polar: 'Polar' }[a.loadSource] || '–'})</span></div>
+        <div><b>{fmtNum(a.load)}</b><span>Belastung ({{ power: 'Watt', hr: 'Puls', hr_avg: 'Ø Puls', rpe: 'RPE', polar: 'Polar', lucia: 'Zonen' }[a.loadSource] || '–'})</span></div>
         <div><b>{fmtDuration(a.durationS)}</b><span>Dauer</span></div>
         <div><b>{a.distanceM ? fmtNum(a.distanceM / 1000, 1) : '–'}</b><span>km</span></div>
         <div><b>{a.avgHr ?? '–'}/{a.maxHr ?? '–'}</b><span>Ø/max Puls</span></div>

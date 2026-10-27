@@ -66,3 +66,19 @@ test('Schweißrate und Trainingstag aus Plan/Rennen', () => {
   assert.equal(tr[0].hard, 60);
   assert.deepEqual(raceSoon('2026-08-01', data.races), { name: 'Testlauf', days: 1, long: true });
 });
+
+test('Tagesplan: Bedarf auf Mahlzeiten verteilt, Portionen skaliert, Lücken benannt', async () => {
+  const { planDay, dayTargets } = await import('../src/lib/nutrition.js');
+  const tr = [{ sport: 'skierg', minutes: 100, hard: 40, time: '08:00' }, { sport: 'rollerski_skate', minutes: 75, hard: 30, time: '17:00' }];
+  const targets = dayTargets({ weightKg: 75, minutes: 175, hardMinutes: 70, longestMinutes: 100 });
+  const p = planDay({ today: tr, tomorrow: [], targets, weightKg: 75, seed: 2 });
+  assert.ok(p.meals.some((m) => m.role === 'post') && p.meals.some((m) => m.role === 'pre') && p.meals.some((m) => m.role === 'during'));
+  assert.ok(p.meals.every((m) => m.factor >= 0.5 && m.factor <= 5));
+  const covered = p.totals.kh + (p.extras.join(' ').match(/\+(\d+) g Kohlenhydrate/)?.[1] * 1 || 0);
+  assert.ok(Math.abs(covered - targets.carbs) / targets.carbs < 0.15, `${covered} vs ${targets.carbs}`);
+  const post = p.meals.find((m) => m.role === 'post');
+  assert.ok(Math.abs(post.got.kh - 75) < 15, `nachher ${post.got.kh}`);
+  const rest = planDay({ today: [], tomorrow: [], targets: dayTargets({ weightKg: 75, minutes: 0 }), weightKg: 75, seed: 1 });
+  assert.ok(!rest.meals.some((m) => ['pre', 'during', 'post'].includes(m.role)));
+  assert.ok(rest.totals.kcal < targets.kcal);
+});
