@@ -216,7 +216,7 @@ function phasesFor(ap, dtDays) {
 const cyc = (a, b) => { const d = Math.abs(a - b); return Math.min(d, 7 - d); };
 // Vorschläge für n harte Tage: möglichst großer Abstand (mind. 48 h), nicht auf Ruhetag/langem Tag; bei Gleichstand
 // lieber ein harter Tag am Wochenende (Rennrhythmus) und der Tag nach dem Ruhetag (frisch).
-export function suggestHardDays(n, { restDays = [1], longDay = 7 } = {}) {
+export function suggestHardDays(n, { restDays = [1], longDay = 7, minGap = 2 } = {}) {
   const free = [1, 2, 3, 4, 5, 6, 7].filter((d) => !restDays.includes(d) && d !== longDay);
   const combos = [];
   const rec = (start, pick) => { if (pick.length === n) { combos.push([...pick]); return; } for (let i = start; i < free.length; i++) rec(i + 1, [...pick, free[i]]); };
@@ -231,12 +231,12 @@ export function suggestHardDays(n, { restDays = [1], longDay = 7 } = {}) {
   };
   const gapOf = (c) => Math.min(7, ...c.flatMap((x, i) => c.slice(i + 1).map((y) => cyc(x, y))));
   const best = Math.max(0, ...combos.map(gapOf));
-  return combos.filter((c) => gapOf(c) >= Math.min(2, best)).sort((a, b) => score(b) - score(a)).slice(0, 3);
+  return combos.filter((c) => gapOf(c) >= Math.min(minGap, best)).sort((a, b) => score(b) - score(a)).slice(0, 3);
 }
-export function checkHardDays(days = [], { restDays = [1], longDay = 7, needed = 2 } = {}) {
+export function checkHardDays(days = [], { restDays = [1], longDay = 7, needed = 2, minGap = 2 } = {}) {
   const out = [];
   const s = [...days].sort((a, b) => a - b);
-  for (let i = 0; i < s.length; i++) for (let j = i + 1; j < s.length; j++) if (cyc(s[i], s[j]) === 1) out.push(`${DOW_NAME[s[i] - 1]} und ${DOW_NAME[s[j] - 1]} liegen direkt hintereinander – weniger Erholung, die zweite Einheit leidet meist. Mindestens einen lockeren Tag dazwischen.`);
+  for (let i = 0; i < s.length; i++) for (let j = i + 1; j < s.length; j++) if (cyc(s[i], s[j]) < minGap) out.push(`${DOW_NAME[s[i] - 1]} und ${DOW_NAME[s[j] - 1]} liegen zu nah beieinander – mindestens ${minGap} ${minGap === 1 ? 'lockerer Tag' : 'lockere Tage'} dazwischen (Abstand ${minGap} Tage).`);
   for (const d of s) if (restDays.includes(d)) out.push(`${DOW_NAME[d - 1]} ist dein Ruhetag.`);
   if (s.includes(longDay)) out.push(`${DOW_NAME[longDay - 1]} ist dein langer Tag – lang und hart am selben Tag ist sehr ermüdend (Ausnahme: Rennen).`);
   if (s.length < needed) out.push(`Der Ansatz sieht ${needed} harte Tage vor, gewählt sind ${s.length} – die übrigen harten Einheiten fallen weg (bewusst weniger Intensität).`);
@@ -307,8 +307,11 @@ export function generatePlan(opts, races = []) {
   const pickByType = (type, k) => { const list = options.filter((o) => o.type === type && keys.has(o.id)); return list.length ? list[k % list.length] : null; };
   let rot = 0, buildIdx = 0, rotIdx = 0, prevHours = null;
   const pickHit = (zone, k) => { const list = options.filter((o) => o.type === 'hit' && o.zone === zone && keys.has(o.id)); return list.length ? list[k % list.length] : null; };
-  return weeks.map((w) => {
+  return weeks.map((w, wi) => {
     let hardSlots = phasesFor(ap, opts.dtDays)[w.phase] ?? [];
+    // Rhythmus Double Threshold: jede Woche, jede zweite Woche oder 3:1 (drei mit, eine ohne).
+    const dtOff = (opts.dtRhythm === 'biweekly' && wi % 2 === 1) || (opts.dtRhythm === '3:1' && wi % 4 === 3);
+    if (dtOff && Array.isArray(hardSlots)) hardSlots = hardSlots.map((x) => (x === 'dt' ? 'threshold' : x));
     const focus = opts.focusFor ? opts.focusFor(w.from) : null;
     const fSport = focus === 'run' || focus === 'bike' ? focus : null;
     // Triathlon: harte Einheiten wechseln zwischen Lauf und Rad (sonst Rollski wie im Standardplan).

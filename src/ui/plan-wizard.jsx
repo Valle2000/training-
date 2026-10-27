@@ -291,9 +291,10 @@ function WizardRaces({ t }) {
 function HardDays({ o, set, setO, schedule }) {
   const dt = Number(o.dtDays) || 2;
   const needed = hardDayCount(o.approach, dt);
-  const sug = suggestHardDays(needed, { restDays: o.restDays, longDay: o.longDay });
+  const minGap = Number(o.minGap) || 2;
+  const sug = suggestHardDays(needed, { restDays: o.restDays, longDay: o.longDay, minGap });
   const own = o.hardDays || [];
-  const warn = own.length ? checkHardDays(own, { restDays: o.restDays, longDay: o.longDay, needed }) : [];
+  const warn = own.length ? checkHardDays(own, { restDays: o.restDays, longDay: o.longDay, needed, minGap }) : [];
   const label = (c) => c.map((d) => DOW[d - 1]).join(' + ');
   const same = (a, b) => a.length === b.length && a.every((x) => b.includes(x));
   // Freie Zeit je Wochentag in der Startwoche (aus „Alltag“).
@@ -301,7 +302,13 @@ function HardDays({ o, set, setO, schedule }) {
   return (
     <div className="card" style={{ marginTop: 12 }}>
       <b>Harte Tage</b>
+      <label>Abstand zwischen harten Tagen</label>
+      <div className="chips">{[[1, '1 lockerer Tag dazwischen'], [2, '2 lockere Tage dazwischen']].map(([n, l]) => <button key={n} className={`chip${minGap === n ? ' on' : ''}`} onClick={() => setO({ ...o, minGap: n, hardDays: null })}>{l}</button>)}</div>
+      <p className="muted small">Mit 2 Tagen Abstand erholst du dich zwischen harten Einheiten am besten. Mit 1 Tag passt mehr hinein – nur sinnvoll bei wenig harten Tagen.</p>
       {o.approach === 'norwegian' && <>
+        <label>Rhythmus der Double-Threshold-Tage</label>
+        <div className="chips">{[['weekly', 'Jede Woche'], ['biweekly', 'Jede 2. Woche'], ['3:1', '3:1 (3 mit, 1 ohne)']].map(([v, l]) => <button key={v} className={`chip${(o.dtRhythm || 'weekly') === v ? ' on' : ''}`} onClick={() => setO({ ...o, dtRhythm: v })}>{l}</button>)}</div>
+        <p className="muted small">3:1 entspricht dem Aufbau-Rhythmus des Plans: drei Wochen mit Double Threshold, dann eine Woche mit nur einer Schwelleneinheit. Jede 2. Woche ist für Einsteiger oder bei wenig Zeit.</p>
         <label>Double-Threshold-Tage pro Woche</label>
         <div className="chips">{[1, 2].map((n) => <button key={n} className={`chip${dt === n ? ' on' : ''}`} onClick={() => setO({ ...o, dtDays: n, hardDays: null })}>{n} {n === 1 ? 'Tag' : 'Tage'}</button>)}</div>
         <p className="muted small">{dt === 1 ? 'Ein Double-Threshold-Tag plus eine harte Einheit: für die meisten der beste Einstieg – zwei kontrollierte Schwelleneinheiten an einem Tag, der Rest der Woche bleibt locker und erholsam.' : 'Zwei Double-Threshold-Tage plus eine kurze harte Einheit: sehr viel Schwelle. Erst sinnvoll mit solider Grundlage (ca. 10+ h/Woche) und guter Steuerung über Laktat oder Puls – sonst wird es schnell zu viel.'}</p>

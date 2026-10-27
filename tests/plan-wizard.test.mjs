@@ -158,7 +158,7 @@ test('Harte Tage wählbar: Mi + Sa, Norwegisch mit einem Double-Threshold-Tag', 
   assert.equal(hardDayCount('norwegian', 1), 2);
   assert.equal(hardDayCount('norwegian', 2), 3);
   assert.ok(suggestHardDays(2, { restDays: [1], longDay: 7 }).some((c) => c.join() === '3,6'));
-  assert.ok(checkHardDays([3, 4], { needed: 2 })[0].includes('hintereinander'));
+  assert.ok(checkHardDays([3, 4], { needed: 2 })[0].includes('zu nah'));
   const w = generatePlan({ ...base, start: '2026-11-02', end: '2026-12-06', approach: 'norwegian', dtDays: 1, hardDays: [3, 6] }, []);
   for (const x of w.filter((y) => y.phase === 'build')) {
     const hardDows = [...new Set(x.days.filter((d) => d.sessions.some((s) => s.kind === 'hard')).map((d) => d.dow))];
@@ -208,4 +208,14 @@ test('Winter ohne Schnee mit Rad als Ersatz: beide Double-Threshold-Einheiten au
   const w = generatePlan({ ...base, start: '2027-12-06', end: '2027-12-26', approach: 'norwegian', dtDays: 1, hardDays: [3, 6], focusFor: (m) => focusOn(m, [], snow, 'bike') }, []);
   const dt = w.flatMap((x) => x.days.flatMap((d) => d.sessions)).filter((s) => /Double Threshold/.test(s.title));
   assert.ok(dt.length > 0 && dt.every((s) => s.sport === 'bike'), JSON.stringify(dt.map((s) => s.sport)));
+});
+
+test('Rhythmus und Abstand: 3:1 lässt jede 4. Woche Double Threshold aus, Abstand 2 Tage', async () => {
+  const { suggestHardDays, checkHardDays } = await import('../src/lib/plan-wizard.js');
+  const w = generatePlan({ ...base, start: '2026-11-02', end: '2026-12-27', approach: 'norwegian', dtDays: 1, dtRhythm: '3:1' }, []);
+  const dtWeeks = w.map((x, i) => [i, x.days.flatMap((d) => d.sessions).some((s) => s.keyId && /^dt_(am|pm)$/.test(s.keyId))]);
+  assert.ok(dtWeeks.filter(([i]) => i % 4 === 3).every(([, on]) => !on), 'jede 4. Woche ohne DT');
+  assert.ok(dtWeeks.filter(([i]) => i % 4 !== 3).every(([, on]) => on), 'übrige Wochen mit DT');
+  for (const c of suggestHardDays(2, { restDays: [1], longDay: 7, minGap: 2 })) assert.ok(Math.abs(c[0] - c[1]) >= 2 && 7 - Math.abs(c[0] - c[1]) >= 2, c.join());
+  assert.ok(checkHardDays([3, 4], { needed: 2, minGap: 2 }).some((x) => x.includes('zu nah')));
 });
