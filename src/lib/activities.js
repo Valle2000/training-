@@ -38,6 +38,19 @@ export function findDuplicate(activities, a) {
   });
 }
 
+// Bewegungszeit aus dem Tempo: Stillstand bis 2 min (Ampel, kurzes Warten) zählt mit, längerer Stillstand nicht.
+export function movingSeconds(speed, { stopS = 120, minMs = 0.8 } = {}) {
+  let total = 0, stop = 0;
+  for (const v of speed) {
+    if (v != null && v > minMs) {
+      // Kurzer Stopp (unter 2 min) gehört zur Fahrt, ein langer nicht.
+      total += 1 + (stop < stopS ? stop : 0);
+      stop = 0;
+    } else stop++;
+  }
+  return total;
+}
+
 // Belastung, Zonen usw. aus Rohdaten berechnen. raw.series in 1 Hz (optional).
 export function evaluate(raw, settings) {
   const athlete = athleteOf(settings, raw.sport);
@@ -47,7 +60,7 @@ export function evaluate(raw, settings) {
   // 1,5× der aufgezeichneten Zeit, z. B. Einkehr) zählt die aufgezeichnete Zeit. Concept2: Arbeitszeit aus dem Verlauf.
   const recS = series?.hr?.length || series?.power?.length || 0;
   // Ohne Gerätezeit: Bewegungszeit aus dem Tempo (Stillstand an Ampeln und Pausen zählt nicht, wie Strava und Polar).
-  const movingFromSpeed = series?.speed?.some((v) => v > 0) ? series.speed.filter((v) => v > 0.8).length : null;
+  const movingFromSpeed = series?.speed?.some((v) => v > 0) ? movingSeconds(series.speed) : null;
   const movingS = !recS ? raw.durationS || raw.timerS || raw.elapsedS || 0
     : raw.timerS || movingFromSpeed || (raw.source !== 'concept2' && raw.elapsedS > recS && raw.elapsedS <= recS * 1.5 ? raw.elapsedS : recS);
   const res = computeLoad(athlete, {

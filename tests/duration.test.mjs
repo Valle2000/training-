@@ -20,8 +20,9 @@ test('Concept2 und manuell', () => {
   assert.equal(evaluate({ sport: 'run', durationS: 2700, elapsedS: 2700 }, settings).durationS, 2700);
 });
 
-test('Rad ohne Gerätezeit: Stillstand (Ampel, Pause) zählt nicht, Bewegungszeit wie Strava', () => {
-  const speed = [...Array(600).fill(7), ...Array(300).fill(0), ...Array(300).fill(6)];
-  const r = evaluate({ sport: 'bike', series: { hr: Array(1200).fill(140), speed }, elapsedS: 1200 }, settings);
-  assert.equal(r.durationS, 900);
+test('Rad ohne Gerätezeit: Stopp über 2 min zählt nicht, kurzer Stopp (Ampel) schon', () => {
+  const lang = [...Array(600).fill(7), ...Array(300).fill(0), ...Array(300).fill(6)];
+  assert.equal(evaluate({ sport: 'bike', series: { hr: Array(1200).fill(140), speed: lang }, elapsedS: 1200 }, settings).durationS, 900);
+  const kurz = [...Array(600).fill(7), ...Array(60).fill(0), ...Array(300).fill(6)];
+  assert.equal(evaluate({ sport: 'bike', series: { hr: Array(960).fill(140), speed: kurz }, elapsedS: 960 }, settings).durationS, 960);
 });
