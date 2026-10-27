@@ -84,14 +84,31 @@ const isoDuration = (s) => { const m = /PT(?:(\d+)H)?(?:(\d+)M)?(?:([\d.]+)S)?/.
 // Nur die Sportart einer bestehenden Einheit ändern (Dauer, Notizen und Daten bleiben).
 const setSport = (id, sport) => update((x) => ({ ...x, activities: x.activities.map((a) => (a.id === id ? { ...a, sport } : a)) }));
 
+// Unbekannte Polar-Sportnummern dieses Abgleichs: die App fragt danach (siehe PolarAsk).
+const unknownPolar = new Map();
+const unknownListeners = new Set();
+export function onUnknownPolar(fn) { unknownListeners.add(fn); return () => unknownListeners.delete(fn); }
+function askPolar(ex, sport) {
+  const pid = ex.sport?.id;
+  if (pid == null || sport !== 'other' || getData().settings.polarSportMap?.[pid]) return;
+  const cur = unknownPolar.get(String(pid)) || { id: String(pid), name: ex.detailed_sport_info ?? ex['detailed-sport-info'] ?? null, count: 0, example: ex.name ?? null };
+  cur.count++;
+  unknownPolar.set(String(pid), cur);
+}
+
 async function syncPolar() {
   const list = (await call('polar', '/v3/exercises')) || [];
   let added = 0;
   const known = new Map(getData().activities.filter((a) => a.source === 'polar').map((a) => [a.externalId, a]));
   for (const ex of list) {
     const old = known.get(String(ex.id));
-    // Bekannte Einheit mit konkreter Sportart: überspringen. „Sonstiges“ wird mit der Sportart aus der Datei korrigiert.
-    if (old && old.sport !== 'other') continue;
+    if (old) {
+      // Bekannte „Sonstiges“-Einheit: mit gespeicherter Zuordnung umstellen, sonst unverändert lassen.
+      const mappedSport = ex.sport?.id != null ? getData().settings.polarSportMap?.[ex.sport.id] : null;
+      if (mappedSport && old.sport === 'other') setSport(old.id, mappedSport);
+      if (old.sport === 'other') askPolar(ex, mappedSport || 'other');
+      continue;
+    }
     let raw = null;
     // Sportart aus der Zusammenfassung (Bezeichnung, sonst Sportnummer) – gilt auch, wenn die FIT-Datei nur „Sonstiges“ liefert.
     const summarySport = polarSport(ex.detailed_sport_info ?? ex['detailed-sport-info']) !== 'other' ? polarSport(ex.detailed_sport_info ?? ex['detailed-sport-info']) : (polarSportId(ex.sport?.id ?? ex.sport) || 'other');
@@ -116,7 +133,13 @@ async function syncPolar() {
       const hr = f('heart-rate') || {};
       raw = { start, sport, elapsedS: isoDuration(f('duration')), distanceM: f('distance'), avgHr: hr.average, maxHr: hr.maximum, calories: f('calories') };
     }
+    askPolar(ex, raw.sport);
     if (await store({ ...raw, source: 'polar', externalId: String(ex.id), polarSportId: ex.sport?.id ?? null })) added++;
+  }
+  if (unknownPolar.size) {
+    const items = [...unknownPolar.values()];
+    unknownPolar.clear();
+    for (const fn of unknownListeners) fn(items);
   }
   await syncPolarWellness();
   return added;

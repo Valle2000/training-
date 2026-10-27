@@ -10,6 +10,7 @@ import { handleConnectReturn, PROVIDERS, syncAll } from './lib/sync.js';
 import { migrateMetrics, migrateTitles } from './lib/recompute.js';
 import { startCloudSync } from './lib/cloud-sync.js';
 import { SyncBadge } from './ui/account.jsx';
+import { PolarAsk } from './ui/polar-ask.jsx';
 import { hydrate, onSaveError, getData } from './lib/store.js';
 
 // Selten genutzte, große Tabs erst beim Öffnen laden – die App startet schneller.
@@ -57,6 +58,7 @@ function App() {
   const common = { go: setTab, openActivity: setActivity, openAdd: () => setAdding(true) };
   return (
     <>
+      <PolarAsk />
       <header>
         <div className="brand"><Activity size={24} color="#c7f36b" /><div><b>Training</b><small>LANGLAUF · KI-COACH</small></div></div>
         <div className="row" style={{ flex: 'none', gap: 6 }}>
