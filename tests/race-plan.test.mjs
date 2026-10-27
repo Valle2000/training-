@@ -26,3 +26,16 @@ test('Sprint und kurzes Rennen: keine Gels, intensives Aufwärmen', () => {
   assert.equal(estimateMinutes({ distanceKm: 10, technique: 'Klassisch' }), 34);
   assert.deepEqual(lessons([{ name: 'A', date: '2026-02-01', report: { lesson: 'zu schnell gestartet' } }, { name: 'B', date: '2027-02-01', report: { lesson: 'x' } }], '2027-01-01').map((x) => x.name), ['A']);
 });
+
+test('Eigene Verpflegung (Coxa Carry): Flasche reicht bis ins Ziel, Gels ergänzen; mit Stationen auffüllen', () => {
+  const race = { name: 'Engadin', date: '2027-03-14', technique: 'Skating', distanceKm: 42 };
+  const carry = racePlan(race, { weightKg: 75, minutes: 145, tempC: -5, mode: 'carry', bottleMl: 600, bottleCarbG: 80, feedKm: '12, 25' });
+  assert.ok(carry.carry.drank <= 600);
+  assert.equal(carry.carry.empty, null);
+  assert.ok(!carry.during.some((d) => d.what.includes('km 12')));
+  assert.ok(carry.carry.fromDrink + carry.gels * 25 >= 0.8 * 60 * 137 / 60);
+  assert.ok(carry.pack.some((x) => x.startsWith('Coxa Carry')));
+  const mixed = racePlan(race, { weightKg: 75, minutes: 145, tempC: -5, mode: 'mixed', bottleMl: 600, bottleCarbG: 80, feedKm: '12, 25, 36' });
+  assert.ok(mixed.during.some((d) => d.what.includes('auffüllen')));
+  assert.ok(mixed.carry.drank > 600);
+});

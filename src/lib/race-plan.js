@@ -10,13 +10,18 @@ export const estimateMinutes = (race) => Math.round((Number(race.distanceKm) || 
 const r5 = (x) => Math.round(x / 5) * 5;
 const de = (x, d = 0) => String(Math.round(x * 10 ** d) / 10 ** d).replace('.', ',');
 
-export function racePlan(race, { weightKg = 70, minutes, startTime = '09:00', tempC = -5, feedKm = '', gelG = 25, caffeine = false, sweat = null } = {}) {
+export function racePlan(race, { weightKg = 70, minutes, startTime = '09:00', tempC = -5, feedKm = '', gelG = 25, caffeine = false, sweat = null, mode = 'stations', bottleMl = 600, bottleCarbG = 60, bottles = 1 } = {}) {
   const w = Number(weightKg) || 70;
   const dur = Number(minutes) || estimateMinutes(race);
   const km = Number(race.distanceKm) || null;
   const start = toMin(startTime || '09:00');
   const hours = dur / 60;
   const temp = Number(tempC);
+
+  // Trinken: Schweißrate, sonst nach Temperatur. Im Langlauf oft kalt → weniger, aber warm und nicht gefroren.
+  const fluidH = sweat?.drinkPerHour ? Math.round(sweat.drinkPerHour * 1000 * 0.8) : temp <= -5 ? 350 : temp <= 5 ? 450 : temp <= 18 ? 600 : 800;
+  const sodiumL = sweat?.sodiumPerL || (temp > 18 ? 800 : 500);
+  const fluid = dur >= 60 ? { perHour: fluidH, total: Math.round((fluidH * hours) / 50) * 50, sodiumPerL: sodiumL } : null;
 
   // Kohlenhydrate unterwegs nach Dauer.
   const carbH = dur < 45 ? 0 : dur < 75 ? 30 : dur < 150 ? 60 : 90;
@@ -25,8 +30,43 @@ export function racePlan(race, { weightKg = 70, minutes, startTime = '09:00', te
   // Feste Abstände (ca. alle 20–30 min) – an Verpflegungsstellen Getränk, sonst Gel aus dem Gürtel.
   const feeds = String(feedKm || '').split(/[,; ]+/).map(Number).filter((x) => x > 0 && (!km || x < km)).sort((a, b) => a - b);
   const minAtKm = (k) => (km ? Math.round((k / km) * dur) : null);
-  let gels = 0, drinkCups = 0;
-  if (carbH) {
+  let gels = 0, drinkCups = 0, carry = null;
+  const gel = Number(gelG) || 25;
+  if (carbH && mode !== 'stations') {
+    // Eigene Verpflegung (Coxa Carry / Trinkgürtel): alle 15 min ein paar Schlucke aus der Flasche, Gels nur,
+    // wenn das Getränk die Kohlenhydrate nicht deckt. „mixed“: Verpflegungsstellen zum Auffüllen/als Extra.
+    const bMl = Number(bottleMl) || 600, bCarb = Number(bottleCarbG) || 0, nB = Math.max(1, Number(bottles) || 1);
+    const sip = 15, nSips = Math.max(1, Math.floor((dur - 8) / sip));
+    // Nur eigene Flasche: so einteilen, dass sie bis ins Ziel reicht; mit Stationen nach Trinkbedarf (wird aufgefüllt).
+    const want = Math.round((fluidH * sip) / 60 / 10) * 10;
+    const mlPer = Math.max(30, mode === 'carry' ? Math.min(want, Math.floor((bMl * nB) / nSips / 10) * 10) : want);
+    const stations = mode === 'mixed' ? feeds.map((k) => ({ min: minAtKm(k), km: k })).filter((x) => x.min > 5 && x.min < dur - 8) : [];
+    let cap = bMl * nB, drank = 0, carbs = 0, fromDrink = 0, refills = 0, empty = null;
+    for (let m = sip; m <= dur - 8; m += sip) {
+      let note = '';
+      const st = stations.find((x) => !x.used && x.min > m - sip && x.min <= m);
+      if (st) {
+        st.used = true;
+        if (cap - drank < mlPer * 3) { cap += bMl; refills++; note = ` · km ${de(st.km, 1)}: Flasche auffüllen/tauschen`; } else { drinkCups++; note = ` · km ${de(st.km, 1)}: optional 1 Becher`; }
+      }
+      const ml = Math.max(0, Math.min(mlPer, cap - drank));
+      if (ml < mlPer && empty == null) empty = m;
+      drank += ml;
+      const c = (ml * bCarb) / bMl;
+      carbs += c; fromDrink += c;
+      const gap = (carbH * m) / 60 - carbs;
+      const n = gap >= gel * 0.8 ? Math.max(1, Math.floor(gap / gel + 0.2)) : 0;
+      carbs += n * gel; gels += n;
+      during.push({ min: m, km: km ? Math.round((m / dur) * km) : null, what: `${ml ? `${ml} ml aus der Flasche${bCarb ? ` (ca. ${r5(c)} g KH)` : ''}` : 'Flasche leer – Wasser/Becher, falls möglich'}${n ? ` + ${n > 1 ? `${n} Gels` : 'Gel'} (${n * gel} g)` : ''}${note}` });
+    }
+    // Wie viel KH pro Flasche bräuchte es, um ganz ohne Gels auszukommen?
+    const needAll = Math.round((carbH * (dur - 8)) / 60), volAll = Math.min(drank, bMl * nB + refills * bMl);
+    const perBottle = volAll ? r5((needAll / volAll) * bMl) : null;
+    carry = { bottleMl: bMl, bottleCarb: bCarb, bottles: nB, drank, refills, empty, fromDrink: Math.round(fromDrink), fluidShare: fluid ? Math.round((drank / fluid.total) * 100) : null,
+      // Über ca. 16 % (80 g pro 500 ml, Hydrogel) wird das Getränk für den Magen zu konzentriert.
+      perBottleNoGels: perBottle && perBottle / bMl <= 0.16 ? perBottle : null };
+    if (caffeine && dur >= 120) during.push({ min: Math.round(dur * 0.66), what: 'Koffein-Gel (ca. 1 mg/kg) für das letzte Drittel – nur wenn im Training getestet' });
+  } else if (carbH) {
     const every = carbH >= 90 ? 20 : carbH >= 60 ? 25 : 30;
     // Verpflegungsstellen sind feste Zeitpunkte; Lücken dazwischen gleichmäßig mit Gels füllen, sodass nie
     // länger als ca. „every“ + 5 min nichts kommt. Jede Aufnahme deckt die Zeit seit der letzten ab.
@@ -58,10 +98,6 @@ export function racePlan(race, { weightKg = 70, minutes, startTime = '09:00', te
   }
   during.sort((a, b) => a.min - b.min);
 
-  // Trinken: Schweißrate, sonst nach Temperatur. Im Langlauf oft kalt → weniger, aber warm und nicht gefroren.
-  const fluidH = sweat?.drinkPerHour ? Math.round(sweat.drinkPerHour * 1000 * 0.8) : temp <= -5 ? 350 : temp <= 5 ? 450 : temp <= 18 ? 600 : 800;
-  const sodiumL = sweat?.sodiumPerL || (temp > 18 ? 800 : 500);
-  const fluid = dur >= 60 ? { perHour: fluidH, total: Math.round((fluidH * hours) / 50) * 50, sodiumPerL: sodiumL } : null;
 
   // Tage davor und Renntag.
   const steps = [];
@@ -88,12 +124,13 @@ export function racePlan(race, { weightKg = 70, minutes, startTime = '09:00', te
     'Startnummer, Chip, Ausweis/Lizenz', `Rennski (${race.technique === 'Klassisch' ? 'Steigwachs/Klister + Gleitwachs' : 'Gleitwachs'} passend zu Schnee und Temperatur) + Reserveski/Testski`, 'Stöcke (Ersatzteller), Schuhe',
     `Rennanzug + ${cold ? 'Windunterwäsche, Mütze, dünne Handschuhe + Fäustlinge, Tape/Creme gegen Kälte im Gesicht' : temp > 5 ? 'leichte Kleidung, Sonnenbrille, Sonnencreme' : 'dünne Mütze und Handschuhe'}`,
     'Warme Wechselkleidung für danach, Aufwärmjacke',
+    ...(carry ? [`Coxa Carry / Trinkgürtel mit ${carry.bottles > 1 ? `${carry.bottles} Flaschen` : '1 Flasche'} à ${carry.bottleMl} ml${carry.bottleCarb ? ` mit je ${carry.bottleCarb} g Kohlenhydraten (Pulver vorher abwiegen)` : ''}${cold ? ', warm einfüllen' : ''}`] : []),
     ...(gels ? [`${gels + 1} Gels (${gels} geplant + 1 Reserve)${cold ? ' – nah am Körper tragen, damit sie nicht fest werden' : ''}`, 'Verpflegungsgürtel'] : []),
     ...(fluid ? [`Getränk: ca. ${de(fluid.total / 1000, 1)} l gesamt${drinkCups ? ' (davon ein Teil an den Verpflegungsstellen)' : ''}${cold ? ', warm in Thermoflasche, damit es nicht gefriert' : ''}`] : []),
     'Vorstartmahlzeit und Recovery-Drink für danach', 'Wachsbox, Kork, Bürsten (falls selbst gewachst)',
   ];
 
-  return { minutes: dur, carbPerHour: carbH, during, gels, fluid, steps, splits, pack, cold, startTime: fmtTime(start), finish: fmtTime(start + dur) };
+  return { minutes: dur, carbPerHour: carbH, mode, carry, during, gels, fluid, steps, splits, pack, cold, startTime: fmtTime(start), finish: fmtTime(start + dur) };
 }
 
 function fmtDay(d) { return new Date(d + 'T12:00:00').toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' }); }
