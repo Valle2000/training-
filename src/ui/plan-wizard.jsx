@@ -1,19 +1,26 @@
 import React, { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Check, CalendarPlus, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, CalendarPlus, Sparkles, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useData, update, uid } from '../lib/store.js';
 import { today, weeks as weekStats } from '../lib/activities.js';
 import { addDays } from '../lib/metrics.js';
-import { sportLabel } from '../lib/sports.js';
+import { sportLabel, SPORTS } from '../lib/sports.js';
 import { PHASES } from '../lib/season.js';
-import { APPROACHES, KEY_OPTIONS, PLAN_SOURCES, GOALS, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend } from '../lib/plan-wizard.js';
+import { APPROACHES, KEY_TYPES, allOptions, makeKey, PLAN_SOURCES, GOALS, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend } from '../lib/plan-wizard.js';
 import { Sheet, fmtDate, fmtNum, toast } from './common.jsx';
 
 const DOW = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
-const TYPE_LABEL = { dt_am: 'Double Threshold (morgens)', dt_pm: 'Double Threshold (abends)', threshold: 'Schwelle', hit: 'Hart / VO2max', race: 'Wettkampftempo', speed: 'Schnelligkeit', long: 'Lange Einheit' };
+// Gruppen im Katalog; Intervalle nach Zone getrennt.
+const GROUPS = [
+  ...KEY_TYPES.map(([id, label]) => ({ id, label, match: (k) => (id.startsWith('hit_') ? k.type === 'hit' && k.zone === id.slice(4) : k.type === id) })),
+  { id: 'other', label: 'Schnelligkeit und lange Einheit', match: (k) => k.type === 'speed' || k.type === 'long' },
+];
 
 // Saisonplan zum Durchklicken: Über dich → Ansatz → Umfang → Key Sessions → Vorschau → in den Kalender.
 export function PlanWizard({ onClose }) {
   const { activities, races, settings } = useData();
+  const custom = settings.customKeys || [];
+  const options = useMemo(() => allOptions(custom), [custom]);
+  const [edit, setEdit] = useState(null);
   const t = today(settings.timezone);
   const recent = weekStats(activities, 8, t).slice(0, 7);
   const avg = Math.round(recent.reduce((a, w) => a + w.hours, 0) / (recent.length || 1)) || 10;
@@ -29,7 +36,7 @@ export function PlanWizard({ onClose }) {
   const keys = o.keys || ap.defaults;
   const pr = o.profile || {};
   const rec = recommend(pr, Number(o.startHours) || 10);
-  const plan = useMemo(() => (step >= 4 ? generatePlan({ ...o, keys }, races) : []), [step, o, keys, races]);
+  const plan = useMemo(() => (step >= 4 ? generatePlan({ ...o, keys, customKeys: custom }, races) : []), [step, o, keys, races, custom]);
   const set = (k, v) => setO({ ...o, [k]: v });
   const toggleKey = (id) => set('keys', keys.includes(id) ? keys.filter((k) => k !== id) : [...keys, id]);
   const setPr = (k, v) => set('profile', { ...pr, [k]: v });
@@ -84,7 +91,7 @@ export function PlanWizard({ onClose }) {
         <div className="card">
           <b><Sparkles size={16} style={{ verticalAlign: -3 }} /> Empfehlung: {APPROACHES.find((a) => a.id === rec.approach).name}</b>
           <ul className="small" style={{ paddingLeft: 18, margin: '6px 0' }}>{rec.reasons.map((r) => <li key={r}>{r}</li>)}</ul>
-          <p className="small muted">Key Sessions: {rec.keys.map((k) => KEY_OPTIONS.find((x) => x.id === k)?.name).filter(Boolean).join(', ')} · Kraft {rec.strengthPerWeek}×/Woche</p>
+          <p className="small muted">Key Sessions: {rec.keys.map((k) => options.find((x) => x.id === k)?.name).filter(Boolean).join(', ')} · Kraft {rec.strengthPerWeek}×/Woche</p>
           <button className="secondary" onClick={takeRec}><Check size={16} />Empfehlung übernehmen</button>
         </div>
         <p className="muted small">Oder wähle selbst einen Trainingsansatz. Alle sind studienbasiert beschrieben – die Unterschiede liegen vor allem in Art und Zahl der harten Einheiten; locker bleibt bei allen der größte Teil.</p>
@@ -121,19 +128,22 @@ export function PlanWizard({ onClose }) {
 
       {step === 3 && <>
         <p className="muted small">Welche Schlüsseleinheiten willst du machen? Vorausgewählt passend zu „{ap.name}“. Pro Typ werden die gewählten Einheiten abgewechselt.</p>
-        {Object.entries(TYPE_LABEL).map(([type, label]) => {
-          const opts = KEY_OPTIONS.filter((k) => k.type === type);
-          if (!opts.length) return null;
+        <button className="secondary" onClick={() => setEdit({ spec: { type: 'threshold', reps: 6, work: 10, rest: 1, unit: 'min', restUnit: 'min', sets: 1, setRest: 3, sport: 'specific', warm: 20, cool: 15, note: '' } })}><Plus size={16} />Eigene Einheit</button>
+        {edit && <KeyEditor edit={edit} onClose={() => setEdit(null)} onSaved={(id) => { if (!keys.includes(id)) set('keys', [...keys, id]); setEdit(null); }} />}
+        {GROUPS.map((g) => {
+          const list = options.filter(g.match);
+          const on = list.filter((k) => keys.includes(k.id)).length;
           return (
-            <div key={type} style={{ marginTop: 8 }}>
-              <b className="small">{label}</b>
-              {opts.map((k) => (
-                <label key={k.id} className="item" style={{ cursor: 'pointer', fontWeight: 400 }}>
-                  <input type="checkbox" checked={keys.includes(k.id)} onChange={() => toggleKey(k.id)} style={{ width: 20, height: 20, flex: 'none' }} />
-                  <div className="grow"><b>{k.name}</b><p>{k.desc}{k.minutes ? ` · ca. ${k.minutes} min` : ''}{k.sport !== 'specific' && k.sport !== 'strength' ? ` · ${sportLabel(k.sport)}` : ''}</p></div>
-                </label>
+            <details key={g.id} open={on > 0 || g.id === 'other'} style={{ marginTop: 8 }}>
+              <summary className="small" style={{ cursor: 'pointer' }}><b>{g.label}</b> <span className="muted">· {on ? `${on} gewählt · ` : ''}{list.length} Einheiten</span></summary>
+              {list.map((k) => (
+                <div key={k.id} className="item" style={{ fontWeight: 400 }}>
+                  <input type="checkbox" checked={keys.includes(k.id)} onChange={() => toggleKey(k.id)} style={{ width: 20, height: 20, flex: 'none' }} aria-label={k.name} />
+                  <div className="grow" onClick={() => toggleKey(k.id)} style={{ cursor: 'pointer' }}><b>{k.name}</b>{k.custom && <span className="badge b-info" style={{ marginLeft: 6 }}>eigene</span>}<p>{k.desc}{k.minutes ? ` · ca. ${k.minutes} min` : ''}{k.sport !== 'specific' && k.sport !== 'strength' ? ` · ${sportLabel(k.sport)}` : ''}</p></div>
+                  {k.spec && <button className="ghost" style={{ flex: 'none' }} title={k.custom ? 'Bearbeiten' : 'Als eigene Einheit anpassen'} onClick={() => setEdit(k.custom ? { id: k.id, name: k.name, spec: k.spec } : { spec: k.spec, from: k.id })}><Pencil size={16} /></button>}
+                </div>
               ))}
-            </div>
+            </details>
           );
         })}
       </>}
@@ -178,4 +188,49 @@ function fmtSlots(slots) {
   const c = {};
   for (const s of slots) c[s] = (c[s] || 0) + 1;
   return Object.entries(c).map(([k, n]) => `${n}× ${SLOT_LABEL[k] || k}`).join(' + ');
+}
+
+const UNITS = [['min', 'min'], ['s', 's']];
+// Eigene Schlüsseleinheit anlegen oder eine aus dem Katalog anpassen (z. B. Double Threshold 3×20 morgens, 8×4 abends).
+function KeyEditor({ edit, onClose, onSaved }) {
+  const [f, setF] = useState({ ...edit.spec, type: edit.spec.type === 'hit' ? `hit_${edit.spec.zone || 'I4'}` : edit.spec.type, name: edit.id ? edit.name : '' });
+  const set = (k, v) => setF({ ...f, [k]: v });
+  const spec = () => { const hit = f.type.startsWith('hit_'); const { name, ...rest } = f; void name; return { ...rest, type: hit ? 'hit' : f.type, zone: hit ? f.type.slice(4) : f.type === 'race' ? 'I4' : 'I3' }; };
+  const preview = makeKey({ ...spec(), id: 'x', name: f.name || undefined });
+  const save = () => {
+    const id = edit.id || `c_${uid()}`;
+    const entry = { id, name: f.name.trim() || undefined, spec: spec() };
+    update((d) => ({ ...d, settings: { ...d.settings, customKeys: [...(d.settings.customKeys || []).filter((c) => c.id !== id), entry] } }));
+    toast(edit.id ? 'Einheit gespeichert' : 'Eigene Einheit angelegt');
+    onSaved(id);
+  };
+  const remove = () => {
+    if (!confirm('Eigene Einheit löschen?')) return;
+    update((d) => ({ ...d, settings: { ...d.settings, customKeys: (d.settings.customKeys || []).filter((c) => c.id !== edit.id) } }));
+    onClose();
+  };
+  const sports = [['specific', 'Rollski/Ski (je nach Jahreszeit)'], ...SPORTS.filter((x) => ['ski', 'endurance'].includes(x.group)).map((x) => [x.id, x.label])];
+  return (
+    <div className="card" style={{ marginTop: 8 }}>
+      <b>{edit.id ? 'Eigene Einheit bearbeiten' : edit.from ? 'Einheit anpassen (als eigene speichern)' : 'Eigene Einheit'}</b>
+      <div className="grid2">
+        <div><label>Art</label><select value={f.type} onChange={(e) => set('type', e.target.value)}>{KEY_TYPES.map(([id, l]) => <option key={id} value={id}>{l}</option>)}</select></div>
+        <div><label>Sportart</label><select value={f.sport} onChange={(e) => set('sport', e.target.value)}>{sports.map(([id, l]) => <option key={id} value={id}>{l}</option>)}</select></div>
+        <div><label>Serien</label><input type="number" min="1" value={f.sets} onChange={(e) => set('sets', e.target.value)} /></div>
+        <div><label>Wiederholungen</label><input type="number" min="1" value={f.reps} onChange={(e) => set('reps', e.target.value)} /></div>
+        <div><label>Belastung</label><div className="row" style={{ flexWrap: 'nowrap' }}><input type="number" min="0" step="any" value={f.work} onChange={(e) => set('work', e.target.value)} /><select value={f.unit} onChange={(e) => set('unit', e.target.value)} style={{ width: 70 }}>{UNITS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></div></div>
+        <div><label>Pause</label><div className="row" style={{ flexWrap: 'nowrap' }}><input type="number" min="0" step="any" value={f.rest} onChange={(e) => set('rest', e.target.value)} /><select value={f.restUnit || f.unit} onChange={(e) => set('restUnit', e.target.value)} style={{ width: 70 }}>{UNITS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></div></div>
+        {Number(f.sets) > 1 && <div><label>Serienpause (min)</label><input type="number" min="0" value={f.setRest} onChange={(e) => set('setRest', e.target.value)} /></div>}
+        <div><label>Ein-/Auslaufen (min)</label><div className="row" style={{ flexWrap: 'nowrap' }}><input type="number" min="0" value={f.warm} onChange={(e) => set('warm', e.target.value)} /><input type="number" min="0" value={f.cool} onChange={(e) => set('cool', e.target.value)} /></div></div>
+      </div>
+      <label>Name (optional)</label><input value={f.name} placeholder={makeKey({ ...spec(), id: 'x' }).name} onChange={(e) => set('name', e.target.value)} />
+      <label>Hinweis (optional)</label><input value={f.note || ''} placeholder="z. B. Laktat 2,5–3 mmol/l, flache Runde" onChange={(e) => set('note', e.target.value)} />
+      <p className="small muted" style={{ marginTop: 8 }}><b>{preview.name}</b> · ca. {preview.minutes} min<br />{preview.desc}</p>
+      <div className="row">
+        <button className="primary" onClick={save}><Check size={16} />Speichern</button>
+        <button className="secondary" onClick={onClose}>Abbrechen</button>
+        {edit.id && <button className="secondary" onClick={remove}><Trash2 size={16} />Löschen</button>}
+      </div>
+    </div>
+  );
 }

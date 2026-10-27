@@ -96,3 +96,19 @@ test('Nicht so ernst: lockere Einheiten mit freier Sportart, leistungsorientiert
   assert.ok(free({ seriousness: 'fun', likes: ['bike', 'run'] }) > 0);
   assert.equal(free({ seriousness: 'performance' }), 0);
 });
+
+test('Katalog: Dauer aus Wiederholungen, eigene Double-Threshold-Einheiten im Plan', async () => {
+  const { makeKey, allOptions, KEY_OPTIONS } = await import('../src/lib/plan-wizard.js');
+  assert.ok(KEY_OPTIONS.length >= 45);
+  assert.equal(new Set(KEY_OPTIONS.map((k) => k.id)).size, KEY_OPTIONS.length);
+  const k = makeKey({ id: 'x', type: 'dt_am', reps: 3, work: 20, rest: 2 });
+  assert.equal(k.name, 'Double Threshold morgens: 3×20 min');
+  assert.equal(k.minutes, 100); // 20 + 60 + 4 + 15 → auf 5 gerundet
+  assert.equal(makeKey({ id: 'y', type: 'hit', zone: 'I5', reps: 13, work: 30, rest: 15, unit: 's', sets: 3, warm: 15, cool: 10 }).zone, 'I5');
+  const customKeys = [{ id: 'c_am', spec: { type: 'dt_am', reps: 3, work: 20, rest: 2, sport: 'specific' } }, { id: 'c_pm', spec: { type: 'dt_pm', reps: 8, work: 4, rest: 1, sport: 'run' } }];
+  assert.equal(allOptions(customKeys).length, KEY_OPTIONS.length + 2);
+  const w = generatePlan({ ...base, approach: 'norwegian', keys: ['c_am', 'c_pm', 'hit_5x4', 'long'], customKeys }, races);
+  const s = w.find((x) => x.phase === 'build').days.flatMap((d) => d.sessions);
+  assert.ok(s.some((x) => x.keyId === 'c_am' && x.minutes === 100));
+  assert.ok(s.some((x) => x.keyId === 'c_pm' && x.sport === 'run'));
+});

@@ -63,25 +63,86 @@ export const APPROACHES = [
   },
 ];
 
-// Schlüsseleinheiten zur Auswahl. sport: 'specific' = Rollski bzw. Ski (Winter), sonst feste Sportart.
+// Schlüsseleinheiten aus Wiederholungen, Belastung und Pause (auch für eigene Einheiten im Assistenten).
+// type: dt_am/dt_pm (Double Threshold morgens/abends), threshold, hit (zone I4 oder I5), race, opener, speed, long, strength.
+// sport: 'specific' = Rollski bzw. Ski (Winter), sonst feste Sportart.
+export const KEY_TYPES = [
+  ['dt_am', 'Double Threshold morgens', 'I3'], ['dt_pm', 'Double Threshold abends', 'I3'], ['threshold', 'Schwelle (I3)', 'I3'],
+  ['hit_I4', 'Intervalle I4', 'I4'], ['hit_I5', 'Intervalle I5 / kurz', 'I5'], ['race', 'Wettkampftempo', 'I4'],
+];
+const PREFIX = { dt_am: 'Double Threshold morgens', dt_pm: 'Double Threshold abends', threshold: 'Schwelle', race: 'Wettkampftempo', I4: 'I4', I5: 'I5' };
+const EFFORT = { I3: 'Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert)', I4: 'hart (I4)', I5: 'sehr hart (I5)' };
+const de = (x) => String(Math.round(x * 100) / 100).replace('.', ',');
+export function makeKey({ id, type, reps, work, rest = 1, unit = 'min', restUnit, sets = 1, setRest = 3, zone, sport = 'specific', warm = 20, cool = 15, note = '', name, desc: descOverride }) {
+  reps = Number(reps) || 1; work = Number(work) || 1; rest = Number(rest) || 0; sets = Number(sets) || 1;
+  restUnit ||= unit;
+  const z = zone || (type === 'hit' ? 'I4' : type === 'race' ? 'I4' : 'I3');
+  const workMin = unit === 's' ? work / 60 : work, restMin = restUnit === 's' ? rest / 60 : rest;
+  const minutes = Math.round((Number(warm) + sets * (reps * workMin + (reps - 1) * restMin) + (sets - 1) * Number(setRest) + Number(cool)) / 5) * 5;
+  const core = sets > 1 ? `${sets}×(${reps}×${de(work)}${unit === 's' ? '' : ' min'}/${de(rest)} ${restUnit === 's' ? 's' : 'min'})` : `${reps}×${de(work)} ${unit === 's' ? 's' : 'min'}`;
+  const label = type === 'hit' ? PREFIX[z] : PREFIX[type];
+  const restTxt = rest ? `${de(rest)} ${restUnit === 's' ? 's' : 'min'} Pause` : 'ohne Pause';
+  const desc = `${warm} min ein, ${sets > 1 ? `${sets} Serien à ` : ''}${reps}× ${de(work)} ${unit === 's' ? 's' : 'min'} ${type === 'race' ? 'im Renntempo' : EFFORT[z]}, ${restTxt}${sets > 1 ? `, ${setRest} min Serienpause` : ''}, ${cool} min aus${note ? ` – ${note}` : ''}`;
+  return { id, type, name: name || `${label}: ${core}`, minutes, zone: z, sport, desc: descOverride || desc, spec: { type, reps, work, rest, unit, restUnit, sets, setRest, zone: z, sport, warm, cool, note } };
+}
+const K = (id, type, reps, work, rest, more = {}) => makeKey({ id, type, reps, work, rest, ...more });
+
 export const KEY_OPTIONS = [
-  { id: 'dt_am', type: 'dt_am', name: 'Double Threshold morgens: 5×6 min', minutes: 70, zone: 'I3', sport: 'specific', desc: '20 min ein, 5×6 min Schwelle (Laktat 2–3 mmol/l), 1 min Pause, 15 min aus' },
-  { id: 'dt_pm', type: 'dt_pm', name: 'Double Threshold abends: 10×3 min', minutes: 60, zone: 'I3', sport: 'run', desc: '15 min ein, 10×3 min Schwelle (Laktat 2,5–3,5 mmol/l), 1 min Pause, 10 min aus' },
-  { id: 'thr_4x8', type: 'threshold', name: 'Schwelle: 4×8 min', minutes: 75, zone: 'I3', sport: 'specific', desc: '20 min ein, 4×8 min Schwelle, 2 min Pause, 15 min aus' },
-  { id: 'thr_6x10', type: 'threshold', name: 'Schwelle: 6×10 min', minutes: 105, zone: 'I3', sport: 'specific', desc: '20 min ein, 6×10 min Schwelle, 1–2 min Pause, 15 min aus' },
-  { id: 'thr_3x20s', type: 'threshold', name: 'Schwelle: 3×20 min', minutes: 105, zone: 'I3', sport: 'specific', desc: '20 min ein, 3×20 min an der unteren Schwelle, 2–3 min Pause, 15 min aus' },
-  { id: 'thr_6x8', type: 'threshold', name: 'Schwelle: 6×8 min', minutes: 95, zone: 'I3', sport: 'specific', desc: '20 min ein, 6×8 min Schwelle, 1–2 min Pause, 15 min aus' },
-  { id: 'thr_3x20', type: 'threshold', name: 'SkiErg 3×20 min', minutes: 106, zone: 'I3', sport: 'skierg', desc: '20 min ein, 3×20 min an der unteren Schwelle (2 min Pause), 20 min aus' },
-  { id: 'thr_3x10', type: 'threshold', name: 'SkiErg Schwelle: 3×10 min', minutes: 56, zone: 'I3', sport: 'skierg', desc: '12 min ein, 3×10 min Schwelle, 2 min Pause, 10 min aus' },
-  { id: 'hit_5x4', type: 'hit', name: 'VO2max (I4): 5×4 min', minutes: 70, zone: 'I4', sport: 'specific', desc: '20 min ein, 5×4 min hart (I4), 3 min Pause, 15 min aus' },
-  { id: 'hit_hill', type: 'hit', name: 'Bergintervalle Skigang (I4): 6×5 min', minutes: 80, zone: 'I4', sport: 'hike', desc: '20 min ein, 6×5 min Skigang mit Stöcken bergauf (I4), locker zurück, 15 min aus' },
-  { id: 'hit_30_15', type: 'hit', name: 'VO2max kurz (I5): 3×(13×30/15 s)', minutes: 60, zone: 'I5', sport: 'bike', desc: '15 min ein, 3 Serien à 13× 30 s hart / 15 s locker, 3 min Serienpause, 10 min aus (Rønnestad)' },
-  { id: 'race_pace', type: 'race', name: 'Wettkampftempo: 4×6 min', minutes: 70, zone: 'I4', sport: 'specific', desc: '20 min ein, 4×6 min im geplanten Renntempo, 3 min Pause, 15 min aus' },
+  K('dt_am', 'dt_am', 5, 6, 1),
+  K('dtam_3x20', 'dt_am', 3, 20, 2, { note: 'eher untere Schwelle' }),
+  K('dtam_8x8', 'dt_am', 8, 8, 1),
+  K('dtam_6x10', 'dt_am', 6, 10, 1),
+  K('dtam_5x10', 'dt_am', 5, 10, 1),
+  K('dtam_4x12', 'dt_am', 4, 12, 1.5),
+  K('dtam_2x25', 'dt_am', 2, 25, 3, { note: 'untere Schwelle' }),
+  K('dt_pm', 'dt_pm', 10, 3, 1, { sport: 'run', warm: 15, cool: 10 }),
+  K('dtpm_8x4', 'dt_pm', 8, 4, 1, { warm: 15, cool: 10 }),
+  K('dtpm_12x3', 'dt_pm', 12, 3, 0.75, { warm: 15, cool: 10 }),
+  K('dtpm_6x5', 'dt_pm', 6, 5, 1, { warm: 15, cool: 10 }),
+  K('dtpm_20x1', 'dt_pm', 20, 1, 30, { restUnit: 's', warm: 15, cool: 10, note: 'obere Schwelle, nicht schneller werden' }),
+  K('dtpm_25x400', 'dt_pm', 25, 80, 30, { unit: 's', restUnit: 's', sport: 'run', warm: 15, cool: 10, name: 'Double Threshold abends: 25×400 m (Laufen)', desc: '15 min ein, 25× 400 m im Schwellentempo (ca. 75–85 s), 30 s Pause, 10 min aus' }),
+  K('thr_6x10', 'threshold', 6, 10, 1.5),
+  K('thr_3x20s', 'threshold', 3, 20, 2.5),
+  K('thr_6x8', 'threshold', 6, 8, 1.5),
+  K('thr_8x8', 'threshold', 8, 8, 1),
+  K('thr_5x10', 'threshold', 5, 10, 1.5),
+  K('thr_4x12', 'threshold', 4, 12, 2),
+  K('thr_4x8', 'threshold', 4, 8, 2),
+  K('thr_3x15', 'threshold', 3, 15, 2),
+  K('thr_2x30', 'threshold', 2, 30, 3, { note: 'untere Schwelle' }),
+  K('thr_10x3', 'threshold', 10, 3, 1),
+  K('thr_8x4', 'threshold', 8, 4, 1),
+  K('thr_tempo45', 'threshold', 1, 45, 0, { name: 'Schwelle: 45 min Dauertempo', note: 'gleichmäßig an der unteren Schwelle' }),
+  K('thr_3x20', 'threshold', 3, 20, 2, { sport: 'skierg', cool: 20, name: 'SkiErg 3×20 min' }),
+  K('thr_3x10', 'threshold', 3, 10, 2, { sport: 'skierg', warm: 12, cool: 10, name: 'SkiErg Schwelle: 3×10 min' }),
+  K('hit_5x4', 'hit', 5, 4, 3, { name: 'VO2max (I4): 5×4 min' }),
+  K('hit_4x4', 'hit', 4, 4, 3, { note: 'Klassiker 4×4' }),
+  K('hit_6x4', 'hit', 6, 4, 2.5),
+  K('hit_4x5', 'hit', 4, 5, 3),
+  K('hit_5x5', 'hit', 5, 5, 2.5),
+  K('hit_6x3', 'hit', 6, 3, 2),
+  K('hit_4x6', 'hit', 4, 6, 3),
+  K('hit_hill', 'hit', 6, 5, 3, { sport: 'hike', name: 'Bergintervalle Skigang (I4): 6×5 min', note: 'Skigang mit Stöcken bergauf, locker zurück' }),
+  K('hit_hill8x4', 'hit', 8, 4, 2.5, { sport: 'run', name: 'Bergläufe (I4): 8×4 min', note: 'bergauf laufen, locker zurück' }),
+  K('hit_pyr', 'hit', 7, 2.6, 2, { name: 'Pyramide (I4): 1-2-3-4-3-2-1 min', desc: '20 min ein, 1-2-3-4-3-2-1 min hart (I4), Pause halb so lang wie die Belastung, 15 min aus' }),
+  K('hit_30_15', 'hit', 13, 30, 15, { unit: 's', restUnit: 's', sets: 3, zone: 'I5', sport: 'bike', warm: 15, cool: 10, name: 'VO2max kurz (I5): 3×(13×30/15 s)', note: 'Rønnestad' }),
+  K('hit_40_20', 'hit', 10, 40, 20, { unit: 's', restUnit: 's', sets: 3, zone: 'I5', warm: 15, cool: 10 }),
+  K('hit_10x1', 'hit', 10, 1, 1, { zone: 'I5' }),
+  K('hit_15x1', 'hit', 15, 1, 30, { zone: 'I5', restUnit: 's' }),
+  K('hit_8x2', 'hit', 8, 2, 2, { zone: 'I5' }),
+  K('hit_hill10x1', 'hit', 10, 1, 2, { zone: 'I5', sport: 'hike', name: 'Kurze Bergsprünge (I5): 10×1 min', note: 'Skigang/Sprünge bergauf, locker zurück' }),
+  K('race_pace', 'race', 4, 6, 3),
+  K('race_3x8', 'race', 3, 8, 3),
+  K('race_5x3', 'race', 5, 3, 2, { note: 'Start- und Endspurt-Tempo üben' }),
+  K('race_sprint', 'race', 4, 3, 12, { name: 'Sprint-Simulation: 4 Läufe à 3 min', note: 'wie Prolog/Vorlauf/Halbfinale/Finale, volle Erholung' }),
+  K('race_tt', 'race', 1, 25, 0, { name: 'Testrennen: 25 min', note: 'Zeitfahren auf bekannter Runde – gut zum Vergleichen' }),
   { id: 'opener', type: 'opener', name: 'Vorbelastung: 30 min + 4×1 min + Sprints', minutes: 45, zone: 'I2', sport: 'specific', desc: '30 min locker, 4×1 min zügig, 3 kurze Sprints – 1–2 Tage vor dem Rennen' },
   { id: 'speed', type: 'speed', name: 'Steigerungen/Sprints in einer lockeren Einheit', minutes: 0, zone: 'I1', sport: 'specific', desc: 'In einer lockeren Einheit 6–8× 10–15 s Sprint, volle Pause – Technik und Schnelligkeit' },
   { id: 'long', type: 'long', name: 'Lange Einheit am Wochenende', minutes: 0, zone: 'I1', sport: 'specific', desc: 'Lang und locker, gern mit viel Doppelstock; Verpflegung üben' },
   { id: 'strength', type: 'strength', name: 'Krafttraining', minutes: 60, zone: 'Kraft', sport: 'strength', desc: 'Kraft-Vorlage A/B oder JOE (Doppelstock-Fokus)' },
 ];
+// Eigene Einheiten (settings.customKeys: [{id, spec}]) zusammen mit dem Katalog.
+export const allOptions = (custom = []) => [...KEY_OPTIONS, ...custom.map((c) => ({ ...makeKey({ ...c.spec, id: c.id, name: c.name }), custom: true }))];
 export const optionById = (id) => KEY_OPTIONS.find((o) => o.id === id);
 
 // Rollski im Sommer, Ski im Winter (Dez–März).
@@ -129,9 +190,10 @@ export function generatePlan(opts, races = []) {
   const weeks = seasonPlan(races, { start: opts.start, end: opts.end, baseHours: Number(opts.startHours) || 10, peakHours: Number(opts.peakHours) || 14, style: pr.style === 'steady' ? 'steady' : pr.style === 'varied' ? 'varied' : 'standard' });
   // Wiedereinstieg: höchstens +10 % pro Woche, alle 4 Wochen leichter.
   if (ap.id === 'base') weeks.forEach((w, i) => { w.targetHours = Math.round(Math.min(Number(opts.peakHours) || 14, (Number(opts.startHours) || 8) * 1.1 ** i) * (i % 4 === 3 ? 0.75 : 1) * 10) / 10; });
-  const pickByType = (type, k) => { const list = KEY_OPTIONS.filter((o) => o.type === type && keys.has(o.id)); return list.length ? list[k % list.length] : null; };
+  const options = allOptions(opts.customKeys);
+  const pickByType = (type, k) => { const list = options.filter((o) => o.type === type && keys.has(o.id)); return list.length ? list[k % list.length] : null; };
   let rot = 0, buildIdx = 0, rotIdx = 0, prevHours = null;
-  const pickHit = (zone, k) => { const list = KEY_OPTIONS.filter((o) => o.type === 'hit' && o.zone === zone && keys.has(o.id)); return list.length ? list[k % list.length] : null; };
+  const pickHit = (zone, k) => { const list = options.filter((o) => o.type === 'hit' && o.zone === zone && keys.has(o.id)); return list.length ? list[k % list.length] : null; };
   return weeks.map((w) => {
     let hardSlots = ap.phases[w.phase] ?? [];
     let hardDays = ap.days.hard;
@@ -234,7 +296,7 @@ export function generatePlan(opts, races = []) {
 
 function session(o, date, i, when = '') {
   const sport = o.sport === 'specific' ? specificSport(date, i) : o.sport;
-  return { title: o.name + (when ? ` (${when})` : ''), sport, minutes: o.minutes, zone: o.zone, description: o.desc, kind: 'hard', keyId: o.id };
+  return { title: o.name + (when && !/^Double Threshold/.test(o.name) ? ` (${when})` : ''), sport, minutes: o.minutes, zone: o.zone, description: o.desc, kind: 'hard', keyId: o.id };
 }
 
 // In Kalendereinträge umwandeln (ersetzt beim Übernehmen frühere Assistenten-Einträge ab dem Startdatum).
