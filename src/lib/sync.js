@@ -1,9 +1,9 @@
 // Abgleich mit Polar, Concept2 (ErgData/Logbook) und Wahoo über /api/connect.
 import { getData, update, putSeries, deleteSeries, uid, getLocalSeries } from './store.js';
 import { toSeries } from './series.js';
-import { buildActivity, findDuplicate, localDate, estimatePlanLoad } from './activities.js';
+import { buildActivity, findDuplicate, localDate, estimatePlanLoad, renameTitle } from './activities.js';
 import { sportFromConcept2, polarSport } from './sports.js';
-import { readExport, zipEntries, zipEntriesSync, importable } from './importers.js';
+import { readExport, zipEntries, zipEntriesSync, importable, parseStravaCsv, stravaSport } from './importers.js';
 import { recomputeAll } from './recompute.js';
 import { deleteRemoteSeries, forgetSeriesPushed } from './cloud-sync.js';
 import { lapsFromConcept2, lapsFromSeries, pacePer, concept2Title, isAutoC2Title } from './laps.js';
@@ -346,7 +346,7 @@ export async function importFiles(files, onProgress) {
   const fail = (name, e) => { failed++; if (errors.length < 3) errors.push(`${name.split('/').pop()}: ${e?.message || e}`); };
   const flush = () => { if (!pending.length) return; const batch = pending.splice(0); update((x) => ({ ...x, activities: [...x.activities, ...batch] })); };
   const add = async (raw) => {
-    const d = getData(), cand = { ...raw, durationS: raw.elapsedS };
+    const d = getData(), cand = { ...raw, durationS: raw.series?.hr?.length || raw.series?.power?.length || raw.elapsedS, elapsedS: raw.elapsedS };
     // Selbst zugeordnete Polar-Sportnummern (Einstellungen) haben Vorrang.
     const mapped = raw.polarSportId != null && d.settings.polarSportMap?.[raw.polarSportId];
     if (mapped) raw.sport = mapped;
@@ -361,6 +361,10 @@ export async function importFiles(files, onProgress) {
     }
     if (findDuplicate(pending, cand)) return false;
     const old = findDuplicate(d.activities, cand);
+    // Gleiche Einheit schon da (z. B. von der Polar-Uhr), aber ohne Watt – die neue Datei hat Watt (Wahoo/Strava): zusammenführen.
+    if (old && raw.series?.power?.some((p) => p > 0) && !old.avgPower && !old.powerCurve && old.source !== 'concept2') {
+      if (await mergeIntoExisting({ ...raw, source: old.source === 'polar' ? 'polar' : 'upload' }, old)) { refreshed++; return false; }
+    }
     if (old) {
       // Schon importiert, aber mit weniger Daten (z. B. früherer Import ohne Puls)? Dann mit den neuen Daten auffrischen.
       if (old.source !== 'upload' || (old.hasSeries && old.avgHr) || !(raw.series?.hr?.length || raw.avgHr)) return false;
@@ -394,7 +398,9 @@ export async function importFiles(files, onProgress) {
     if (!Object.keys(next).length) return;
     update((x) => ({ ...x, settings: { ...x.settings, ...next } }));
   };
+  let strava = null; // Name/Sportart je Datei aus activities.csv (Strava-Export)
   const handle = async (name, bytes) => {
+    if (/(^|\/)activities\.csv$/i.test(name)) { strava = parseStravaCsv(new TextDecoder().decode(bytes)) || strava; return; }
     let raws = [];
     try { raws = await readExport(name, bytes, parseFit); } catch (e) { fail(name, e); }
     const ext = name.toLowerCase().replace(/\.gz$/, '').split('.').pop();
@@ -428,8 +434,19 @@ export async function importFiles(files, onProgress) {
     flush();
     lock?.release?.().catch(() => {});
   }
+  // Strava: Namen und Sportarten aus activities.csv übernehmen (die Datei kann im Archiv vor oder nach den Einheiten liegen).
+  let sportChanged = false;
+  if (strava) {
+    update((x) => ({ ...x, activities: x.activities.map((a) => {
+      const s = a.source === 'upload' && a.importFile && strava[a.importFile];
+      if (!s) return a;
+      const sport = stravaSport(s.type, s.name); // die in Strava gewählte Sportart ist meist genauer als die Gerätedatei
+      if (sport !== 'other' && sport !== a.sport) sportChanged = true;
+      return { ...a, title: a.title && !/^(morning|afternoon|evening|lunch|night)\b/i.test(a.title) ? a.title : renameTitle(s.name, x.settings), notes: a.notes || s.notes, sport: sport === 'other' ? a.sport : sport };
+    }) }));
+  }
   // Profilwerte übernommen: alle Einheiten (auch schon vorhandene und übersprungene) einheitlich neu berechnen.
-  if (filled.size) { onProgress?.('Berechne mit deinem aktuellen Polar-Profil neu …'); await recomputeAll(); }
+  if (filled.size || sportChanged) { onProgress?.('Berechne Belastung und Zonen neu …'); await recomputeAll(); }
   return { added, dup, failed, errors, refreshed, planned, filled: [...filled] };
 }
 

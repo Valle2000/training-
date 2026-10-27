@@ -69,3 +69,10 @@ test('Ernährungsziele steigen mit Umfang', () => {
   assert.equal(easy.carbs, 245);
   assert.ok(hard.carbs > 600 && hard.duringPerHour === 90);
 });
+
+test('Dubletten: anders gestartet oder Pausen unterschiedlich gezählt', () => {
+  const polar = { start: '2026-08-01T08:00:00Z', durationS: 8400, elapsedS: 10800 }; // 2:20 Bewegung, 3 h gesamt
+  assert.ok(findDuplicate([polar], { start: '2026-08-01T08:00:30Z', elapsedS: 10800 }));
+  assert.ok(findDuplicate([polar], { start: '2026-08-01T08:06:00Z', durationS: 10200, elapsedS: 10200 }));
+  assert.ok(!findDuplicate([polar], { start: '2026-08-01T08:30:00Z', durationS: 3600 }));
+});

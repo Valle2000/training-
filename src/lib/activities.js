@@ -18,12 +18,22 @@ export const today = (tz) => localDate(new Date().toISOString(), tz);
 
 // Gleiche Startminute = gleiche Einheit (z. B. Polar-Uhr und Wahoo zeichnen parallel auf).
 // Bei ±2 min Abweichung und ähnlicher Dauer ebenfalls Dublette.
+// Dieselbe Einheit von zwei Geräten/Quellen (z. B. Polar-Uhr und Wahoo, oder Strava-Kopie): gleicher Anbieter-ID,
+// oder Start innerhalb 2 min bei ähnlicher Dauer (Bewegungszeit oder Gesamtzeit), oder zeitlich zu mindestens 80 %
+// überlappend bei Start innerhalb 15 min (anders gestartet, Pausen unterschiedlich gezählt).
 export function findDuplicate(activities, a) {
   const t = Date.parse(a.start);
+  const lensA = [a.durationS, a.elapsedS].filter((v) => v > 0);
   return activities.find((x) => {
     if (a.source && x.source === a.source && a.externalId && x.externalId === a.externalId) return true;
-    const dt = Math.abs(Date.parse(x.start) - t);
-    return dt < 120000 && Math.abs((x.durationS || 0) - (a.durationS || 0)) < Math.max(300, 0.15 * (a.durationS || 0));
+    const tx = Date.parse(x.start), dt = Math.abs(tx - t);
+    if (dt > 900000) return false;
+    const lensX = [x.durationS, x.elapsedS].filter((v) => v > 0);
+    if (dt < 120000 && lensA.some((la) => lensX.some((lx) => Math.abs(la - lx) < Math.max(300, 0.15 * la)))) return true;
+    const la = Math.max(0, ...lensA), lx = Math.max(0, ...lensX);
+    if (!la || !lx || Math.min(la, lx) / Math.max(la, lx) < 0.6) return false; // Teilstück (z. B. 20 min SkiErg in 1 h) ist keine Dublette
+    const overlap = Math.min(t + la * 1000, tx + lx * 1000) - Math.max(t, tx);
+    return overlap >= 0.8 * Math.min(la, lx) * 1000;
   });
 }
 

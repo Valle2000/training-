@@ -117,7 +117,7 @@ export function Settings() {
           <li><b>Polar:</b> Die Schnittstelle liefert nur Einheiten ab der Verbindung. Ältere Einheiten in Polar Flow (Web) im Tagebuch öffnen → Exportieren (TCX, CSV oder FIT, mehrere auch als ZIP). Den Komplett-Export deines Kontos (account.polar.com, JSON im ZIP) kann die App auch lesen – das Format ist nicht offiziell beschrieben, schick mir eine Rückmeldung, falls Einheiten fehlen.</li>
           <li><b>Concept2 / ErgData:</b> Nach dem Verbinden oben „Ganze Historie“ antippen.</li>
           <li><b>Wahoo:</b> ebenfalls „Ganze Historie“.</li>
-          <li><b>Strava / Garmin:</b> Den Konto-Export (ZIP) direkt auswählen – gepackte Dateien (.fit.gz, .gpx.gz, .tcx.gz) werden gelesen.</li>
+          <li><b>Strava / Garmin:</b> Den Konto-Export (ZIP) direkt auswählen. Doppelte Einheiten werden übersprungen; hat die Strava-Datei Watt und die vorhandene Einheit nicht (z. B. Polar-Uhr + Wahoo), werden die Watt übernommen. Namen und Sportarten kommen aus der activities.csv.</li>
           <li>Doppelte Einheiten (gleiche Startzeit und Dauer) werden automatisch übersprungen.</li>
         </ul>
       </div>

@@ -256,7 +256,10 @@ export async function readExport(name, bytes, parseFit) {
   if (lower.endsWith('.fit')) return [await parseFit(bytes)];
   if (lower.endsWith('.tcx')) return [parseTcx(text())];
   if (lower.endsWith('.gpx')) return [parseGpx(text())];
-  if (lower.endsWith('.csv')) return [parsePolarCsv(text())];
+  if (lower.endsWith('.csv')) {
+    // Andere CSV-Dateien in Exporten (z. B. Strava: comments.csv) still überspringen.
+    try { return [parsePolarCsv(text())]; } catch (e) { if (/Kein Polar-CSV/.test(e.message)) return []; throw e; }
+  }
   if (lower.endsWith('.json')) {
     const obj = JSON.parse(text());
     // Nur aufgezeichnete Einheiten: geplante Einheiten (training-target) und Ähnliches haben keine „exercises“.
@@ -264,4 +267,41 @@ export async function readExport(name, bytes, parseFit) {
     return [parsePolarJson(obj)];
   }
   return [];
+}
+
+// Strava-Konto-Export: activities.csv enthält Name und Sportart je Datei (Spalte „Filename“, z. B. activities/123.fit.gz).
+function csvRows(text) {
+  const rows = [];
+  let row = [], cell = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += c; }
+    else if (c === '"') q = true;
+    else if (c === ',') { row.push(cell); cell = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+    else cell += c;
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows;
+}
+const STRAVA_SPORT = [
+  [/roller ?ski/i, (n) => (/skat|freistil|free/i.test(n) ? 'rollerski_skate' : 'rollerski_classic')],
+  [/nordic ski|backcountry/i, (n) => (/skat|freistil|free/i.test(n) ? 'xc_skate' : 'xc_classic')],
+  [/virtual ride|e-?bike|ride|velomobile|handcycle/i, () => 'bike'], [/virtual run|trail run|run/i, () => 'run'],
+  [/rowing|row/i, () => 'row'], [/weight|crossfit|workout/i, () => 'strength'], [/hike|walk|snowshoe/i, () => 'hike'],
+  [/swim/i, () => 'swim'], [/yoga|pilates/i, () => 'mobility'],
+];
+export const stravaSport = (type, name = '') => { const m = STRAVA_SPORT.find(([re]) => re.test(type || '')); return m ? m[1](name) : 'other'; };
+export function parseStravaCsv(text) {
+  const rows = csvRows(text).filter((r) => r.some((c) => c.trim()));
+  const head = rows[0] || [];
+  const col = (re) => head.findIndex((h) => re.test(h.trim()));
+  const iFile = col(/^filename$/i), iName = col(/^activity name$/i), iType = col(/^activity type$/i), iDesc = col(/^activity description$/i);
+  if (iFile < 0 || iName < 0) return null;
+  const out = {};
+  for (const r of rows.slice(1)) {
+    const f = (r[iFile] || '').split('/').pop();
+    if (f) out[f] = { name: r[iName] || '', type: r[iType] || '', notes: iDesc >= 0 ? r[iDesc] || '' : '' };
+  }
+  return out;
 }
