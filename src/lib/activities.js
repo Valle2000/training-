@@ -42,8 +42,12 @@ export function findDuplicate(activities, a) {
 export function evaluate(raw, settings) {
   const athlete = athleteOf(settings, raw.sport);
   const series = cleanSeries(raw.series);
-  // Dauer wie auf der Uhr (Polar/Garmin/Wahoo-Timer), sonst Bewegungszeit aus dem Verlauf.
-  const movingS = raw.timerS || series?.hr?.length || raw.durationS || raw.elapsedS || 0;
+  // Dauer wie auf der Uhr (Polar/Garmin/Wahoo-Timer). Ohne Uhrzeit (ältere Importe, GPX) die Gesamtzeit der Datei wie
+  // bei Polar/Strava – Aufzeichnungslücken zählen nicht als Pause. Nur bei sehr langen Unterbrechungen (Gesamtzeit über
+  // 1,5× der aufgezeichneten Zeit, z. B. Einkehr) zählt die aufgezeichnete Zeit. Concept2: Arbeitszeit aus dem Verlauf.
+  const recS = series?.hr?.length || series?.power?.length || 0;
+  const movingS = !recS ? raw.durationS || raw.timerS || raw.elapsedS || 0
+    : raw.timerS || (raw.source !== 'concept2' && raw.elapsedS > recS && raw.elapsedS <= recS * 1.5 ? raw.elapsedS : recS);
   const res = computeLoad(athlete, {
     durationS: movingS, power: series?.power, hr: series?.hr, avgHr: raw.avgHr, rpe: raw.rpe,
     kind: raw.sport === 'strength' ? 'strength' : 'endurance', powerSport: !!sportById(raw.sport).power,
@@ -246,7 +250,7 @@ export function cropActivity(a, series5, from, to, settings) {
   const total = series5.hr?.length || series5.power?.length || 1, share = (to - from + 1) / total;
   const speedSum = cut.speed?.some((v) => v > 0) ? cut.speed.reduce((s, v) => s + (v || 0) * 5, 0) : null;
   const base = {
-    ...a, avgHr: null, maxHr: null, avgPower: null,
+    ...a, avgHr: null, maxHr: null, avgPower: null, elapsedS: null, timerS: null,
     start: new Date(Date.parse(a.start) + from * 5000).toISOString(),
     distanceM: speedSum ?? (a.distanceM ? a.distanceM * share : null),
     calories: a.calories ? Math.round(a.calories * share) : null,
