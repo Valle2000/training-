@@ -258,3 +258,13 @@ test('Standard: zwei Einheiten am Tag, Dienstag eine, Kraft bevorzugt Donnerstag
   assert.ok(strength.length > 0 && strength.every((d) => [4, 7].includes(d.dow)), `Kraft an: ${strength.map((d) => d.dow)}`);
   assert.ok(days.some((d) => d.sessions.length === 2 && d.dow !== 2), 'an anderen Tagen zwei Einheiten');
 });
+
+test('Winter: mindestens 2,5 h Laufen pro Woche, ohne Anfahrt zur Loipe', () => {
+  const w = generatePlan({ ...base, start: '2026-12-07', end: '2027-01-25', approach: 'pyramidal', winterRunHours: 2.5 }, []);
+  for (const x of w) {
+    const run = x.days.flatMap((d) => d.sessions).filter((s) => s.sport === 'run').reduce((a, s) => a + s.minutes, 0);
+    assert.ok(run >= 150 - 15 || x.days.every((d) => d.sessions.every((s) => s.kind !== 'easy')), `${x.from}: ${run} min Laufen`);
+  }
+  const off = generatePlan({ ...base, start: '2026-12-07', end: '2026-12-27', approach: 'pyramidal', winterRunHours: 0 }, []);
+  assert.ok(off.flatMap((x) => x.days).flatMap((d) => d.sessions).filter((s) => s.title.startsWith('Laufen (Winter')).length === 0);
+});

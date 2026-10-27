@@ -41,7 +41,7 @@ export function PlanWizard({ onClose }) {
   const keys = o.keys || ap.defaults;
   const pr = o.profile || {};
   const rec = recommend(pr, Number(o.startHours) || 10);
-  const plan = useMemo(() => (step >= 5 ? generatePlan({ ...o, keys, customKeys: custom, capFor: hasSchedule(settings.schedule) ? (d) => freeMinutes(d, settings.schedule) : null, periodFor: settings.schedule?.periods?.length ? (m) => periodForWeek(m, settings.schedule) : null, busyFor: hasSchedule(settings.schedule) ? (d) => busyOn(d, settings.schedule).length > 0 : null, focusFor: (m) => focusOn(m, settings.season?.focus, settings.season?.snow, settings.season?.winterSub) }, races) : []), [step, o, keys, races, custom, settings.schedule, settings.season?.focus, settings.season?.snow, settings.season?.winterSub]);
+  const plan = useMemo(() => (step >= 5 ? generatePlan({ ...o, keys, customKeys: custom, capFor: hasSchedule(settings.schedule) ? (d) => freeMinutes(d, settings.schedule) : null, periodFor: settings.schedule?.periods?.length ? (m) => periodForWeek(m, settings.schedule) : null, busyFor: hasSchedule(settings.schedule) ? (d) => busyOn(d, settings.schedule).length > 0 : null, focusFor: (m) => focusOn(m, settings.season?.focus, settings.season?.snow, settings.season?.winterSub), winterRunHours: settings.season?.winterRunHours ?? 2.5 }, races) : []), [step, o, keys, races, custom, settings.schedule, settings.season?.focus, settings.season?.snow, settings.season?.winterSub, settings.season?.winterRunHours]);
   const set = (k, v) => setO({ ...o, [k]: v });
   const toggleKey = (id) => set('keys', keys.includes(id) ? keys.filter((k) => k !== id) : [...keys, id]);
   const setPr = (k, v) => set('profile', { ...pr, [k]: v });
@@ -275,7 +275,7 @@ function WizardRaces({ t }) {
         </div>
       ))}
       {!up.length && <p className="muted small">Noch keine Rennen eingetragen.</p>}
-      <FocusBlocks t={t} focus={settings.season?.focus || []} snow={settings.season?.snow || []} winterSub={settings.season?.winterSub || 'run'} />
+      <FocusBlocks t={t} focus={settings.season?.focus || []} snow={settings.season?.snow || []} winterSub={settings.season?.winterSub || 'run'} settings={settings} />
       {advice.map((a) => <div key={a.text} className="notice" style={a.level === 'gelb' ? { background: 'var(--warnbg)', color: 'var(--warn)' } : undefined}>{a.text}</div>)}
       <div className="card">
         <b className="small">Rennen hinzufügen</b>
@@ -356,7 +356,7 @@ const FOCUS_WHY = {
   tri: 'Triathlon: Ausdauer aus Rad und Lauf, dazu Koppeltraining (Rad direkt gefolgt von Lauf) in der Vorbereitung. Im Wettkampf zählt der Wechsel Rad → Lauf.',
 };
 // Schwerpunkt-Zeiträume: Im Sommer Laufen, Rad oder Triathlon statt Rollski/Ski.
-function FocusBlocks({ t, focus, snow, winterSub }) {
+function FocusBlocks({ t, focus, snow, winterSub, settings }) {
   const year = t.slice(0, 4);
   const set = (list) => update((d) => ({ ...d, settings: { ...d.settings, season: { ...(d.settings.season || {}), focus: list } } }));
   const setSnow = (list) => update((d) => ({ ...d, settings: { ...d.settings, season: { ...(d.settings.season || {}), snow: list } } }));
@@ -368,6 +368,11 @@ function FocusBlocks({ t, focus, snow, winterSub }) {
       <div className="chips">{FOCUS_PRESETS.map((p) => <button key={p.label} className="chip" onClick={() => set([...focus, { id: uid(), sport: p.sport, label: p.label, from: `${year}-${p.from}`, to: `${year}-${p.to}` }])}><Plus size={13} /> {p.label}</button>)}</div>
       {focus.some((f, i) => focus.slice(i + 1).some((g) => f.from <= g.to && g.from <= f.to)) && <div className="notice" style={{ background: 'var(--warnbg)', color: 'var(--warn)' }}>Zwei Zeiträume überschneiden sich – im Plan gilt der oben stehende.</div>}
       <b className="small" style={{ display: 'block', marginTop: 12 }}>Schneelage</b>
+      <label>Laufen im Winter: mindestens Stunden pro Woche (Dezember bis März)</label>
+      <div className="row" style={{ flexWrap: 'nowrap', alignItems: 'center' }}>
+        <input inputMode="decimal" style={{ maxWidth: 120 }} value={settings.season?.winterRunHours ?? 2.5} onChange={(e) => update((d) => ({ ...d, settings: { ...d.settings, season: { ...(d.settings.season || {}), winterRunHours: e.target.value } } }))} />
+        <span className="small muted">0 = aus. Die Läufe liegen vor der Haustür, ohne 35 min Anfahrt zur Loipe.</span>
+      </div>
       <p className="muted small">Ohne Schnee (z. B. Dezember bei Tauwetter) wird der Ski-Plan durch eine Ersatzsportart ersetzt. Standard: Laufen. Der Schnee-Zeitraum ist im Normalfall der Winter.</p>
       <div className="chips"><button className="chip" onClick={() => setSnow([...snow, { id: uid(), snow: false, from: `${year}-12-01`, to: `${year}-12-31` }])}><Plus size={13} /> Kein Schnee (Dezember)</button></div>
       {snow.map((p) => (
