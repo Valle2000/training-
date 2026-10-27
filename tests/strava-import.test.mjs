@@ -50,3 +50,13 @@ test('Strava-CSV: Bewegungszeit und Gesamtzeit werden übernommen', async () => 
   assert.equal(r['1.fit.gz'].movingS, 3600);
   assert.equal(r['1.fit.gz'].elapsedS, 4500);
 });
+
+test('Strava: Rollski auch mit anderer Schreibweise, unbekannter Typ über den Namen; SkiErg-Kopie von Concept2 ist Dublette', async () => {
+  const { stravaSport } = await import('../src/lib/importers.js');
+  const { findDuplicate } = await import('../src/lib/activities.js');
+  assert.equal(stravaSport('Rollski', 'Rollski Freistil'), 'rollerski_skate');
+  assert.equal(stravaSport('Übungsfahrt', 'Rollerski Klassisch'), 'rollerski_classic');
+  const c2 = { id: 'c', source: 'concept2', externalId: '9', start: '2026-10-27T15:00:00Z', durationS: 1800, elapsedS: 1800 };
+  const strava = { source: 'upload', start: '2026-10-27T16:05:00Z', durationS: 1790, elapsedS: 1800 };
+  assert.ok(findDuplicate([c2], strava));
+});

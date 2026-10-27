@@ -342,13 +342,14 @@ function csvRows(text) {
   return rows;
 }
 const STRAVA_SPORT = [
-  [/roller ?ski/i, (n) => (/skat|freistil|free/i.test(n) ? 'rollerski_skate' : 'rollerski_classic')],
+  [/roll ?ski|roller ?ski/i, (n) => (/skat|freistil|free/i.test(n) ? 'rollerski_skate' : 'rollerski_classic')],
   [/nordic ski|backcountry/i, (n) => (/skat|freistil|free/i.test(n) ? 'xc_skate' : 'xc_classic')],
   [/virtual ride|e-?bike|ride|velomobile|handcycle/i, () => 'bike'], [/virtual run|trail run|run/i, () => 'run'],
   [/rowing|row/i, () => 'row'], [/weight|crossfit|workout/i, () => 'strength'], [/hike|walk|snowshoe/i, () => 'hike'],
   [/swim/i, () => 'swim'], [/yoga|pilates/i, () => 'mobility'],
 ];
-export const stravaSport = (type, name = '') => { const m = STRAVA_SPORT.find(([re]) => re.test(type || '')); return m ? m[1](name) : 'other'; };
+// Unbekannter Typ (z. B. übersetzte Bezeichnung): Sportart aus dem Namen erkennen, z. B. „Rollski Freistil“.
+export const stravaSport = (type, name = '') => { const m = STRAVA_SPORT.find(([re]) => re.test(type || '')); if (m) return m[1](name); const byName = polarSport(name); return byName; };
 export function parseStravaCsv(text) {
   const rows = csvRows(text).filter((r) => r.some((c) => c.trim()));
   const head = rows[0] || [];
