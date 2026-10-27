@@ -2,7 +2,7 @@
 import { getData, update, putSeries, deleteSeries, uid, getLocalSeries } from './store.js';
 import { toSeries } from './series.js';
 import { buildActivity, findDuplicate, localDate, estimatePlanLoad, renameTitle } from './activities.js';
-import { sportFromConcept2, polarSport } from './sports.js';
+import { sportFromConcept2, polarSport, polarSportId } from './sports.js';
 import { readExport, zipEntries, zipEntriesSync, importable, parseStravaCsv, stravaSport } from './importers.js';
 import { recomputeAll } from './recompute.js';
 import { deleteRemoteSeries, forgetSeriesPushed } from './cloud-sync.js';
@@ -84,14 +84,22 @@ async function syncPolar() {
   for (const ex of list) {
     if (known.has(String(ex.id))) continue;
     let raw = null;
+    // Sportart aus der Zusammenfassung (Bezeichnung, sonst Sportnummer) – gilt auch, wenn die FIT-Datei nur „Sonstiges“ liefert.
+    const summarySport = polarSport(ex.detailed_sport_info ?? ex['detailed-sport-info']) !== 'other' ? polarSport(ex.detailed_sport_info ?? ex['detailed-sport-info']) : (polarSportId(ex.sport?.id ?? ex.sport) || 'other');
     try {
       const fit = await call('polar', `/v3/exercises/${ex.id}/fit`, { binary: true });
       if (fit?.length) raw = await parseFit(fit);
     } catch { /* ohne FIT: Zusammenfassung verwenden */ }
+    if (raw && raw.sport === 'other' && summarySport !== 'other') raw.sport = summarySport;
     if (!raw) {
-      const offset = ex['start-time-utc-offset'] || 0; // Minuten
-      const start = new Date(Date.parse(ex['start-time'] + 'Z') - offset * 60000).toISOString();
-      raw = { start, sport: polarSport(ex['detailed-sport-info'] || ex.sport), elapsedS: isoDuration(ex.duration), distanceM: ex.distance, avgHr: ex['heart-rate']?.average, maxHr: ex['heart-rate']?.maximum, calories: ex.calories };
+      // Die Schnittstelle liefert Feldnamen mit Unterstrich (start_time), ältere Exporte mit Bindestrich – beides lesen.
+      const f = (k) => ex[k.replace(/-/g, '_')] ?? ex[k];
+      const offset = f('start-time-utc-offset') || 0; // Minuten
+      const start = new Date(Date.parse(f('start-time') + 'Z') - offset * 60000).toISOString();
+      // Sportart: Bezeichnung zuerst, dann Sportnummer; sonst „Sonstiges“.
+      const sport = polarSport(f('detailed-sport-info')) !== 'other' ? polarSport(f('detailed-sport-info')) : (polarSportId(ex.sport?.id ?? ex.sport) || polarSport(typeof ex.sport === 'string' ? ex.sport : ''));
+      const hr = f('heart-rate') || {};
+      raw = { start, sport, elapsedS: isoDuration(f('duration')), distanceM: f('distance'), avgHr: hr.average, maxHr: hr.maximum, calories: f('calories') };
     }
     if (await store({ ...raw, source: 'polar', externalId: String(ex.id) })) added++;
   }
