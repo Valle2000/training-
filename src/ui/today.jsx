@@ -10,7 +10,7 @@ import { tipsFor } from '../lib/food-day.js';
 import { FormChart, ZoneBar, LineChart } from './charts.jsx';
 import { rolling } from '../lib/analysis.js';
 import { fmtDuration, fmtNum, toast } from './common.jsx';
-import { ReadinessCard, MorningSheet } from './morning.jsx';
+import { ReadinessCard, MorningSheet, RecoveryCard } from './morning.jsx';
 import { RaceCountdown } from './season.jsx';
 import { HealthBanner } from './more.jsx';
 import { AdaptCard, ThresholdCard } from './week.jsx';
@@ -83,6 +83,7 @@ export function Today({ go, openActivity, openAdd }) {
         <h3 style={{ marginTop: 0 }}>Fitness, Ermüdung, Form</h3>
         <FormChart days={shown} />
       </div>
+      <RecoveryCard t={t} />
       {wellness.some((w) => w.hrv || w.sleepH) && (() => {
         const w = wellness.filter((x) => x.date >= addDays(t, -60));
         const fByDay = Object.fromEntries(days.map((d) => [d.day, d.form]));

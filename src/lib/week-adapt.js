@@ -93,7 +93,7 @@ export function adaptWeek(data, t, form = null) {
   const hardDates = new Set([...acts.filter(isHardAct).map((a) => a.date), ...future.filter(isHardPlan).map((p) => p.date)]);
   const used = (d) => future.filter((p) => p.date === d).reduce((a, p) => a + (Number(p.minutes) || 0), 0);
   const cap = (d) => (sched ? freeMinutes(d, s) : Infinity);
-  const r = readinessFor(t, wellness, form);
+  const r = readinessFor(t, wellness, form, activities);
   const okToday = !r.checked || r.level === 'gruen';
   // Tag für eine harte Einheit: Tausch mit einer lockeren Einheit an einem Tag ohne harte Nachbartage.
   const findSwap = (p, { after = t, skip = new Set() } = {}) => {

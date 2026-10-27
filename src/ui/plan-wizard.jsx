@@ -29,7 +29,7 @@ export function PlanWizard({ onClose }) {
   const saved = settings.season?.wizard || {};
   const [step, setStep] = useState(0);
   const [o, setO] = useState({
-    approach: 'pyramidal', startHours: avg, peakHours: Math.round(avg * 1.2), start: nextMonday(t),
+    approach: 'pyramidal', startHours: avg, peakHours: Math.round(avg * 1.2),
     end: nextA ? addDays(nextA.date, 7) : addDays(nextMonday(t), 7 * 16 - 1), restDays: [1], longDay: 7, doubles: true, strengthPerWeek: 2, keys: null, horizon: 8, profile: {},
     ...saved, start: saved.start && saved.start >= t ? saved.start : nextMonday(t),
   });
