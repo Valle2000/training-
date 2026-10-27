@@ -243,12 +243,12 @@ export function ActivitySheet({ activity, onClose }) {
       </div>
       {a.load == null && (() => { const at = athleteOf(settings, a.sport); const miss = [!at.hrMax && 'Maximalpuls', !at.hrRest && 'Ruhepuls', !at.lthr && 'Schwellenpuls', !at.ftp && 'FTP'].filter(Boolean); return <div className="notice">Für die Belastung fehlen: {miss.join(', ')}. Unter Mehr → Einstellungen → Athlet eintragen, dann rechnet die App alle Einheiten neu.</div>; })()}
       <ZoneBar zones={a.zones} />
-      {series && <ActivityChart series={series} sport={a.sport} laps={a.laps} onSelect={setSel} />}
+      {series && <ActivityChart series={series} sport={a.sport} laps={a.laps?.length ? a.laps : a.autoLaps} onSelect={setSel} />}
       {series && <div className="row" style={{ marginTop: 6 }}>
         <button className="secondary" disabled={!partial} onClick={crop} title="Im Diagramm einen Bereich ziehen oder die Regler verschieben"><Scissors size={16} />{partial ? `Auf Auswahl zuschneiden (${fmtDuration(sel[0] * 5)}–${fmtDuration((sel[1] + 1) * 5)})` : 'Zuschneiden: Bereich im Diagramm wählen'}</button>
         {a.original && <button className="ghost" style={{ flex: 'none' }} onClick={uncrop}><Undo2 size={16} />Original</button>}
       </div>}
-      <LapsCard laps={a.laps} erg={['skierg', 'row'].includes(a.sport) ? 'erg' : a.sport === 'bikeerg' ? 'bike' : null} />
+      <LapsCard laps={a.laps} autoLaps={a.autoLaps} sport={a.sport} erg={['skierg', 'row'].includes(a.sport) ? 'erg' : a.sport === 'bikeerg' ? 'bike' : null} />
       <div className="grid2">
         <div><label>Datum</label><input type="date" value={when.date} onChange={(e) => setWhen({ ...when, date: e.target.value })} /></div>
         <div><label>Uhrzeit</label><input type="time" value={when.time} onChange={(e) => setWhen({ ...when, time: e.target.value })} /></div>

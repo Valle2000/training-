@@ -21,7 +21,9 @@ function summarize(points, extra) {
     avgHr: extra.avgHr ?? avg(hrs), maxHr: extra.maxHr ?? (hrs.length ? Math.max(...hrs) : null),
     avgPower: extra.avgPower ?? (pws.some(Boolean) ? avg(pws) : null),
     title: extra.title || '', notes: extra.notes || '', laps: extra.laps || null, athlete: extra.athlete || null, externalLoad: extra.externalLoad ?? null, recorded: extra.recorded ?? true, planned: !!extra.planned, polarSportId: extra.polarSportId ?? null,
-    series: points.length > 30 ? toSeries(points) : null,
+    timerS: extra.timerS ?? null, deviceAutoLaps: extra.autoLaps || null,
+    // Lücken bis 30 s auffüllen (Uhren speichern teils nur alle paar Sekunden) – sonst würden sie als Pause zählen.
+    series: points.length > 30 ? toSeries(points, 30) : null,
   };
 }
 
@@ -48,7 +50,7 @@ export function parseTcx(xml) {
   return summarize(points, { laps: lapList,
     start: laps[0] ? new Date(attr(laps[0], 'StartTime') || points[0]?.t).toISOString() : undefined,
     sport: notes ? polarSport(notes) : sport, title: notes || '',
-    elapsedS: laps.length ? sumLaps('TotalTimeSeconds') : undefined,
+    elapsedS: laps.length ? sumLaps('TotalTimeSeconds') : undefined, timerS: laps.length ? sumLaps('TotalTimeSeconds') : undefined,
     distanceM: laps.length ? sumLaps('DistanceMeters') || null : undefined,
     calories: laps.length ? sumLaps('Calories') || null : undefined,
   });
@@ -95,7 +97,7 @@ export function parsePolarCsv(text) {
   }).filter((p) => Number.isFinite(p.t));
   return summarize(points, {
     start: new Date(startMs).toISOString(), sport: polarSport(get(/^sport/i) || ''), title: get(/^name/i) || '',
-    elapsedS: dur.length === 3 ? dur[0] * 3600 + dur[1] * 60 + dur[2] : undefined,
+    elapsedS: dur.length === 3 ? dur[0] * 3600 + dur[1] * 60 + dur[2] : undefined, timerS: dur.length === 3 ? dur[0] * 3600 + dur[1] * 60 + dur[2] : undefined,
     distanceM: num(get(/total distance/i)) != null ? num(get(/total distance/i)) * 1000 : undefined,
     avgHr: num(get(/average heart rate/i)) || undefined, calories: num(get(/calories/i)) || undefined,
   });
@@ -105,6 +107,34 @@ const isoDur = (s) => { const m = /PT(?:([\d.]+)H)?(?:([\d.]+)M)?(?:([\d.]+)S)?/
 
 // Polar-Konto-Export (JSON je Trainingseinheit). Das Format ist nicht offiziell dokumentiert,
 // deshalb wird tolerant gelesen: Zeit, Dauer, Sportart, Puls und Messreihen, wo vorhanden.
+// Runden aus dem Polar-Export (Lap-Taste und automatische Runden). Das Format ist nicht offiziell beschrieben,
+// deshalb tolerant: Dauer (durationMillis, duration/lapTime als ISO), Zwischenzeit (splitTimeMillis, splitTime),
+// Distanz, Puls und Leistung als Felder oder in statistics.
+const listOf = (v, key) => (Array.isArray(v) ? v : Array.isArray(v?.[key]) ? v[key] : []);
+function polarLapList(list, startMs) {
+  let t = 0;
+  const laps = list.map((l, i) => {
+    const iso = (x) => (typeof x === 'string' && /^PT/.test(x) ? isoDur(x) : null);
+    const ms = (x) => (x != null && num(x) != null ? num(x) / 1000 : null);
+    let dur = ms(l.durationMillis) ?? iso(l.duration) ?? iso(l.lapTime) ?? ms(l.lapTimeMillis);
+    const split = ms(l.splitTimeMillis) ?? iso(l.splitTime);
+    const startS = l.startTime && startMs ? (Date.parse(l.startTime) - startMs) / 1000 : split != null && dur != null ? split - dur : t;
+    if (dur == null && split != null) dur = split - t;
+    if (dur == null) return null;
+    t = startS + dur;
+    const st = Object.fromEntries(listOf(l.statistics, 'statistics').map((s) => [String(s.type || '').replace('STATISTICS_TYPE_', ''), s]));
+    const hr = l.heartRate || st.HEART_RATE || {}, pw = l.power || st.POWER || st.CYCLING_POWER || {};
+    const dist = num(l.distanceMeters ?? l.distance ?? l.lapDistance ?? l.lapDistanceMeters);
+    return { n: i + 1, startS, durationS: dur, distanceM: dist || null, avgHr: num(hr.avg ?? hr.average) || null, maxHr: num(hr.max ?? hr.maximum) || null, avgPower: num(pw.avg ?? pw.average) || null, pace: dist ? (dur / dist) * 1000 : null };
+  }).filter(Boolean);
+  return laps.length > 1 ? laps : null;
+}
+function polarLaps(ex, startMs) {
+  const manual = polarLapList(listOf(ex.laps, 'laps'), startMs);
+  const auto = polarLapList([...listOf(ex.autoLaps, 'autoLaps'), ...listOf(ex.laps?.autoLaps, 'autoLaps')], startMs);
+  return { laps: manual || undefined, autoLaps: auto || undefined };
+}
+
 // Ortszeit ohne Zonenangabe („2019-05-05T10:00:00.000“) plus Versatz in Minuten → UTC.
 function polarTime(str, offsetMin) {
   if (/[zZ]|[+-]\d\d:?\d\d$/.test(str) || offsetMin == null) return new Date(str).toISOString();
@@ -133,6 +163,7 @@ export function parsePolarJson(obj) {
   return summarize(points, { athlete,
     start, sport: polarSport(ex.sport || obj.sport || ''), title: obj.title || obj.name || ex.name || '', notes: obj.note || obj.notes || '',
     elapsedS: isoDur(ex.duration || obj.duration) ?? (ex.stopTime ? (Date.parse(ex.stopTime) - Date.parse(startRaw)) / 1000 : undefined),
+    timerS: isoDur(ex.duration || obj.duration) ?? undefined, ...polarLaps(ex, Date.parse(startRaw)),
     distanceM: num(ex.distance ?? obj.distance) ?? undefined,
     avgHr: num(hr.avg ?? hr.average) ?? undefined, maxHr: num(hr.max ?? hr.maximum) ?? undefined,
     calories: num(ex.kiloCalories ?? obj.kiloCalories ?? ex.calories) ?? undefined,
@@ -172,6 +203,7 @@ export function parsePolarJsonV2(obj) {
   return summarize(hasData ? points : [], {
     athlete, start, sport: polarSportId(ex.sport?.id ?? obj.sport?.id) || polarSport(obj.name || ex.name || ''), title: obj.name || '', notes: obj.note || '',
     elapsedS: num(ex.durationMillis ?? obj.durationMillis) != null ? num(ex.durationMillis ?? obj.durationMillis) / 1000 : stopS ?? undefined,
+    timerS: num(ex.durationMillis ?? obj.durationMillis) != null ? num(ex.durationMillis ?? obj.durationMillis) / 1000 : undefined, ...polarLaps(ex, startMs),
     distanceM: num(ex.distanceMeters ?? obj.distanceMeters) ?? undefined,
     calories: num(ex.calories ?? obj.calories) ?? undefined, ascentM: num(ex.ascentMeters) ?? undefined,
     avgHr: num(stats.STATISTICS_TYPE_HEART_RATE?.avg) ?? undefined, maxHr: num(stats.STATISTICS_TYPE_HEART_RATE?.max) ?? undefined,

@@ -367,7 +367,9 @@ export async function importFiles(files, onProgress) {
     }
     if (old) {
       // Schon importiert, aber mit weniger Daten (z. B. früherer Import ohne Puls)? Dann mit den neuen Daten auffrischen.
-      if (old.source !== 'upload' || (old.hasSeries && old.avgHr) || !(raw.series?.hr?.length || raw.avgHr)) return false;
+      const needs = !(old.hasSeries && old.avgHr) || (raw.timerS && old.timerS == null && Math.abs((old.durationS || 0) - raw.timerS) > 60)
+        || (raw.laps?.length && !old.laps?.length) || (raw.deviceAutoLaps?.length && !old.deviceAutoLaps?.length);
+      if (old.source !== 'upload' || !needs || !(raw.series?.hr?.length || raw.avgHr || raw.timerS)) return false;
       const { activity, series } = buildActivity({ ...raw, source: 'upload' }, d.settings, { id: old.id });
       activity.importFormat = raw.importFormat;
       for (const k of ['notes', 'rpe', 'lactate', 'title', 'keySessionId', 'gearIds']) if (old[k] != null && old[k] !== '') activity[k] = old[k];

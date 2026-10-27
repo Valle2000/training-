@@ -175,3 +175,30 @@ test('Polar: Sportnummer, geplante Einheiten nicht importieren', async () => {
   const bytes = new TextEncoder().encode(JSON.stringify({ name: 'Plan', startTime: '2020-01-01T10:00:00' }));
   assert.deepEqual(await readExport('training-session_x.json', bytes), []);
 });
+
+test('Polar: Zeit wie auf der Uhr, Runden und Autolaps aus dem Export, km-Splits berechnet', async () => {
+  const { parsePolarJson } = await import('../src/lib/importers.js');
+  const { buildActivity, distanceSplits } = await import('../src/lib/activities.js');
+  const n = 1500;
+  const doc = { startTime: '2024-05-01T07:00:00', durationMillis: 1500000, distanceMeters: 4500, timezoneOffsetMinutes: 120, deviceId: 'X', name: 'Laufen',
+    exercises: [{ startTime: '2024-05-01T07:00:00', durationMillis: 1500000, distanceMeters: 4500, sport: { id: '1' },
+      samples: { samples: [{ type: 'HEART_RATE', intervalMillis: 1000, values: Array(n).fill(150) }, { type: 'SPEED', intervalMillis: 1000, values: Array(n).fill(10.8) }] },
+      laps: { laps: [{ durationMillis: 600000, distanceMeters: 1800, heartRate: { avg: 145, max: 152 } }, { durationMillis: 900000, distanceMeters: 2700, heartRate: { avg: 155, max: 162 } }],
+        autoLaps: Array.from({ length: 4 }, () => ({ duration: 'PT333.3S', distance: 1000 })) },
+      // Pause, die die App früher herausgeschnitten hat
+      pauseTimes: [{ startTime: '2024-05-01T07:10:00.000', endTime: '2024-05-01T07:12:00.000' }] }] };
+  const raw = parsePolarJson(doc);
+  assert.equal(raw.timerS, 1500);
+  assert.equal(raw.laps.length, 2);
+  assert.equal(raw.laps[1].startS, 600);
+  assert.equal(raw.laps[1].avgHr, 155);
+  assert.equal(raw.deviceAutoLaps.length, 4);
+  const { activity } = buildActivity(raw, { hrMax: 196, hrRest: 42, lthr: 172 });
+  assert.equal(activity.durationS, 1500); // Polar-Zeit, nicht die gekürzte Bewegungszeit
+  assert.equal(activity.autoLaps.length, 4);
+  const splits = distanceSplits({ speed: Array(1500).fill(3), hr: Array(1500).fill(150), power: [] }, 'run');
+  assert.equal(splits.length, 5); // 4,5 km → 4 volle km + 500 m Rest
+  assert.equal(Math.round(splits[0].pace), 334); // 3 m/s: 1000 m nach 334 s
+  assert.equal(splits[4].distanceM, 500);
+  assert.equal(distanceSplits({ speed: Array(100).fill(3) }, 'strength'), null);
+});

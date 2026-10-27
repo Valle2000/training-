@@ -19,6 +19,7 @@ export function parseFit(bytes) {
     start: new Date(start).toISOString(),
     sport: sportFromFit(s.sport, s.subSport),
     elapsedS: s.totalElapsedTime ?? s.totalTimerTime ?? (records.length ? (records.at(-1).timestamp - records[0].timestamp) / 1000 : 0),
+    timerS: s.totalTimerTime ?? null, // Zeit wie auf der Uhr (ohne gedrückte Pausen)
     distanceM: s.totalDistance ?? null,
     avgHr: s.avgHeartRate ?? (hrs.length ? hrs.reduce((a, b) => a + b, 0) / hrs.length : null),
     maxHr: s.maxHeartRate ?? (hrs.length ? Math.max(...hrs) : null),
@@ -32,7 +33,7 @@ export function parseFit(bytes) {
       avgHr: l.avgHeartRate ?? null, maxHr: l.maxHeartRate ?? null, avgPower: l.avgPower ?? null, spm: l.avgCadence ?? null,
       pace: l.totalTimerTime && l.totalDistance ? (l.totalTimerTime / l.totalDistance) * 1000 : null,
     })) : null,
-    series: toSeries(records.map((r) => ({ t: r.timestamp.getTime(), hr: r.heartRate, power: r.power, speed: r.enhancedSpeed ?? r.speed, alt: r.enhancedAltitude ?? r.altitude }))),
+    series: toSeries(records.map((r) => ({ t: r.timestamp.getTime(), hr: r.heartRate, power: r.power, speed: r.enhancedSpeed ?? r.speed, alt: r.enhancedAltitude ?? r.altitude })), 30),
   };
 }
 

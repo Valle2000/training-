@@ -3,6 +3,7 @@ import { computeLoad, luciaLoad, zoneSeconds, performanceCurve, addDays, ZONES, 
 import { tolerance, seasonTable } from './longterm.js';
 import { sportById } from './sports.js';
 import { thin } from './series.js';
+import { lapsFromSeries } from './laps.js';
 import { keySessionRows } from './keysessions.js';
 
 // FTP je Sportart: SkiErg und Rudern haben eigene Schwellenleistungen, sonst gilt die Rad-FTP.
@@ -41,7 +42,8 @@ export function findDuplicate(activities, a) {
 export function evaluate(raw, settings) {
   const athlete = athleteOf(settings, raw.sport);
   const series = cleanSeries(raw.series);
-  const movingS = series?.hr?.length || raw.durationS || raw.elapsedS || 0;
+  // Dauer wie auf der Uhr (Polar/Garmin/Wahoo-Timer), sonst Bewegungszeit aus dem Verlauf.
+  const movingS = raw.timerS || series?.hr?.length || raw.durationS || raw.elapsedS || 0;
   const res = computeLoad(athlete, {
     durationS: movingS, power: series?.power, hr: series?.hr, avgHr: raw.avgHr, rpe: raw.rpe,
     kind: raw.sport === 'strength' ? 'strength' : 'endurance', powerSport: !!sportById(raw.sport).power,
@@ -63,6 +65,8 @@ export function evaluate(raw, settings) {
     // Bestwertkurven, Leistungszonen, kJ, VI, EF, Entkopplung (nur mit Verlauf)
     hrCurve: null, powerCurve: null, powerZones: null, kj: null, vi: null, ef: null, decoupling: null, hrHist: null, powerHist: null, powerHr: null,
     ...(series ? seriesStats(series, { ftp: athlete.ftp, powerSport: !!sportById(raw.sport).power }) : {}),
+    // Automatische Runden: von der Uhr (Polar-Autolaps), sonst aus dem Tempo berechnet (Laufen/Ski 1 km, Rad 5 km).
+    autoLaps: raw.deviceAutoLaps || (series ? distanceSplits(series, raw.sport) : null),
   };
 }
 
@@ -80,12 +84,29 @@ export function buildActivity(raw, settings, extra = {}) {
     zone: raw.zone || null, elapsedS: raw.elapsedS ?? raw.durationS ?? null,
     distanceM: raw.distanceM ?? null, avgHr: round(raw.avgHr), maxHr: round(raw.maxHr), avgPower: round(raw.avgPower),
     calories: raw.calories ?? null, ascentM: raw.ascentM ?? null, strengthId: raw.strengthId ?? null,
-    laps: raw.laps || null, externalLoad: raw.externalLoad ?? null, pace: raw.pace ?? null, spm: raw.spm ?? null, workS: raw.workS ?? null,
+    laps: raw.laps || null, timerS: raw.timerS ?? null, deviceAutoLaps: raw.deviceAutoLaps || null, externalLoad: raw.externalLoad ?? null, pace: raw.pace ?? null, spm: raw.spm ?? null, workS: raw.workS ?? null,
     hasSeries: !!raw.series?.hr?.length, ...ev,
   };
   return { activity, series: raw.series ? thin(raw.series) : null };
 }
 const round = (v) => (v == null ? null : Math.round(v));
+
+// Splits nach Distanz aus dem 1-Hz-Tempoverlauf (m/s): jeder km (Rad: alle 5 km), wie die Autolap-Funktion der Uhr.
+const SPLIT_M = { run: 1000, hike: 1000, xc_skate: 1000, xc_classic: 1000, rollerski_skate: 1000, rollerski_classic: 1000, bike: 5000 };
+export function distanceSplits(series, sport) {
+  const step = SPLIT_M[sport], sp = series?.speed;
+  if (!step || !sp?.some((v) => v > 0)) return null;
+  const bounds = [];
+  let dist = 0, start = 0, next = step;
+  for (let i = 0; i < sp.length; i++) {
+    dist += sp[i] > 0 ? sp[i] : 0;
+    if (dist >= next) { bounds.push({ startS: start, durationS: i + 1 - start, distanceM: step }); start = i + 1; next += step; }
+  }
+  const restM = dist - (next - step);
+  if (restM >= step * 0.2 && sp.length - start > 10) bounds.push({ startS: start, durationS: sp.length - start, distanceM: Math.round(restM) });
+  if (bounds.length < 2) return null;
+  return lapsFromSeries({ hr: series.hr || [], power: series.power || [] }, bounds).map((l) => ({ ...l, pace: (l.durationS / l.distanceM) * 1000 }));
+}
 
 // Umbenennen-Regeln (Einstellungen): z. B. „20:00, 2×20:00/2:00r, 2×20:00“ → „3x20min“. Gilt für neue Importe.
 export const renameTitle = (title, settings = {}) => settings.titleRules?.[title] || title;
@@ -236,6 +257,7 @@ export function cropActivity(a, series5, from, to, settings) {
   next.date = localDate(next.start, settings.timezone);
   next.elapsedS = next.durationS;
   next.externalLoad = null;
+  next.timerS = null; next.deviceAutoLaps = null;
   if (!next.laps.length) next.laps = null;
   return { activity: next, series: cut };
 }
