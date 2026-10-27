@@ -65,3 +65,17 @@ const POLAR_SPORT_IDS = {
   103: 'swim', 105: 'swim', 111: 'mobility', 116: 'hike', 117: 'row', 118: 'bike', 126: 'strength', 127: 'mobility',
 };
 export const polarSportId = (id) => POLAR_SPORT_IDS[Number(id)] || null;
+
+// Sportart aus Titel und Notiz erraten (für ältere Einheiten, die als „Sonstiges“ gespeichert wurden).
+export function guessSport(a) {
+  const text = `${a.title || ''} ${a.notes || ''}`;
+  if (/ski ?erg/i.test(text)) return 'skierg';
+  if (/\b(rad|bike|cycl|ride|radfahren|velo)/i.test(text)) return 'bike';
+  const byPolar = polarSport(text);
+  if (byPolar !== 'other') return byPolar;
+  if (/\b(lauf|laufen|run|joggen)\b/i.test(text)) return 'run';
+  if (/kraft|strength|gym/i.test(text)) return 'strength';
+  if (/\b(wander|hike|berg)/i.test(text)) return 'hike';
+  return 'other';
+}
+

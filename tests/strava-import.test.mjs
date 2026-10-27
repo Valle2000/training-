@@ -60,3 +60,11 @@ test('Strava: Rollski auch mit anderer Schreibweise, unbekannter Typ über den N
   const strava = { source: 'upload', start: '2026-10-27T16:05:00Z', durationS: 1790, elapsedS: 1800 };
   assert.ok(findDuplicate([c2], strava));
 });
+
+test('Sonstiges erkennen: aus Titel und Notiz', async () => {
+  const { guessSport } = await import('../src/lib/sports.js');
+  assert.equal(guessSport({ title: 'Rollski Freistil 2h' }), 'rollerski_skate');
+  assert.equal(guessSport({ title: 'SkiErg Schwelle' }), 'skierg');
+  assert.equal(guessSport({ title: 'Morgenrunde', notes: 'Radfahren locker' }), 'bike');
+  assert.equal(guessSport({ title: 'Irgendwas' }), 'other');
+});

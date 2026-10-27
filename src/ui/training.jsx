@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check, Copy, Scissors, Undo2, CalendarClock, CalendarCheck } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check, Copy, Scissors, Undo2, CalendarClock, CalendarCheck, Wand2 } from 'lucide-react';
 import { useData, update, getData, getSeries, getLocalSeries, putSeries, uid } from '../lib/store.js';
 import { today, weeks, mondayOf, buildActivity, evaluate, estimatePlanLoad, matchPlan, compliance, cropActivity, localDate, reevaluate } from '../lib/activities.js';
 import { addDays, ZONES, cleanSeries } from '../lib/metrics.js';
-import { SPORTS, sportLabel } from '../lib/sports.js';
+import { SPORTS, sportLabel, guessSport } from '../lib/sports.js';
+import { recomputeAll } from '../lib/recompute.js';
 import { importFiles, deleteActivities } from '../lib/sync.js';
 import { deleteRemoteSeries } from '../lib/cloud-sync.js';
 import { ZoneWeeks, ZoneBar, LineChart, ZONE_COLORS } from './charts.jsx';
@@ -96,7 +97,7 @@ export function Training({ openActivity, openAdd }) {
             <option value="">Alle ({activities.length})</option>
             {Object.entries(sportCounts).sort((x, y) => y[1] - x[1]).map(([id, n]) => <option key={id} value={id}>{sportLabel(id)} ({n})</option>)}
           </select>
-          {sportFilter === 'other' && <p className="muted small">Sonstiges: Öffne die Einheit und wähle die richtige Sportart – die Liste aktualisiert sich dann.</p>}
+          {sportFilter === 'other' && <OtherTools list={sorted} />}
           {!sorted.length && <p className="muted">Noch keine Einheiten.</p>}
           {sorted.map((a) => (
             <button key={a.id} className="item" onClick={() => openActivity(a)}>
@@ -350,5 +351,33 @@ export function AddSheet({ onClose }) {
         </>
       )}
     </Sheet>
+  );
+}
+
+// Werkzeuge für Einheiten mit Sportart „Sonstiges“: automatisch erkennen oder alle sichtbaren auf eine Sportart setzen.
+function OtherTools({ list }) {
+  const [busy, setBusy] = useState(false);
+  const [target, setTarget] = useState('');
+  const recognizable = list.map((a) => ({ a, to: guessSport(a) })).filter((x) => x.to !== 'other');
+  const apply = async (pairs, label) => {
+    if (!pairs.length) return toast('Nichts zu ändern');
+    setBusy(true);
+    const map = new Map(pairs.map((x) => [x.a.id, x.to]));
+    update((d) => ({ ...d, activities: d.activities.map((a) => (map.has(a.id) ? { ...a, sport: map.get(a.id) } : a)) }));
+    toast(`${pairs.length} Einheiten ${label}. Belastung wird neu berechnet …`);
+    await recomputeAll();
+    setBusy(false);
+  };
+  return (
+    <div className="card">
+      <b className="small">Sonstiges zuordnen</b>
+      <p className="muted small">{recognizable.length} von {list.length} lassen sich aus Titel oder Notiz erkennen.</p>
+      <button className="secondary wide" disabled={busy || !recognizable.length} onClick={() => apply(recognizable, 'erkannt und umgestellt')}><Wand2 size={16} />Aus Titel erkennen ({recognizable.length})</button>
+      <label style={{ marginTop: 10 }}>Oder alle {list.length} sichtbaren auf eine Sportart setzen</label>
+      <div className="row" style={{ flexWrap: 'nowrap' }}>
+        <select value={target} onChange={(e) => setTarget(e.target.value)}><option value="">–</option>{SPORTS.filter((x) => x.id !== 'other').map((x) => <option key={x.id} value={x.id}>{x.label}</option>)}</select>
+        <button className="secondary" style={{ flex: 'none' }} disabled={busy || !target || !list.length} onClick={() => apply(list.map((a) => ({ a, to: target })), `auf ${sportLabel(target)} gesetzt`)}>Setzen</button>
+      </div>
+    </div>
   );
 }
