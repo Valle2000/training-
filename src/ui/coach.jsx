@@ -33,7 +33,7 @@ function Knowledge() {
   const list = TOPICS.filter((t) => (!cat || t.cat === cat) && (!q || JSON.stringify(t).toLowerCase().includes(q.toLowerCase())));
   return (
     <>
-      <p className="muted" style={{ marginTop: 12 }}>Kernaussagen aus der Trainingswissenschaft mit Fokus Langlauf, inklusive aktueller Studien (2023–2026). Jede Aussage hat eine Quelle und eine Einschätzung, wie belastbar sie ist.</p>
+      <p className="muted" style={{ marginTop: 12 }}>Kernaussagen aus der Trainingswissenschaft mit Fokus Langlauf, inklusive aktueller Studien (2023–2026) und übertragbarer Erkenntnisse aus Laufen, Radsport, Rudern und Triathlon. Jede Aussage hat eine Quelle und eine Einschätzung, wie belastbar sie ist.</p>
       <div className="row"><Search size={18} style={{ flex: 'none' }} /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Suchen, z. B. Schwelle, HRV, Eiweiß" /></div>
       <div className="chips"><button className={`chip${!cat ? ' on' : ''}`} onClick={() => setCat('')}>Alle</button>{cats.map((c) => <button key={c} className={`chip${cat === c ? ' on' : ''}`} onClick={() => setCat(c)}>{c}</button>)}</div>
       {list.map((t) => (

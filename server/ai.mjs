@@ -2,8 +2,13 @@
 // der Browser schickt nur eine kompakte Zusammenfassung der Trainingsdaten.
 import Anthropic from '@anthropic-ai/sdk';
 import { AsyncLocalStorage } from 'node:async_hooks';
+import { TOPICS } from '../src/lib/knowledge.js';
 
 const MODEL = 'claude-opus-5-5';
+
+// Wissensbasis der App (auch Erkenntnisse aus Laufen, Radsport, Rudern, Triathlon) – wird dem Coach mitgegeben,
+// damit Antworten und App-Wissen übereinstimmen. Steht im System-Prompt und wird daher zwischengespeichert.
+const KNOWLEDGE = TOPICS.map((t) => `### ${t.title} (${t.cat}, Evidenz: ${t.evidence})\n${t.facts.map((f) => `- ${f}`).join('\n')}\nPraxis: ${t.practice}\nQuellen: ${t.sources.map((x) => x.text).join('; ')}`).join('\n\n');
 
 const COACH_SYSTEM = `Du bist ein erfahrener Skilanglauf-Trainer mit sportwissenschaftlichem Hintergrund und berätst einen ambitionierten Athleten.
 Du bekommst eine kompakte Zusammenfassung seiner Trainingsdaten: Wochenumfänge je Intensitätszone (Olympiatoppen I1–I5 nach % HFmax), Belastung, Fitness/Ermüdung/Form (Modell wie CTL/ATL/TSB), Einheiten der letzten 21 Tage, Krafttraining, Erholungswerte (HRV, Schlaf, Ruhepuls) und seine eigene Strategie.
@@ -120,7 +125,7 @@ async function coach(body) {
   const { daten, frage } = body;
   if (!daten) throw httpError(400, 'Trainingsdaten fehlen');
   const content = `Trainingsdaten (JSON):\n${JSON.stringify(daten)}\n\n${frage ? `Frage des Athleten: ${frage}` : 'Analysiere mein Training und erstelle den Plan für die nächsten 7 Tage.'}`;
-  return askClaude({ system: COACH_SYSTEM, schema: COACH_SCHEMA, content, effort: 'high' });
+  return askClaude({ system: `${COACH_SYSTEM}\n\nWissensbasis der App (nutze sie; Erkenntnisse aus anderen Sportarten immer mit Übertrag auf den Langlauf; Evidenzstärke ehrlich nennen):\n\n${KNOWLEDGE}`, schema: COACH_SCHEMA, content, effort: 'high' });
 }
 
 async function food(body) {
