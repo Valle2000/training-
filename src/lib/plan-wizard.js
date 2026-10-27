@@ -247,6 +247,8 @@ const DOW_NAME = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Sa
 
 // Rollski im Sommer, Ski im Winter (Dez–März).
 const winter = (date) => [12, 1, 2, 3].includes(Number(date.slice(5, 7)));
+// Laufen-Mindestumfang gilt im Winter und im Herbst (Okt–Nov), wenn du dort Ski oder Rollski nicht als Hauptsport hast.
+const runSeason = (date) => winter(date) || [10, 11].includes(Number(date.slice(5, 7)));
 const specificSport = (date, i) => (winter(date) ? (i % 2 ? 'xc_classic' : 'xc_skate') : (i % 2 ? 'rollerski_classic' : 'rollerski_skate'));
 const SPECIFIC_SHARE = { base: 0.5, build: 0.6, specific: 0.75, taper: 0.75, race: 0.8, recovery: 0.4, transition: 0.3 };
 const OTHER = ['run', 'bike'];
@@ -458,13 +460,13 @@ export function generatePlan(opts, races = []) {
     const cap = (d) => (rest.has(d.dow) || d.dow === longDay || raceDows.has(d.dow) ? 0 : maxFor(d) - d.sessions.length);
     // Winter-Lauf: mindestens X Stunden Laufen pro Woche – flexibel und ohne Anfahrt zur Loipe. Die Läufe kommen
     // vor den übrigen lockeren Einheiten, die Gesamtzeit bleibt gleich.
-    const runGoal = opts.winterRunHours && winter(w.from) ? Math.round(Number(opts.winterRunHours) * 60) : 0;
+    const runGoal = opts.winterRunHours && runSeason(w.from) ? Math.round(Number(opts.winterRunHours) * 60) : 0;
     let runNow = days.flatMap((d) => d.sessions).filter((s) => s.sport === 'run').reduce((a, s) => a + s.minutes, 0);
     for (const d of days) {
       if (runNow >= runGoal - 15) break;
       if (cap(d) < 1 || d.sessions.some((s) => s.kind === 'hard') || room(d) < 30) continue;
       const min = Math.floor(Math.min(60, Math.max(30, runGoal - runNow), room(d)) / 5) * 5;
-      put(d, { title: 'Laufen (Winter, vor der Haustür)', sport: 'run', minutes: min, zone: 'I1', description: 'Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche).', kind: 'easy' });
+      put(d, { title: 'Laufen (vor der Haustür)', sport: 'run', minutes: min, zone: 'I1', description: 'Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche).', kind: 'easy' });
       runNow += min;
     }
     easy = Math.max(0, total - used);

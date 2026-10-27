@@ -18,7 +18,7 @@ const GROUPS = [
 
 // Saisonplan zum Durchklicken: Über dich → Ansatz → Umfang → Key Sessions → Vorschau → in den Kalender.
 export function PlanWizard({ onClose }) {
-  const { activities, races, settings } = useData();
+  const { activities, races, settings, plan: allPlan } = useData();
   const custom = settings.customKeys || [];
   const options = useMemo(() => allOptions(custom), [custom]);
   const [edit, setEdit] = useState(null);
@@ -29,6 +29,13 @@ export function PlanWizard({ onClose }) {
   // Letztes A-Rennen der kommenden Saison (bis ca. 10 Monate voraus) bestimmt das Planungsende.
   const lastA = races.filter((r) => r.priority === 'A' && r.date > t && r.date <= addDays(t, 300)).map((r) => r.date).sort().at(-1);
   const saved = settings.season?.wizard || {};
+  const wizardCount = allPlan.filter((p) => p.source === 'wizard' && !p.done && p.date >= today(settings.timezone)).length;
+  const deactivate = () => {
+    if (!confirm(`${wizardCount} Einheiten des Saisonplans aus dem Kalender entfernen? Erledigte Einheiten bleiben.`)) return;
+    update((d) => ({ ...d, plan: d.plan.filter((p) => !(p.source === 'wizard' && !p.done && p.date >= today(d.settings.timezone))) }));
+    toast('Saisonplan deaktiviert');
+    onClose();
+  };
   const [step, setStep] = useState(0);
   const [o, setO] = useState({
     approach: 'pyramidal', startHours: avg, peakHours: Math.round(avg * 1.2),
@@ -71,6 +78,7 @@ export function PlanWizard({ onClose }) {
   const steps = ['Über dich', 'Rennen', 'Ansatz', 'Umfang', 'Key Sessions', 'Vorschau'];
   return (
     <Sheet title="Saisonplan-Assistent" onClose={onClose}>
+      {wizardCount > 0 && <button className="ghost wide" style={{ marginBottom: 8, color: '#ffc9bf' }} onClick={deactivate}>Saisonplan deaktivieren ({wizardCount} Einheiten)</button>}
       <div className="chips">{steps.map((s, i) => <button key={s} className={`chip${i === step ? ' on' : ''}`} onClick={() => setStep(i)}>{i + 1}. {s}</button>)}</div>
 
       {step === 0 && <>
