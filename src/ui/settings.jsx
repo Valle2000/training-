@@ -143,7 +143,7 @@ export function Settings() {
 
 // Einheiten nach Herkunft löschen (z. B. einen fehlerhaften Import, um ihn sauber neu einzuspielen).
 const ORIGINS = {
-  'upload:polar': 'Polar-Export (Datei)', 'upload:fit': 'FIT-Dateien', 'upload:tcx': 'TCX-Dateien', 'upload:gpx': 'GPX-Dateien',
+  'upload:polar': 'Polar-Export (Datei)', 'upload:polar-plan': 'Polar-Export ohne Aufzeichnung (geplant oder von Hand)', 'upload:fit': 'FIT-Dateien', 'upload:tcx': 'TCX-Dateien', 'upload:gpx': 'GPX-Dateien',
   'upload:': 'Datei-Importe (ältere, z. B. Polar-Export)', concept2: 'Concept2', polar: 'Polar (Schnittstelle)', wahoo: 'Wahoo', manual: 'Von Hand eingetragen',
 };
 function DeleteBySource({ activities }) {

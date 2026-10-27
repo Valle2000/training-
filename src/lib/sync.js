@@ -331,6 +331,7 @@ export async function importFiles(files, onProgress) {
     }
     const { activity, series } = buildActivity({ ...raw, source: 'upload' }, d.settings);
     activity.importFormat = raw.importFormat;
+    activity.importFile = raw.importFile;
     if (series) await putSeries(activity.id, series);
     pending.push(activity);
     if (pending.length >= 25) flush();
@@ -354,7 +355,9 @@ export async function importFiles(files, onProgress) {
     try { raws = await readExport(name, bytes, parseFit); } catch (e) { fail(name, e); }
     const ext = name.toLowerCase().replace(/\.gz$/, '').split('.').pop();
     for (const raw of raws) {
-      raw.importFormat = ['json', 'csv'].includes(ext) ? 'polar' : ext;
+      // Polar-Einheiten ohne Uhr und ohne Messwerte (geplant oder von Hand eingetragen) getrennt führen.
+      raw.importFormat = ['json', 'csv'].includes(ext) ? (raw.recorded === false ? 'polar-plan' : 'polar') : ext;
+      raw.importFile = name.split('/').pop();
       if (raw.athlete && (!profile || raw.athlete.date > profile.date)) { profile = raw.athlete; applyProfile(); }
       try { const r0 = refreshed; if (await add(raw)) added++; else if (refreshed === r0) dup++; } catch (e) { fail(name, e); }
       if (++done % 10 === 0) onProgress?.(`${done} Einheiten verarbeitet · ${added} neu · ${dup} schon vorhanden${failed ? ` · ${failed} nicht lesbar` : ''}`);

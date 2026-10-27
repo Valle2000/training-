@@ -164,3 +164,14 @@ test('Neues Polar-Format (samples.samples, distanceMeters, Sport als Nummer)', a
   assert.equal(polarSport('Freistil-Skilanglauf'), 'xc_skate');
   assert.equal(polarSport('Schwimmen Freistil'), 'swim');
 });
+
+test('Polar: Sportnummer, geplante Einheiten nicht importieren', async () => {
+  const { parsePolarJson, readExport, importable } = await import('../src/lib/importers.js');
+  const base = { startTime: '2020-01-01T10:00:00', durationMillis: 3600000, timezoneOffsetMinutes: 60, exercises: [{ startTime: '2020-01-01T10:00:00', durationMillis: 3600000, sport: { id: '25' } }] };
+  assert.equal(parsePolarJson({ ...base, name: '' }).sport, 'xc_classic');
+  assert.equal(parsePolarJson({ ...base, deviceId: 'X' }).recorded, true);
+  assert.equal(parsePolarJson(base).recorded, false);
+  assert.equal(importable('e/training-target_2020.json'), false);
+  const bytes = new TextEncoder().encode(JSON.stringify({ name: 'Plan', startTime: '2020-01-01T10:00:00' }));
+  assert.deepEqual(await readExport('training-session_x.json', bytes), []);
+});

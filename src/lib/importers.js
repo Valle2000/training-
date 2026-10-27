@@ -1,7 +1,7 @@
 // Import älterer Einheiten aus Exporten: TCX, GPX, Polar-CSV, Polar-Konto-Export (JSON) und ZIP-Archive.
 // Alle Leser liefern dieselbe Form wie parseFit: {start, sport, elapsedS, distanceM, avgHr, maxHr, avgPower, calories, series}.
 import { toSeries } from './series.js';
-import { polarSport } from './sports.js';
+import { polarSport, polarSportId } from './sports.js';
 
 // Leere Angaben bleiben leer (nicht 0) – sonst stünde z. B. „Ø Puls 0“ in der Einheit, wenn Polar keine Zusammenfassung mitschickt.
 const num = (v) => { if (v == null || String(v).trim() === '') return null; const n = Number(String(v).replace(',', '.')); return Number.isFinite(n) ? n : null; };
@@ -20,7 +20,7 @@ function summarize(points, extra) {
     distanceM: extra.distanceM ?? null, calories: extra.calories ?? null, ascentM: extra.ascentM ?? null,
     avgHr: extra.avgHr ?? avg(hrs), maxHr: extra.maxHr ?? (hrs.length ? Math.max(...hrs) : null),
     avgPower: extra.avgPower ?? (pws.some(Boolean) ? avg(pws) : null),
-    title: extra.title || '', notes: extra.notes || '', laps: extra.laps || null, athlete: extra.athlete || null, externalLoad: extra.externalLoad ?? null,
+    title: extra.title || '', notes: extra.notes || '', laps: extra.laps || null, athlete: extra.athlete || null, externalLoad: extra.externalLoad ?? null, recorded: extra.recorded ?? true,
     series: points.length > 30 ? toSeries(points) : null,
   };
 }
@@ -170,13 +170,14 @@ export function parsePolarJsonV2(obj) {
   const athlete = p ? { date: p.modified || start, hrMax: num(p.maximumHeartRate), hrRest: num(p.restingHeartRate), lthr: num(p.anaerobicThreshold), ftp: num(p.functionalThresholdPower), weightKg: num(p.weightKg), sex: /FEMALE/.test(p.sex || '') ? 'f' : /MALE/.test(p.sex || '') ? 'm' : null } : null;
   const stopS = ex.stopTime ? (Date.parse(ex.stopTime) - startMs) / 1000 : null;
   return summarize(hasData ? points : [], {
-    athlete, start, sport: polarSport(obj.name || ex.name || '') , title: obj.name || '', notes: obj.note || '',
+    athlete, start, sport: polarSportId(ex.sport?.id ?? obj.sport?.id) || polarSport(obj.name || ex.name || ''), title: obj.name || '', notes: obj.note || '',
     elapsedS: num(ex.durationMillis ?? obj.durationMillis) != null ? num(ex.durationMillis ?? obj.durationMillis) / 1000 : stopS ?? undefined,
     distanceM: num(ex.distanceMeters ?? obj.distanceMeters) ?? undefined,
     calories: num(ex.calories ?? obj.calories) ?? undefined, ascentM: num(ex.ascentMeters) ?? undefined,
     avgHr: num(stats.STATISTICS_TYPE_HEART_RATE?.avg) ?? undefined, maxHr: num(stats.STATISTICS_TYPE_HEART_RATE?.max) ?? undefined,
     avgPower: num(stats.STATISTICS_TYPE_POWER?.avg ?? stats.STATISTICS_TYPE_CYCLING_POWER?.avg) ?? undefined,
     externalLoad: num(ex.trainingLoad ?? obj.trainingLoad),
+    recorded: !!(obj.deviceId || obj.product || hasData),
   });
 }
 
@@ -185,7 +186,8 @@ export function importable(name) {
   const n = name.toLowerCase();
   if (n.endsWith('/') || n.includes('__macosx')) return false;
   const base = n.replace(/\.gz$/, '');
-  if (base.endsWith('.json')) return /training|session|exercise/.test(n.split('/').pop());
+  // Nur aufgezeichnete Einheiten – nicht training-target (geplante Einheiten), Favoriten, Tagesaktivität, Schlaf …
+  if (base.endsWith('.json')) return /training[-_]session/.test(n.split('/').pop());
   return /\.(fit|tcx|gpx|csv|zip)$/.test(base);
 }
 
@@ -254,8 +256,8 @@ export async function readExport(name, bytes, parseFit) {
   if (lower.endsWith('.csv')) return [parsePolarCsv(text())];
   if (lower.endsWith('.json')) {
     const obj = JSON.parse(text());
-    // Nur Trainingseinheiten, keine Tagesaktivität, Schlaf usw.
-    if (!/training|session|exercise/i.test(name) && !obj.exercises) return [];
+    // Nur aufgezeichnete Einheiten: geplante Einheiten (training-target) und Ähnliches haben keine „exercises“.
+    if (/target/i.test(name) || !Array.isArray(obj.exercises) || !obj.exercises.length) return [];
     return [parsePolarJson(obj)];
   }
   return [];

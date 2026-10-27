@@ -54,3 +54,14 @@ export const polarSport = (s) => {
   if (s.includes('YOGA') || s.includes('MOBIL') || s.includes('STRETCH') || s.includes('DEHN')) return 'mobility';
   return 'other';
 };
+
+// Polar-Sportnummern (Polar-Export: „sport": {"id": "59"}). Quelle: Polar-Flow-Sportliste, wiedergegeben unter
+// github.com/pcolby/bipolar/wiki/Polar-Sport-Types (59 = Freestyle roller skiing usw.).
+const POLAR_SPORT_IDS = {
+  1: 'run', 2: 'bike', 3: 'hike', 4: 'run', 5: 'bike', 6: 'xc_classic', 8: 'row', 9: 'hike', 11: 'hike', 15: 'strength',
+  17: 'run', 18: 'bike', 19: 'run', 20: 'strength', 23: 'swim', 24: 'xc_skate', 25: 'xc_classic', 27: 'run', 33: 'mobility',
+  34: 'strength', 36: 'run', 38: 'bike', 57: 'strength', 58: 'strength', 59: 'rollerski_skate', 60: 'rollerski_classic',
+  64: 'mobility', 65: 'mobility', 66: 'mobility', 84: 'run', 85: 'xc_skate', 86: 'bike', 87: 'xc_skate', 92: 'run',
+  103: 'swim', 105: 'swim', 111: 'mobility', 116: 'hike', 117: 'row', 118: 'bike', 126: 'strength', 127: 'mobility',
+};
+export const polarSportId = (id) => POLAR_SPORT_IDS[Number(id)] || null;
