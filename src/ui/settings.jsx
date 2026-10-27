@@ -7,6 +7,9 @@ import { getAccessCode, setAccessCode, getOwnKey, setOwnKey } from '../lib/ai.js
 import { fmtDate, toast } from './common.jsx';
 import { AccountCard } from './account.jsx';
 
+// iPad meldet sich als Mac, hat aber einen Touchscreen; Safari auf iOS kann keine Ordner auswählen.
+const IOS = typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1));
+
 const FIELDS = [
   ['hrMax', 'Maximalpuls', 'z. B. 196'], ['hrRest', 'Ruhepuls', 'z. B. 42'], ['lthr', 'Laktatschwellen-Puls', 'z. B. 172'],
   ['ftp', 'FTP Rad (W)', 'z. B. 300'], ['ftpSkierg', 'FTP SkiErg (W)', 'optional'], ['ftpRow', 'FTP Rudern (W)', 'optional'],
@@ -102,7 +105,8 @@ export function Settings() {
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Vergangene Einheiten importieren</h3>
         <label className="primary wide" style={{ cursor: 'pointer' }}><Upload size={17} />Dateien wählen (FIT, TCX, GPX, CSV, JSON, ZIP, GZ)<input type="file" accept=".fit,.tcx,.gpx,.csv,.json,.zip,.gz" multiple hidden onChange={upload} disabled={!!progress} /></label>
-        <label className="secondary wide" style={{ cursor: 'pointer', marginTop: 8 }}><Upload size={17} />Ganzen Ordner wählen (am Laptop)<input type="file" webkitdirectory="" directory="" multiple hidden onChange={upload} disabled={!!progress} /></label>
+        {IOS ? <p className="small muted">iPad/iPhone: Ordner lassen sich hier nicht direkt wählen. In der Dateien-App den Ordner lange drücken → „Komprimieren“ und die ZIP oben auswählen (den Polar-Export kannst du auch direkt als ZIP nehmen, ohne ihn zu entpacken). Während des Imports die App im Vordergrund lassen.</p>
+          : <label className="secondary wide" style={{ cursor: 'pointer', marginTop: 8 }}><Upload size={17} />Ganzen Ordner wählen<input type="file" webkitdirectory="" directory="" multiple hidden onChange={upload} disabled={!!progress} /></label>}
         {progress && <div className="notice">{progress}<br /><span className="small">App geöffnet lassen – große Exporte dauern einige Minuten.</span></div>}
         {result && <div className="notice"><b>{result.added} importiert</b>{result.refreshed > 0 && ` · ${result.refreshed} ergänzt`} · {result.dup} schon vorhanden · {result.failed} nicht lesbar{result.errors?.length > 0 && <div className="small" style={{ marginTop: 4, wordBreak: 'break-word' }}>{result.errors.join(' · ')}</div>}{result.filled?.length > 0 && <div className="small" style={{ marginTop: 4 }}>Aus deinem Polar-Profil übernommen: {result.filled.map((k) => ({ hrMax: 'Maximalpuls', hrRest: 'Ruhepuls', lthr: 'Schwellenpuls', ftp: 'FTP', weightKg: 'Gewicht', sex: 'Geschlecht' }[k])).join(', ')} – bitte oben prüfen.</div>}{result.added > 0 && <div className="small" style={{ marginTop: 4 }}>Die Verläufe werden im Hintergrund nach Supabase hochgeladen (wenn angemeldet).</div>}</div>}
         <ul className="small muted" style={{ paddingLeft: 18, lineHeight: 1.55 }}>
