@@ -2,6 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { generatePlan, toPlanItems, APPROACHES } from '../src/lib/plan-wizard.js';
+import { busyOn } from '../src/lib/week-adapt.js';
 
 const races = [{ date: '2027-02-20', name: 'Engadin', priority: 'A', distanceKm: 42 }];
 const base = { startHours: 13, peakHours: 16, start: '2026-11-02', end: '2027-03-01', restDays: [1], longDay: 7, doubles: true, strengthPerWeek: 2 };
@@ -231,4 +232,17 @@ test('Nur bei Bedarf zwei Einheiten am Tag; Kraft nie am Tag vor einer harten Ei
       if (next && next.sessions.some((s) => s.kind === 'hard')) assert.ok(!d.sessions.some((s) => s.kind === 'strength'), `Kraft vor Intervall am ${d.date}`);
     }
   }
+});
+
+test('Double Threshold: an Uni-Tagen nur eine Einheit, an freien Tagen zwei', () => {
+  const schedule = { start: '06:30', end: '22:00', buffer: 15, blocks: [{ id: 'u', label: 'Uni', dows: [1, 2, 3, 4, 5], from: '08:00', to: '17:00' }], oneOff: [] };
+  const busy = (d) => busyOn(d, schedule).length > 0;
+  const rs = [{ id: 'a', date: '2027-02-20', name: 'Engadin', priority: 'A', distanceKm: 42 }];
+  const w = generatePlan({ ...base, start: '2026-11-02', end: '2026-12-27', approach: 'norwegian', dtDays: 2, hardDays: [3, 6], doubles: false, busyFor: busy }, rs);
+  const days = w.flatMap((x) => x.days);
+  const dtDoubleBusy = days.filter((d) => busy(d.date) && d.sessions.filter((s) => s.kind === 'hard').length > 1);
+  assert.equal(dtDoubleBusy.length, 0, dtDoubleBusy.map((d) => d.date).join());
+  assert.ok(days.some((d) => !busy(d.date) && d.sessions.filter((s) => s.kind === 'hard').length === 2), 'an freien Tagen zweimal');
+  const never = generatePlan({ ...base, start: '2026-11-02', end: '2026-12-27', approach: 'norwegian', dtDays: 2, hardDays: [3, 6], doubles: false, dtDouble: 'never' }, rs);
+  assert.ok(never.flatMap((x) => x.days).every((d) => d.sessions.filter((s) => s.kind === 'hard').length <= 1));
 });

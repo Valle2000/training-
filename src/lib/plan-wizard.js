@@ -385,13 +385,20 @@ export function generatePlan(opts, races = []) {
       const day = days[dow - 1];
       if (slot === 'dt') {
         const am = pickByType('dt_am', rot) || pickByType('threshold', rot), pm = pickByType('dt_pm', rot) || pickByType('threshold', rot + 1);
-        if (am) {
+        // Zweimal am Tag: immer, nie, oder nur an Tagen ohne Termin (Uni, Arbeit) – auto.
+        const busy = opts.busyFor ? opts.busyFor(day.date) : false;
+        const twice = opts.dtDouble === 'always' || (opts.dtDouble !== 'never' && !busy);
+        if (!twice && am) {
+          // Eine Schwelleneinheit statt zwei: der Tag bleibt frei, die Schwelle bleibt drin.
+          const single = pickByType('threshold', rot) || optionById('thr_6x10');
+          put(day, sess(single, day.date, rot++, ''));
+        } else if (am) {
           const x = sess(am, day.date, rot++, 'vormittags');
           // Double Threshold getrennt: morgens Rad (gelenkschonend), abends Laufen – im Laufen-Schwerpunkt.
           if (fSport === 'run' && opts.dtSplit !== false && x.sport !== 'bike' && am.sport === 'specific') x.sport = 'bike';
           put(day, x);
         }
-        if (pm && room(day) >= pm.minutes) {
+        if (twice && pm && room(day) >= pm.minutes) {
           const x = sess(pm, day.date, rot++, 'nachmittags');
           // Mit Rad als Ersatz: auch die Abendeinheit auf dem Rad.
           if (fSport === 'bike' && pm.sport === 'run') x.sport = 'bike';

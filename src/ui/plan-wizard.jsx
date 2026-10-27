@@ -7,7 +7,7 @@ import { sportLabel, SPORTS } from '../lib/sports.js';
 import { PHASES, PRIORITY_INFO, raceAdvice } from '../lib/season.js';
 import { FOCUS_OPTIONS, focusOn, noSnowOn, APPROACHES, KEY_TYPES, allOptions, makeKey, PLAN_SOURCES, GOALS, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend, hardDayCount, suggestHardDays, checkHardDays } from '../lib/plan-wizard.js';
 import { Sheet, fmtDate, fmtNum, toast } from './common.jsx';
-import { freeMinutes, hasSchedule, periodForWeek } from '../lib/week-adapt.js';
+import { freeMinutes, hasSchedule, periodForWeek, busyOn } from '../lib/week-adapt.js';
 
 const DOW = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 // Gruppen im Katalog; Intervalle nach Zone getrennt.
@@ -41,7 +41,7 @@ export function PlanWizard({ onClose }) {
   const keys = o.keys || ap.defaults;
   const pr = o.profile || {};
   const rec = recommend(pr, Number(o.startHours) || 10);
-  const plan = useMemo(() => (step >= 5 ? generatePlan({ ...o, keys, customKeys: custom, capFor: hasSchedule(settings.schedule) ? (d) => freeMinutes(d, settings.schedule) : null, periodFor: settings.schedule?.periods?.length ? (m) => periodForWeek(m, settings.schedule) : null, focusFor: (m) => focusOn(m, settings.season?.focus, settings.season?.snow, settings.season?.winterSub) }, races) : []), [step, o, keys, races, custom, settings.schedule, settings.season?.focus, settings.season?.snow, settings.season?.winterSub]);
+  const plan = useMemo(() => (step >= 5 ? generatePlan({ ...o, keys, customKeys: custom, capFor: hasSchedule(settings.schedule) ? (d) => freeMinutes(d, settings.schedule) : null, periodFor: settings.schedule?.periods?.length ? (m) => periodForWeek(m, settings.schedule) : null, busyFor: hasSchedule(settings.schedule) ? (d) => busyOn(d, settings.schedule).length > 0 : null, focusFor: (m) => focusOn(m, settings.season?.focus, settings.season?.snow, settings.season?.winterSub) }, races) : []), [step, o, keys, races, custom, settings.schedule, settings.season?.focus, settings.season?.snow, settings.season?.winterSub]);
   const set = (k, v) => setO({ ...o, [k]: v });
   const toggleKey = (id) => set('keys', keys.includes(id) ? keys.filter((k) => k !== id) : [...keys, id]);
   const setPr = (k, v) => set('profile', { ...pr, [k]: v });
@@ -309,6 +309,9 @@ function HardDays({ o, set, setO, schedule }) {
         <label>Rhythmus der Double-Threshold-Tage</label>
         <div className="chips">{[['weekly', 'Jede Woche'], ['biweekly', 'Jede 2. Woche'], ['3:1', '3:1 (3 mit, 1 ohne)']].map(([v, l]) => <button key={v} className={`chip${(o.dtRhythm || 'weekly') === v ? ' on' : ''}`} onClick={() => setO({ ...o, dtRhythm: v })}>{l}</button>)}</div>
         <p className="muted small">3:1 entspricht dem Aufbau-Rhythmus des Plans: drei Wochen mit Double Threshold, dann eine Woche mit nur einer Schwelleneinheit. Jede 2. Woche ist für Einsteiger oder bei wenig Zeit.</p>
+        <label>Zwei Einheiten am Tag beim Double Threshold</label>
+        <div className="chips">{[['auto', 'Nur an freien Tagen'], ['always', 'Immer zwei'], ['never', 'Immer eine']].map(([v, l]) => <button key={v} className={`chip${(o.dtDouble || 'auto') === v ? ' on' : ''}`} onClick={() => setO({ ...o, dtDouble: v })}>{l}</button>)}</div>
+        <p className="muted small">Standard: Zweimal nur an Tagen ohne Termin. An Uni- oder Arbeitstagen wird daraus eine Schwelleneinheit, damit der Tag nicht zu voll wird. „Immer eine“ verzichtet ganz auf die Doppeleinheit.</p>
         <label>Double-Threshold-Tage pro Woche</label>
         <div className="chips">{[1, 2].map((n) => <button key={n} className={`chip${dt === n ? ' on' : ''}`} onClick={() => setO({ ...o, dtDays: n, hardDays: null })}>{n} {n === 1 ? 'Tag' : 'Tage'}</button>)}</div>
         <p className="muted small">{dt === 1 ? 'Ein Double-Threshold-Tag plus eine harte Einheit: für die meisten der beste Einstieg – zwei kontrollierte Schwelleneinheiten an einem Tag, der Rest der Woche bleibt locker und erholsam.' : 'Zwei Double-Threshold-Tage plus eine kurze harte Einheit: sehr viel Schwelle. Erst sinnvoll mit solider Grundlage (ca. 10+ h/Woche) und guter Steuerung über Laktat oder Puls – sonst wird es schnell zu viel.'}</p>
