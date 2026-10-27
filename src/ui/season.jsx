@@ -1,11 +1,13 @@
 import React, { Suspense, lazy, useMemo, useState } from 'react';
-import { Plus, Trash2, Trophy, Flag, Wand2 } from 'lucide-react';
+import { Plus, Trash2, Trophy, Flag, Wand2, Utensils } from 'lucide-react';
 import { useData, update, uid } from '../lib/store.js';
 import { today, weeks as weekStats, mondayOf, dailyLoads } from '../lib/activities.js';
 import { addDays, performanceCurve } from '../lib/metrics.js';
 import { PHASES, seasonPlan, seasonStart, gapPct, parseTime, fmtTime } from '../lib/season.js';
 import { SeasonChart, LineChart } from './charts.jsx';
 import { Sheet, fmtDate, fmtNum, toast } from './common.jsx';
+
+import { RaceReport, RacePlanSheet } from './race-plan.jsx';
 
 const PlanWizard = lazy(() => import('./plan-wizard.jsx').then((m) => ({ default: m.PlanWizard })));
 
@@ -112,6 +114,7 @@ export function Races({ openActivity }) {
 
 function RaceEditor({ race, activities, onClose, openActivity, t }) {
   const [r, setR] = useState({ result: {}, ...race });
+  const [planOpen, setPlanOpen] = useState(false);
   const [timeStr, setTimeStr] = useState(r.result?.timeS ? fmtTime(r.result.timeS) : '');
   const [winStr, setWinStr] = useState(r.result?.winnerS ? fmtTime(r.result.winnerS) : '');
   const set = (k) => (e) => setR({ ...r, [k]: e.target.value });
@@ -121,7 +124,8 @@ function RaceEditor({ race, activities, onClose, openActivity, t }) {
     if (!r.name.trim()) return toast('Name fehlt');
     const timeS = parseTime(timeStr), winnerS = parseTime(winStr);
     const next = { ...r, result: { ...r.result, timeS, winnerS, gapPct: gapPct(timeS, winnerS) } };
-    update((d) => ({ ...d, races: [...d.races.filter((x) => x.id !== next.id), next] }));
+    // Rennplan wird im eigenen Fenster gespeichert – hier nicht überschreiben.
+    update((d) => ({ ...d, races: [...d.races.filter((x) => x.id !== next.id), { ...next, plan: d.races.find((x) => x.id === next.id)?.plan ?? next.plan }] }));
     onClose();
   };
   const remove = () => { update((d) => ({ ...d, races: d.races.filter((x) => x.id !== r.id) })); onClose(); };
@@ -135,6 +139,8 @@ function RaceEditor({ race, activities, onClose, openActivity, t }) {
         <div><label>Distanz (km)</label><input inputMode="decimal" value={r.distanceKm} onChange={set('distanceKm')} /></div>
       </div>
       <label>Ziel</label><input value={r.goal} onChange={set('goal')} placeholder="z. B. unter 2:00 h, Top 50" />
+      <button className="secondary wide" style={{ marginTop: 10 }} onClick={() => { update((d) => ({ ...d, races: [...d.races.filter((x) => x.id !== r.id), { ...(d.races.find((x) => x.id === r.id) || {}), ...r }] })); setPlanOpen(true); }}><Utensils size={16} />Rennplan & Verpflegung</button>
+      {planOpen && <RacePlanSheet race={r} onClose={() => setPlanOpen(false)} />}
       {r.date <= t && <>
         <h3>Ergebnis</h3>
         <div className="grid2">
@@ -144,7 +150,7 @@ function RaceEditor({ race, activities, onClose, openActivity, t }) {
           <div><label>Starter</label><input inputMode="numeric" value={r.result.fieldSize ?? ''} onChange={(e) => setRes('fieldSize', e.target.value)} /></div>
         </div>
         {parseTime(timeStr) && parseTime(winStr) && <p className="muted small">Rückstand: +{fmtNum(gapPct(parseTime(timeStr), parseTime(winStr)), 1)} %</p>}
-        <label>Gefühl / Ski / Verlauf</label><textarea value={r.result.feeling ?? ''} onChange={(e) => setRes('feeling', e.target.value)} />
+        <RaceReport report={r.report || (r.result.feeling ? { notes: r.result.feeling } : undefined)} onChange={(rep) => setR({ ...r, report: rep })} />
         {sameDay.length > 0 && <><label>Einheit verknüpfen</label><select value={r.result.activityId ?? ''} onChange={(e) => setRes('activityId', e.target.value || null)}><option value="">–</option>{sameDay.map((a) => <option key={a.id} value={a.id}>{a.title || a.sport} · {Math.round(a.durationS / 60)} min</option>)}</select></>}
         {r.result.activityId && <button className="ghost" onClick={() => openActivity(activities.find((a) => a.id === r.result.activityId))}>Einheit öffnen</button>}
       </>}
@@ -164,6 +170,17 @@ export function RaceCountdown({ go }) {
   const nr = nextRace(races, t);
   if (!nr) return null;
   const days = Math.round((Date.parse(nr.date) - Date.parse(t)) / 864e5);
-  return <button className="item" onClick={() => go('training')}><div className="grow"><b><Flag size={14} /> {nr.name}</b><p>{fmtDate(nr.date)} · {nr.priority}-Rennen · {nr.technique}</p></div><span className="num">{days === 0 ? 'heute' : `${days} T`}</span></button>;
+  return <RaceCountdownItem nr={nr} days={days} go={go} />;
+}
+
+function RaceCountdownItem({ nr, days, go }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button className="item" onClick={() => go('training')}><div className="grow"><b><Flag size={14} /> {nr.name}</b><p>{fmtDate(nr.date)} · {nr.priority}-Rennen · {nr.technique}</p></div><span className="num">{days === 0 ? 'heute' : `${days} T`}</span></button>
+      {days <= 7 && <button className="secondary wide" onClick={() => setOpen(true)}><Utensils size={16} />Rennplan & Verpflegung{days <= 2 ? ' – jetzt Speicher füllen' : ''}</button>}
+      {open && <RacePlanSheet race={nr} onClose={() => setOpen(false)} />}
+    </>
+  );
 }
 
