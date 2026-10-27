@@ -5,7 +5,7 @@ import { today, weeks, mondayOf, buildActivity, evaluate, estimatePlanLoad, matc
 import { addDays, ZONES, cleanSeries } from '../lib/metrics.js';
 import { SPORTS, sportLabel, guessSport } from '../lib/sports.js';
 import { recomputeAll } from '../lib/recompute.js';
-import { importFiles, deleteActivities } from '../lib/sync.js';
+import { importFiles, deleteActivities, mapPolarSport } from '../lib/sync.js';
 import { deleteRemoteSeries } from '../lib/cloud-sync.js';
 import { ZoneWeeks, ZoneBar, LineChart, ZONE_COLORS } from './charts.jsx';
 import { Sheet, Seg, fmtDuration, fmtNum, fmtDate, fmtKm, toast } from './common.jsx';
@@ -381,10 +381,17 @@ function OtherGroups({ list }) {
     const to = pick[g.key];
     if (!to) return;
     setBusy(true);
-    const ids = new Set(g.items.map((a) => a.id));
-    update((d) => ({ ...d, activities: d.activities.map((a) => (ids.has(a.id) ? { ...a, sport: to } : a)) }));
-    toast(`${g.n} Einheiten auf ${sportLabel(to)} gesetzt. Belastung wird neu berechnet …`);
-    await recomputeAll();
+    const polarIds = [...new Set(g.items.map((a) => a.polarSportId))];
+    if (polarIds.length === 1 && polarIds[0] != null) {
+      // Polar-Sportnummer: als Regel speichern, gilt für alle Einheiten mit dieser Nummer und für künftige Importe.
+      toast(`Polar-Sportnummer ${polarIds[0]} → ${sportLabel(to)} gespeichert`);
+      await mapPolarSport(polarIds[0], to);
+    } else {
+      const ids = new Set(g.items.map((a) => a.id));
+      update((d) => ({ ...d, activities: d.activities.map((a) => (ids.has(a.id) ? { ...a, sport: to } : a)) }));
+      toast(`${g.n} Einheiten auf ${sportLabel(to)} gesetzt. Belastung wird neu berechnet …`);
+      await recomputeAll();
+    }
     setBusy(false);
   };
   return (

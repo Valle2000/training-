@@ -68,8 +68,12 @@ async function call(provider, path, { binary = false, file = null } = {}) {
 // Neue Einheit speichern, wenn sie noch nicht existiert. Gibt true zurück, wenn neu.
 async function store(raw) {
   const d = getData();
+  // Selbst zugeordnete Polar-Sportnummern (Einstellungen) haben Vorrang.
+  const mapped = raw.polarSportId != null && d.settings.polarSportMap?.[raw.polarSportId];
+  if (mapped) raw.sport = mapped;
   if (findDuplicate(d.activities, { ...raw, durationS: raw.elapsedS })) return false;
   const { activity, series } = buildActivity(raw, d.settings);
+  if (raw.polarSportId != null) activity.polarSportId = String(raw.polarSportId);
   if (series) await putSeries(activity.id, series);
   update((x) => ({ ...x, activities: [...x.activities, activity] }));
   return true;
@@ -97,7 +101,9 @@ async function syncPolar() {
     } catch { /* ohne FIT: Zusammenfassung verwenden */ }
     if (raw && raw.sport === 'other' && summarySport !== 'other') raw.sport = summarySport;
     if (old) {
-      if (raw?.sport && raw.sport !== 'other') setSport(old.id, raw.sport);
+      const mappedSport = ex.sport?.id != null ? getData().settings.polarSportMap?.[ex.sport.id] : null;
+      const sportNow = mappedSport || raw?.sport;
+      if (sportNow && sportNow !== 'other') setSport(old.id, sportNow);
       continue;
     }
     if (!raw) {
@@ -110,7 +116,7 @@ async function syncPolar() {
       const hr = f('heart-rate') || {};
       raw = { start, sport, elapsedS: isoDuration(f('duration')), distanceM: f('distance'), avgHr: hr.average, maxHr: hr.maximum, calories: f('calories') };
     }
-    if (await store({ ...raw, source: 'polar', externalId: String(ex.id) })) added++;
+    if (await store({ ...raw, source: 'polar', externalId: String(ex.id), polarSportId: ex.sport?.id ?? null })) added++;
   }
   await syncPolarWellness();
   return added;
