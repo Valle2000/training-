@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check, Copy, Scissors, Undo2, CalendarClock, CalendarCheck, Wand2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check, Copy, Scissors, Undo2, CalendarClock, CalendarCheck, Wand2, Download } from 'lucide-react';
 import { useData, update, getData, getSeries, getLocalSeries, putSeries, uid } from '../lib/store.js';
 import { today, weeks, mondayOf, buildActivity, evaluate, estimatePlanLoad, matchPlan, compliance, cropActivity, localDate, reevaluate } from '../lib/activities.js';
 import { addDays, ZONES, cleanSeries } from '../lib/metrics.js';
@@ -429,6 +429,15 @@ function OtherTools({ list }) {
     await recomputeAll();
     setBusy(false);
   };
+  // Liste aller „Sonstiges“-Einheiten als JSON zum Durchsehen (ohne Kurven und Verläufe).
+  const exportList = () => {
+    const rows = list.map((a) => ({ id: a.id, date: a.date, start: a.start, title: a.title || '', source: a.source, importFormat: a.importFormat || null, polarSportId: a.polarSportId ?? null, durationMin: Math.round((a.durationS || 0) / 60), distanceKm: a.distanceM ? Math.round(a.distanceM / 100) / 10 : null, avgHr: a.avgHr ?? null, notes: a.notes || '' }));
+    const blob = new Blob([JSON.stringify(rows, null, 1)], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `sonstiges-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+  };
   const removeAll = async () => {
     if (!list.length) return;
     if (!confirm(`${list.length} Sonstiges-Einheiten löschen? Notizen, RPE und Laktat dieser Einheiten gehen verloren. Das gilt auch für Supabase und andere Geräte.`)) return;
@@ -441,6 +450,7 @@ function OtherTools({ list }) {
       <b className="small">Sonstiges zuordnen</b>
       <p className="muted small">{recognizable.length} von {list.length} lassen sich aus Titel oder Notiz erkennen.</p>
       <button className="secondary wide" disabled={busy || !recognizable.length} onClick={() => apply(recognizable, 'erkannt und umgestellt')}><Wand2 size={16} />Aus Titel erkennen ({recognizable.length})</button>
+      <button className="secondary wide" style={{ marginTop: 8 }} disabled={!list.length} onClick={exportList}><Download size={16} />Liste als JSON ({list.length})</button>
       <button className="ghost wide" style={{ marginTop: 8, color: '#ffc9bf' }} disabled={busy || !list.length} onClick={removeAll}><Trash2 size={16} />Alle {list.length} Sonstiges löschen</button>
       <label style={{ marginTop: 10 }}>Oder alle {list.length} sichtbaren auf eine Sportart setzen</label>
       <div className="row" style={{ flexWrap: 'nowrap' }}>
