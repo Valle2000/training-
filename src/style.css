@@ -1,13 +1,11 @@
 :root{--ink:#18303d;--muted:#6f8793;--bg:#f4f7f8;--card:#fff;--line:#e1e9ed;--brand:#102d3a;--accent:#126b7c;--lime:#c7f36b;--fit:#2563eb;--fat:#db2777;--form:#d97706;--load:#a8b8c0;--good:#286747;--goodbg:#d6f4de;--warn:#7a5a00;--warnbg:#fff1c9;--bad:#8a2c20;--badbg:#fde0dc;
  --z1:#9fd8c3;--z2:#4fb3a0;--z3:#f2b630;--z4:#e8743b;--z5:#c73d4c;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);font-synthesis:none}
 @media (prefers-color-scheme:dark){:root{--ink:#e3ecef;--muted:#91a7b1;--bg:#0c1a21;--card:#132630;--line:#22404d;--accent:#5cc3d4;--fit:#60a5fa;--fat:#f472b6;--form:#fbbf24;--load:#3b5562;--goodbg:#173b28;--good:#8be0a8;--warnbg:#3d3410;--warn:#f1d27a;--badbg:#45201b;--bad:#ffb1a5}}
-*{box-sizing:border-box}html,body{overscroll-behavior:none}body{margin:0;background:var(--bg)}
-/* Feste App-Fläche an allen vier Rändern (100dvh ist in der iOS-Home-Bildschirm-App um die Statusleiste zu kurz): nur der Inhalt scrollt. Verhindert, dass iOS die Leiste unten beim Nachfedern oder nach Höhenänderungen lösgelöst mitten in die Seite schiebt. */
-#root{position:fixed;top:0;left:0;right:0;bottom:calc(-1 * var(--ios-gap, 0px));display:flex;flex-direction:column}header{flex:none}.scroller{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}
+*{box-sizing:border-box}body{margin:0;background:var(--bg)}button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}
 header{height:64px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 max(18px,calc((100vw - 760px)/2));padding-top:env(safe-area-inset-top);box-sizing:content-box}
 .brand{display:flex;align-items:center;gap:10px}.brand b{font-size:19px}.brand small{display:block;font-size:10px;letter-spacing:1px;color:#a9c9d4}
 .pill{font-size:11px;border:1px solid #517280;border-radius:20px;padding:6px 10px;color:#c5e3ec;background:transparent;display:inline-flex;gap:6px;align-items:center}
-main{max-width:760px;margin:auto;padding:18px 16px 28px}
+main{max-width:760px;margin:auto;padding:18px 16px 110px}
 h1{font-size:24px;letter-spacing:-.6px;margin:8px 0 16px}h2{font-size:17px;margin:24px 0 10px}h3{font-size:15px;margin:14px 0 6px}p{line-height:1.5}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}
 .hero{background:linear-gradient(145deg,#123f51,#176779);border-radius:20px;color:#fff;padding:20px;margin-bottom:14px}.hero .eyebrow{font-size:10px;letter-spacing:1.8px;color:#9edbe2}.hero p{color:#d3e6eb;font-size:14px;margin:6px 0 0}
@@ -31,8 +29,7 @@ textarea{min-height:80px;resize:vertical}.grid2{display:grid;grid-template-colum
 @media (prefers-color-scheme:dark){.notice{background:#183340;color:var(--muted)}}
 .toast{position:fixed;left:50%;bottom:86px;transform:translateX(-50%);background:var(--brand);color:#fff;padding:12px 16px;border-radius:12px;z-index:30;max-width:90vw;font-size:14px;box-shadow:0 6px 20px #0004}
 .badge{font-size:11px;border-radius:8px;padding:2px 8px;white-space:nowrap}.b-gut{background:var(--goodbg);color:var(--good)}.b-achtung{background:var(--warnbg);color:var(--warn)}.b-kritisch{background:var(--badbg);color:var(--bad)}.b-info{background:#e2edf7;color:#2b5b84}
-nav::after{content:'';position:absolute;left:0;right:0;top:100%;height:120px;background:var(--card)}
-nav{flex:none;position:relative;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:center;padding:6px 4px max(8px,env(safe-area-inset-bottom));z-index:5}
+nav{position:fixed;bottom:0;left:0;right:0;transform:translateZ(0);-webkit-transform:translateZ(0);background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:center;padding:6px 4px max(8px,env(safe-area-inset-bottom));z-index:5}
 .nav{width:min(16.6%,110px);border:0;background:transparent;color:#8498a2;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;padding:5px 0}.nav.active{color:var(--accent);font-weight:800}
 .overlay{position:fixed;inset:0;background:#0d2737aa;z-index:10;display:flex;align-items:flex-end;justify-content:center}.sheet{background:var(--bg);border-radius:22px 22px 0 0;padding:20px 18px 34px;width:100%;max-width:760px;max-height:92dvh;overflow:auto}
 @media(min-width:800px){.overlay{align-items:center}.sheet{border-radius:20px}}
