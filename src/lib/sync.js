@@ -1,5 +1,5 @@
 // Abgleich mit Polar, Concept2 (ErgData/Logbook) und Wahoo über /api/connect.
-import { getData, update, putSeries, deleteSeries, uid } from './store.js';
+import { getData, update, putSeries, deleteSeries, uid, getLocalSeries } from './store.js';
 import { toSeries } from './series.js';
 import { buildActivity, findDuplicate, localDate, estimatePlanLoad } from './activities.js';
 import { sportFromConcept2, polarSport } from './sports.js';
@@ -60,6 +60,7 @@ async function call(provider, path, { binary = false, file = null } = {}) {
   const r = await fetch(`/api/connect?provider=${provider}&${q}`, { headers: { 'x-provider-token': await token(provider) } });
   if (r.status === 401 || r.status === 403) throw new Error(`${PROVIDERS[provider].label}: Zugang abgelaufen, bitte neu verbinden`);
   if (r.status === 204 || r.status === 404) return null;
+  if (r.status === 429) throw Object.assign(new Error(`${PROVIDERS[provider].label}: zu viele Anfragen – in ein paar Minuten nochmal versuchen, schon geladene Einheiten werden übersprungen`), { rate: true });
   if (!r.ok) throw new Error(`${PROVIDERS[provider].label}: Fehler ${r.status}`);
   return binary ? new Uint8Array(await r.arrayBuffer()) : r.json();
 }
@@ -225,29 +226,59 @@ export async function reloadConcept2(onProgress) {
 }
 
 // Standard: letzte 50 Einheiten; all = alle Seiten, bis eine Seite leer bzw. nicht voll ist.
+// Wahoo-Einheit, die schon von der Polar-Uhr (o. Ä.) ohne Watt vorliegt: durch die Wahoo-Fassung mit Watt ersetzen,
+// Puls aus der vorhandenen Aufzeichnung übernehmen, falls Wahoo keinen hat; Notizen, RPE und Laktat bleiben.
+export async function mergeIntoExisting(raw, old) {
+  const d = getData();
+  if (!raw.series?.power?.some((p) => p > 0) || old.avgPower || old.powerCurve || old.source === 'concept2') return false;
+  if (!raw.series.hr?.some((h) => h > 0)) {
+    const old5 = await getLocalSeries(old.id);
+    if (old5?.hr?.some((h) => h > 0)) {
+      const offset = Math.round((Date.parse(old.start) - Date.parse(raw.start)) / 1000);
+      raw = { ...raw, series: { ...raw.series, hr: raw.series.power.map((_, i) => old5.hr[Math.floor((i - offset) / 5)] ?? null) } };
+    }
+    raw = { ...raw, avgHr: raw.avgHr ?? old.avgHr, maxHr: raw.maxHr ?? old.maxHr };
+  }
+  const { activity, series } = buildActivity(raw, d.settings, { id: old.id });
+  for (const k of ['notes', 'rpe', 'lactate', 'keySessionId', 'gearIds']) if (old[k] != null && old[k] !== '') activity[k] = old[k];
+  if (!activity.title && old.title) activity.title = old.title;
+  if (series) await putSeries(old.id, series);
+  await deleteRemoteSeries([old.id]).catch(() => {}); // Verlauf wird neu hochgeladen
+  update((x) => ({ ...x, activities: x.activities.map((a) => (a.id === old.id ? activity : a)) }));
+  return true;
+}
+
 async function syncWahoo({ all = false, onProgress } = {}) {
-  let added = 0;
+  let added = 0, merged = 0;
   const known = new Set(getData().activities.filter((a) => a.source === 'wahoo').map((a) => a.externalId));
   const list = [];
-  for (let page = 1; page <= (all ? 200 : 1); page++) {
+  for (let page = 1; page <= (all ? 400 : 1); page++) {
     const res = await call('wahoo', `/v1/workouts?page=${page}&per_page=50`);
     const ws = res?.workouts || [];
     list.push(...ws);
     onProgress?.(`Wahoo: ${list.length} Einheiten gefunden`);
     if (ws.length < 50) break;
   }
-  for (const w of list) {
-    if (known.has(String(w.id))) continue;
-    const s = w.workout_summary || {};
-    let raw = null;
-    if (s.file?.url) {
-      try { raw = await parseFit(await call('wahoo', null, { binary: true, file: s.file.url })); } catch { /* Zusammenfassung */ }
+  const todo = list.filter((w) => !known.has(String(w.id)));
+  try {
+    for (const w of todo) {
+      const s = w.workout_summary || {};
+      let raw = null;
+      if (s.file?.url) {
+        try { raw = await parseFit(await call('wahoo', null, { binary: true, file: s.file.url })); } catch (e) { if (e.rate) throw e; }
+      }
+      raw ||= { start: w.starts, sport: 'other', elapsedS: Number(s.duration_active_accum) || (w.minutes || 0) * 60, distanceM: Number(s.distance_accum) || null, avgHr: Number(s.heart_rate_avg) || null, avgPower: Number(s.power_avg) || null, calories: Number(s.calories_accum) || null };
+      raw = { ...raw, source: 'wahoo', externalId: String(w.id), title: w.name || raw.title || '' };
+      const old = findDuplicate(getData().activities, { ...raw, durationS: raw.elapsedS });
+      if (old) { if (await mergeIntoExisting(raw, old)) merged++; }
+      else if (await store(raw)) added++;
+      onProgress?.(`Wahoo: ${added + merged} von ${todo.length} verarbeitet (${added} neu${merged ? `, ${merged} mit Watt ergänzt` : ''})`);
     }
-    raw ||= { start: w.starts, sport: 'other', elapsedS: Number(s.duration_active_accum) || (w.minutes || 0) * 60, distanceM: Number(s.distance_accum) || null, avgHr: Number(s.heart_rate_avg) || null, avgPower: Number(s.power_avg) || null, calories: Number(s.calories_accum) || null };
-    if (await store({ ...raw, source: 'wahoo', externalId: String(w.id), title: w.name || '' })) added++;
-    if (all && added % 10 === 0) onProgress?.(`Wahoo: ${added} neu importiert`);
+  } catch (e) {
+    if (e.rate) throw new Error(`${added} neu, ${merged} ergänzt. ${e.message}`);
+    throw e;
   }
-  return added;
+  return added + merged;
 }
 
 const SYNC = { polar: syncPolar, concept2: syncConcept2, wahoo: syncWahoo };
