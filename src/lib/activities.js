@@ -28,11 +28,12 @@ export function findDuplicate(activities, a) {
   return activities.find((x) => {
     if (a.source && x.source === a.source && a.externalId && x.externalId === a.externalId) return true;
     const tx = Date.parse(x.start), dt = Math.abs(tx - t);
+    const lensX0 = [x.durationS, x.elapsedS].filter((v) => v > 0);
+    // Concept2-Einheit und Strava-Kopie (Startzeit oft verschoben, Gesamtzeit ähnlich): am selben Tag gleiche Dauer ist dieselbe Einheit.
+    if ((a.source === 'concept2' || x.source === 'concept2') && dt < 3 * 3600000 && lensA.some((la) => lensX0.some((lx) => Math.abs(la - lx) < Math.max(300, 0.1 * la)))) return true;
     if (dt > 900000) return false;
     const lensX = [x.durationS, x.elapsedS].filter((v) => v > 0);
     if (dt < 120000 && lensA.some((la) => lensX.some((lx) => Math.abs(la - lx) < Math.max(300, 0.15 * la)))) return true;
-    // Concept2-Einheit und Strava-Kopie (Startzeit oft verschoben, Gesamtzeit ähnlich): am selben Tag gleiche Dauer ist dieselbe Einheit.
-    if ((a.source === 'concept2' || x.source === 'concept2') && dt < 3 * 3600000 && lensA.some((la) => lensX.some((lx) => Math.abs(la - lx) < Math.max(300, 0.1 * la)))) return true;
     const la = Math.max(0, ...lensA), lx = Math.max(0, ...lensX);
     if (!la || !lx || Math.min(la, lx) / Math.max(la, lx) < 0.6) return false; // Teilstück (z. B. 20 min SkiErg in 1 h) ist keine Dublette
     const overlap = Math.min(t + la * 1000, tx + lx * 1000) - Math.max(t, tx);
