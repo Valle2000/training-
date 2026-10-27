@@ -27,7 +27,10 @@ export function Training({ openActivity, openAdd }) {
   const [schedOpen, setSchedOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const sched = hasSchedule(settings.schedule) ? settings.schedule : null;
-  const sorted = useMemo(() => [...activities].sort((a, b) => b.start.localeCompare(a.start)), [activities]);
+  const [sportFilter, setSportFilter] = useState('');
+  const sorted = useMemo(() => [...activities].filter((a) => !sportFilter || a.sport === sportFilter).sort((a, b) => b.start.localeCompare(a.start)), [activities, sportFilter]);
+  // Nur Sportarten anbieten, die tatsächlich vorkommen (mit Anzahl), „Sonstiges“ zum Aufräumen.
+  const sportCounts = useMemo(() => activities.reduce((m, a) => ({ ...m, [a.sport]: (m[a.sport] || 0) + 1 }), {}), [activities]);
   const w12 = useMemo(() => weeks(activities, 12, t), [activities, t]);
   const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
   const wk = weeks(activities.filter((a) => a.date >= monday && a.date <= days[6]), 1, days[6])[0];
@@ -88,6 +91,12 @@ export function Training({ openActivity, openAdd }) {
 
       {view === 'list' && (
         <>
+          <label>Sportart</label>
+          <select value={sportFilter} onChange={(e) => setSportFilter(e.target.value)}>
+            <option value="">Alle ({activities.length})</option>
+            {Object.entries(sportCounts).sort((x, y) => y[1] - x[1]).map(([id, n]) => <option key={id} value={id}>{sportLabel(id)} ({n})</option>)}
+          </select>
+          {sportFilter === 'other' && <p className="muted small">Sonstiges: Öffne die Einheit und wähle die richtige Sportart – die Liste aktualisiert sich dann.</p>}
           {!sorted.length && <p className="muted">Noch keine Einheiten.</p>}
           {sorted.map((a) => (
             <button key={a.id} className="item" onClick={() => openActivity(a)}>
