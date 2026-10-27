@@ -8,7 +8,8 @@ import { reevaluate } from './activities.js';
 // 6: km-Splits (Autolaps) aus dem Tempo, Gerätezeit bevorzugt.
 // 7: ohne Gerätezeit die Gesamtzeit der Datei statt nur der aufgezeichneten Sekunden.
 // 8: ohne Gerätezeit nur die Bewegungszeit aus dem Tempo (Stillstand zählt nicht, wie Strava/Polar).
-export const METRICS_VERSION = 8;
+// 9: I1 nach unten offen – Pulse unter 55 % HFmax zählen als I1 statt als Pause.
+export const METRICS_VERSION = 9;
 
 export async function recomputeAll() {
   const st = getData().settings;

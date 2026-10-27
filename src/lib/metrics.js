@@ -16,7 +16,7 @@ export const ZONES = [
 // bounds (optional): Pulsgrenzen I1/I2, I2/I3, I3/I4, I4/I5 aus einem Laktattest; sonst % HFmax.
 export function zoneOf(hr, hrMax, bounds) {
   if (!hr || !hrMax) return null;
-  if (hr / hrMax < ZONES[0].from) return null; // unter I1: Pause/Erholung
+  if (hr / hrMax < ZONES[0].from) return 'I1'; // nach unten offen: auch sehr niedriger Puls zählt als I1
   if (bounds?.length === 4 && bounds.every(Boolean)) return ZONES[bounds.filter((b) => hr >= b).length].id;
   const p = hr / hrMax;
   return ZONES.find((z) => p < z.to)?.id ?? 'I5';

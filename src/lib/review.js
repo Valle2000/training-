@@ -23,7 +23,8 @@ export function weekReview(data, monday, t) {
   const z = { I1: 0, I2: 0, I3: 0, I4: 0, I5: 0 };
   for (const a of acts) if (a.zones) for (const k in z) z[k] += a.zones[k] || 0;
   const zt = Object.values(z).reduce((x, y) => x + y, 0);
-  const share = zt ? { easy: Math.round(((z.I1 + z.I2) / zt) * 100), thr: Math.round((z.I3 / zt) * 100), hard: Math.round(((z.I4 + z.I5) / zt) * 100) } : null;
+  const zonePct = (v) => Math.round((v / zt) * 100);
+  const share = zt ? { easy: zonePct(z.I1 + z.I2), thr: zonePct(z.I3), hard: zonePct(z.I4 + z.I5), I1: zonePct(z.I1), I2: zonePct(z.I2), I3: zonePct(z.I3), I4: zonePct(z.I4), I5: zonePct(z.I5) } : null;
   const bySport = {};
   for (const a of acts) bySport[a.sport] = (bySport[a.sport] || 0) + (a.durationS || 0) / 3600;
   const longest = [...acts].filter((a) => a.sport !== 'strength').sort((a, b) => (b.durationS || 0) - (a.durationS || 0))[0];

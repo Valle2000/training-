@@ -169,7 +169,7 @@ function ReviewBody({ r, full }) {
     </div>
     {r.tips.map((x) => <p key={x.text} className="small" style={{ borderLeft: `3px solid ${TIP_COLOR[x.level]}`, paddingLeft: 8, margin: '8px 0' }}>{x.text}</p>)}
     {full && <>
-      {r.share && <p className="small">Intensität: locker {r.share.easy} % · Schwelle {r.share.thr} % · hart {r.share.hard} % · Kraft {r.strength}×</p>}
+      {r.share && <p className="small">Intensität: I1 {r.share.I1} % · I2 {r.share.I2} % · I3 {r.share.I3} % · I4 {r.share.I4} % · I5 {r.share.I5} % · Kraft {r.strength}×</p>}
       {r.sports.length > 0 && <p className="small">Sportarten: {r.sports.map((s) => `${s.label} ${n1(s.hours)} h`).join(' · ')}</p>}
       {r.longest && <p className="small">Längste Einheit: {r.longest.title} ({r.longest.minutes} min)</p>}
       {r.keys.length > 0 && <p className="small">Key Sessions: {r.keys.map((k) => `${k.name}${k.power ? ` ${Math.round(k.power)} W` : ''}${k.hr ? ` @ ${Math.round(k.hr)} bpm` : ''}${k.lactate != null ? `, ${String(k.lactate).replace('.', ',')} mmol/l` : ''}${k.ratioPct != null ? ` (${k.ratioPct > 0 ? '+' : ''}${String(k.ratioPct).replace('.', ',')} % Leistung je Puls ggü. ${new Date(k.beforeDate + 'T12:00:00').toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })})` : ''}`).join(' · ')}</p>}

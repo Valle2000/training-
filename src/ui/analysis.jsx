@@ -155,7 +155,8 @@ function Zones({ acts, range, by, setBy }) {
   const hrMax = Number(settings.hrMax) || null;
   const bounds = settings.zoneHr?.length === 4 && settings.zoneHr.every(Boolean) ? settings.zoneHr.map(Number) : ZONES.slice(1).map((z) => z.from * (hrMax || 0));
   const edges = hrMax ? [ZONES[0].from * hrMax, ...bounds, hrMax] : null;
-  const bpm = (i) => (edges ? `${Math.round(edges[i])}–${Math.round(edges[i + 1])} bpm` : '');
+  // I1 ist nach unten offen: nur die Obergrenze, kein Mindestpuls.
+  const bpm = (i) => (edges ? (i === 0 ? `unter ${Math.round(edges[1])} bpm` : `${Math.round(edges[i])}–${Math.round(edges[i + 1])} bpm`) : '');
   // Kraft zählt als eigene Gruppe, nicht als Pulszone (ohne Pulsverlauf nicht sinnvoll einzuordnen).
   const kraftH = tot.groups.strength || 0;
   const totalH = tot.hours || 0;
