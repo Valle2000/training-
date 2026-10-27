@@ -1,0 +1,25 @@
+[
+ {
+  "id": "settings",
+  "deleted": false,
+  "updated_at": "2026-10-27T08:42:47.568814+00:00",
+  "data": {
+   "age": "26",
+   "lthr": "170",
+   "hrMax": "193",
+   "hrRest": "38",
+   "weightKg": "80",
+   "ftpSkierg": "224",
+   "titleRules": {
+    "20:00, 2×20:00/2:00r, 2×20:00": "3x20min"
+   },
+   "metricsVersion": 7,
+   "titleRulesSeeded": true,
+   "thresholdDismissed": {
+    "ftp": 338,
+    "lthr": 182,
+    "hrMax": 217
+   }
+  }
+ }
+]

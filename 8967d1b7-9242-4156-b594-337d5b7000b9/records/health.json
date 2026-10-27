@@ -1,0 +1,34 @@
+[
+ {
+  "id": "mvpz6lk03y4d5",
+  "deleted": false,
+  "updated_at": "2026-10-27T01:08:39.269736+00:00",
+  "data": {
+   "id": "mvpz6lk03y4d5",
+   "end": "2026-10-18",
+   "type": "ill",
+   "notes": "",
+   "start": "2026-10-12",
+   "title": "Schnupfen ",
+   "impact": "pause",
+   "bodyPart": "",
+   "severity": "1"
+  }
+ },
+ {
+  "id": "mvpz7ozttyqfk",
+  "deleted": false,
+  "updated_at": "2026-10-27T01:08:39.269803+00:00",
+  "data": {
+   "id": "mvpz7ozttyqfk",
+   "end": "2026-10-25",
+   "type": "ill",
+   "notes": "",
+   "start": "2026-10-19",
+   "title": "Schnupfen abklingend ",
+   "impact": "reduced",
+   "bodyPart": "",
+   "severity": "1"
+  }
+ }
+]
