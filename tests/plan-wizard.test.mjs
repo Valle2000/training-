@@ -38,3 +38,35 @@ test('Gewählte Key Sessions, Polarisiert ohne Schwelle, Block-Woche, Kalenderei
   const items = toPlanItems(pol.slice(0, 2), () => `id${n++}`);
   assert.ok(items.length > 10 && items.every((i) => i.source === 'wizard' && i.load >= 0 && i.date >= '2026-11-02'));
 });
+
+test('Profil: Empfehlung nach Zielen, Stil und Schwächen', async () => {
+  const { recommend } = await import('../src/lib/plan-wizard.js');
+  assert.equal(recommend({ weak: ['threshold'], seriousness: 'ambitious' }, 10).approach, 'norwegian');
+  assert.equal(recommend({ style: 'varied', seriousness: 'performance' }, 12).approach, 'block');
+  assert.equal(recommend({ goal: 'fitness' }, 14).approach, 'polarized');
+  const r = recommend({ weak: ['strength', 'hills'], style: 'steady', likes: ['bike'] }, 12);
+  assert.equal(r.strengthPerWeek, 3);
+  assert.ok(r.keys.includes('hit_hill'));
+  assert.ok(r.reasons.some((x) => x.includes('Kontinuität')));
+});
+
+test('Profil: Lieblingssport im Frühjahr und je nach Ernst bis Spätsommer; gleichmäßiger Stil', async () => {
+  const { specificShare } = await import('../src/lib/plan-wizard.js');
+  const none = specificShare('base', '2027-05-03', {});
+  const bike = specificShare('base', '2027-05-03', { likes: ['bike'] });
+  assert.ok(bike < none);
+  assert.ok(specificShare('base', '2027-08-09', { likes: ['bike'], seriousness: 'fun' }) < specificShare('base', '2027-08-09', { likes: ['bike'], seriousness: 'performance' }));
+  const { seasonPlan } = await import('../src/lib/season.js');
+  const opts = { start: '2027-05-03', end: '2027-07-25', baseHours: 10, peakHours: 12 };
+  const steady = seasonPlan([], { ...opts, style: 'steady' }).map((w) => w.targetHours);
+  const varied = seasonPlan([], { ...opts, style: 'varied' }).map((w) => w.targetHours);
+  assert.ok(Math.max(...steady) - Math.min(...steady) < Math.max(...varied) - Math.min(...varied));
+});
+
+test('Profil: Rad gern → mehr Rad im Frühjahr, Plan bleibt gültig', () => {
+  const o = { ...base, start: '2027-05-03', end: '2027-07-25', approach: 'pyramidal' };
+  const count = (w) => w.flatMap((x) => x.days.flatMap((d) => d.sessions)).filter((s) => s.sport === 'bike' || s.sport === 'cycling').length;
+  const plain = generatePlan(o, []);
+  const liked = generatePlan({ ...o, profile: { likes: ['bike'], seriousness: 'fun' } }, []);
+  assert.ok(count(liked) > count(plain), `${count(liked)} vs ${count(plain)}`);
+});

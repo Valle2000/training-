@@ -6,6 +6,8 @@ import { seasonPlan } from './season.js';
 
 export const PLAN_SOURCES = {
   casado23: { text: 'Casado et al. 2023 – Das norwegische Modell / Double Threshold (Review)', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Casado+Foster+Bakken+Tjelta+Norwegian+method' },
+  molmen19: { text: 'Mølmen et al. 2019 – Block-Periodisierung im Ausdauersport (Systematischer Review/Metaanalyse)', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=M%C3%B8lmen+block+periodization+endurance+systematic+review' },
+  raysmith16: { text: 'Raysmith & Drew 2016 – Kontinuität: verlorene Trainingswochen und Erfolg (J Sci Med Sport)', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Raysmith+Drew+2016+weeks+lost+injury+illness+track+and+field' },
   seiler10: { text: 'Seiler 2010 – Best practice for training intensity and duration distribution (IJSPP)', url: 'https://pubmed.ncbi.nlm.nih.gov/20861519/' },
   stoggl14: { text: 'Stöggl & Sperlich 2014 – Polarisiertes Training (Front Physiol)', url: 'https://pubmed.ncbi.nlm.nih.gov/24550842/' },
   sandbakk17: { text: 'Sandbakk & Holmberg 2017 – Physiologie und Training im Skilanglauf (IJSPP)', url: 'https://pubmed.ncbi.nlm.nih.gov/28095083/' },
@@ -77,12 +79,35 @@ const winter = (date) => [12, 1, 2, 3].includes(Number(date.slice(5, 7)));
 const specificSport = (date, i) => (winter(date) ? (i % 2 ? 'xc_classic' : 'xc_skate') : (i % 2 ? 'rollerski_classic' : 'rollerski_skate'));
 const SPECIFIC_SHARE = { base: 0.5, build: 0.6, specific: 0.75, taper: 0.75, race: 0.8, recovery: 0.4, transition: 0.3 };
 const OTHER = ['run', 'bike'];
+const GENERAL = ['bike', 'run', 'hike', 'skierg', 'row', 'swim'];
+
+// Anteil langlaufspezifischer Einheiten (Rollski/Ski) – angepasst an Jahreszeit, Vorlieben und Ernsthaftigkeit:
+// Frühjahr/Frühsommer (Apr–Jul) ist Zeit für allgemeines Training (z. B. viel Rad, wenn du es magst), ab Spätsommer
+// wird es spezifischer. Wer es locker/aus Spaß betreibt, behält Lieblingssportarten länger; Leistungsorientierte
+// werden ab September deutlich spezifischer (Spezifität vor dem Winter).
+export function specificShare(phase, date, pr = {}) {
+  let s = SPECIFIC_SHARE[phase] ?? 0.5;
+  const m = Number(date.slice(5, 7)), likesGeneral = (pr.likes || []).some((x) => GENERAL.includes(x));
+  if ([4, 5, 6, 7].includes(m)) s -= likesGeneral ? 0.2 : 0.1;
+  if (m === 8 && likesGeneral && pr.seriousness !== 'performance') s -= 0.1;
+  if ([9, 10, 11].includes(m) && pr.seriousness === 'performance') s += 0.1;
+  if (pr.seriousness === 'fun') s -= 0.1;
+  if ((pr.dislikes || []).includes('rollerski') && ![12, 1, 2, 3].includes(m)) s -= 0.15;
+  return Math.min(0.9, Math.max(0.2, s));
+}
+// Allgemeine Sportart für lockere Einheiten: Lieblingssportarten zuerst, Abneigungen nie.
+function generalSport(pr = {}, i) {
+  const liked = (pr.likes || []).filter((x) => GENERAL.includes(x) && !(pr.dislikes || []).includes(x));
+  const pool = liked.length ? [...liked, ...liked, ...OTHER.filter((x) => !liked.includes(x) && !(pr.dislikes || []).includes(x))] : OTHER.filter((x) => !(pr.dislikes || []).includes(x));
+  return (pool.length ? pool : OTHER)[i % (pool.length || OTHER.length)];
+}
 
 // Optionen: approach, startHours, peakHours, start, end, restDays ([1] = Montag), longDay (7 = Sonntag), doubles, strengthPerWeek, keys (IDs)
 export function generatePlan(opts, races = []) {
   const ap = APPROACHES.find((a) => a.id === opts.approach) || APPROACHES[0];
   const keys = new Set(opts.keys?.length ? opts.keys : ap.defaults);
-  const weeks = seasonPlan(races, { start: opts.start, end: opts.end, baseHours: Number(opts.startHours) || 10, peakHours: Number(opts.peakHours) || 14 });
+  const pr = opts.profile || {};
+  const weeks = seasonPlan(races, { start: opts.start, end: opts.end, baseHours: Number(opts.startHours) || 10, peakHours: Number(opts.peakHours) || 14, style: pr.style === 'steady' ? 'steady' : pr.style === 'varied' ? 'varied' : 'standard' });
   // Wiedereinstieg: höchstens +10 % pro Woche, alle 4 Wochen leichter.
   if (ap.id === 'base') weeks.forEach((w, i) => { w.targetHours = Math.round(Math.min(Number(opts.peakHours) || 14, (Number(opts.startHours) || 8) * 1.1 ** i) * (i % 4 === 3 ? 0.75 : 1) * 10) / 10; });
   const pickByType = (type, k) => { const list = KEY_OPTIONS.filter((o) => o.type === type && keys.has(o.id)); return list.length ? list[k % list.length] : null; };
@@ -149,14 +174,17 @@ export function generatePlan(opts, races = []) {
     let n = Math.max(0, Math.min(slots.length, Math.round(easy / 80)));
     if (n === 0 && easy >= 30) n = 1;
     let speedDone = !(keys.has('speed') && ['base', 'build', 'specific'].includes(w.phase));
-    const share = SPECIFIC_SHARE[w.phase] ?? 0.5;
+    let speedLeft = pr.weak?.includes('sprint') ? 2 : 1;
+    let techLeft = pr.weak?.some((x) => x === 'skate' || x === 'classic') && !['race', 'taper'].includes(w.phase) ? 1 : 0;
+    const share = specificShare(w.phase, w.from, pr);
     for (let i = 0; i < n; i++) {
       const d = slots[i];
       const min = Math.round(Math.min(150, Math.max(40, easy / (n - i))) / 5) * 5;
       if (min < 30) break;
       const specific = (i / Math.max(1, n)) < share;
-      const s = { title: 'Locker', sport: specific ? specificSport(d.date, i) : OTHER[i % 2], minutes: min, zone: 'I1', description: 'Grundlage I1, wirklich locker', kind: 'easy' };
-      if (!speedDone && specific) { s.title = 'Locker + Sprints'; s.description = 'Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause'; speedDone = true; }
+      const s = { title: 'Locker', sport: specific ? specificSport(d.date, i + (pr.weak?.includes('classic') ? 1 : 0)) : generalSport(pr, i + rot), minutes: min, zone: 'I1', description: 'Grundlage I1, wirklich locker', kind: 'easy' };
+      if (specific && techLeft > 0) { s.title = 'Locker + Technik'; s.description = `Grundlage I1 mit Technikübungen (${pr.weak?.includes('classic') ? 'Klassisch: Abstoß, Gleiten auf einem Ski' : 'Skating: Gewichtsverlagerung, Eins-zu-eins, ohne Stöcke'}), gern Video`; techLeft--; }
+      if (!speedDone && specific && s.title === 'Locker') { s.title = 'Locker + Sprints'; s.description = 'Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause'; speedLeft--; if (speedLeft <= 0) speedDone = true; }
       put(d, s); easy -= min;
     }
     for (const d of days) if (rest.has(d.dow) && !d.sessions.length) d.rest = true;
@@ -178,3 +206,51 @@ export function toPlanItems(weeks, uid) {
 }
 
 export const nextMonday = (t) => { const m = mondayOf(t); return m === t ? t : addDays(m, 7); };
+
+// ——— Beratung: Fragen zu Ziel, Ernsthaftigkeit, Stil, Stärken/Schwächen und Lieblingstraining ———
+export const GOALS = [['long', 'Langdistanz / Volkslauf (z. B. Engadin, Vasalauf)'], ['short', 'Kürzere Rennen / Sprint'], ['allround', 'Alles – möglichst fit für die ganze Saison'], ['fitness', 'Fitness und Spaß, keine Rennziele']];
+export const SERIOUSNESS = [['fun', 'Spaß steht vorn'], ['ambitious', 'Ambitioniert'], ['performance', 'Leistungsorientiert']];
+export const STYLES = [['steady', 'Gleichmäßig – jede Woche ähnlich'], ['varied', 'Abwechslung – mal richtig harte Wochen, dann ruhiger'], ['any', 'Egal – Empfehlung der App']];
+export const ABILITIES = [['endurance', 'Grundlagenausdauer'], ['threshold', 'Schwelle / Tempohärte'], ['vo2', 'VO2max / harte Intervalle'], ['sprint', 'Sprint / Antritt'], ['hills', 'Bergauf'], ['strength', 'Kraft / Doppelstock'], ['skate', 'Technik Skating'], ['classic', 'Technik Klassisch']];
+export const MODES = [['bike', 'Rad'], ['run', 'Laufen'], ['rollerski', 'Rollski'], ['skierg', 'SkiErg'], ['hike', 'Berglauf / Skigang'], ['row', 'Rudern'], ['swim', 'Schwimmen']];
+
+export function recommend(pr = {}, hours = 10) {
+  const weak = pr.weak || [], strong = pr.strong || [], reasons = [];
+  let approach;
+  if (pr.goal === 'fitness' || (pr.seriousness === 'fun' && hours < 10)) {
+    approach = 'polarized';
+    reasons.push('Für Fitness und Spaß ist ein einfaches 80/20-Schema gut: wenige, klare harte Einheiten, der Rest locker und abwechslungsreich.');
+  } else if (pr.style === 'varied' && hours >= 8 && pr.seriousness !== 'fun') {
+    approach = 'block';
+    reasons.push('Du magst Abwechslung mit harten Phasen: Block-Periodisierung bündelt die Intensität in einzelne Wochen – bei Trainierten mindestens so wirksam wie gleichmäßig verteilte Intervalle (Rønnestad; Metaanalyse Mølmen 2019).');
+  } else if (weak.includes('threshold') && hours >= 9) {
+    approach = 'norwegian';
+    reasons.push('Schwäche an der Schwelle bei solidem Umfang: viel kontrollierte Schwelle (Double Threshold) trainiert genau das – Laktat bzw. Puls dabei im Griff halten.');
+  } else if (weak.includes('vo2') && hours < 12) {
+    approach = 'polarized';
+    reasons.push('Schwäche bei harten Intervallen: polarisiert mit zwei harten Einheiten pro Woche setzt dort den Schwerpunkt.');
+  } else if (hours >= 12) {
+    approach = 'pyramidal';
+    reasons.push('Bei hohem Umfang hat sich der Weltklasse-Ansatz bewährt: sehr viel locker, 1 Schwelle und 1 harte Einheit, später Wettkampftempo.');
+  } else {
+    approach = 'polarized';
+    reasons.push('Bei begrenzter Zeit bringt das 80/20-Schema viel Wirkung mit wenig Planungsaufwand.');
+  }
+  if (weak.includes('endurance')) reasons.push('Grundlage als Schwäche: Umfang und lange Einheiten haben Vorrang – erhöhe die Stunden lieber langsam und stetig als über harte Einheiten.');
+  if (pr.style === 'steady') reasons.push('Gleichmäßig trainieren ist eine sehr gute Wahl: Kontinuität – möglichst wenige ausgefallene Wochen – ist einer der stärksten Erfolgsfaktoren (u. a. Raysmith & Drew 2016). Die Wochen schwanken deshalb nur leicht, Entlastung auf ca. 80 %.');
+  if (pr.style === 'varied') reasons.push('Ausgeprägte Wellen: dritte Woche ca. 10 % über dem Schnitt, Entlastungswoche ca. 60 %. Auf Erholung, Schlaf und Essen in den großen Wochen achten.');
+  if (pr.style === 'any') reasons.push('Empfehlung: eher gleichmäßig mit Entlastung alle 3–4 Wochen – Kontinuität schlägt einzelne „krasse“ Wochen, vor allem ohne Trainer.');
+  const keys = new Set(APPROACHES.find((a) => a.id === approach).defaults);
+  if (weak.includes('threshold')) { keys.add('thr_4x8'); keys.add('thr_3x20'); }
+  if (weak.includes('vo2')) { keys.add('hit_5x4'); keys.add('hit_30_15'); }
+  if (weak.includes('hills')) { keys.add('hit_hill'); reasons.push('Bergauf als Schwäche: Bergintervalle im Skigang mit Stöcken sind fest eingeplant.'); }
+  if (weak.includes('sprint')) { keys.add('speed'); reasons.push('Sprint als Schwäche: zwei Einheiten pro Woche mit kurzen Sprints (volle Pause, Technik sauber).'); }
+  if (weak.includes('strength')) reasons.push('Kraft als Schwäche: 3 Krafteinheiten in der Vorbereitung, Schwerpunkt Doppelstock (Kraft JOE, Bank-Doppelstock, Medizinball).');
+  if (weak.some((x) => x === 'skate' || x === 'classic')) reasons.push(`Technik ${weak.includes('classic') && weak.includes('skate') ? 'Skating und Klassisch' : weak.includes('classic') ? 'Klassisch' : 'Skating'}: eine lockere Einheit pro Woche mit Technikübungen; die schwächere Technik kommt öfter dran.`);
+  if (strong.length) reasons.push(`Stärken (${strong.map((x) => ABILITIES.find((a) => a[0] === x)?.[1]).filter(Boolean).join(', ')}) erhalten – sie brauchen weniger, aber regelmäßige Reize.`);
+  const likes = pr.likes || [];
+  if (likes.length) reasons.push(`Lieblingstraining (${likes.map((x) => MODES.find((m) => m[0] === x)?.[1]).join(', ')}): ${pr.seriousness === 'performance' ? 'im Frühjahr und Frühsommer viel davon, ab Spätsommer wird es spezifischer (Rollski/Ski).' : 'bleibt bis in den Spätsommer fester Bestandteil – Spaß hält dich dran, und das ist der wichtigste Faktor.'}`);
+  if (pr.goal === 'long') reasons.push('Langdistanz: lange Einheiten mit viel Doppelstock und Verpflegung üben sind zentral.');
+  if (pr.goal === 'short') reasons.push('Kurze Rennen: mehr Wettkampftempo und Sprints in der Wettkampfvorbereitung.');
+  return { approach, keys: [...keys], strengthPerWeek: weak.includes('strength') ? 3 : pr.seriousness === 'fun' ? 1 : 2, reasons };
+}

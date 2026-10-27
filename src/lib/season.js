@@ -17,7 +17,9 @@ export const seasonStart = (t) => (t.slice(5) >= '05-01' ? `${t.slice(0, 4)}-05-
 export const weeksUntil = (from, to) => Math.floor((Date.parse(mondayOf(to)) - Date.parse(mondayOf(from))) / (7 * 864e5));
 
 // Wochen von start bis end mit Phase und Zielstunden. opts: {baseHours, peakHours}
-export function seasonPlan(races, { start, end, baseHours = 10, peakHours = 15 }) {
+// style: 'steady' = kleine Schwankungen (Entlastung ~80 %), 'varied' = ausgeprägte Wellen (große Woche, Entlastung ~60 %).
+export function seasonPlan(races, { start, end, baseHours = 10, peakHours = 15, style = 'standard' }) {
+  const WAVE = { steady: [0.97, 0.99, 1.01, 0.8], varied: [0.88, 0.98, 1.1, 0.6], standard: [0.94, 0.97, 1, 0.65] }[style] || [0.94, 0.97, 1, 0.65];
   const aRaces = races.filter((r) => r.priority === 'A').map((r) => r.date).sort();
   const weeks = [];
   let buildIdx = 0;
@@ -41,7 +43,7 @@ export function seasonPlan(races, { start, end, baseHours = 10, peakHours = 15 }
       const cycle = buildIdx % 4; buildIdx++;
       const total = Math.max(1, (toNext ?? 30) + buildIdx - 9);
       const ramp = baseHours + (peakHours - baseHours) * Math.min(1, buildIdx / total);
-      target = cycle === 3 ? ramp * 0.65 : ramp * (0.94 + cycle * 0.03);
+      target = ramp * WAVE[cycle];
     } else if (phase === 'specific') target = (toNext % 4 === 0 ? 0.7 : 0.9) * peakHours;
     else if (phase === 'taper') target = (toNext === 2 ? 0.75 : 0.55) * peakHours;
     else if (phase === 'race') target = 0.45 * peakHours;

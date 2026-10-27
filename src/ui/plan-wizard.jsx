@@ -1,17 +1,17 @@
 import React, { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Check, CalendarPlus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, CalendarPlus, Sparkles } from 'lucide-react';
 import { useData, update, uid } from '../lib/store.js';
 import { today, weeks as weekStats } from '../lib/activities.js';
 import { addDays } from '../lib/metrics.js';
 import { sportLabel } from '../lib/sports.js';
 import { PHASES } from '../lib/season.js';
-import { APPROACHES, KEY_OPTIONS, PLAN_SOURCES, generatePlan, toPlanItems, nextMonday } from '../lib/plan-wizard.js';
+import { APPROACHES, KEY_OPTIONS, PLAN_SOURCES, GOALS, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend } from '../lib/plan-wizard.js';
 import { Sheet, fmtDate, fmtNum, toast } from './common.jsx';
 
 const DOW = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 const TYPE_LABEL = { dt_am: 'Double Threshold (morgens)', dt_pm: 'Double Threshold (abends)', threshold: 'Schwelle', hit: 'Hart / VO2max', race: 'Wettkampftempo', speed: 'Schnelligkeit', long: 'Lange Einheit' };
 
-// Saisonplan zum Durchklicken: Ansatz → Umfang → Key Sessions → Vorschau → in den Kalender.
+// Saisonplan zum Durchklicken: Über dich → Ansatz → Umfang → Key Sessions → Vorschau → in den Kalender.
 export function PlanWizard({ onClose }) {
   const { activities, races, settings } = useData();
   const t = today(settings.timezone);
@@ -22,14 +22,25 @@ export function PlanWizard({ onClose }) {
   const [step, setStep] = useState(0);
   const [o, setO] = useState({
     approach: 'pyramidal', startHours: avg, peakHours: Math.round(avg * 1.2), start: nextMonday(t),
-    end: nextA ? addDays(nextA.date, 7) : addDays(nextMonday(t), 7 * 16 - 1), restDays: [1], longDay: 7, doubles: true, strengthPerWeek: 2, keys: null, horizon: 8,
+    end: nextA ? addDays(nextA.date, 7) : addDays(nextMonday(t), 7 * 16 - 1), restDays: [1], longDay: 7, doubles: true, strengthPerWeek: 2, keys: null, horizon: 8, profile: {},
     ...saved, start: saved.start && saved.start >= t ? saved.start : nextMonday(t),
   });
   const ap = APPROACHES.find((a) => a.id === o.approach);
   const keys = o.keys || ap.defaults;
-  const plan = useMemo(() => (step >= 3 ? generatePlan({ ...o, keys }, races) : []), [step, o, keys, races]);
+  const pr = o.profile || {};
+  const rec = recommend(pr, Number(o.startHours) || 10);
+  const plan = useMemo(() => (step >= 4 ? generatePlan({ ...o, keys }, races) : []), [step, o, keys, races]);
   const set = (k, v) => setO({ ...o, [k]: v });
   const toggleKey = (id) => set('keys', keys.includes(id) ? keys.filter((k) => k !== id) : [...keys, id]);
+  const setPr = (k, v) => set('profile', { ...pr, [k]: v });
+  // Mehrfachauswahl; stark/schwach bzw. gern/ungern schließen sich gegenseitig aus.
+  const togglePr = (k, id, other) => {
+    const cur = pr[k] || [];
+    const next = { ...pr, [k]: cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id] };
+    if (other) next[other] = (pr[other] || []).filter((x) => x !== id);
+    set('profile', next);
+  };
+  const takeRec = () => { setO({ ...o, approach: rec.approach, keys: rec.keys, strengthPerWeek: rec.strengthPerWeek }); toast('Empfehlung übernommen'); };
 
   const apply = () => {
     const weeks = plan.slice(0, Number(o.horizon) || plan.length);
@@ -45,13 +56,38 @@ export function PlanWizard({ onClose }) {
     onClose();
   };
 
-  const steps = ['Ansatz', 'Umfang', 'Key Sessions', 'Vorschau'];
+  const steps = ['Über dich', 'Ansatz', 'Umfang', 'Key Sessions', 'Vorschau'];
   return (
     <Sheet title="Saisonplan-Assistent" onClose={onClose}>
       <div className="chips">{steps.map((s, i) => <button key={s} className={`chip${i === step ? ' on' : ''}`} onClick={() => setStep(i)}>{i + 1}. {s}</button>)}</div>
 
       {step === 0 && <>
-        <p className="muted small">Wähle einen Trainingsansatz. Alle sind studienbasiert beschrieben – die Unterschiede liegen vor allem in Art und Zahl der harten Einheiten; locker bleibt bei allen der größte Teil.</p>
+        <p className="muted small">Ein paar Fragen, damit der Plan zu dir passt. Am wichtigsten ist, dass du dranbleibst – deshalb zählt auch, was dir Spaß macht.</p>
+        <label>Ziel</label>
+        <div className="chips">{GOALS.map(([id, l]) => <button key={id} className={`chip${pr.goal === id ? ' on' : ''}`} onClick={() => setPr('goal', id)}>{l}</button>)}</div>
+        <label>Wie ernst nimmst du es?</label>
+        <div className="chips">{SERIOUSNESS.map(([id, l]) => <button key={id} className={`chip${pr.seriousness === id ? ' on' : ''}`} onClick={() => setPr('seriousness', id)}>{l}</button>)}</div>
+        <label>Trainingsstil</label>
+        <div className="chips">{STYLES.map(([id, l]) => <button key={id} className={`chip${pr.style === id ? ' on' : ''}`} onClick={() => setPr('style', id)}>{l}</button>)}</div>
+        <label>Stärken</label>
+        <div className="chips">{ABILITIES.map(([id, l]) => <button key={id} className={`chip${(pr.strong || []).includes(id) ? ' on' : ''}`} onClick={() => togglePr('strong', id, 'weak')}>{l}</button>)}</div>
+        <label>Schwächen</label>
+        <div className="chips">{ABILITIES.map(([id, l]) => <button key={id} className={`chip${(pr.weak || []).includes(id) ? ' on' : ''}`} onClick={() => togglePr('weak', id, 'strong')}>{l}</button>)}</div>
+        <label>Trainiere ich gern</label>
+        <div className="chips">{MODES.map(([id, l]) => <button key={id} className={`chip${(pr.likes || []).includes(id) ? ' on' : ''}`} onClick={() => togglePr('likes', id, 'dislikes')}>{l}</button>)}</div>
+        <label>Mag ich nicht so</label>
+        <div className="chips">{MODES.map(([id, l]) => <button key={id} className={`chip${(pr.dislikes || []).includes(id) ? ' on' : ''}`} onClick={() => togglePr('dislikes', id, 'likes')}>{l}</button>)}</div>
+        <p className="muted small">Lieblingssportarten kommen vor allem im Frühjahr oft dran – je nach Ernsthaftigkeit bis in den Spätsommer, bei „leistungsorientiert“ wird es ab Herbst spezifischer.</p>
+      </>}
+
+      {step === 1 && <>
+        <div className="card">
+          <b><Sparkles size={16} style={{ verticalAlign: -3 }} /> Empfehlung: {APPROACHES.find((a) => a.id === rec.approach).name}</b>
+          <ul className="small" style={{ paddingLeft: 18, margin: '6px 0' }}>{rec.reasons.map((r) => <li key={r}>{r}</li>)}</ul>
+          <p className="small muted">Key Sessions: {rec.keys.map((k) => KEY_OPTIONS.find((x) => x.id === k)?.name).filter(Boolean).join(', ')} · Kraft {rec.strengthPerWeek}×/Woche</p>
+          <button className="secondary" onClick={takeRec}><Check size={16} />Empfehlung übernehmen</button>
+        </div>
+        <p className="muted small">Oder wähle selbst einen Trainingsansatz. Alle sind studienbasiert beschrieben – die Unterschiede liegen vor allem in Art und Zahl der harten Einheiten; locker bleibt bei allen der größte Teil.</p>
         {APPROACHES.map((a) => (
           <button key={a.id} className="item" style={{ borderColor: o.approach === a.id ? 'var(--accent)' : undefined, borderWidth: o.approach === a.id ? 2 : 1 }} onClick={() => setO({ ...o, approach: a.id, keys: null })}>
             <div className="grow">
@@ -68,7 +104,7 @@ export function PlanWizard({ onClose }) {
         ))}
       </>}
 
-      {step === 1 && <>
+      {step === 2 && <>
         <div className="grid2">
           <div><label>Stunden/Woche jetzt</label><input type="number" value={o.startHours} onChange={(e) => set('startHours', e.target.value)} /></div>
           <div><label>Spitze Stunden/Woche</label><input type="number" value={o.peakHours} onChange={(e) => set('peakHours', e.target.value)} /></div>
@@ -83,7 +119,7 @@ export function PlanWizard({ onClose }) {
         <p className="muted small">Dein Schnitt der letzten 7 Wochen: {fmtNum(recent.reduce((a, w) => a + w.hours, 0) / (recent.length || 1), 1)} h. Steigerung im 3:1-Rhythmus (3 Wochen aufbauen, 1 leichter), Tapering vor A-Rennen 2 Wochen. {nextA ? `Nächstes A-Rennen: ${nextA.name} am ${fmtDate(nextA.date)}.` : 'Tipp: A-Rennen unter „Rennen“ eintragen – dann plant der Assistent die Phasen rückwärts davon.'}</p>
       </>}
 
-      {step === 2 && <>
+      {step === 3 && <>
         <p className="muted small">Welche Schlüsseleinheiten willst du machen? Vorausgewählt passend zu „{ap.name}“. Pro Typ werden die gewählten Einheiten abgewechselt.</p>
         {Object.entries(TYPE_LABEL).map(([type, label]) => {
           const opts = KEY_OPTIONS.filter((k) => k.type === type);
@@ -102,7 +138,7 @@ export function PlanWizard({ onClose }) {
         })}
       </>}
 
-      {step === 3 && <>
+      {step === 4 && <>
         <div className="grid2">
           <div><label>In den Kalender übernehmen</label><select value={o.horizon} onChange={(e) => set('horizon', Number(e.target.value))}>{[4, 8, 12, 16].map((n) => <option key={n} value={n}>nächste {n} Wochen</option>)}<option value={0}>ganzer Zeitraum ({plan.length} Wochen)</option></select></div>
           <div><label>Ansatz</label><input value={ap.name} disabled /></div>
@@ -129,7 +165,7 @@ export function PlanWizard({ onClose }) {
 
       <div className="row" style={{ marginTop: 12 }}>
         {step > 0 && <button className="secondary" onClick={() => setStep(step - 1)}><ChevronLeft size={17} />Zurück</button>}
-        {step < 3 && <button className="primary" onClick={() => setStep(step + 1)}>Weiter<ChevronRight size={17} /></button>}
+        {step < 4 && <button className="primary" onClick={() => setStep(step + 1)}>Weiter<ChevronRight size={17} /></button>}
       </div>
     </Sheet>
   );
