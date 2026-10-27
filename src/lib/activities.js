@@ -46,8 +46,10 @@ export function evaluate(raw, settings) {
   // bei Polar/Strava – Aufzeichnungslücken zählen nicht als Pause. Nur bei sehr langen Unterbrechungen (Gesamtzeit über
   // 1,5× der aufgezeichneten Zeit, z. B. Einkehr) zählt die aufgezeichnete Zeit. Concept2: Arbeitszeit aus dem Verlauf.
   const recS = series?.hr?.length || series?.power?.length || 0;
+  // Ohne Gerätezeit: Bewegungszeit aus dem Tempo (Stillstand an Ampeln und Pausen zählt nicht, wie Strava und Polar).
+  const movingFromSpeed = series?.speed?.some((v) => v > 0) ? series.speed.filter((v) => v > 0.8).length : null;
   const movingS = !recS ? raw.durationS || raw.timerS || raw.elapsedS || 0
-    : raw.timerS || (raw.source !== 'concept2' && raw.elapsedS > recS && raw.elapsedS <= recS * 1.5 ? raw.elapsedS : recS);
+    : raw.timerS || movingFromSpeed || (raw.source !== 'concept2' && raw.elapsedS > recS && raw.elapsedS <= recS * 1.5 ? raw.elapsedS : recS);
   const res = computeLoad(athlete, {
     durationS: movingS, power: series?.power, hr: series?.hr, avgHr: raw.avgHr, rpe: raw.rpe,
     kind: raw.sport === 'strength' ? 'strength' : 'endurance', powerSport: !!sportById(raw.sport).power,

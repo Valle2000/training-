@@ -6,8 +6,9 @@ import { reevaluate } from './activities.js';
 // 4: Puls-/Watt-Verteilung und Puls bei Leistung je Einheit (für Langzeit-Auswertungen).
 // 5: fehlende Ø/max Puls aus dem Verlauf ergänzen (Polar-Import hatte 0 eingetragen).
 // 6: km-Splits (Autolaps) aus dem Tempo, Gerätezeit bevorzugt.
-// 7: ohne Gerätezeit die Gesamtzeit der Datei statt nur der aufgezeichneten Sekunden (wie Polar/Strava).
-export const METRICS_VERSION = 7;
+// 7: ohne Gerätezeit die Gesamtzeit der Datei statt nur der aufgezeichneten Sekunden.
+// 8: ohne Gerätezeit nur die Bewegungszeit aus dem Tempo (Stillstand zählt nicht, wie Strava/Polar).
+export const METRICS_VERSION = 8;
 
 export async function recomputeAll() {
   const st = getData().settings;

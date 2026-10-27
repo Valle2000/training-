@@ -19,3 +19,9 @@ test('Concept2 und manuell', () => {
   assert.equal(evaluate({ sport: 'skierg', source: 'concept2', series, elapsedS: 3300 }, settings).durationS, 3000);
   assert.equal(evaluate({ sport: 'run', durationS: 2700, elapsedS: 2700 }, settings).durationS, 2700);
 });
+
+test('Rad ohne Gerätezeit: Stillstand (Ampel, Pause) zählt nicht, Bewegungszeit wie Strava', () => {
+  const speed = [...Array(600).fill(7), ...Array(300).fill(0), ...Array(300).fill(6)];
+  const r = evaluate({ sport: 'bike', series: { hr: Array(1200).fill(140), speed }, elapsedS: 1200 }, settings);
+  assert.equal(r.durationS, 900);
+});
