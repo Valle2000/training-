@@ -146,17 +146,42 @@ function Curves({ acts, prevActs, all, settings, filter, openActivity, activitie
 }
 
 function Zones({ acts, range, by, setBy }) {
+  const { settings } = useData();
   const tot = totals(acts);
   const bk = buckets(acts, range, by);
   const hasPower = Object.values(tot.powerZones).some((v) => v > 0);
   const zsum = Object.values(tot.zones).reduce((a, b) => a + b, 0), psum = Object.values(tot.powerZones).reduce((a, b) => a + b, 0);
+  // Pulsgrenzen wie in der Auswertung (Laktattest-Grenzen, sonst % der maximalen Herzfrequenz).
+  const hrMax = Number(settings.hrMax) || null;
+  const bounds = settings.zoneHr?.length === 4 && settings.zoneHr.every(Boolean) ? settings.zoneHr.map(Number) : ZONES.slice(1).map((z) => z.from * (hrMax || 0));
+  const edges = hrMax ? [ZONES[0].from * hrMax, ...bounds, hrMax] : null;
+  const bpm = (i) => (edges ? `${Math.round(edges[i])}–${Math.round(edges[i + 1])} bpm` : '');
+  // Kraft zählt als eigene Gruppe, nicht als Pulszone (ohne Pulsverlauf nicht sinnvoll einzuordnen).
+  const kraftH = tot.groups.strength || 0;
+  const totalH = tot.hours || 0;
+  const share = (h) => (totalH ? Math.round((h / totalH) * 100) : 0);
+  const withoutHr = Math.max(0, totalH - zsum - kraftH);
   return (
     <>
       <div style={{ marginTop: 12 }}><Seg value={by} onChange={setBy} options={[['week', 'Wochen'], ['month', 'Monate']]} /></div>
       <div className="card">
+        <h3 style={{ marginTop: 0 }}>Intensitätsverteilung</h3>
+        {totalH ? <>
+          <StackedBars buckets={bk} unit=" h" stacks={[{ key: 'easy', label: 'locker (I1–I2)', color: ZONE_COLORS.I1 }, { key: 'thr', label: 'Schwelle (I3)', color: ZONE_COLORS.I3 }, { key: 'hard', label: 'hart (I4–I5)', color: ZONE_COLORS.I5 }, { key: 'strength', label: 'Kraft', color: 'var(--load)' }]} value={(b, k) => (k === 'easy' ? b.zones.I1 + b.zones.I2 : k === 'thr' ? b.zones.I3 : k === 'hard' ? b.zones.I4 + b.zones.I5 : b.groups.strength)} />
+          <table className="t"><tbody>
+            <tr><td>locker (I1–I2)</td><td>{share(tot.zones.I1 + tot.zones.I2)} %</td></tr>
+            <tr><td>Schwelle (I3)</td><td>{share(tot.zones.I3)} %</td></tr>
+            <tr><td>hart (I4–I5)</td><td>{share(tot.zones.I4 + tot.zones.I5)} %</td></tr>
+            <tr><td>Kraft</td><td>{share(kraftH)} %</td></tr>
+            {withoutHr > 0.05 && <tr><td className="muted">ohne Pulsdaten</td><td className="muted">{share(withoutHr)} %</td></tr>}
+          </tbody></table>
+          <p className="muted small">Anteil an allen Stunden im Zeitraum. Kraft ist eine eigene Gruppe, nicht Teil der Pulszonen.</p>
+        </> : <p className="muted small">Noch keine Einheiten im Zeitraum.</p>}
+      </div>
+      <div className="card">
         <h3 style={{ marginTop: 0 }}>Pulszonen (I1–I5)</h3>
         <StackedBars buckets={bk} unit=" h" stacks={ZONES.map((z) => ({ key: z.id, label: z.label, color: ZONE_COLORS[z.id] }))} value={(b, k) => b.zones[k]} />
-        <table className="t">{ZONES.map((z) => <tbody key={z.id}><tr><td><i style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 3, background: ZONE_COLORS[z.id], marginRight: 6 }} />{z.label}</td><td>{fmtDuration(tot.zones[z.id] * 3600)} h</td><td>{zsum ? Math.round((tot.zones[z.id] / zsum) * 100) : 0} %</td></tr></tbody>)}</table>
+        <table className="t">{ZONES.map((z, i) => <tbody key={z.id}><tr><td><i style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 3, background: ZONE_COLORS[z.id], marginRight: 6 }} />{z.label}{bpm(i) && <span className="muted small"> · {bpm(i)}</span>}</td><td>{fmtDuration(tot.zones[z.id] * 3600)} h</td><td>{zsum ? Math.round((tot.zones[z.id] / zsum) * 100) : 0} %</td></tr></tbody>)}</table>
       </div>
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Leistungszonen (Coggan, % FTP)</h3>
