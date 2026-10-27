@@ -30,6 +30,8 @@ export function Training({ openActivity, openAdd }) {
   const sched = hasSchedule(settings.schedule) ? settings.schedule : null;
   const [sportFilter, setSportFilter] = useState('');
   const sorted = useMemo(() => [...activities].filter((a) => !sportFilter || a.sport === sportFilter).sort((a, b) => b.start.localeCompare(a.start)), [activities, sportFilter]);
+  // Nummern für „Sonstiges“ nach Datum (älteste zuerst): bleiben stabil, auch wenn neue Einheiten dazukommen.
+  const otherNo = useMemo(() => (sportFilter === 'other' ? new Map([...sorted].sort((a, b) => a.start.localeCompare(b.start)).map((a, i) => [a.id, i + 1])) : null), [sorted, sportFilter]);
   // Nur Sportarten anbieten, die tatsächlich vorkommen (mit Anzahl), „Sonstiges“ zum Aufräumen.
   const sportCounts = useMemo(() => activities.reduce((m, a) => ({ ...m, [a.sport]: (m[a.sport] || 0) + 1 }), {}), [activities]);
   const w12 = useMemo(() => weeks(activities, 12, t), [activities, t]);
@@ -102,7 +104,7 @@ export function Training({ openActivity, openAdd }) {
           {sorted.map((a) => (
             <button key={a.id} className="item" onClick={() => openActivity(a)}>
               <div className="grow">
-                <b>{a.title || sportLabel(a.sport)}</b>
+                <b>{otherNo && <span className="muted">#{otherNo.get(a.id)} </span>}{a.title || sportLabel(a.sport)}</b>
                 <p>{fmtDate(a.date, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} · {fmtDuration(a.durationS)} h {fmtKm(a.distanceM) && '· ' + fmtKm(a.distanceM)}{a.avgHr ? ` · Ø ${a.avgHr}` : ''} · {a.source}</p>
                 <ZoneBar zones={a.zones} />
               </div>
