@@ -202,3 +202,20 @@ test('Polar: Zeit wie auf der Uhr, Runden und Autolaps aus dem Export, km-Splits
   assert.equal(splits[4].distanceM, 500);
   assert.equal(distanceSplits({ speed: Array(100).fill(3) }, 'strength'), null);
 });
+
+test('Polar-Runden im Geräteformat (header + statistics, Dauer als Objekt oder Millis)', async () => {
+  const { parsePolarJson } = await import('../src/lib/importers.js');
+  const lap = (min, km, hr) => ({ header: { splitTime: { minutes: min * 2 }, duration: { minutes: min }, distance: km * 1000, autolapType: 'AUTOLAP_TYPE_DISTANCE' }, statistics: { heartRate: { average: hr, maximum: hr + 8 }, speed: { average: (km / min) * 60, maximum: 15 } } });
+  const doc = { startTime: '2024-05-01T07:00:00', durationMillis: 1200000, timezoneOffsetMinutes: 120, deviceId: 'X', exercises: [{ startTime: '2024-05-01T07:00:00', durationMillis: 1200000, sport: { id: '1' },
+    laps: { laps: [{ header: { splitTimeMillis: 300000, durationMillis: 300000, distanceMeters: 1000 }, statistics: { heartRate: { average: 140, maximum: 150 } } }, { header: { splitTimeMillis: 1200000, durationMillis: 900000, distanceMeters: 3200 }, statistics: { heartRate: { average: 160, maximum: 172 }, power: { average: 280 } } }], summary: {} },
+    autoLaps: { autoLaps: [lap(5, 1, 141), { ...lap(5, 1, 150), header: { splitTime: { minutes: 10 }, duration: { minutes: 5 }, distance: 1000 } }] } }] };
+  const r = parsePolarJson(doc);
+  assert.equal(r.laps.length, 2);
+  assert.equal(r.laps[1].startS, 300);
+  assert.equal(r.laps[1].durationS, 900);
+  assert.equal(r.laps[1].avgHr, 160);
+  assert.equal(r.laps[1].avgPower, 280);
+  assert.equal(r.deviceAutoLaps.length, 2);
+  assert.equal(r.deviceAutoLaps[1].startS, 300);
+  assert.equal(r.deviceAutoLaps[0].pace, 300);
+});

@@ -111,27 +111,52 @@ const isoDur = (s) => { const m = /PT(?:([\d.]+)H)?(?:([\d.]+)M)?(?:([\d.]+)S)?/
 // deshalb tolerant: Dauer (durationMillis, duration/lapTime als ISO), Zwischenzeit (splitTimeMillis, splitTime),
 // Distanz, Puls und Leistung als Felder oder in statistics.
 const listOf = (v, key) => (Array.isArray(v) ? v : Array.isArray(v?.[key]) ? v[key] : []);
+// Polar speichert Runden wie im Gerät (Protobuf PbLap): header {splitTime, duration, distance, autolapType} und
+// statistics {heartRate {average, maximum}, speed {average, maximum} in km/h, cadence, power}. Im Export erscheinen
+// Zeiten je nach Version als …Millis, als ISO-Dauer („PT5M“) oder als {hours, minutes, seconds, millis}.
+function lapSeconds(h, name) {
+  const ms = h[`${name}Millis`] ?? h[`${name}Ms`];
+  if (ms != null && num(ms) != null) return num(ms) / 1000;
+  const v = h[name];
+  if (v == null) return null;
+  if (typeof v === 'string') return /^PT/.test(v) ? isoDur(v) : num(v);
+  if (typeof v === 'number') return v;
+  if (typeof v === 'object') return (num(v.hours) || 0) * 3600 + (num(v.minutes) || 0) * 60 + (num(v.seconds) || 0) + (num(v.millis) || 0) / 1000;
+  return null;
+}
 function polarLapList(list, startMs) {
   let t = 0;
   const laps = list.map((l, i) => {
-    const iso = (x) => (typeof x === 'string' && /^PT/.test(x) ? isoDur(x) : null);
-    const ms = (x) => (x != null && num(x) != null ? num(x) / 1000 : null);
-    let dur = ms(l.durationMillis) ?? iso(l.duration) ?? iso(l.lapTime) ?? ms(l.lapTimeMillis);
-    const split = ms(l.splitTimeMillis) ?? iso(l.splitTime);
-    const startS = l.startTime && startMs ? (Date.parse(l.startTime) - startMs) / 1000 : split != null && dur != null ? split - dur : t;
+    const h = l.header || l;
+    let dur = lapSeconds(h, 'duration') ?? lapSeconds(h, 'lapTime');
+    const split = lapSeconds(h, 'splitTime');
+    const startS = h.startTime && startMs ? (Date.parse(h.startTime) - startMs) / 1000 : split != null && dur != null ? split - dur : t;
     if (dur == null && split != null) dur = split - t;
-    if (dur == null) return null;
+    if (dur == null || dur <= 0) return null;
     t = startS + dur;
-    const st = Object.fromEntries(listOf(l.statistics, 'statistics').map((s) => [String(s.type || '').replace('STATISTICS_TYPE_', ''), s]));
-    const hr = l.heartRate || st.HEART_RATE || {}, pw = l.power || st.POWER || st.CYCLING_POWER || {};
-    const dist = num(l.distanceMeters ?? l.distance ?? l.lapDistance ?? l.lapDistanceMeters);
-    return { n: i + 1, startS, durationS: dur, distanceM: dist || null, avgHr: num(hr.avg ?? hr.average) || null, maxHr: num(hr.max ?? hr.maximum) || null, avgPower: num(pw.avg ?? pw.average) || null, pace: dist ? (dur / dist) * 1000 : null };
+    // statistics: Objekt (heartRate, power, speed …) oder Liste [{type: 'STATISTICS_TYPE_…', avg, max}]
+    const raw = l.statistics || {};
+    const list2 = listOf(raw, 'statistics');
+    const st = list2.length ? Object.fromEntries(list2.map((x) => [String(x.type || '').replace('STATISTICS_TYPE_', ''), x])) : {};
+    const hr = l.heartRate || raw.heartRate || st.HEART_RATE || {};
+    const pw = l.power || raw.power || st.POWER || st.CYCLING_POWER || {};
+    const sp = l.speed || raw.speed || st.SPEED || {};
+    const cad = l.cadence || raw.cadence || st.CADENCE || {};
+    const pick = (o, ...k) => { for (const key of k) { const v = num(o?.[key]); if (v) return v; } return null; };
+    let dist = num(h.distanceMeters ?? h.distance ?? h.lapDistance ?? h.lapDistanceMeters ?? l.distance);
+    const speedAvg = pick(sp, 'average', 'avg');
+    if (!dist && speedAvg) dist = (speedAvg / 3.6) * dur;
+    return {
+      n: i + 1, startS, durationS: dur, distanceM: dist || null,
+      avgHr: pick(hr, 'average', 'avg'), maxHr: pick(hr, 'maximum', 'max'), avgPower: pick(pw, 'average', 'avg'),
+      spm: pick(cad, 'average', 'avg'), pace: dist ? (dur / dist) * 1000 : null,
+    };
   }).filter(Boolean);
   return laps.length > 1 ? laps : null;
 }
 function polarLaps(ex, startMs) {
   const manual = polarLapList(listOf(ex.laps, 'laps'), startMs);
-  const auto = polarLapList([...listOf(ex.autoLaps, 'autoLaps'), ...listOf(ex.laps?.autoLaps, 'autoLaps')], startMs);
+  const auto = polarLapList([...listOf(ex.autoLaps, 'autoLaps'), ...listOf(ex.laps?.autoLaps, 'autoLaps'), ...listOf(ex.autolaps, 'autolaps')], startMs);
   return { laps: manual || undefined, autoLaps: auto || undefined };
 }
 
