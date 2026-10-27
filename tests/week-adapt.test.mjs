@@ -55,3 +55,22 @@ test('Zu wenig Zeit wegen Uni: lockere kürzen, harte verschieben', () => {
   assert.ok(next.find((p) => p.id === 'e').minutes <= 255);
   assert.notEqual(next.find((p) => p.id === 'h').date, '2026-11-04');
 });
+
+test('Besondere Zeiten: Prüfungsphase kürzt locker, hält hart; Reise begrenzt harte Einheiten', async () => {
+  const { weekPeriod, periodForWeek } = await import('../src/lib/week-adapt.js');
+  const { generatePlan } = await import('../src/lib/plan-wizard.js');
+  const s = { periods: [{ id: 'p1', type: 'exam', from: '2026-11-02', to: '2026-11-15' }, { id: 'p2', type: 'travel', from: '2026-11-23', to: '2026-11-29', label: 'Reise Norwegen' }] };
+  assert.equal(weekPeriod('2026-11-02', s).factor, 0.7);
+  const plan = [P('h', '2026-11-04', 90, 'I3'), P('e', '2026-11-05', 100, 'I1'), P('k', '2026-11-06', 60, 'Kraft')];
+  const res = adaptWeek({ plan, settings: { schedule: s } }, '2026-11-03');
+  const per = res.find((x) => x.id === 'period-p1');
+  const next = applyOps(plan, per.ops);
+  assert.equal(next.find((p) => p.id === 'h').minutes, 90);
+  assert.equal(next.find((p) => p.id === 'e').minutes, 70);
+  assert.ok(!adaptWeek({ plan: next, settings: { schedule: s } }, '2026-11-03').some((x) => x.id === 'period-p1')); // nur einmal
+  const base = { startHours: 12, peakHours: 14, start: '2026-10-26', end: '2026-12-06', restDays: [1], longDay: 7, doubles: true, strengthPerWeek: 2, approach: 'pyramidal' };
+  const plain = generatePlan(base, []), withP = generatePlan({ ...base, periodFor: (m) => periodForWeek(m, s) }, []);
+  const wk = (w, d) => w.find((x) => x.from === d);
+  assert.ok(wk(withP, '2026-11-02').targetHours < wk(plain, '2026-11-02').targetHours * 0.75);
+  assert.ok(wk(withP, '2026-11-23').days.flatMap((d) => d.sessions).filter((x) => x.kind === 'hard').length <= 1);
+});

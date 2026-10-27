@@ -5,7 +5,8 @@ import { today } from '../lib/activities.js';
 import { addDays } from '../lib/metrics.js';
 import { sportLabel } from '../lib/sports.js';
 import { dayTargets, planDay } from '../lib/nutrition.js';
-import { trainingOf, tipsFor } from '../lib/food-day.js';
+import { trainingOf, tipsFor, mealTimes } from '../lib/food-day.js';
+import { fmtTime } from '../lib/week-adapt.js';
 import { CATALOG, SLOTS, CONTEXTS, filterCatalog, toRecipe, recipeNutrients, highlights } from '../lib/recipes.js';
 import { NUTRIENTS, REFERENCE } from '../lib/foods.js';
 import { GUIDE, NUTRITION_SOURCES, sweatRate } from '../lib/nutrition-guide.js';
@@ -94,7 +95,7 @@ function DaySuggestion({ data, t, prefs, weight, open }) {
   return (
     <>
       <div className="chips" style={{ marginTop: 10 }}>{days.map((d) => <button key={d} className={`chip${d === date ? ' on' : ''}`} onClick={() => pick(d)}>{d === t ? 'Heute' : fmtDate(d, { weekday: 'short', day: 'numeric' })}</button>)}</div>
-      <p className="muted small">{today.length ? today.map((x) => `${x.time ? x.time + ' ' : ''}${x.minutes}′ ${x.race ? 'Rennen' : sportLabel(x.sport)}${x.hard ? ` (${x.hard}′ hart)` : ''}`).join(' · ') : 'Kein Training'}{tomorrow.length ? ` · morgen: ${tomorrow.map((x) => `${x.minutes}′ ${x.race ? 'Rennen' : sportLabel(x.sport)}`).join(', ')}` : ''}. Uhrzeiten aus Einheiten oder „Übliche Trainingszeit“ (KI-Plan → Vorlieben).</p>
+      <p className="muted small">{today.length ? today.map((x) => `${x.time ? x.time + ' ' : ''}${x.minutes}′ ${x.race ? 'Rennen' : sportLabel(x.sport)}${x.hard ? ` (${x.hard}′ hart)` : ''}`).join(' · ') : 'Kein Training'}{tomorrow.length ? ` · morgen: ${tomorrow.map((x) => `${x.minutes}′ ${x.race ? 'Rennen' : sportLabel(x.sport)}`).join(', ')}` : ''}. Uhrzeiten aus den Einheiten, dem Alltag (Kalender → Alltag) oder „Übliche Trainingszeit“ (KI-Plan → Vorlieben); Essenszeiten richten sich danach.</p>
       {plan.totals && <div className="card">
         <b className="small">Tag gesamt (Portionen unten eingerechnet)</b>
         <Bar label="Energie" got={plan.totals.kcal} goal={plan.targets.kcal} unit="kcal" />
@@ -103,10 +104,10 @@ function DaySuggestion({ data, t, prefs, weight, open }) {
         <Bar label="Fett" got={plan.totals.fett} goal={plan.targets.fat} unit="g" />
         {plan.extras?.map((e, i) => <p key={i} className="small" style={{ margin: '6px 0 0' }}>• {e}</p>)}
       </div>}
-      {plan.meals.map((m, i) => (
+      {mealTimes(plan.meals, today, date, data.settings.schedule).map((m, i) => (
         <div key={i} className="item">
           <button className="grow ghost" style={{ display: 'block', textAlign: 'left', padding: 0, color: 'var(--ink)', fontWeight: 400 }} onClick={() => open(toRecipe(m.r, weight, m.factor))}>
-            <span className="muted small">{m.label}</span><b style={{ display: 'block' }}>{m.r.name}</b>
+            <span className="muted small">{m.time != null && <b>{fmtTime(m.time)} · </b>}{m.label}{m.takeaway && <span className="badge b-info" style={{ marginLeft: 6 }}>zum Mitnehmen ({m.takeaway})</span>}</span><b style={{ display: 'block' }}>{m.r.name}</b>
             <p style={{ margin: 0 }}>{String(m.factor).replace('.', ',')}× Portion · {m.got ? `${Math.round(m.got.kcal)} kcal · KH ${Math.round(m.got.kh)} g${m.goal ? ` (Ziel ${Math.round(m.goal.kh)})` : ''} · Eiweiß ${Math.round(m.got.eiweiss)} g` : `${m.r.min} min`}</p>
           </button>
           <button className="ghost" style={{ flex: 'none' }} aria-label="Anderes Rezept" title="Anderes Rezept" onClick={() => setOffsets({ ...offsets, [m.role]: (offsets[m.role] || 0) + 1 })}><Shuffle size={16} /></button>

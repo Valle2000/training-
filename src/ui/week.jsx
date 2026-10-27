@@ -1,9 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { Plus, Trash2, Wand2, Check, X, Gauge } from 'lucide-react';
+import { Plus, Trash2, Wand2, Check, X, Gauge, CalendarCheck } from 'lucide-react';
 import { useData, update, uid } from '../lib/store.js';
 import { curve, today } from '../lib/activities.js';
-import { adaptWeek, applyOps, hasSchedule } from '../lib/week-adapt.js';
+import { addDays } from '../lib/metrics.js';
+import { adaptWeek, applyOps, hasSchedule, PERIOD_TYPES } from '../lib/week-adapt.js';
 import { suggestThresholds } from '../lib/thresholds.js';
+import { weekReview } from '../lib/review.js';
 import { recomputeAll } from '../lib/recompute.js';
 import { Sheet, toast } from './common.jsx';
 
@@ -15,13 +17,14 @@ const PRESETS = ['Uni', 'Arbeit', 'Lernen', 'Pendeln', 'Termin'];
 export function ScheduleSheet({ onClose }) {
   const { settings } = useData();
   const t = today(settings.timezone);
-  const [s, setS] = useState({ start: '06:30', end: '21:30', buffer: 15, blocks: [], oneOff: [], ...(settings.schedule || {}) });
+  const [s, setS] = useState({ start: '06:30', end: '21:30', buffer: 15, blocks: [], oneOff: [], periods: [], ...(settings.schedule || {}) });
+  const setPer = (id, k, v) => set('periods', s.periods.map((b) => (b.id === id ? { ...b, [k]: v } : b)));
   const set = (k, v) => setS({ ...s, [k]: v });
   const setBlock = (id, k, v) => set('blocks', s.blocks.map((b) => (b.id === id ? { ...b, [k]: v } : b)));
   const setOne = (id, k, v) => set('oneOff', s.oneOff.map((b) => (b.id === id ? { ...b, [k]: v } : b)));
   const save = () => {
     // Vergangene Einzeltermine aufräumen.
-    update((d) => ({ ...d, settings: { ...d.settings, schedule: { ...s, oneOff: s.oneOff.filter((b) => b.date >= t) } } }));
+    update((d) => ({ ...d, settings: { ...d.settings, schedule: { ...s, oneOff: s.oneOff.filter((b) => b.date >= t), periods: s.periods.filter((b) => b.to >= addDays(t, -60)) } } }));
     toast('Alltag gespeichert');
     onClose();
   };
@@ -69,6 +72,23 @@ export function ScheduleSheet({ onClose }) {
         </div>
       ))}
       <button className="secondary" onClick={() => set('oneOff', [...s.oneOff, { id: uid(), label: '', date: t, from: '09:00', to: '12:00' }])}><Plus size={16} />Termin</button>
+      <h3>Besondere Zeiten</h3>
+      <p className="muted small">Prüfungsphase, Reise oder Trainingslager: Der Saisonplan-Assistent und „Woche anpassen“ passen Umfang und harte Einheiten automatisch an.</p>
+      {s.periods.map((b) => (
+        <div key={b.id} className="card">
+          <div className="row" style={{ flexWrap: 'nowrap' }}>
+            <select value={b.type} onChange={(e) => setPer(b.id, 'type', e.target.value)}>{Object.entries(PERIOD_TYPES).map(([id, x]) => <option key={id} value={id}>{x.label}</option>)}</select>
+            <button className="ghost" style={{ flex: 'none' }} onClick={() => set('periods', s.periods.filter((x) => x.id !== b.id))} aria-label="Entfernen"><Trash2 size={16} /></button>
+          </div>
+          <input value={b.label || ''} onChange={(e) => setPer(b.id, 'label', e.target.value)} placeholder={`Name (optional), z. B. ${b.type === 'exam' ? 'Klausuren WiSe' : b.type === 'camp' ? 'Trainingslager Ramsau' : 'Urlaub'}`} style={{ marginTop: 6 }} />
+          <div className="grid2">
+            <div><label>von</label><input type="date" value={b.from} onChange={(e) => setPer(b.id, 'from', e.target.value)} /></div>
+            <div><label>bis</label><input type="date" value={b.to} onChange={(e) => setPer(b.id, 'to', e.target.value)} /></div>
+          </div>
+          <p className="muted small" style={{ marginBottom: 0 }}>{PERIOD_TYPES[b.type]?.note}</p>
+        </div>
+      ))}
+      <div className="chips">{Object.entries(PERIOD_TYPES).map(([id, x]) => <button key={id} className="chip" onClick={() => set('periods', [...s.periods, { id: uid(), type: id, label: '', from: t, to: addDays(t, 13) }])}><Plus size={13} /> {x.label}</button>)}</div>
       <button className="primary wide" style={{ marginTop: 12 }} onClick={save}><Check size={17} />Speichern</button>
     </Sheet>
   );
@@ -136,3 +156,58 @@ export function ThresholdCard({ compact = false, onApplied }) {
   );
 }
 
+
+const TIP_COLOR = { gelb: 'var(--warn)', info: 'var(--accent)', gut: 'var(--good)' };
+// Wochenrückblick als Inhalt (für Karte und Sheet).
+function ReviewBody({ r, full }) {
+  const n1 = (v) => String(Math.round(v * 10) / 10).replace('.', ',');
+  return <>
+    <div className="stats">
+      <div><b>{n1(r.hours)}<small className="muted">{r.comp.plannedMin ? `/${n1(r.comp.plannedMin / 60)}` : ''}</small></b><span>Stunden Ist/Soll</span></div>
+      <div><b>{r.hardSessions}</b><span>harte Einheiten{r.missedHard ? ` (${r.missedHard} ausgefallen)` : ''}</span></div>
+      <div><b>{r.deltaPct != null ? `${r.deltaPct > 0 ? '+' : ''}${r.deltaPct} %` : '–'}</b><span>vs. Ø 4 Wochen</span></div>
+    </div>
+    {r.tips.map((x) => <p key={x.text} className="small" style={{ borderLeft: `3px solid ${TIP_COLOR[x.level]}`, paddingLeft: 8, margin: '8px 0' }}>{x.text}</p>)}
+    {full && <>
+      {r.share && <p className="small">Intensität: locker {r.share.easy} % · Schwelle {r.share.thr} % · hart {r.share.hard} % · Kraft {r.strength}×</p>}
+      {r.sports.length > 0 && <p className="small">Sportarten: {r.sports.map((s) => `${s.label} ${n1(s.hours)} h`).join(' · ')}</p>}
+      {r.longest && <p className="small">Längste Einheit: {r.longest.title} ({r.longest.minutes} min)</p>}
+      {r.keys.length > 0 && <p className="small">Key Sessions: {r.keys.map((k) => `${k.name}${k.power ? ` ${Math.round(k.power)} W` : ''}${k.hr ? ` @ ${Math.round(k.hr)} bpm` : ''}${k.lactate != null ? `, ${String(k.lactate).replace('.', ',')} mmol/l` : ''}${k.ratioPct != null ? ` (${k.ratioPct > 0 ? '+' : ''}${String(k.ratioPct).replace('.', ',')} % Leistung je Puls ggü. ${new Date(k.beforeDate + 'T12:00:00').toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })})` : ''}`).join(' · ')}</p>}
+      {(r.hrv || r.sleep || r.feel) && <p className="small">Erholung: {[r.hrv && `HRV ${r.hrv.avg7} ms (${r.hrv.status === 'low' ? 'unter' : r.hrv.status === 'high' ? 'über' : 'im'} Normalbereich)`, r.sleep && `Schlaf Ø ${n1(r.sleep)} h`, r.feel && `Gefühl Ø ${n1(r.feel)}/5`].filter(Boolean).join(' · ')}</p>}
+      <p className="small">Nächste Woche: {r.next.count ? `${n1(r.next.hours)} h geplant, ${r.next.hard} harte Einheit(en)` : 'noch nichts geplant'}{r.next.races.length ? `, Rennen: ${r.next.races.map((x) => x.name).join(', ')}` : ''}.</p>
+    </>}
+  </>;
+}
+
+export function WeekReviewSheet({ monday, onClose }) {
+  const data = useData();
+  const t = today(data.settings.timezone);
+  const r = useMemo(() => weekReview(data, monday, t), [data, monday, t]);
+  return (
+    <Sheet title={`Wochenrückblick ${new Date(monday + 'T12:00:00').toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })} – ${new Date(r.sunday + 'T12:00:00').toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })}`} onClose={onClose}>
+      <ReviewBody r={r} full />
+    </Sheet>
+  );
+}
+
+// Auf „Heute“: sonntags die laufende Woche, montags und dienstags die vergangene.
+export function WeekReviewCard() {
+  const data = useData();
+  const t = today(data.settings.timezone);
+  const dow = ((new Date(t + 'T12:00:00Z').getUTCDay() + 6) % 7) + 1;
+  const monday = dow === 7 ? addDays(t, -6) : dow <= 2 ? addDays(t, -(dow - 1) - 7) : null;
+  const [open, setOpen] = useState(false);
+  const r = useMemo(() => (monday ? weekReview(data, monday, t) : null), [data, monday, t]);
+  if (!r || !r.sessions || data.settings.reviewSeen === monday) return null;
+  return (
+    <div className="card">
+      <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3 style={{ margin: 0, flex: 'none' }}><CalendarCheck size={16} /> Wochenrückblick</h3>
+        <button className="ghost" style={{ flex: 'none' }} onClick={() => update((d) => ({ ...d, settings: { ...d.settings, reviewSeen: monday } }))} aria-label="Ausblenden"><X size={16} /></button>
+      </div>
+      <ReviewBody r={r} />
+      <button className="secondary" onClick={() => setOpen(true)}>Details</button>
+      {open && <WeekReviewSheet monday={monday} onClose={() => setOpen(false)} />}
+    </div>
+  );
+}

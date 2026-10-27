@@ -21,6 +21,32 @@ export function busyOn(date, s = {}) {
   ].map((b) => ({ ...b, fromM: toMin(b.from), toM: toMin(b.to) })).sort((a, b) => a.fromM - b.fromM);
 }
 
+// Besondere Zeiten (settings.schedule.periods: [{id, type, from, to, label}]): Umfang anpassen, Intensität je nach Art.
+// Prüfungsphase: weniger Umfang, Intensität halten (kurze harte Reize erhalten die Form, Stress kommt schon vom Lernen).
+export const PERIOD_TYPES = {
+  exam: { label: 'Prüfungsphase', factor: 0.7, hardMax: 2, note: 'Umfang ca. −30 %, harte Einheiten bleiben (kürzer ist okay). Schlaf geht vor.' },
+  stress: { label: 'Stressige Zeit', factor: 0.8, hardMax: 2, note: 'Umfang ca. −20 %. Morgen-Check ernst nehmen.' },
+  travel: { label: 'Reise', factor: 0.5, hardMax: 1, note: 'Umfang ca. −50 %, höchstens 1 harte Einheit, Sportart nach Möglichkeit (Laufen, Hotel-Kraft).' },
+  camp: { label: 'Trainingslager', factor: 1.3, hardMax: 3, note: 'Umfang ca. +30 %, vor allem lockere und lange Einheiten. Danach eine leichtere Woche.' },
+};
+export const periodOn = (date, s = {}) => (s.periods || []).find((p) => date >= p.from && date <= p.to) || null;
+// Durchschnittlicher Umfangsfaktor einer Woche (Tage ohne besondere Zeit = 1) und vorherrschende Art.
+export function weekPeriod(monday, s = {}) {
+  const ps = Array.from({ length: 7 }, (_, i) => periodOn(addDays(monday, i), s));
+  if (!ps.some(Boolean)) return null;
+  const factor = ps.reduce((a, p) => a + (p ? PERIOD_TYPES[p.type]?.factor ?? 1 : 1), 0) / 7;
+  const days = ps.filter(Boolean).length, main = ps.filter(Boolean).sort((a, b) => ps.filter((x) => x === b).length - ps.filter((x) => x === a).length)[0];
+  return { factor: Math.round(factor * 100) / 100, type: main.type, label: main.label || PERIOD_TYPES[main.type]?.label, days };
+}
+
+// Für den Saisonplan-Assistenten: Faktor der Woche; harte Einheiten nur begrenzen, wenn die besondere Zeit
+// den Großteil der Woche (ab 4 Tagen) ausmacht.
+export function periodForWeek(monday, s) {
+  const wp = weekPeriod(monday, s);
+  if (!wp) return null;
+  return { ...wp, hardMax: wp.days >= 4 ? PERIOD_TYPES[wp.type]?.hardMax : null, type: wp.days >= 4 ? wp.type : null };
+}
+
 // Freie Zeitfenster eines Tages (zwischen Tagesbeginn und -ende, mit Puffer für Wege um jeden Termin).
 export function freeWindows(date, s = {}) {
   const start = toMin(s.start || '06:30'), end = toMin(s.end || '21:30'), buf = Number(s.buffer ?? 15);
@@ -146,7 +172,35 @@ export function adaptWeek(data, t, form = null) {
   const missedEasy = missed.filter((p) => !isHardPlan(p));
   if (missedEasy.length) out.push({ id: 'missed-easy', level: 'info', title: `${missedEasy.length} lockere Einheit(en) verpasst`, text: 'Nicht nachholen – verpasster lockerer Umfang lässt sich nicht in die restliche Woche stopfen. Aus dem Kalender entfernen?', ops: missedEasy.map((p) => ({ type: 'remove', id: p.id })) });
 
-  // 4) Alltag: geplante Zeit passt nicht in die freie Zeit des Tages → kürzen oder verschieben.
+  // 4) Besondere Zeiten: Umfang an Prüfungsphase/Reise anpassen (einmal pro Einheit, danach als angepasst markiert).
+  if (s?.periods?.length) {
+    const byPeriod = new Map();
+    for (const p of future) {
+      const per = periodOn(p.date, s), type = per && PERIOD_TYPES[per.type];
+      if (!type || type.factor >= 1 || p.periodAdjusted || out.some((o) => o.ops.some((op) => op.id === p.id))) continue;
+      const key = per.id, list = byPeriod.get(key) || { per, type, items: [] };
+      list.items.push(p); byPeriod.set(key, list);
+    }
+    for (const { per, type, items } of byPeriod.values()) {
+      const ops = [];
+      let hard = 0;
+      for (const p of items.sort((a, b) => a.date.localeCompare(b.date))) {
+        if (isHardPlan(p)) {
+          hard++;
+          if (hard > type.hardMax) ops.push({ type: 'update', id: p.id, patch: { ...scaled(p, Math.min(45, p.minutes), 'I1'), title: `Locker (${type.label})`, periodAdjusted: true } });
+          else ops.push({ type: 'update', id: p.id, patch: { periodAdjusted: true } });
+        } else if (p.sport === 'strength') {
+          ops.push(per.type === 'travel' ? { type: 'update', id: p.id, patch: { title: 'Kraft ohne Geräte (Hotel)', minutes: 30, load: estimatePlanLoad(30, 'Kraft'), periodAdjusted: true } } : { type: 'update', id: p.id, patch: { periodAdjusted: true } });
+        } else {
+          const m = Math.max(30, Math.round((p.minutes * type.factor) / 5) * 5);
+          ops.push({ type: 'update', id: p.id, patch: { ...scaled(p, m), ...(per.type === 'travel' ? { sport: 'run', title: 'Locker (Reise: Laufen oder was geht)' } : {}), periodAdjusted: true } });
+        }
+      }
+      out.push({ id: `period-${per.id}`, level: 'info', title: `${per.label || type.label}: Umfang anpassen`, text: `${type.note} Betrifft ${items.length} Einheit(en) diese Woche.`, ops });
+    }
+  }
+
+  // 5) Alltag: geplante Zeit passt nicht in die freie Zeit des Tages → kürzen oder verschieben.
   if (sched) {
     const moved = new Map();
     for (let d = t; d <= sunday; d = addDays(d, 1)) {

@@ -7,7 +7,7 @@ import { sportLabel, SPORTS } from '../lib/sports.js';
 import { PHASES } from '../lib/season.js';
 import { APPROACHES, KEY_TYPES, allOptions, makeKey, PLAN_SOURCES, GOALS, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend } from '../lib/plan-wizard.js';
 import { Sheet, fmtDate, fmtNum, toast } from './common.jsx';
-import { freeMinutes, hasSchedule } from '../lib/week-adapt.js';
+import { freeMinutes, hasSchedule, periodForWeek } from '../lib/week-adapt.js';
 
 const DOW = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 // Gruppen im Katalog; Intervalle nach Zone getrennt.
@@ -37,7 +37,7 @@ export function PlanWizard({ onClose }) {
   const keys = o.keys || ap.defaults;
   const pr = o.profile || {};
   const rec = recommend(pr, Number(o.startHours) || 10);
-  const plan = useMemo(() => (step >= 4 ? generatePlan({ ...o, keys, customKeys: custom, capFor: hasSchedule(settings.schedule) ? (d) => freeMinutes(d, settings.schedule) : null }, races) : []), [step, o, keys, races, custom, settings.schedule]);
+  const plan = useMemo(() => (step >= 4 ? generatePlan({ ...o, keys, customKeys: custom, capFor: hasSchedule(settings.schedule) ? (d) => freeMinutes(d, settings.schedule) : null, periodFor: settings.schedule?.periods?.length ? (m) => periodForWeek(m, settings.schedule) : null }, races) : []), [step, o, keys, races, custom, settings.schedule]);
   const set = (k, v) => setO({ ...o, [k]: v });
   const toggleKey = (id) => set('keys', keys.includes(id) ? keys.filter((k) => k !== id) : [...keys, id]);
   const setPr = (k, v) => set('profile', { ...pr, [k]: v });
@@ -156,7 +156,7 @@ export function PlanWizard({ onClose }) {
         </div>
         <div style={{ overflowX: 'auto' }}>
           <table className="t nowrap"><thead><tr><th>Woche</th><th>Phase</th><th>Std.</th><th>Harte Einheiten</th></tr></thead>
-            <tbody>{plan.map((w) => <tr key={w.from}><td>{fmtDate(w.from, { day: 'numeric', month: 'short' })}</td><td><i style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 3, background: PHASES[w.phase].color, marginRight: 6 }} />{PHASES[w.phase].label}{w.block ? ' · Block' : ''}</td><td>{fmtNum(w.plannedHours, 1)}</td><td>{w.days.flatMap((d) => d.sessions.filter((s) => s.kind === 'hard' || s.kind === 'race').map((s) => `${DOW[d.dow - 1]} ${s.title.split(':')[0].replace(' (vormittags)', '').replace(' (nachmittags)', '')}`)).join(', ') || '–'}</td></tr>)}</tbody>
+            <tbody>{plan.map((w) => <tr key={w.from}><td>{fmtDate(w.from, { day: 'numeric', month: 'short' })}</td><td><i style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 3, background: PHASES[w.phase].color, marginRight: 6 }} />{PHASES[w.phase].label}{w.block ? ' · Block' : ''}{w.period ? ` · ${w.period}` : ''}</td><td>{fmtNum(w.plannedHours, 1)}</td><td>{w.days.flatMap((d) => d.sessions.filter((s) => s.kind === 'hard' || s.kind === 'race').map((s) => `${DOW[d.dow - 1]} ${s.title.split(':')[0].replace(' (vormittags)', '').replace(' (nachmittags)', '')}`)).join(', ') || '–'}</td></tr>)}</tbody>
           </table>
         </div>
         {plan.slice(0, 2).map((w) => (

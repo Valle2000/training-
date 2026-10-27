@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check, Copy, Scissors, Undo2, CalendarClock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check, Copy, Scissors, Undo2, CalendarClock, CalendarCheck } from 'lucide-react';
 import { useData, update, getData, getSeries, getLocalSeries, putSeries, uid } from '../lib/store.js';
 import { today, weeks, mondayOf, buildActivity, evaluate, estimatePlanLoad, matchPlan, compliance, cropActivity, localDate, reevaluate } from '../lib/activities.js';
 import { addDays, ZONES, cleanSeries } from '../lib/metrics.js';
@@ -11,8 +11,8 @@ import { Sheet, Seg, fmtDuration, fmtNum, fmtDate, fmtKm, toast } from './common
 import { Season, Races } from './season.jsx';
 import { Workouts } from './workouts.jsx';
 import { durationOf, workoutLoad, mainZone, describe } from '../lib/workouts.js';
-import { ScheduleSheet, AdaptCard } from './week.jsx';
-import { slotDay, freeMinutes, hasSchedule, fmtTime } from '../lib/week-adapt.js';
+import { ScheduleSheet, AdaptCard, WeekReviewSheet } from './week.jsx';
+import { slotDay, freeMinutes, hasSchedule, fmtTime, weekPeriod } from '../lib/week-adapt.js';
 import { LapsCard } from './laps.jsx';
 import { ActivityChart } from './activity-chart.jsx';
 import { fmtPace } from '../lib/laps.js';
@@ -25,6 +25,7 @@ export function Training({ openActivity, openAdd }) {
   const [monday, setMonday] = useState(mondayOf(t));
   const [planItem, setPlanItem] = useState(null);
   const [schedOpen, setSchedOpen] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
   const sched = hasSchedule(settings.schedule) ? settings.schedule : null;
   const sorted = useMemo(() => [...activities].sort((a, b) => b.start.localeCompare(a.start)), [activities]);
   const w12 = useMemo(() => weeks(activities, 12, t), [activities, t]);
@@ -53,6 +54,7 @@ export function Training({ openActivity, openAdd }) {
             <b style={{ flex: 'none' }}>{fmtDate(monday, { day: 'numeric', month: 'short' })} – {fmtDate(days[6], { day: 'numeric', month: 'short' })}</b>
             <button className="ghost" style={{ flex: 'none' }} onClick={() => setMonday(addDays(monday, 7))} aria-label="Nächste Woche"><ChevronRight /></button>
           </div>
+          {(() => { const wp = weekPeriod(monday, settings.schedule); return wp && <div className="notice">{wp.label}: {wp.days} Tag(e) diese Woche · Umfang ca. {Math.round(wp.factor * 100)} %</div>; })()}
           {monday === mondayOf(t) && <AdaptCard />}
           <div className="week">
             {days.map((d) => { const open = plan.filter((p) => p.date === d && !p.done && !(d <= t && matchPlan(p, activities))); const slot = sched ? slotDay(d, open, sched) : null; return (
@@ -74,6 +76,7 @@ export function Training({ openActivity, openAdd }) {
             <button className="secondary" onClick={() => setPlanItem({ date: days.find((d) => d >= t) || days[0] })}><Plus size={17} />Einheit planen</button>
             <button className="secondary" onClick={copyLastWeek}><Copy size={17} />Vorwoche kopieren</button>
             <button className="secondary" onClick={() => setSchedOpen(true)}><CalendarClock size={17} />Alltag</button>
+            {monday <= t && <button className="secondary" onClick={() => setReviewOpen(true)}><CalendarCheck size={17} />Rückblick</button>}
           </div>
           <div className="card">
             <h3 style={{ marginTop: 0 }}>Zonen dieser Woche</h3>
@@ -110,6 +113,7 @@ export function Training({ openActivity, openAdd }) {
       {view === 'races' && <Races openActivity={openActivity} />}
       {view === 'workouts' && <Workouts />}
       {schedOpen && <ScheduleSheet onClose={() => setSchedOpen(false)} />}
+      {reviewOpen && <WeekReviewSheet monday={monday} onClose={() => setReviewOpen(false)} />}
       {planItem && <PlanEditor item={planItem} onClose={() => setPlanItem(null)} />}
     </>
   );

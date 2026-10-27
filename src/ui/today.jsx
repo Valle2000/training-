@@ -13,7 +13,7 @@ import { fmtDuration, fmtNum, toast } from './common.jsx';
 import { ReadinessCard, MorningSheet, RecoveryCard } from './morning.jsx';
 import { RaceCountdown } from './season.jsx';
 import { HealthBanner } from './more.jsx';
-import { AdaptCard, ThresholdCard } from './week.jsx';
+import { AdaptCard, ThresholdCard, WeekReviewCard } from './week.jsx';
 
 export function Today({ go, openActivity, openAdd }) {
   const data = useData();
@@ -60,6 +60,7 @@ export function Today({ go, openActivity, openAdd }) {
       <HealthBanner go={go} />
       <RaceCountdown go={go} />
       <AdaptCard />
+      <WeekReviewCard />
       <div className="row">
         {connected && <button className="secondary" onClick={sync} disabled={busy}><RefreshCw size={17} className={busy ? 'spin' : ''} />Abgleichen</button>}
         <button className="primary" onClick={openAdd}><Plus size={18} />Einheit</button>

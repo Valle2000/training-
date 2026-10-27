@@ -196,6 +196,13 @@ export function generatePlan(opts, races = []) {
   const pickHit = (zone, k) => { const list = options.filter((o) => o.type === 'hit' && o.zone === zone && keys.has(o.id)); return list.length ? list[k % list.length] : null; };
   return weeks.map((w) => {
     let hardSlots = ap.phases[w.phase] ?? [];
+    // Besondere Zeiten (Prüfungsphase, Reise, Trainingslager): Umfang skalieren, harte Einheiten begrenzen.
+    const per = opts.periodFor ? opts.periodFor(w.from) : null;
+    if (per) {
+      w.targetHours = Math.round(w.targetHours * per.factor * 10) / 10; w.period = per.label;
+      if (Array.isArray(hardSlots) && per.hardMax != null) hardSlots = hardSlots.slice(0, per.hardMax);
+      else if (hardSlots === 'block' && per.factor < 1) hardSlots = ['threshold'];
+    }
     let hardDays = ap.days.hard;
     if (hardSlots === 'block') {
       const blockWeek = buildIdx % 4 === 0; buildIdx++;
@@ -274,7 +281,7 @@ export function generatePlan(opts, races = []) {
     let speedDone = !(keys.has('speed') && ['base', 'build', 'specific'].includes(w.phase));
     let speedLeft = pr.weak?.includes('sprint') ? 2 : 1;
     let techLeft = pr.weak?.some((x) => x === 'skate' || x === 'classic') && !['race', 'taper'].includes(w.phase) ? 1 : 0;
-    const share = specificShare(w.phase, w.from, pr);
+    const share = per?.type === 'travel' ? 0.1 : specificShare(w.phase, w.from, pr);
     for (let i = 0; i < n; i++) {
       const d = slots[i];
       const min = Math.floor(Math.min(150, room(d), Math.max(40, easy / (n - i))) / 5) * 5;

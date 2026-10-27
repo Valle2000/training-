@@ -2,10 +2,11 @@ import React, { useMemo, useState } from 'react';
 import { ZONES } from '../lib/metrics.js';
 import { sportById, sportLabel } from '../lib/sports.js';
 import { buckets, rolling } from '../lib/analysis.js';
-import { seasonCumulative, seasonTable, seasonStart, seasonLabel, bandSeconds, hrAtPower, powerAtHr, tolerance, healthRatios } from '../lib/longterm.js';
+import { seasonReview, seasonCumulative, seasonTable, seasonStart, seasonLabel, bandSeconds, hrAtPower, powerAtHr, tolerance, healthRatios } from '../lib/longterm.js';
 import { HEALTH_TYPES } from '../lib/gear.js';
 import { LineChart, StackedBars, ZONE_COLORS } from './charts.jsx';
 import { Seg, fmtDate, fmtNum } from './common.jsx';
+import { useData } from '../lib/store.js';
 
 const SEASON_COLORS = ['var(--load)', 'var(--fat)', 'var(--form)', 'var(--fit)'];
 const WINDOWS = [[90, '3 Monate'], [182, '6 Monate'], [365, '1 Jahr'], [730, '2 Jahre'], [100000, 'Alles']];
@@ -170,6 +171,7 @@ function Seasons({ activities, t }) {
   if (!table.length) return <div className="card"><p className="muted">Noch keine Einheiten.</p></div>;
   return (
     <>
+      <SeasonReview seasons={table.map((r) => r.start)} t={t} />
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Stunden kumuliert je Saison</h3>
         <LineChart labels={Array.from({ length: 53 }, (_, i) => i)} xFormat={(i) => new Date(Date.UTC(2001, 4, 1 + i * 7)).toLocaleDateString('de-DE', { month: 'short' })} shared
@@ -182,5 +184,40 @@ function Seasons({ activities, t }) {
         <p className="muted small">Zonen in Stunden. Ø h/Woche zählt nur Wochen mit Training.</p>
       </div>
     </>
+  );
+}
+
+// Saisonrückblick mit Vergleich zur Vorsaison (laufende Saison: bis zum gleichen Tag).
+function SeasonReview({ seasons, t }) {
+  const data = useData();
+  const [start, setStart] = useState(seasons[0]);
+  const r = useMemo(() => seasonReview(data, start, t), [data, start, t]);
+  const { cur, prev } = r;
+  const rows = [
+    ['Stunden', fmtNum(cur.hours), fmtNum(prev.hours), cur.hours, prev.hours],
+    ['Einheiten', cur.sessions, prev.sessions, cur.sessions, prev.sessions],
+    ['Belastung', fmtNum(cur.load), fmtNum(prev.load), cur.load, prev.load],
+    ['Ø h/Woche (aktiv)', fmtNum(cur.hours / Math.max(1, cur.weeksActive), 1), fmtNum(prev.hours / Math.max(1, prev.weeksActive), 1)],
+    ['Größte Woche (h)', fmtNum(cur.maxWeek, 1), fmtNum(prev.maxWeek, 1)],
+    ['Schwelle (h)', fmtNum(cur.thrHours, 1), fmtNum(prev.thrHours, 1), cur.thrHours, prev.thrHours],
+    ['Hart I4–I5 (h)', fmtNum(cur.hardHours, 1), fmtNum(prev.hardHours, 1), cur.hardHours, prev.hardHours],
+    ['Anteil locker', cur.easy != null ? `${cur.easy} %` : '–', prev.easy != null ? `${prev.easy} %` : '–'],
+    ['Krafteinheiten', cur.strength, prev.strength],
+    ['Krankheitstage', cur.illDays, prev.illDays],
+    ['Verletzung/Beschwerden (Tage)', cur.injuryDays, prev.injuryDays],
+    ['Rennen', cur.races, prev.races],
+  ];
+  const sports = Object.entries(cur.sports).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  return (
+    <div className="card">
+      <h3 style={{ marginTop: 0 }}>Saisonrückblick {r.label}</h3>
+      <div className="chips">{seasons.slice(0, 6).map((s) => <button key={s} className={`chip${s === start ? ' on' : ''}`} onClick={() => setStart(s)}>{seasonLabel(s)}</button>)}</div>
+      <p className="muted small">{r.partial ? `Laufende Saison bis ${fmtDate(r.cutoff)} – verglichen mit ${r.prevLabel} bis zum gleichen Tag.` : `Ganze Saison, verglichen mit ${r.prevLabel}.`}</p>
+      {r.highlights.length > 0 && <ul className="small" style={{ paddingLeft: 18 }}>{r.highlights.map((h) => <li key={h}>{h}</li>)}</ul>}
+      <table className="t"><thead><tr><th></th><th>{r.label}</th><th>{r.prevLabel}</th><th>Δ</th></tr></thead>
+        <tbody>{rows.map(([l, a, b, x, y]) => <tr key={l}><td>{l}</td><td>{a}</td><td>{b}</td><td>{x != null && y ? `${x >= y ? '+' : ''}${Math.round(((x - y) / y) * 100)} %` : ''}</td></tr>)}</tbody></table>
+      {sports.length > 0 && <p className="small">Sportarten: {sports.map(([s, h]) => `${sportLabel(s)} ${fmtNum(h)} h`).join(' · ')}</p>}
+      {cur.longest && <p className="small">Längste Einheit: {cur.longest.title || 'ohne Titel'} – {Math.floor(cur.longest.minutes / 60)}:{String(cur.longest.minutes % 60).padStart(2, '0')} h am {fmtDate(cur.longest.date)}</p>}
+    </div>
   );
 }
