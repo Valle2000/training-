@@ -77,12 +77,17 @@ async function store(raw) {
 
 const isoDuration = (s) => { const m = /PT(?:(\d+)H)?(?:(\d+)M)?(?:([\d.]+)S)?/.exec(s || ''); return m ? (+m[1] || 0) * 3600 + (+m[2] || 0) * 60 + (+m[3] || 0) : 0; };
 
+// Nur die Sportart einer bestehenden Einheit ändern (Dauer, Notizen und Daten bleiben).
+const setSport = (id, sport) => update((x) => ({ ...x, activities: x.activities.map((a) => (a.id === id ? { ...a, sport } : a)) }));
+
 async function syncPolar() {
   const list = (await call('polar', '/v3/exercises')) || [];
   let added = 0;
-  const known = new Set(getData().activities.filter((a) => a.source === 'polar').map((a) => a.externalId));
+  const known = new Map(getData().activities.filter((a) => a.source === 'polar').map((a) => [a.externalId, a]));
   for (const ex of list) {
-    if (known.has(String(ex.id))) continue;
+    const old = known.get(String(ex.id));
+    // Bekannte Einheit mit konkreter Sportart: überspringen. „Sonstiges“ wird mit der Sportart aus der Datei korrigiert.
+    if (old && old.sport !== 'other') continue;
     let raw = null;
     // Sportart aus der Zusammenfassung (Bezeichnung, sonst Sportnummer) – gilt auch, wenn die FIT-Datei nur „Sonstiges“ liefert.
     const summarySport = polarSport(ex.detailed_sport_info ?? ex['detailed-sport-info']) !== 'other' ? polarSport(ex.detailed_sport_info ?? ex['detailed-sport-info']) : (polarSportId(ex.sport?.id ?? ex.sport) || 'other');
@@ -91,6 +96,10 @@ async function syncPolar() {
       if (fit?.length) raw = await parseFit(fit);
     } catch { /* ohne FIT: Zusammenfassung verwenden */ }
     if (raw && raw.sport === 'other' && summarySport !== 'other') raw.sport = summarySport;
+    if (old) {
+      if (raw?.sport && raw.sport !== 'other') setSport(old.id, raw.sport);
+      continue;
+    }
     if (!raw) {
       // Die Schnittstelle liefert Feldnamen mit Unterstrich (start_time), ältere Exporte mit Bindestrich – beides lesen.
       const f = (k) => ex[k.replace(/-/g, '_')] ?? ex[k];
@@ -374,6 +383,10 @@ export async function importFiles(files, onProgress) {
       if (await mergeIntoExisting({ ...raw, source: old.source === 'polar' ? 'polar' : 'upload' }, old)) { refreshed++; return false; }
     }
     if (old) {
+      if (old.sport === 'other' && raw.sport && raw.sport !== 'other') {
+        setSport(old.id, raw.sport);
+        if (old.source !== 'upload') { refreshed++; return false; }
+      }
       // Schon importiert, aber mit weniger Daten (z. B. früherer Import ohne Puls)? Dann mit den neuen Daten auffrischen.
       const needs = !(old.hasSeries && old.avgHr) || (raw.timerS && old.timerS == null && Math.abs((old.durationS || 0) - raw.timerS) > 60)
         || (raw.laps?.length && !old.laps?.length) || (raw.deviceAutoLaps?.length && !old.deviceAutoLaps?.length);
