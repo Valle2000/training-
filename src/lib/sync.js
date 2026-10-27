@@ -94,6 +94,14 @@ function notePolar(pid, sport, { name = null, example = null } = {}) {
   cur.count++;
   unknownPolar.set(String(pid), cur);
 }
+// Ohne Sportnummer (z. B. FIT-Datei „generic“): nach dem Namen der Einheit fragen.
+function notePolarTitle(title, sport) {
+  if (!title || sport !== 'other') return;
+  const key = `title:${title}`;
+  const cur = unknownPolar.get(key) || { id: key, kind: 'title', name: title, count: 0, example: null };
+  cur.count++;
+  unknownPolar.set(key, cur);
+}
 const askPolar = (ex, sport) => notePolar(ex.sport?.id, sport, { name: ex.detailed_sport_info ?? ex['detailed-sport-info'] ?? null, example: ex.name ?? null });
 // Nach einem Datei-Import: gleiche Abfrage wie beim Abgleich.
 function flushPolarAsk() {
@@ -398,8 +406,11 @@ export async function importFiles(files, onProgress) {
     const d = getData(), cand = { ...raw, durationS: raw.series?.hr?.length || raw.series?.power?.length || raw.elapsedS, elapsedS: raw.elapsedS };
     // Selbst zugeordnete Polar-Sportnummern (Einstellungen) haben Vorrang.
     const mapped = raw.polarSportId != null && d.settings.polarSportMap?.[raw.polarSportId];
+    const byTitle = !raw.polarSportId && raw.title ? d.settings.sportByTitle?.[raw.title] : null;
     if (mapped) raw.sport = mapped;
-    else notePolar(raw.polarSportId, raw.sport, { name: raw.polarSportName ?? null, example: raw.title || null });
+    else if (byTitle) raw.sport = byTitle;
+    else if (raw.polarSportId != null) notePolar(raw.polarSportId, raw.sport, { name: raw.polarSportName ?? null, example: raw.title || null });
+    else notePolarTitle(raw.title, raw.sport);
     // Geplante Polar-Einheiten gehören in den Kalender (Soll), nicht zu den absolvierten Einheiten.
     if (raw.planned) {
       const date = localDate(raw.start, d.settings.timezone), minutes = Math.round((raw.elapsedS || 0) / 60);
@@ -518,6 +529,15 @@ export async function deleteActivities(ids) {
   for (const id of ids) await deleteSeries(id);
   await deleteRemoteSeries(ids).catch(() => {});
   return ids.length;
+}
+
+// Sportart nach Name der Einheit festlegen (ohne Sportnummer): gilt für bestehende und künftige Einheiten mit diesem Namen.
+export async function mapSportByTitle(title, sport) {
+  update((d) => ({
+    ...d, settings: { ...d.settings, sportByTitle: { ...(d.settings.sportByTitle || {}), [title]: sport } },
+    activities: d.activities.map((a) => (a.title === title && a.sport === 'other' ? { ...a, sport } : a)),
+  }));
+  return recomputeAll();
 }
 
 // Unbekannte Polar-Sportnummer einer Sportart zuordnen: gilt für vorhandene und künftige Importe.
