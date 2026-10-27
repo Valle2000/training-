@@ -421,7 +421,7 @@ export function generatePlan(opts, races = []) {
     // 2) Lange Einheit (ca. 22 % der Woche, 1,5–3,5 h), nicht in Renn-/Taperwochen mit Rennen am Wochenende.
     const raceOnLong = (w.races || []).some((r) => days[longDay - 1]?.date === r.date);
     if (keys.has('long') && !raceOnLong && !['race', 'recovery'].includes(w.phase)) {
-      const min = Math.round(Math.min(210, room(days[longDay - 1]), Math.max(90, total * 0.22)) / 15) * 15;
+      const min = Math.round(Math.min(240, room(days[longDay - 1]), Math.max(90, total * 0.22)) / 15) * 15;
       if (min >= 60) put(days[longDay - 1], { title: 'Lange Grundlage', sport: specificSport(w.from, 1), minutes: min, zone: 'I1', description: 'Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)', kind: 'long' });
     }
     // 3) Kraft auf Tage ohne harte Einheit.
@@ -436,8 +436,9 @@ export function generatePlan(opts, races = []) {
     let easy = Math.max(0, total - used);
     // Freie Plätze: erst jeder Tag einmal, dann (bei Doppeltagen) ein zweites Mal – höchstens 2 Einheiten pro Tag.
     // Zwei Einheiten am Tag nur, wenn ausdrücklich gewünscht (Double-Threshold-Tage sind ohnehin zwei Einheiten).
-    const maxPerDay = opts.doubles === true ? 2 : 1;
-    const cap = (d) => (rest.has(d.dow) || d.dow === longDay || raceDows.has(d.dow) ? 0 : maxPerDay - d.sessions.length);
+    const maxPerDay = opts.extraSameDay === true ? 2 : 1;
+    // Krafttraining zählt nicht als lockere Einheit: Kraft + eine lockere Einheit am Tag ist erlaubt, zwei lockere nicht.
+    const cap = (d) => (rest.has(d.dow) || d.dow === longDay || raceDows.has(d.dow) ? 0 : maxPerDay - d.sessions.filter((s) => s.kind !== 'strength').length);
     const slots = [];
     for (const d of days) if (cap(d) >= 1 && !d.sessions.some((s) => s.kind === 'hard')) slots.push(d);
     for (const d of days) if (cap(d) >= (slots.includes(d) ? 2 : 1)) slots.push(d);
@@ -450,7 +451,7 @@ export function generatePlan(opts, races = []) {
     const share = per?.type === 'travel' ? 0.1 : focus ? Math.min(0.2, specificShare(w.phase, w.from, pr)) : specificShare(w.phase, w.from, pr);
     for (let i = 0; i < n; i++) {
       const d = slots[i];
-      const min = Math.floor(Math.min(150, room(d), Math.max(40, easy / (n - i))) / 5) * 5;
+      const min = Math.floor(Math.min(210, room(d), Math.max(40, easy / (n - i))) / 5) * 5;
       if (min < 30) { if (room(d) < 30) continue; break; }
       const specific = (i / Math.max(1, n)) < share;
       const easySport = focus === 'tri' ? (i % 2 ? 'bike' : 'run') : fSport || focus;

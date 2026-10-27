@@ -32,7 +32,7 @@ export function PlanWizard({ onClose }) {
   const [step, setStep] = useState(0);
   const [o, setO] = useState({
     approach: 'pyramidal', startHours: avg, peakHours: Math.round(avg * 1.2),
-    end: lastA ? addDays(lastA, 7) : addDays(nextMonday(t), 7 * 16 - 1), restDays: [1], longDay: 7, doubles: false, strengthPerWeek: 2, keys: null, horizon: 8, profile: {},
+    end: lastA ? addDays(lastA, 7) : addDays(nextMonday(t), 7 * 16 - 1), restDays: [1], longDay: 7, extraSameDay: false, strengthPerWeek: 2, keys: null, horizon: 8, profile: {},
     ...saved, start: saved.start && saved.start >= t ? saved.start : nextMonday(t),
   });
   // Neue oder hochgestufte A-Rennen nach dem bisherigen Ende: Planungszeitraum bis dorthin verlängern.
@@ -130,7 +130,7 @@ export function PlanWizard({ onClose }) {
         <label>Ruhetage</label>
         <div className="chips">{DOW.map((d, i) => <button key={d} className={`chip${o.restDays.includes(i + 1) ? ' on' : ''}`} onClick={() => set('restDays', o.restDays.includes(i + 1) ? o.restDays.filter((x) => x !== i + 1) : [...o.restDays, i + 1])}>{d}</button>)}</div>
         <HardDays o={o} set={set} setO={setO} schedule={hasSchedule(settings.schedule) ? settings.schedule : null} />
-        <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontWeight: 400, marginTop: 8 }}><input type="checkbox" checked={o.doubles !== false} onChange={(e) => set('doubles', e.target.checked)} style={{ width: 18, height: 18 }} />Zusätzliche lockere Einheit am selben Tag erlauben (sonst nur am Double-Threshold-Tag)</label>
+        <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontWeight: 400, marginTop: 8 }}><input type="checkbox" checked={o.extraSameDay === true} onChange={(e) => set('extraSameDay', e.target.checked)} style={{ width: 18, height: 18 }} />Zusätzliche lockere Einheit am selben Tag erlauben (sonst nur am Double-Threshold-Tag)</label>
         <p className="muted small">Dein Schnitt der letzten 7 Wochen: {fmtNum(recent.reduce((a, w) => a + w.hours, 0) / (recent.length || 1), 1)} h. {hasSchedule(settings.schedule) ? 'Deine Uni-/Arbeitszeiten aus „Alltag“ werden berücksichtigt – pro Tag wird nur so viel geplant, wie frei ist. ' : 'Tipp: Unter Kalender → Woche → „Alltag“ Uni/Arbeit eintragen, dann plant der Assistent nur in deine freie Zeit. '}Steigerung im 3:1-Rhythmus (3 Wochen aufbauen, 1 leichter), Tapering vor A-Rennen 2 Wochen. {nextA ? `Nächstes A-Rennen: ${nextA.name} am ${fmtDate(nextA.date)}.` : 'Tipp: A-Rennen unter „Rennen“ eintragen – dann plant der Assistent die Phasen rückwärts davon.'}</p>
       </>}
 

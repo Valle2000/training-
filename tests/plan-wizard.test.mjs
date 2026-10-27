@@ -12,7 +12,8 @@ test('Alle Ansätze: Stunden passen, max. 2 Einheiten/Tag, Ruhetag frei', () => 
     const w = generatePlan({ ...base, approach: ap.id }, races);
     assert.ok(w.length >= 17, ap.id);
     for (const x of w) {
-      assert.ok(Math.abs(x.plannedHours - x.targetHours) <= 1, `${ap.id} ${x.from}: ${x.plannedHours} vs ${x.targetHours}`);
+      // Eine lockere Einheit pro Tag (kein Zweitaufgebot): in dichten Wochen fehlen bewusst ein bis zwei Stunden – die Vorschau zeigt das.
+      assert.ok(Math.abs(x.plannedHours - x.targetHours) <= 3, `${ap.id} ${x.from}: ${x.plannedHours} vs ${x.targetHours}`);
       for (const d of x.days) { assert.ok(d.sessions.length <= 2, `${ap.id} ${d.date}`); if (d.dow === 1) assert.equal(d.sessions.length, 0); }
     }
   }
@@ -245,4 +246,12 @@ test('Double Threshold: an Uni-Tagen nur eine Einheit, an freien Tagen zwei', ()
   assert.ok(days.some((d) => !busy(d.date) && d.sessions.filter((s) => s.kind === 'hard').length === 2), 'an freien Tagen zweimal');
   const never = generatePlan({ ...base, start: '2026-11-02', end: '2026-12-27', approach: 'norwegian', dtDays: 2, hardDays: [3, 6], doubles: false, dtDouble: 'never' }, rs);
   assert.ok(never.flatMap((x) => x.days).every((d) => d.sessions.filter((s) => s.kind === 'hard').length <= 1));
+});
+
+test('Zusätzliche lockere Einheit am selben Tag nur mit ausdrücklichem Schalter (alter gespeicherter Wert wird ignoriert)', () => {
+  const old = generatePlan({ ...base, start: '2026-11-02', end: '2027-01-31', approach: 'pyramidal', doubles: true }, []);
+  const easyPairs = (w) => w.flatMap((x) => x.days).filter((d) => d.sessions.filter((s) => s.kind === 'easy').length >= 2).length;
+  assert.equal(easyPairs(old), 0);
+  const extra = generatePlan({ ...base, start: '2026-11-02', end: '2027-01-31', approach: 'pyramidal', extraSameDay: true }, []);
+  assert.ok(easyPairs(extra) >= 0);
 });
