@@ -147,7 +147,7 @@ export function Settings() {
           <label className="secondary" style={{ cursor: 'pointer' }}><RefreshCw size={17} />Einspielen<input type="file" accept=".json" hidden onChange={importData} /></label>
         </div>
       </div>
-      <p className="muted small" style={{ textAlign: 'center' }}>Version {__APP_VERSION__}</p>
+      <p className="muted small" style={{ textAlign: 'center' }}>Version {__APP_VERSION__} · Stand {__BUILD__}</p>
     </>
   );
 }

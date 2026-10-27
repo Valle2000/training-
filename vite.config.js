@@ -15,6 +15,6 @@ export default defineConfig(({ mode }) => {
   };
   return {
     plugins: [api],
-    define: { __APP_VERSION__: JSON.stringify(pkg.version), __APP_URL__: JSON.stringify((env.APP_URL || process.env.APP_URL || '').replace(/\/$/, '')) },
+    define: { __APP_VERSION__: JSON.stringify(pkg.version), __BUILD__: JSON.stringify(new Date().toISOString().slice(0, 16).replace('T', ' ') + ' UTC'), __APP_URL__: JSON.stringify((env.APP_URL || process.env.APP_URL || '').replace(/\/$/, '')) },
   };
 });
