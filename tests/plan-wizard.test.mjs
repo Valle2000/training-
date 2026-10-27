@@ -228,7 +228,7 @@ test('Nur bei Bedarf zwei Einheiten am Tag; Kraft nie am Tag vor einer harten Ei
     for (const d of x.days) {
       const hard = d.sessions.filter((s) => s.kind === 'hard').length;
       const easy = d.sessions.filter((s) => s.kind === 'easy' || s.kind === 'long').length;
-      if (!(hard === 2)) assert.ok(d.sessions.length <= 1 || (hard === 0 && easy <= 1), `${d.date}: ${d.sessions.map((s) => s.title)}`);
+      if (!(hard === 2)) assert.ok(d.sessions.length <= 2 && easy <= 2, `${d.date}: ${d.sessions.map((s) => s.title)}`);
       const next = x.days[d.dow];
       if (next && next.sessions.some((s) => s.kind === 'hard')) assert.ok(!d.sessions.some((s) => s.kind === 'strength'), `Kraft vor Intervall am ${d.date}`);
     }
@@ -248,10 +248,13 @@ test('Double Threshold: an Uni-Tagen nur eine Einheit, an freien Tagen zwei', ()
   assert.ok(never.flatMap((x) => x.days).every((d) => d.sessions.filter((s) => s.kind === 'hard').length <= 1));
 });
 
-test('Zusätzliche lockere Einheit am selben Tag nur mit ausdrücklichem Schalter (alter gespeicherter Wert wird ignoriert)', () => {
-  const old = generatePlan({ ...base, start: '2026-11-02', end: '2027-01-31', approach: 'pyramidal', doubles: true }, []);
-  const easyPairs = (w) => w.flatMap((x) => x.days).filter((d) => d.sessions.filter((s) => s.kind === 'easy').length >= 2).length;
-  assert.equal(easyPairs(old), 0);
-  const extra = generatePlan({ ...base, start: '2026-11-02', end: '2027-01-31', approach: 'pyramidal', extraSameDay: true }, []);
-  assert.ok(easyPairs(extra) >= 0);
+
+test('Standard: zwei Einheiten am Tag, Dienstag eine, Kraft bevorzugt Donnerstag/Sonntag', () => {
+  // Langtag Freitag, harte Tage Dienstag und Samstag: Donnerstag und Sonntag sind dann frei für Kraft.
+  const w = generatePlan({ ...base, start: '2026-11-02', end: '2026-12-27', approach: 'pyramidal', singleDays: [2], strengthDays: [4, 7], longDay: 5, hardDays: [2, 6] }, []);
+  const days = w.flatMap((x) => x.days);
+  assert.ok(days.filter((d) => d.dow === 2).every((d) => d.sessions.length <= 1), 'Dienstag eine Einheit');
+  const strength = days.filter((d) => d.sessions.some((s) => s.kind === 'strength'));
+  assert.ok(strength.length > 0 && strength.every((d) => [4, 7].includes(d.dow)), `Kraft an: ${strength.map((d) => d.dow)}`);
+  assert.ok(days.some((d) => d.sessions.length === 2 && d.dow !== 2), 'an anderen Tagen zwei Einheiten');
 });

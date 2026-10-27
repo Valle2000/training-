@@ -428,17 +428,21 @@ export function generatePlan(opts, races = []) {
     // Kraft: Vorbereitung wie gewählt, ab Wettkampfvorbereitung und in Erholungswochen höchstens 1× (Erhalt).
     const strengthN = ['base', 'build'].includes(w.phase) ? opts.strengthPerWeek ?? 2 : Math.min(1, opts.strengthPerWeek ?? 2);
     const strengthDays = days.filter((d) => !rest.has(d.dow) && d.dow !== longDay && !d.sessions.length && room(d) >= 60 && !hardUsed.has(d.dow + 1) && !raceDows.has(d.dow) && !raceDows.has(d.dow + 1) && !raceDows.has(d.dow + 2));
-    for (let i = 0; i < strengthN && i < strengthDays.length; i++) {
-      const d = strengthDays[Math.round((i * (strengthDays.length - 1)) / Math.max(1, strengthN - 1))] || strengthDays[i];
+    // Krafttage: bevorzugte Wochentage zuerst (Standard Donnerstag und Sonntag), sonst die übrigen freien Tage.
+    const prefStrength = opts.strengthDays?.length ? opts.strengthDays : [4, 7];
+    const strengthPick = [...strengthDays].sort((a, b) => (prefStrength.includes(a.dow) ? 0 : 1) - (prefStrength.includes(b.dow) ? 0 : 1));
+    for (let i = 0; i < strengthN && i < strengthPick.length; i++) {
+      const d = strengthPick[i];
       put(d, { title: ['Kraft A – Beine schwer + Zug', 'Kraft B – Hüfte, einbeinig + Doppelstock', 'Kraft JOE – Doppelstock-Fokus'][i % 3], sport: 'strength', minutes: 60, zone: 'Kraft', description: 'Vorlage im Tab „Kraft“', kind: 'strength' });
     }
     // 4) Rest mit lockeren Einheiten füllen (45–150 min, höchstens 2 Einheiten pro Tag).
     let easy = Math.max(0, total - used);
     // Freie Plätze: erst jeder Tag einmal, dann (bei Doppeltagen) ein zweites Mal – höchstens 2 Einheiten pro Tag.
     // Zwei Einheiten am Tag nur, wenn ausdrücklich gewünscht (Double-Threshold-Tage sind ohnehin zwei Einheiten).
-    const maxPerDay = opts.extraSameDay === true ? 2 : 1;
-    // Krafttraining zählt nicht als lockere Einheit: Kraft + eine lockere Einheit am Tag ist erlaubt, zwei lockere nicht.
-    const cap = (d) => (rest.has(d.dow) || d.dow === longDay || raceDows.has(d.dow) ? 0 : maxPerDay - d.sessions.filter((s) => s.kind !== 'strength').length);
+    // Einheiten pro Tag: Standard zwei, an den Ruhe-Einzeltagen (Standard Dienstag) nur eine.
+    const singleDays = new Set(opts.singleDays ?? [2]);
+    const maxFor = (d) => (singleDays.has(d.dow) ? 1 : 2);
+    const cap = (d) => (rest.has(d.dow) || d.dow === longDay || raceDows.has(d.dow) ? 0 : maxFor(d) - d.sessions.length);
     const slots = [];
     for (const d of days) if (cap(d) >= 1 && !d.sessions.some((s) => s.kind === 'hard')) slots.push(d);
     for (const d of days) if (cap(d) >= (slots.includes(d) ? 2 : 1)) slots.push(d);
