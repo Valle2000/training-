@@ -88,12 +88,19 @@ const setSport = (id, sport) => update((x) => ({ ...x, activities: x.activities.
 const unknownPolar = new Map();
 const unknownListeners = new Set();
 export function onUnknownPolar(fn) { unknownListeners.add(fn); return () => unknownListeners.delete(fn); }
-function askPolar(ex, sport) {
-  const pid = ex.sport?.id;
+function notePolar(pid, sport, { name = null, example = null } = {}) {
   if (pid == null || sport !== 'other' || getData().settings.polarSportMap?.[pid]) return;
-  const cur = unknownPolar.get(String(pid)) || { id: String(pid), name: ex.detailed_sport_info ?? ex['detailed-sport-info'] ?? null, count: 0, example: ex.name ?? null };
+  const cur = unknownPolar.get(String(pid)) || { id: String(pid), name, count: 0, example };
   cur.count++;
   unknownPolar.set(String(pid), cur);
+}
+const askPolar = (ex, sport) => notePolar(ex.sport?.id, sport, { name: ex.detailed_sport_info ?? ex['detailed-sport-info'] ?? null, example: ex.name ?? null });
+// Nach einem Datei-Import: gleiche Abfrage wie beim Abgleich.
+function flushPolarAsk() {
+  if (!unknownPolar.size) return;
+  const items = [...unknownPolar.values()];
+  unknownPolar.clear();
+  for (const fn of unknownListeners) fn(items);
 }
 
 async function syncPolar() {
@@ -136,11 +143,7 @@ async function syncPolar() {
     askPolar(ex, raw.sport);
     if (await store({ ...raw, source: 'polar', externalId: String(ex.id), polarSportId: ex.sport?.id ?? null })) added++;
   }
-  if (unknownPolar.size) {
-    const items = [...unknownPolar.values()];
-    unknownPolar.clear();
-    for (const fn of unknownListeners) fn(items);
-  }
+  flushPolarAsk();
   await syncPolarWellness();
   return added;
 }
@@ -396,6 +399,7 @@ export async function importFiles(files, onProgress) {
     // Selbst zugeordnete Polar-Sportnummern (Einstellungen) haben Vorrang.
     const mapped = raw.polarSportId != null && d.settings.polarSportMap?.[raw.polarSportId];
     if (mapped) raw.sport = mapped;
+    else notePolar(raw.polarSportId, raw.sport, { name: raw.polarSportName ?? null, example: raw.title || null });
     // Geplante Polar-Einheiten gehören in den Kalender (Soll), nicht zu den absolvierten Einheiten.
     if (raw.planned) {
       const date = localDate(raw.start, d.settings.timezone), minutes = Math.round((raw.elapsedS || 0) / 60);
@@ -503,6 +507,7 @@ export async function importFiles(files, onProgress) {
   }
   // Profilwerte übernommen: alle Einheiten (auch schon vorhandene und übersprungene) einheitlich neu berechnen.
   if (filled.size || sportChanged || durationChanged) { onProgress?.('Berechne Belastung und Zonen neu …'); await recomputeAll(); }
+  flushPolarAsk();
   return { added, dup, failed, errors, refreshed, planned, filled: [...filled] };
 }
 
