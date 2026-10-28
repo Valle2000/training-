@@ -29,6 +29,10 @@ Die kostenlosen Pläne reichen für eine Person völlig aus. Die Speichergrenzen
 4. Im Menü **SQL Editor** öffnen, eine neue Abfrage anlegen, den Inhalt der Datei
    `supabase/training.sql` aus deiner Kopie einfügen und ausführen. Das legt die Tabellen und die
    Zugriffsregeln an, mit denen jeder nur seine eigenen Daten sieht.
+   Danach dieselbe Abfrage mit `supabase/training-admin.sql` ausführen. Dann trägst du dich als Betreiber ein:
+   `insert into public.training_admins (user_id) select id from auth.users where email = 'DEINE-EMAIL';`
+   Ohne diesen Eintrag lehnt die App die Anmeldung ab. Neue Konten legst du in der App nicht an (das geht
+   nur über die Anmeldung, die du in Supabase unter Authentication freigibst).
 5. Unter **Project Settings → API** zwei Werte kopieren:
    - **Project URL** → das wird `VITE_SUPABASE_URL`
    - **anon public** Schlüssel → das wird `VITE_SUPABASE_ANON_KEY`

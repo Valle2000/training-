@@ -127,14 +127,23 @@ export async function deleteRemoteSeries(ids) {
   }
 }
 
+// Die Trainings-App ist nur für den Betreiber: Nach der Anmeldung wird geprüft, ob das Konto eingetragen ist.
+const ADMIN_ONLY = 'Die Trainings-App ist nur für den Betreiber freigegeben. Ein SkiWax-Konto funktioniert hier nicht.';
+async function requireAdmin() {
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data } = await supabase.from('training_admins').select('user_id').eq('user_id', user?.id || '').maybeSingle();
+  if (data) return;
+  await supabase.auth.signOut();
+  throw new Error(ADMIN_ONLY);
+}
 export async function signIn(email, password) {
   const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
   if (error) throw error;
+  await requireAdmin();
 }
-export async function signUp(email, password) {
-  const { data, error } = await supabase.auth.signUp({ email: email.trim(), password, options: { emailRedirectTo: location.origin } });
-  if (error) throw error;
-  return !!data.session;
+// Konto anlegen geht nur über SkiWax; hier nicht, damit keine Trainings-Konten entstehen.
+export async function signUp() {
+  throw new Error('Konten werden hier nicht angelegt. Die Trainings-App ist nur für den Betreiber.');
 }
 export async function resetPassword(email) {
   const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: location.origin });
