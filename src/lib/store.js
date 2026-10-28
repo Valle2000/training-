@@ -8,8 +8,16 @@ const EMPTY = { activities: [], strength: [], plan: [], recipes: [], coach: [], 
 export function loadData() {
   try { return { ...EMPTY, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch { return { ...EMPTY }; }
 }
+// Großer Stand (tausende Einheiten) passt nicht mehr in localStorage (~5 MB je Seite). Dann nur IndexedDB nutzen
+// und localStorage freihalten – sonst scheitern dort auch kleine Einträge (z. B. das Gedächtnis des Abgleichs).
+const LS_LIMIT = 2_000_000;
 export function saveData(data) {
-  try { localStorage.setItem(KEY, JSON.stringify(data)); return true; } catch { return false; }
+  try {
+    const json = JSON.stringify(data);
+    if (json.length > LS_LIMIT) { localStorage.removeItem(KEY); return false; }
+    localStorage.setItem(KEY, json);
+    return true;
+  } catch { return false; }
 }
 
 // Speicherfehler sichtbar machen statt still Daten zu verlieren.
@@ -23,9 +31,17 @@ let state = loadData();
 const listeners = new Set();
 export function getData() { return state; }
 let idbTimer = null;
+// Bis der Stand aus IndexedDB geladen ist, wird nichts gespeichert: Änderungen in dieser Zeit (z. B. Rückkehr von
+// einer Anbieter-Anmeldung) werden gemerkt und danach auf den geladenen Stand angewendet – sonst könnte ein fast
+// leerer Startzustand die eigentlichen Daten überschreiben.
+let hydrated = false;
+const early = [];
+const initial = state;
 export function update(fn) {
+  if (!hydrated) early.push(fn);
   state = fn(state);
   state.savedAt = Date.now();
+  if (!hydrated) { listeners.forEach((l) => l(state)); return; }
   const lsOk = saveData(state);
   clearTimeout(idbTimer);
   idbTimer = setTimeout(() => {
@@ -38,12 +54,16 @@ export function update(fn) {
 export async function hydrate() {
   try { await navigator.storage?.persist?.(); } catch { /* nur Bitte an den Browser */ }
   const stored = await kvGet('state').catch(() => null);
-  if (stored && (stored.savedAt || 0) > (state.savedAt || 0)) {
-    state = { ...EMPTY, ...stored };
-    listeners.forEach((l) => l(state));
-  } else if (!stored && state.activities.length) {
-    kvPut('state', state).catch(() => {});
+  const base = stored && (stored.savedAt || 0) >= (initial.savedAt || 0) ? { ...EMPTY, ...stored } : initial;
+  hydrated = true;
+  if (base === initial && !early.length) {
+    if (!stored && state.activities.length) kvPut('state', state).catch(() => {});
+    return;
   }
+  state = base;
+  const pending = early.splice(0);
+  if (pending.length) update((s) => pending.reduce((x, f) => f(x), s));
+  else listeners.forEach((l) => l(state));
 }
 // Für den Online-Abgleich: über jede Änderung informiert werden.
 export function subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); }
@@ -77,8 +97,8 @@ async function tx(mode, fn, storeName = 'series') {
     t.onabort = () => reject(t.error);
   });
 }
-const kvPut = (key, value) => (typeof indexedDB === 'undefined' ? Promise.reject(new Error('kein IndexedDB')) : tx('readwrite', (s) => s.put(value, key), 'kv'));
-const kvGet = (key) => (typeof indexedDB === 'undefined' ? Promise.resolve(null) : tx('readonly', (s) => s.get(key), 'kv'));
+export const kvPut = (key, value) => (typeof indexedDB === 'undefined' ? Promise.reject(new Error('kein IndexedDB')) : tx('readwrite', (s) => s.put(value, key), 'kv'));
+export const kvGet = (key) => (typeof indexedDB === 'undefined' ? Promise.resolve(null) : tx('readonly', (s) => s.get(key), 'kv'));
 export const putSeries = (id, series) => tx('readwrite', (s) => s.put(series, id)).catch(() => null);
 export const getLocalSeries = (id) => tx('readonly', (s) => s.get(id)).catch(() => null);
 // Fehlt ein Verlauf lokal (anderes Gerät), kann der Online-Abgleich ihn nachladen.

@@ -72,7 +72,7 @@ export function absoluteTarget(t, { ftp, hrMax, zoneHr }, preferPower) {
   return { kind: 'open' };
 }
 
-const FIT_SPORT = { bike: 'cycling', run: 'running', hike: 'hiking', row: 'rowing', skierg: 'crossCountrySkiing', xc_skate: 'crossCountrySkiing', xc_classic: 'crossCountrySkiing', rollerski_skate: 'crossCountrySkiing', rollerski_classic: 'crossCountrySkiing', swim: 'swimming' };
+const FIT_SPORT = { bike: 'cycling', run: 'running', hike: 'hiking', row: 'rowing', skierg: 'crossCountrySkiing', xc_skate: 'crossCountrySkiing', xc_classic: 'crossCountrySkiing', rollerski_skate: 'crossCountrySkiing', rollerski_classic: 'crossCountrySkiing', rollerski: 'crossCountrySkiing', swim: 'swimming' };
 const FIT_INTENSITY = { warmup: 'warmup', work: 'active', rest: 'rest', cooldown: 'cooldown' };
 
 // FIT-Workout-Datei. Wiederholungen als „repeat until steps complete“; Watt-Ziele +1000, Puls +100 (FIT-Konvention).

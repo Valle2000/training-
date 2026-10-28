@@ -4,6 +4,7 @@ export const SPORTS = [
   { id: 'xc_classic', label: 'Langlauf klassisch', group: 'ski' },
   { id: 'rollerski_skate', label: 'Rollski Skating', group: 'ski' },
   { id: 'rollerski_classic', label: 'Rollski klassisch', group: 'ski' },
+  { id: 'rollerski', label: 'Rollski', group: 'ski' }, // ohne Stil (z. B. Strava)
   { id: 'skierg', label: 'SkiErg', group: 'ski', power: true },
   { id: 'run', label: 'Laufen', group: 'endurance' },
   { id: 'hike', label: 'Berglauf / Wandern', group: 'endurance' },
@@ -21,14 +22,17 @@ export const sportLabel = (id) => sportById(id).label;
 // FIT sport/subSport → eigene Sportart.
 export function sportFromFit(sport, subSport) {
   const s = String(sport || '').toLowerCase(), sub = String(subSport || '').toLowerCase();
-  if (s === 'crossCountrySkiing'.toLowerCase() || s === 'cross_country_skiing') return sub.includes('skate') ? 'xc_skate' : 'xc_classic';
-  if (s === 'rollerskiing' || s === 'roller_skiing' || sub.includes('roller')) return sub.includes('classic') ? 'rollerski_classic' : 'rollerski_skate';
+  if (s === 'crossCountrySkiing'.toLowerCase() || s === 'cross_country_skiing') return /skat|free/.test(sub) ? 'xc_skate' : 'xc_classic';
+  if (s === 'rollerskiing' || s === 'roller_skiing' || sub.includes('roller')) return sub.includes('classic') ? 'rollerski_classic' : sub.includes('skate') ? 'rollerski_skate' : 'rollerski';
   if (s === 'running') return sub.includes('trail') ? 'hike' : 'run';
   if (s === 'hiking' || s === 'walking') return 'hike';
   if (s === 'cycling') return 'bike';
   if (s === 'rowing') return 'row';
   if (s === 'swimming') return 'swim';
-  if (s === 'training' || s === 'fitnessequipment' || s === 'fitness_equipment') return sub.includes('strength') ? 'strength' : 'other';
+  if (s === 'training' || s === 'fitnessequipment' || s === 'fitness_equipment') {
+    if (sub.includes('skiing')) return 'skierg'; // Concept2 SkiErg meldet „indoorSkiing“
+    return sub.includes('strength') ? 'strength' : 'other';
+  }
   return 'other';
 }
 
@@ -39,17 +43,43 @@ export const sportFromConcept2 = (type) => ({ skierg: 'skierg', rower: 'row', bi
 // Versteht auch deutsche Namen aus Polar-Flow-Exporten (z. B. „Rollski Skating“, „Radfahren“).
 export const polarSport = (s) => {
   s = String(s || '').toUpperCase();
-  const skate = s.includes('SKAT');
+  if (/ALPIN|DOWNHILL|SNOWBOARD|BACKCOUNTRY|SKITOUR|TELEMARK/.test(s)) return 'other';
+  if (s.includes('SWIM') || s.includes('SCHWIMM')) return 'swim';
+  const skate = /SKAT|FREISTIL|FREESTYLE|FREE_STYLE/.test(s);
   if (s.includes('ROLLER') || s.includes('ROLLSKI')) return skate ? 'rollerski_skate' : 'rollerski_classic';
-  if (s.includes('CROSS_COUNTRY') || s.includes('CROSS-COUNTRY') || s.includes('LANGLAUF') || s.includes('SKIING') || s.includes('SKILANGLAUF')) return skate ? 'xc_skate' : 'xc_classic';
-  if (skate) return 'xc_skate';
-  if (s.includes('SKIERG')) return 'skierg';
+  if (s.includes('SKIERG') || s.includes('SKI-ERG') || s.includes('SKI ERG')) return 'skierg';
+  if (s.includes('CROSS_COUNTRY') || s.includes('CROSS-COUNTRY') || s.includes('LANGLAUF') || s.includes('SKIING') || s.includes('SKILANGLAUF') || s.includes('NORDIC_SKI')) return skate ? 'xc_skate' : 'xc_classic';
+  if (/SKAT/.test(s)) return 'other'; // Inline/Eislauf
   if (s.includes('RUN') || s.includes('LAUF') || s.includes('JOGG')) return 'run';
   if (s.includes('CYCL') || s.includes('BIK') || s.includes('RAD')) return 'bike';
   if (s.includes('ROW') || s.includes('RUDER')) return 'row';
   if (s.includes('STRENGTH') || s.includes('KRAFT')) return 'strength';
   if (s.includes('HIK') || s.includes('WALK') || s.includes('WANDER') || s.includes('GEHEN')) return 'hike';
-  if (s.includes('SWIM') || s.includes('SCHWIMM')) return 'swim';
-  if (s.includes('YOGA') || s.includes('MOBIL') || s.includes('STRETCH')) return 'mobility';
+  if (s.includes('YOGA') || s.includes('MOBIL') || s.includes('STRETCH') || s.includes('DEHN')) return 'mobility';
   return 'other';
 };
+
+// Polar-Sportnummern (Polar-Export: „sport": {"id": "59"}). Quelle: Polar-Flow-Sportliste, wiedergegeben unter
+// github.com/pcolby/bipolar/wiki/Polar-Sport-Types (59 = Freestyle roller skiing usw.).
+const POLAR_SPORT_IDS = {
+  1: 'run', 2: 'bike', 3: 'hike', 4: 'run', 5: 'bike', 6: 'xc_classic', 8: 'row', 9: 'hike', 11: 'hike', 15: 'strength',
+  17: 'run', 18: 'bike', 19: 'run', 20: 'strength', 23: 'swim', 24: 'xc_skate', 25: 'xc_classic', 27: 'run', 33: 'mobility',
+  34: 'strength', 36: 'run', 38: 'bike', 57: 'strength', 58: 'strength', 59: 'rollerski_skate', 60: 'rollerski_classic',
+  64: 'mobility', 65: 'mobility', 66: 'mobility', 84: 'run', 85: 'xc_skate', 86: 'bike', 87: 'xc_skate', 92: 'run',
+  103: 'swim', 105: 'swim', 111: 'mobility', 116: 'hike', 117: 'row', 118: 'bike', 126: 'strength', 127: 'mobility',
+};
+export const polarSportId = (id) => POLAR_SPORT_IDS[Number(id)] || null;
+
+// Sportart aus Titel und Notiz erraten (für ältere Einheiten, die als „Sonstiges“ gespeichert wurden).
+export function guessSport(a) {
+  const text = `${a.title || ''} ${a.notes || ''}`;
+  if (/ski ?erg/i.test(text)) return 'skierg';
+  if (/\b(rad|bike|cycl|ride|radfahren|velo)/i.test(text)) return 'bike';
+  const byPolar = polarSport(text);
+  if (byPolar !== 'other') return byPolar;
+  if (/\b(lauf|laufen|run|joggen)\b/i.test(text)) return 'run';
+  if (/kraft|strength|gym/i.test(text)) return 'strength';
+  if (/\b(wander|hike|berg)/i.test(text)) return 'hike';
+  return 'other';
+}
+

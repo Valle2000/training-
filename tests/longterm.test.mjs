@@ -55,3 +55,17 @@ test('Saisons ab 1. Mai', () => {
   assert.equal(tab[1].hours, 3);
   assert.equal(tab[1].zones.I1, 1);
 });
+
+test('Saisonrückblick: laufende Saison gegen Vorsaison bis zum gleichen Tag', async () => {
+  const { seasonReview } = await import('../src/lib/longterm.js');
+  const A = (date, h, zones) => ({ id: date, date, sport: 'run', durationS: h * 3600, load: h * 60, zones });
+  const activities = [A('2025-06-01', 10, { I1: 30000, I2: 0, I3: 6000, I4: 0, I5: 0 }), A('2026-02-01', 50), A('2026-06-01', 12, { I1: 30000, I2: 0, I3: 10000, I4: 1800, I5: 0 }), A('2026-07-01', 3)];
+  const health = [{ type: 'ill', start: '2025-07-01', end: '2025-07-05' }, { type: 'ill', start: '2026-07-10', end: '2026-07-11' }];
+  const r = seasonReview({ activities, health }, '2026-05-01', '2026-08-01');
+  assert.equal(r.partial, true);
+  assert.equal(r.cur.hours, 15);
+  assert.equal(r.prev.hours, 10); // Februar der Vorsaison liegt nach dem Stichtag
+  assert.equal(r.cur.illDays, 2);
+  assert.equal(r.prev.illDays, 5);
+  assert.ok(r.highlights[0].startsWith('+50 %'));
+});

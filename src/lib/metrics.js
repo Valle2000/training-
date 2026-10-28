@@ -16,7 +16,7 @@ export const ZONES = [
 // bounds (optional): Pulsgrenzen I1/I2, I2/I3, I3/I4, I4/I5 aus einem Laktattest; sonst % HFmax.
 export function zoneOf(hr, hrMax, bounds) {
   if (!hr || !hrMax) return null;
-  if (hr / hrMax < ZONES[0].from) return null; // unter I1: Pause/Erholung
+  if (hr / hrMax < ZONES[0].from) return 'I1'; // nach unten offen: auch sehr niedriger Puls zählt als I1
   if (bounds?.length === 4 && bounds.every(Boolean)) return ZONES[bounds.filter((b) => hr >= b).length].id;
   const p = hr / hrMax;
   return ZONES.find((z) => p < z.to)?.id ?? 'I5';
@@ -73,6 +73,16 @@ export function rpeLoad(durationS, rpe, kind = 'endurance') {
   if (!durationS || !rpe) return null;
   const ref = kind === 'strength' ? 10 : 7.5;
   return (durationS / 3600) * (rpe / ref) ** 2 * 100;
+}
+
+// Umfangsbetontes Zonenmodell (Lucia-TRIMP, 3 Zonen): Minuten unter der aeroben Schwelle ×1, zwischen den
+// Schwellen ×2, darüber ×3. Auf unsere Zonen übertragen: I1–I2 ×1, I3 ×2, I4–I5 ×3; skaliert so, dass 1 h in I3
+// = 100 ergibt. Lockerer Umfang zählt damit relativ mehr als bei TSS/Banister-TRIMP (1 h I1 = 50 statt ca. 35–45).
+export function luciaLoad(zones) {
+  if (!zones) return null;
+  const min = (k) => (zones[k] || 0) / 60;
+  const t = (min('I1') + min('I2')) * 1 + min('I3') * 2 + (min('I4') + min('I5')) * 3;
+  return t > 0 ? (t / 120) * 100 : null;
 }
 
 // Beste verfügbare Methode: Leistung > Pulsverlauf > Durchschnittspuls > RPE.

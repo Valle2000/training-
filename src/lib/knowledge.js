@@ -1,4 +1,5 @@
-// Wissen: Kernaussagen aus der Trainingswissenschaft mit Fokus Skilanglauf (Stand Oktober 2026).
+// Wissen: Kernaussagen aus der Trainingswissenschaft mit Fokus Skilanglauf, ergänzt um übertragbare Erkenntnisse aus
+// Laufen, Radsport, Rudern und Triathlon (Stand Oktober 2026).
 // evidence: 'stark' = Metaanalysen/Konsens, 'mittel' = mehrere Studien, 'gering' = beschreibend/Fallstudien/Praxis.
 
 const S = {
@@ -26,7 +27,37 @@ const S = {
   gssi: { text: 'GSSI – Kohlenhydrate für Ausdauersportler', url: 'https://www.gssiweb.org/sports-science-exchange/article/dietary-carbohydrate-and-the-endurance-athlete-contemporary-perspectives' },
   altitudeNormo: { text: 'Kettunen et al. 2023, Scand J Med Sci Sports – normobares LHTLH bei Langläufern', url: 'https://jyx.jyu.fi/jyx/Record/jyx_123456789_86765/Details' },
   altitudeHypo: { text: 'Hypobares LHTL bei norwegischen Langläufern (kein Zusatzeffekt)', url: 'https://lida.sport-iat.de/ta/Record/4048297?lng=de' },
+  schwellnus16: { text: 'Schwellnus et al. 2016, Br J Sports Med – IOC-Konsens Belastung und Krankheitsrisiko', url: 'https://bjsm.bmj.com/content/50/17/1043' },
+  soligard16: { text: 'Soligard et al. 2016, Br J Sports Med – IOC-Konsens Belastung und Verletzungsrisiko', url: 'https://bjsm.bmj.com/content/50/17/1030' },
+  meeusen13: { text: 'Meeusen et al. 2013, Med Sci Sports Exerc – ECSS/ACSM-Konsens Übertraining', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Meeusen+prevention+diagnosis+treatment+overtraining+syndrome+joint+consensus+2013' },
+  elliott20: { text: 'Elliott et al. 2020, Br J Sports Med – Stufenweiser Wiedereinstieg nach COVID-19', url: 'https://bjsm.bmj.com/content/54/19/1174' },
+  mountjoy23: { text: 'Mountjoy et al. 2023, Br J Sports Med – IOC-Konsens REDs', url: 'https://bjsm.bmj.com/content/57/17/1073' },
+  casado23: { text: 'Casado et al. 2023 – Das norwegische Modell (Review)', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Casado+Foster+Bakken+Tjelta+Norwegian+method' },
+  seiler10: { text: 'Seiler 2010, IJSPP – Best Practice Intensitäts- und Umfangsverteilung', url: 'https://pubmed.ncbi.nlm.nih.gov/20861519/' },
+  ronnestad14: { text: 'Rønnestad et al. 2014, Scand J Med Sci Sports – Block-Periodisierung', url: 'https://pubmed.ncbi.nlm.nih.gov/23134196/' },
+  sandbakk17: { text: 'Sandbakk & Holmberg 2017, IJSPP – Physiologie und Training im Skilanglauf', url: 'https://pubmed.ncbi.nlm.nih.gov/28095083/' },
+  xcInjury: { text: 'Studien zu Überlastungsbeschwerden bei Langläufern (PubMed-Suche)', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=cross-country+skiers+overuse+injuries' },
+  racinais15: { text: 'Racinais et al. 2015, Br J Sports Med – Konsens Training in der Hitze', url: 'https://bjsm.bmj.com/content/49/18/1164' },
   sleep21: { text: 'Walsh et al. 2021, Br J Sports Med – Schlaf und Athleten (Konsens)', url: 'https://bjsm.bmj.com/content/55/7' },
+  haugen22: { text: 'Haugen, Sandbakk, Seiler & Tønnessen 2022, Sports Med Open – Training von Weltklasse-Langstreckenläufern', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Haugen+Sandbakk+Seiler+Tonnessen+2022+training+characteristics+world-class+distance+runners' },
+  casado21: { text: 'Casado et al. 2021, J Strength Cond Res – Was Leistungen von Weltklasse-Läufern vorhersagt', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Casado+world-class+long-distance+running+performances+best+predicted+by+volume+of+easy+runs' },
+  balsalobre16: { text: 'Balsalobre-Fernández et al. 2016, J Strength Cond Res – Metaanalyse Krafttraining und Laufökonomie', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Balsalobre-Fernandez+2016+strength+training+running+economy+meta-analysis' },
+  ronnestadMujika14: { text: 'Rønnestad & Mujika 2014, Scand J Med Sci Sports – Krafttraining für Lauf- und Radleistung (Review)', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Ronnestad+Mujika+2014+optimizing+strength+training+running+cycling+endurance+performance' },
+  nielsen14: { text: 'Nielsen et al. 2014, J Orthop Sports Phys Ther – Umfangssteigerung und Laufverletzungen', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Nielsen+2014+excessive+progression+weekly+running+distance+injury+novice+runners' },
+  buist08: { text: 'Buist et al. 2008, Am J Sports Med – 10-%-Regel im Lauftraining (randomisiert)', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Buist+2008+no+effect+graded+training+program+injuries+novice+runners' },
+  vanerp20: { text: 'van Erp et al. 2020, IJSPP – Training männlicher und weiblicher Radprofis', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=van+Erp+2020+training+characteristics+professional+road+cyclists' },
+  ronnestad15: { text: 'Rønnestad et al. 2015, Scand J Med Sci Sports – kurze (30/15) vs. lange Intervalle bei Radsportlern', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Ronnestad+2015+short+intervals+induce+superior+training+adaptations+compared+with+long+intervals+cyclists' },
+  jones19: { text: 'Jones et al. 2019, Med Sci Sports Exerc – Kritische Leistung und maximaler Steady State', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Jones+2019+maximal+metabolic+steady+state+critical+power' },
+  fiskerstrand04: { text: 'Fiskerstrand & Seiler 2004, Scand J Med Sci Sports – Training norwegischer Weltklasse-Ruderer 1970–2001', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Fiskerstrand+Seiler+2004+training+and+performance+characteristics+Norwegian+international+rowers' },
+  tanaka94: { text: 'Tanaka 1994, Sports Med – Übertragbarkeit von Cross-Training (Review)', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Tanaka+1994+effects+of+cross-training+transfer+of+training+effects' },
+  wilson12: { text: 'Wilson et al. 2012, J Strength Cond Res – Metaanalyse Kraft- und Ausdauertraining kombiniert', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Wilson+2012+concurrent+training+meta-analysis+interference+running+cycling' },
+  roberts15: { text: 'Roberts et al. 2015, J Physiol – Kältebad nach Krafttraining bremst Muskelaufbau', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Roberts+2015+post-exercise+cold+water+immersion+attenuates+acute+anabolic+signalling+long-term+adaptations' },
+  dupuy18: { text: 'Dupuy et al. 2018, Front Physiol – Metaanalyse Regenerationsmaßnahmen', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Dupuy+2018+evidence-based+approach+for+choosing+post-exercise+recovery+techniques+meta-analysis' },
+  mcgowan15: { text: 'McGowan et al. 2015, Sports Med – Aufwärmen: Strategien und Wirkung (Review)', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=McGowan+2015+warm-up+strategies+sport+and+exercise+mechanisms+applications' },
+  hatzi11: { text: 'Hatzigeorgiadis et al. 2011, Perspect Psychol Sci – Metaanalyse Selbstgespräche und Leistung', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Hatzigeorgiadis+2011+self-talk+and+sports+performance+meta-analysis' },
+  mcnulty20: { text: 'McNulty et al. 2020, Sports Med – Metaanalyse Menstruationszyklus und Leistung', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=McNulty+2020+effects+of+menstrual+cycle+phase+on+exercise+performance+meta-analysis' },
+  cox10: { text: 'Cox et al. 2010, J Appl Physiol – Darmtraining: mehr Kohlenhydrate im Alltag erhöhen die Aufnahme', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Cox+2010+daily+training+with+high+carbohydrate+availability+increases+exogenous+carbohydrate+oxidation' },
+  jeukendrup17: { text: 'Jeukendrup 2017, Sports Med – Training des Darms für Ausdauersportler', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Jeukendrup+2017+training+the+gut+for+athletes' },
 };
 
 export const TOPICS = [
@@ -104,6 +135,84 @@ export const TOPICS = [
     sources: [S.svendsen16],
   },
   {
+    id: 'approaches', cat: 'Periodisierung', title: 'Trainingsansätze im Vergleich', evidence: 'mittel',
+    facts: [
+      'Pyramidal (Weltklasse-Langlauf): ~90 % locker, 3–5 % Schwelle, 4–6 % hart; viele lange Einheiten, Steigerung über Jahre vor allem im lockeren Umfang.',
+      'Polarisiert (Seiler, ~80/20): locker oder richtig hart, wenig Schwelle. In kurzen Studien oft leicht besser, über längere Zeit laut Metaanalyse nicht klar überlegen.',
+      'Norwegisches Modell / Double Threshold: viel Schwelle in kontrollierten Portionen (Laktat 2–3 mmol/l), zwei Einheiten am selben Tag. Erfolgreich in der Praxis, wissenschaftlich vor allem beschrieben.',
+      'Block-Periodisierung (Rønnestad): konzentrierte HIT-Wochen (z. B. 5 Intervalleinheiten), danach Wochen mit wenig Intensität – bei Trainierten ähnliche oder etwas größere Verbesserungen.',
+      'Allen gemeinsam: der größte Teil bleibt locker, harte Tage mit Abstand, Entlastungswochen, und Kontinuität schlägt jeden Ansatz.',
+    ],
+    practice: 'Unter Kalender → Saison → „Saisonplan-Assistent“ einen Ansatz wählen, Stunden und Key Sessions festlegen – die App plant die Wochen. Nach einem Block (8–12 Wochen) anhand der Key Sessions prüfen, ob es wirkt.',
+    sources: [S.seiler10, S.casado23, S.ronnestad14, S.sandbakk17, S.walther23, S.oliveira24],
+  },
+  {
+    id: 'sick_train', cat: 'Gesundheit', title: 'Krank: trainieren oder nicht?', evidence: 'gering',
+    facts: [
+      'Fieber, Gliederschmerzen, starkes Krankheitsgefühl, Durchfall/Erbrechen oder geschwollene Lymphknoten („unterhalb des Halses“): kein Training – Belastung mit einem Infekt kann das Herz (Myokarditis) gefährden.',
+      'Nur Schnupfen oder leichtes Halskratzen ohne Fieber („oberhalb des Halses“): höchstens kurz und ganz locker (I1, 20–40 min). Werden die Symptome dabei schlimmer: abbrechen.',
+      'Nach einem Infekt ist die Leistungsfähigkeit oft einige Tage bis Wochen reduziert; Puls bei gleicher Leistung höher, HRV niedriger.',
+      'Warnzeichen für das Herz – sofort aufhören und ärztlich abklären: Brustschmerz, Herzstolpern/Herzrasen, ungewöhnliche Atemnot, Schwindel oder Ohnmacht.',
+    ],
+    practice: 'Krankheit im Gesundheitslog (Mehr → Gesundheit) eintragen und „Fieber/Ganzkörpersymptome“ markieren – die App zeigt dir einen stufenweisen Wiedereinstieg. Im Zweifel einen Tag mehr Pause.',
+    sources: [S.schwellnus16, S.elliott20],
+  },
+  {
+    id: 'return', cat: 'Gesundheit', title: 'Wiedereinstieg nach Krankheit', evidence: 'gering',
+    facts: [
+      'Erst wieder trainieren, wenn du mindestens 24 h fieber- und beschwerdefrei bist (nach Fieber/Ganzkörpersymptomen eher mehrere Tage).',
+      'Stufen, je mindestens 1 Tag, nur weiter, wenn es gut ging: 1) 15–30 min Gehen oder ganz locker, 2) 30–60 min I1, 3) normaler lockerer Umfang (I1–I2), 4) wieder Intensität.',
+      'Faustregel: Der Wiederaufbau dauert etwa so viele Tage, wie du krank warst – nach Fieber oder COVID eher doppelt so lange; nach COVID mit Ganzkörpersymptomen empfahl der Konsens mindestens 7 beschwerdefreie Tage vor dem Start der Stufen.',
+      'Kommen Symptome zurück (Husten, Fieber, ungewöhnliche Erschöpfung, Ruhepuls deutlich erhöht): eine Stufe zurück bzw. pausieren.',
+      'Nach längerer Pause Umfang nicht sprunghaft auf das alte Niveau – große Belastungssprünge erhöhen das Risiko für den nächsten Infekt.',
+    ],
+    practice: 'Im Plan-Assistenten den Ansatz „Grundlage / Wiedereinstieg“ wählen (nur locker, max. ca. +10 % pro Woche). Morgen-Check mit HRV und Ruhepuls hilft, den richtigen Moment für Intensität zu finden.',
+    sources: [S.elliott20, S.schwellnus16, S.svendsen16],
+  },
+  {
+    id: 'gi_ill', cat: 'Gesundheit', title: 'Magen-Darm-Infekt', evidence: 'gering',
+    facts: [
+      'Bei Durchfall/Erbrechen kein Training: Flüssigkeits- und Salzverlust, schnelle Dehydrierung, Kreislaufprobleme.',
+      'Trinken mit Salz und Zucker (oder Elektrolytlösung), dann schonende Kost (Reis, Banane, Zwieback, Brühe).',
+      'Wiedereinstieg erst, wenn du wieder normal isst und trinkst und das Gewicht zurück ist – sonst fehlen Energie und Glykogen.',
+    ],
+    practice: 'Rund um Rennen und Trainingslager: Hände waschen, keine geteilten Flaschen, im Ausland nur abgefülltes Wasser.',
+    sources: [S.schwellnus16],
+  },
+  {
+    id: 'overtraining', cat: 'Erholung', title: 'Überlastung: Overreaching und Übertraining', evidence: 'mittel',
+    facts: [
+      'Funktionelles Overreaching: kurzfristig müde nach einem harten Block, nach einigen Tagen Erholung leistungsfähiger – gewollt.',
+      'Nicht-funktionelles Overreaching: Leistung bleibt über Wochen reduziert, Stimmung und Schlaf leiden – zu viel Belastung bei zu wenig Erholung.',
+      'Übertrainingssyndrom: Leistungseinbruch über Monate; Ursachen oft Kombination aus Training, Energiemangel, Schlaf, Stress und Infekten.',
+      'Typische Zeichen: Leistung in Key Sessions sinkt bei gleichem Aufwand, Puls lässt sich nicht hochbringen oder ist in Ruhe erhöht, HRV-Trend fällt, schlechter Schlaf, Reizbarkeit, wenig Lust aufs Training, häufige Infekte.',
+      'Energiemangel (REDs) sieht ähnlich aus und ist oft die eigentliche Ursache – ausreichend essen ist Teil der Erholung.',
+    ],
+    practice: 'Nach jedem 3-Wochen-Aufbau eine leichtere Woche. Wenn mehrere Zeichen über 1–2 Wochen auftreten: Intensität streichen, Umfang reduzieren, mehr schlafen und essen; bleibt es, ärztlich abklären (Blutbild, Ferritin, Schilddrüse).',
+    sources: [S.meeusen13, S.mountjoy23, S.hrvMeta],
+  },
+  {
+    id: 'injury', cat: 'Gesundheit', title: 'Überlastungsbeschwerden im Langlauf', evidence: 'gering',
+    facts: [
+      'Häufig: unterer Rücken (viel Doppelstock), Schulter und Ellbogen (Stockeinsatz), Achillessehne und Schienbein (Laufen, Skigang), Leiste/Adduktoren (Skating).',
+      'Hauptrisiko sind schnelle Belastungsänderungen: neue Bewegungen (erster Rollski im Frühjahr, viel Doppelstock), mehr Umfang oder Intensität in kurzer Zeit.',
+      'Sehnenbeschwerden mögen keine komplette Ruhe: dosierte Belastung (z. B. langsames, schweres Wadenheben) hilft oft mehr als Pause.',
+      'Schmerz-Ampel: bis 3/10 während der Belastung und am nächsten Morgen nicht schlechter = ok; darüber oder morgens schlimmer = reduzieren.',
+    ],
+    practice: 'Neue Belastungen langsam einführen (z. B. Doppelstock-Anteil über Wochen steigern), Kraft- und Prophylaxe-Übungen (Copenhagen, Nordic Hamstring, Wadenheben, Face Pulls) regelmäßig. Beschwerden im Gesundheitslog notieren – die App zeigt die Belastung davor.',
+    sources: [S.soligard16, S.xcInjury],
+  },
+  {
+    id: 'heat_training', cat: 'Umwelt', title: 'Training in der Hitze', evidence: 'stark',
+    facts: [
+      'Hitzeakklimatisation (1–2 Wochen täglich 60–90 min in der Wärme) senkt Puls und Körpertemperatur bei gleicher Leistung und erhöht die Schweißrate.',
+      'In der Hitze liegt der Puls bei gleicher Leistung deutlich höher – harte Einheiten nach Watt bzw. Gefühl steuern oder in kühle Tageszeiten legen.',
+      'Gut hydriert starten, unterwegs mit Natrium trinken, vor harten Einheiten vorkühlen (kalte Getränke, Eisslush).',
+    ],
+    practice: 'Ernährung → Wissen: Schweißraten-Rechner; an heißen Tagen dort „Heute heiß“ antippen.',
+    sources: [S.racinais15],
+  },
+  {
     id: 'energy', cat: 'Ernährung', title: 'Genug essen: Energiemangel (REDs)', evidence: 'mittel',
     facts: [
       'Bei 27 gut trainierten männlichen Langläufern lag die Energieverfügbarkeit im Juni (Vorbereitung) an Trainingstagen unter 15 kcal/kg fettfreie Masse – zu wenig Essen bei hohem Trainingsumsatz.',
@@ -169,9 +278,145 @@ export const TOPICS = [
     practice: 'Form zwischen etwa −10 und −30 ist in Aufbauphasen normal; für Wettkämpfe sollte sie positiv sein. Werte sind Modelle – das Körpergefühl zählt mit.',
     sources: [],
   },
+  // ——— Aus anderen Ausdauersportarten (mit Übertrag auf den Langlauf) ———
+  {
+    id: 'run_elite', cat: 'Laufen', title: 'Was Weltklasse-Läufer erfolgreich macht', evidence: 'gering',
+    facts: [
+      'Weltklasse-Langstreckenläufer trainieren rund 80 % ihrer Zeit locker; dazu gezielt Schwelle (Tempoläufe, längere Intervalle) und kurze Intervalle – meist 2–3 harte Einheiten pro Woche.',
+      'In einer Analyse von Weltklasse-Läufern sagten der Umfang lockerer Läufe sowie gezielt geübte Tempoläufe und kurze Intervalle die Leistung am besten voraus – nicht besonders viele sehr harte Einheiten.',
+      'Viele Spitzenläufer laufen ihre Schwellenarbeit kontrolliert (Laktat ca. 2–4 mmol/l) und mehrmals pro Woche, teils als Double Threshold – sehr ähnlich zum Langlauf.',
+    ],
+    practice: 'Übertrag: Dieselbe Logik wie im Langlauf – viel lockerer Umfang, kontrollierte Schwelle als Hauptreiz, harte Intervalle dosiert. Im Laufen sind die Stoßbelastungen höher; deshalb den Laufanteil langsamer steigern als Rad oder Rollski.',
+    sources: [S.haugen22, S.casado21],
+  },
+  {
+    id: 'run_economy', cat: 'Laufen', title: 'Laufökonomie und Krafttraining', evidence: 'mittel',
+    facts: [
+      'Schweres Krafttraining und Sprungkrafttraining (Plyometrie) verbessern laut Metaanalyse die Laufökonomie – man braucht weniger Energie bei gleichem Tempo.',
+      'Die Wirkung entsteht ohne Zunahme der VO2max, vor allem über bessere Kraftübertragung und steifere Sehnen.',
+      'Wichtig sind schwere Lasten (wenige Wiederholungen) oder explosive Ausführung – leichtes Kraftausdauertraining bringt für die Ökonomie wenig.',
+    ],
+    practice: 'Übertrag: Genau dasselbe gilt für den Doppelstock – Maximal- und Schnellkraft verbessern die Ökonomie. Für Lauf-Einheiten im Sommer: 1–2× pro Woche Sprünge (Kniehebelauf, Sprunglauf, Skigang-Sprünge) ergänzen.',
+    sources: [S.balsalobre16, S.ronnestadMujika14],
+  },
+  {
+    id: 'run_injury', cat: 'Laufen', title: 'Laufumfang steigern ohne Verletzung', evidence: 'mittel',
+    facts: [
+      'Bei Laufanfängern hatten Läufer, die ihren Wochenumfang über ca. 30 % in zwei Wochen steigerten, mehr Verletzungen als bei moderater Steigerung.',
+      'Die „10-%-Regel“ selbst ist schlecht belegt: Ein vorsichtigeres Programm senkte die Verletzungsrate in einer randomisierten Studie nicht – entscheidend sind große Sprünge.',
+      'Knochenstressverletzungen hängen oft mit zu wenig Energie (REDs), schnellen Umfangssprüngen und hartem Untergrund zusammen.',
+    ],
+    practice: 'Übertrag: Im Frühjahr, wenn nach dem Winter wieder mehr gelaufen wird, den Laufanteil schrittweise aufbauen (Ski- bzw. Rollskistunden zählen fürs Herz, nicht für Knochen und Sehnen im Laufen). Die App warnt bei Belastungssprüngen über 1,5×.',
+    sources: [S.nielsen14, S.buist08, S.mountjoy23],
+  },
+  {
+    id: 'bike_pro', cat: 'Radsport', title: 'Wie Radprofis trainieren', evidence: 'gering',
+    facts: [
+      'Radprofis fahren sehr große Umfänge; der weitaus größte Teil liegt in niedriger Intensität, die Verteilung ist meist pyramidal (mehr mittlere als sehr hohe Intensität).',
+      'Bei Profis steigt die Leistung über die Jahre vor allem mit dem Umfang und der Fähigkeit, auch nach langer Belastung noch hohe Leistung zu bringen („Durability“).',
+      'Lange Ausfahrten mit Verpflegung trainieren Fettstoffwechsel, Darm und Ermüdungsresistenz.',
+    ],
+    practice: 'Übertrag: Rad ist für Langläufer ideal, um im Sommer Umfang zu sammeln, ohne Stoßbelastung. Lange Radeinheiten (3–5 h, locker) ersetzen gut lange Läufe; spezifische Kraft für Doppelstock muss trotzdem aus Rollski/Kraft kommen.',
+    sources: [S.vanerp20],
+  },
+  {
+    id: 'bike_intervals', cat: 'Radsport', title: 'Kurze Intervalle (30/15) und kritische Leistung', evidence: 'mittel',
+    facts: [
+      'Bei gut trainierten Radsportlern brachten 3 Serien à 13× 30 s hart / 15 s locker größere Verbesserungen (VO2max, Leistung) als 4× 5 min bei gleicher Gesamtbelastung.',
+      'Die kritische Leistung (CP) markiert die Grenze, ab der Laktat und Sauerstoffaufnahme nicht mehr stabil bleiben. FTP (≈ 95 % der besten 20 min) ist eine praktische Schätzung davon.',
+      'Oberhalb der kritischen Leistung ist die Zeit bis zur Erschöpfung begrenzt – deshalb wirken kurze Intervalle mit kurzen Pausen: viel Zeit nahe VO2max bei erträglicher Ermüdung.',
+    ],
+    practice: 'Übertrag: 30/15 funktioniert auch auf SkiErg, Rollski bergauf oder Laufband. Im Katalog des Saisonplan-Assistenten als „VO2max kurz (I5)“. Die App schätzt deine FTP je Sportart aus der Bestwertkurve (Schwellen-Vorschläge).',
+    sources: [S.ronnestad15, S.jones19],
+  },
+  {
+    id: 'rowing', cat: 'Rudern', title: 'Rudern: ein Ganzkörper-Ausdauersport wie Langlauf', evidence: 'gering',
+    facts: [
+      'Norwegische Weltklasse-Ruderer haben über drei Jahrzehnte ihren Umfang erhöht – vor allem mit mehr lockerem Training – und harte Einheiten eher reduziert; die Leistung stieg dabei deutlich.',
+      'Wie im Langlauf arbeitet viel Muskelmasse gleichzeitig: Ruderer und Langläufer haben die höchsten gemessenen VO2max-Werte aller Sportarten.',
+      'Auch im Rudern liegt der größte Teil des Trainings in niedriger Intensität; Ergometertests (z. B. 2000 m) dienen als Leistungskontrolle.',
+    ],
+    practice: 'Übertrag: Rudern und SkiErg sind gute Ergänzungen bei schlechtem Wetter, Verletzungen der Beine oder als Oberkörper-Ausdauer. Gleiche Regel: viel locker, Intensität gezielt; einen festen Ergotest (z. B. SkiErg 20 min) als Key Session über die Saison vergleichen.',
+    sources: [S.fiskerstrand04, S.seiler10],
+  },
+  {
+    id: 'crosstrain', cat: 'Triathlon', title: 'Mehrere Sportarten: was sich überträgt', evidence: 'mittel',
+    facts: [
+      'Herz-Kreislauf-Anpassungen (Herzvolumen, Blutvolumen) übertragen sich zwischen Sportarten gut, muskuläre und technische Anpassungen kaum – sie bleiben an die trainierte Bewegung gebunden.',
+      'Triathleten planen deshalb Gesamtbelastung über alle Sportarten und zusätzlich genug spezifische Zeit je Disziplin; Koppeleinheiten (Rad → Lauf) üben den Übergang.',
+      'Je ähnlicher Bewegung und Muskulatur, desto größer der Übertrag (z. B. Skigang mit Stöcken → Klassisch bergauf).',
+    ],
+    practice: 'Übertrag: Rad und Laufen im Sommer zählen voll für die Ausdauerbasis (die App rechnet alle Sportarten in Fitness und Belastung ein). Für Leistung auf Ski braucht es aber steigend spezifische Zeit (Rollski, Skigang, Doppelstock) – der Saisonplan-Assistent wird deshalb ab Spätsommer spezifischer.',
+    sources: [S.tanaka94],
+  },
+  {
+    id: 'gut', cat: 'Triathlon', title: 'Darmtraining: Kohlenhydrate unterwegs vertragen', evidence: 'mittel',
+    facts: [
+      'Wer im Alltag und im Training regelmäßig viele Kohlenhydrate zu sich nimmt, kann unterwegs mehr davon aufnehmen und verwerten – der Darm passt sich an.',
+      'Mischungen aus Glukose und Fruktose ermöglichen höhere Mengen (bis ca. 90 g/h und bei Geübten mehr) als nur Glukose.',
+      'Magen-Darm-Probleme sind im Triathlon und Ultra-Ausdauersport eine Hauptursache für Leistungseinbrüche; sie lassen sich durch Üben deutlich reduzieren.',
+    ],
+    practice: 'Übertrag: Vor Langdistanzrennen (Engadin, Vasalauf) in langen Einheiten mehrmals die Renn-Verpflegung üben – gleiche Produkte, gleiche Mengen pro Stunde. Der Ernährungsplaner plant „Unterwegs“ ab 75 min mit ein.',
+    sources: [S.cox10, S.jeukendrup17],
+  },
+  {
+    id: 'concurrent', cat: 'Sportübergreifend', title: 'Kraft und Ausdauer kombinieren (Interferenz)', evidence: 'mittel',
+    facts: [
+      'Kombiniertes Kraft- und Ausdauertraining kann die Kraft- und Muskelzuwächse etwas bremsen; der Effekt ist laut Metaanalyse beim Laufen größer als beim Radfahren.',
+      'Die Ausdauerleistung leidet umgekehrt nicht unter Krafttraining – sie profitiert meist davon (Ökonomie).',
+      'Mehrere Stunden Abstand zwischen harter Ausdauer- und Krafteinheit verringern die Interferenz; am selben Tag eher Kraft nach lockerer Ausdauer.',
+    ],
+    practice: 'Übertrag: Kraft an lockere Tage legen oder mit 6 h+ Abstand zu harten Einheiten; nicht direkt vor Schwellen- oder Intervalltagen. Der Saisonplan-Assistent setzt Kraft deshalb auf Tage ohne harte Einheit.',
+    sources: [S.wilson12, S.ronnestadMujika14],
+  },
+  {
+    id: 'recovery_tools', cat: 'Sportübergreifend', title: 'Regeneration: was wirklich hilft', evidence: 'mittel',
+    facts: [
+      'Massage und Kompression verringerten laut Metaanalyse Muskelkater und gefühlte Ermüdung am deutlichsten; Kältebäder helfen kurzfristig gegen Muskelkater.',
+      'Regelmäßige Kältebäder direkt nach Krafttraining bremsten in Studien die Zuwächse an Muskelmasse und Kraft – kühlen dämpft die Anpassungssignale.',
+      'Die wirksamste „Regeneration“ bleiben Schlaf, genug Energie und Kohlenhydrate sowie lockere Tage.',
+    ],
+    practice: 'Übertrag: Kältebad eher bei Wettkampfblöcken (mehrere Rennen in Folge), nicht routinemäßig nach Kraft. Im Aufbau lieber Schlaf und Essen priorisieren; Massage/Kompression nach Gefühl.',
+    sources: [S.dupuy18, S.roberts15, S.sleep21],
+  },
+  {
+    id: 'warmup', cat: 'Sportübergreifend', title: 'Aufwärmen vor Rennen und harten Einheiten', evidence: 'mittel',
+    facts: [
+      'Aktives Aufwärmen mit lockeren Minuten und einigen kurzen Belastungen im Renntempo verbessert die Leistung über viele Sportarten hinweg.',
+      'Zu lange Pausen zwischen Aufwärmen und Start (über ca. 15–20 min) verringern den Effekt; warme Kleidung hilft, die Temperatur zu halten.',
+      'Für kurze, schnelle Rennen (Sprint) ist ein intensiveres Aufwärmen sinnvoll als für Langdistanzen.',
+    ],
+    practice: 'Übertrag: Vor Sprintrennen ca. 20–30 min locker plus 3–4 kurze Steigerungen und 1–2 kurze Belastungen im Renntempo; nach dem Aufwärmen warm halten. Vor Langdistanzen kürzer und lockerer.',
+    sources: [S.mcgowan15],
+  },
+  {
+    id: 'mental', cat: 'Sportübergreifend', title: 'Mentale Techniken: Selbstgespräche und Pacing', evidence: 'mittel',
+    facts: [
+      'Gezielte Selbstgespräche („ruhig bleiben“, „Druck auf die Stöcke“) verbesserten laut Metaanalyse die Leistung messbar – besonders, wenn sie geübt wurden.',
+      'Gleichmäßiges oder leicht negatives Pacing ist bei Ausdauerrennen meist am schnellsten; ein zu schneller Start kostet hinten mehr, als er vorne bringt.',
+      'Wettkampfroutinen (Ablauf, Aufwärmen, Verpflegung) senken Nervosität und Fehler.',
+    ],
+    practice: 'Übertrag: In Key Sessions zwei, drei feste Merksätze üben und im Rennen nutzen. Bei Langdistanzen die erste halbe Stunde bewusst kontrolliert angehen.',
+    sources: [S.hatzi11],
+  },
+  {
+    id: 'cycle', cat: 'Sportübergreifend', title: 'Menstruationszyklus und Training', evidence: 'mittel',
+    facts: [
+      'Laut Metaanalyse ist die Leistung in der frühen Follikelphase (Periode) im Mittel nur geringfügig niedriger – der Unterschied ist klein und von Person zu Person sehr verschieden.',
+      'Allgemeine Regeln („in Phase X nur locker“) sind deshalb nicht belegt; besser ist es, eigene Muster zu beobachten (Gefühl, Schlaf, Leistung).',
+      'Ausbleibende oder unregelmäßige Periode kann ein Zeichen für Energiemangel (REDs) sein und gehört ärztlich abgeklärt.',
+    ],
+    practice: 'Übertrag: Den Zyklus z. B. in der Notiz des Morgen-Checks festhalten und über Monate schauen, ob es persönliche Muster gibt. Bei Zyklusstörungen Energiezufuhr prüfen.',
+    sources: [S.mcnulty20, S.mountjoy23],
+  },
 ];
 
 export const FAQ = [
+  { q: 'Welcher Trainingsansatz passt zu mir?', a: 'Bei viel Zeit (12–20 h) passt der pyramidale Weltklasse-Ansatz mit viel lockerem Umfang; bei begrenzter Zeit (6–12 h) polarisiert; Double Threshold, wenn du gerne Schwelle trainierst und dich gut über Laktat oder Puls steuern kannst; Block-Periodisierung für gezielte VO2max-Phasen. Der Plan-Assistent unter Kalender → Saison plant jeden davon.', refs: ['approaches'] },
+  { q: 'Darf ich mit Erkältung trainieren?', a: 'Ohne Fieber und nur mit Symptomen oberhalb des Halses höchstens kurz und ganz locker. Bei Fieber, Gliederschmerzen, Durchfall oder starkem Krankheitsgefühl: kein Training. Warnzeichen wie Brustschmerz oder Herzstolpern ärztlich abklären.', refs: ['sick_train'] },
+  { q: 'Wie steige ich nach Krankheit wieder ein?', a: 'Ab 24 h beschwerdefrei (nach Fieber länger) stufenweise: Gehen/ganz locker → 30–60 min I1 → normaler lockerer Umfang → Intensität, jeweils mindestens einen Tag. Etwa so viele Tage Aufbau, wie du krank warst. Die App zeigt die Stufen im Gesundheitslog.', refs: ['return'] },
+  { q: 'Bin ich übertrainiert?', a: 'Ein Zeichen allein sagt wenig. Wenn über 1–2 Wochen mehrere zusammenkommen – sinkende Leistung bei gleichem Aufwand, erhöhter Ruhepuls, fallende HRV, schlechter Schlaf, wenig Motivation, Infekte –, Intensität streichen, Umfang reduzieren, mehr essen und schlafen. Bleibt es, Blutwerte prüfen lassen.', refs: ['overtraining'] },
+  { q: 'Was tun bei Schmerzen an Sehne oder Rücken?', a: 'Schmerz-Ampel: bis 3/10 und am nächsten Morgen nicht schlechter ist ok. Belastung anpassen statt komplett pausieren, Ursache suchen (Umfangssprung, neue Bewegung), gezielte Kraftübungen. Bei zunehmenden oder nächtlichen Schmerzen ärztlich abklären.', refs: ['injury'] },
   { q: 'Wie viele Stunden sollte ich trainieren?', a: 'Weltklasse liegt bei 750–1000 h im Jahr. Für dich zählt die stetige Steigerung über Jahre: Die Besten haben ihren Umfang lang und schrittweise erhöht, vor allem mit lockerem Training. 15 h pro Woche (≈ 750 h/Jahr) sind bereits ein hoher Umfang – Qualität der harten Tage und Erholung entscheiden jetzt.', refs: ['volume'] },
   { q: 'Wie oft sollte ich hart trainieren?', a: 'Weltklasse-Langläufer setzen harte Tage alle 3–4 Tage, also 2–3 Schlüsseltage pro Woche mit insgesamt 3–5 intensiven Einheiten. Dazwischen locker oder lang, nicht beides hart.', refs: ['week'] },
   { q: 'Wie baue ich Double Threshold ein?', a: 'Mit einem Double-Threshold-Tag pro Woche starten, z. B. morgens 5×6 min, abends 10×3 min, beides kontrolliert (Laktat etwa 2–3,5 mmol/l). Die übrigen Tage locker. Lege eine Key Session an, um Watt/Puls/Laktat über Wochen zu vergleichen. Die Methode ist in der Praxis erfolgreich, aber wissenschaftlich noch wenig kontrolliert untersucht.', refs: ['dt'] },
@@ -186,6 +431,12 @@ export const FAQ = [
   { q: 'Wie vermeide ich Infekte im Winter?', a: 'Belastung gleichmäßig steigern, große Sprünge vermeiden, nach Flugreisen und Wettkampfblöcken bewusst erholen, genug essen und schlafen.', refs: ['illness', 'energy', 'sleep'] },
   { q: 'Welche FTP gilt für SkiErg und Rad?', a: 'Jede Sportart hat ihre eigene Schwellenleistung. Trag unter Einstellungen FTP Rad, SkiErg und Rudern getrennt ein; die App schätzt außerdem unter Analyse → Bestwerte deine FTP aus der Leistungskurve.', refs: ['metrics'] },
   { q: 'Was ist eine Key Session?', a: 'Eine wiederkehrende Schlüsseleinheit, z. B. „5×6 min Schwelle Rollski“. Die App sucht alle ähnlichen Einheiten und zeigt, ob du bei gleichem Puls/Laktat mehr Watt schaffst – das ist der direkteste Fortschrittsnachweis.', refs: ['dt'] },
+  { q: 'Was kann ich als Langläufer von Läufern und Radprofis lernen?', a: 'Dieselben Grundregeln: viel lockerer Umfang, kontrollierte Schwelle als Hauptreiz, harte Intervalle dosiert, Umfang über Jahre steigern. Laufen hat höhere Stoßbelastung (langsamer steigern), Rad eignet sich hervorragend für Umfang ohne Belastung der Knochen.', refs: ['run_elite', 'bike_pro'] },
+  { q: 'Zählt Radfahren und Laufen für den Langlauf?', a: 'Für das Herz-Kreislauf-System ja, voll. Technik und Oberkörper-/Doppelstock-Kraft übertragen sich aber kaum – je näher der Winter, desto mehr spezifische Zeit (Rollski, Skigang, Doppelstock).', refs: ['crosstrain'] },
+  { q: 'Kältebad nach dem Krafttraining – sinnvoll?', a: 'Eher nicht regelmäßig: Es kann die Kraft- und Muskelzuwächse bremsen. Sinnvoll eher in Wettkampfblöcken, wenn schnelle Erholung zählt.', refs: ['recovery_tools'] },
+  { q: 'Wie wärme ich mich vor einem Sprint auf?', a: 'Ca. 20–30 min locker, dann einige Steigerungen und 1–2 kurze Belastungen im Renntempo, danach warm halten und nicht länger als ca. 15 min bis zum Start warten.', refs: ['warmup'] },
+  { q: 'Wie vertrage ich Gels im Rennen besser?', a: 'Den Darm trainieren: in langen Einheiten regelmäßig die Renn-Verpflegung üben (gleiche Produkte, 60–90 g Kohlenhydrate pro Stunde, Glukose + Fruktose). Die Verträglichkeit steigt nach einigen Wochen deutlich.', refs: ['gut', 'carbs'] },
+  { q: 'Kraft am selben Tag wie Intervalle?', a: 'Besser nicht direkt davor. Kraft an lockere Tage legen oder mit 6 h+ Abstand – sonst leidet die Qualität der harten Einheit und der Kraftzuwachs etwas.', refs: ['concurrent'] },
 ];
 
 export const EVIDENCE_LABEL = { stark: 'starke Evidenz', mittel: 'mittlere Evidenz', gering: 'begrenzte Evidenz' };

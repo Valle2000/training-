@@ -2,6 +2,7 @@
 // Puls bei gleicher Leistung und Belastbarkeit aus deiner eigenen Vergangenheit (statt nur der letzten 4 Wochen).
 import { addDays, HR_BIN, POWER_BIN, secondsBetween, performanceCurve } from './metrics.js';
 import { dailyLoads, mondayOf } from './activities.js';
+import { keySessionRows } from './keysessions.js';
 
 // Langlaufsaison beginnt am 1. Mai.
 export const seasonStart = (date) => (date.slice(5) >= '05-01' ? `${date.slice(0, 4)}-05-01` : `${+date.slice(0, 4) - 1}-05-01`);
@@ -98,4 +99,51 @@ export function healthRatios(health, activities, windowDays = 365) {
     const r = tolerance(activities.filter((a) => a.date < e.start), addDays(e.start, -1), windowDays);
     return { ...e, ratio: r?.now.ratio ?? null };
   });
+}
+
+// Saisonrückblick: Kennzahlen einer Saison bis zu einem Stichtag (für die laufende Saison: bis heute) und
+// Vergleich mit der Vorsaison bis zum gleichen Tag der Saison.
+export function seasonReview(data, start, t) {
+  const { activities = [], health = [], races = [], keySessions = [] } = data;
+  const end = addDays(start, 364), cutoff = end < t ? end : t, dayN = days(start, cutoff);
+  const prevStart = `${+start.slice(0, 4) - 1}-05-01`, prevCut = addDays(prevStart, dayN);
+  const stats = (from, to) => {
+    const acts = activities.filter((a) => a.date >= from && a.date <= to);
+    const z = { I1: 0, I2: 0, I3: 0, I4: 0, I5: 0 };
+    for (const a of acts) if (a.zones) for (const k in z) z[k] += a.zones[k] || 0;
+    const zt = Object.values(z).reduce((x, y) => x + y, 0);
+    const bySport = {};
+    for (const a of acts) bySport[a.sport] = (bySport[a.sport] || 0) + (a.durationS || 0) / 3600;
+    const weeks = {};
+    for (const a of acts) { const w = mondayOf(a.date); weeks[w] = (weeks[w] || 0) + (a.durationS || 0) / 3600; }
+    const ill = health.filter((e) => e.start <= to && (e.end || t) >= from).reduce((acc, e) => {
+      const s = e.start < from ? from : e.start, en = (e.end || t) > to ? to : e.end || t;
+      acc[e.type] = (acc[e.type] || 0) + Math.max(0, days(s, en) + 1); return acc;
+    }, {});
+    const longest = acts.filter((a) => a.sport !== 'strength').sort((a, b) => (b.durationS || 0) - (a.durationS || 0))[0];
+    return {
+      from, to, hours: acts.reduce((x, a) => x + (a.durationS || 0) / 3600, 0), sessions: acts.length, load: Math.round(acts.reduce((x, a) => x + (a.load || 0), 0)),
+      easy: zt ? Math.round(((z.I1 + z.I2) / zt) * 100) : null, thr: zt ? Math.round((z.I3 / zt) * 100) : null, hard: zt ? Math.round(((z.I4 + z.I5) / zt) * 100) : null,
+      thrHours: z.I3 / 3600, hardHours: (z.I4 + z.I5) / 3600,
+      strength: acts.filter((a) => a.sport === 'strength').length, sports: bySport, maxWeek: Math.max(0, ...Object.values(weeks)), weeksActive: Object.keys(weeks).length,
+      illDays: ill.ill || 0, injuryDays: (ill.injury || 0) + (ill.niggle || 0), races: races.filter((r) => r.date >= from && r.date <= to && r.date <= t).length,
+      longest: longest ? { title: longest.title, minutes: Math.round((longest.durationS || 0) / 60), date: longest.date } : null,
+    };
+  };
+  const cur = stats(start, cutoff), prev = stats(prevStart, prevCut);
+  const pct = (a, b) => (b ? Math.round(((a - b) / b) * 100) : null);
+  const highlights = [];
+  if (prev.hours) highlights.push(`${pct(cur.hours, prev.hours) >= 0 ? '+' : ''}${pct(cur.hours, prev.hours)} % Stunden gegenüber der Vorsaison${cutoff < end ? ' bis zum gleichen Tag' : ''} (${Math.round(cur.hours)} vs. ${Math.round(prev.hours)} h).`);
+  if (prev.thrHours && cur.thrHours) highlights.push(`Schwelle: ${Math.round(cur.thrHours * 10) / 10} h (Vorsaison ${Math.round(prev.thrHours * 10) / 10} h), hart: ${Math.round(cur.hardHours * 10) / 10} h (${Math.round(prev.hardHours * 10) / 10} h).`);
+  if (cur.illDays || prev.illDays) highlights.push(`Krankheitstage: ${cur.illDays} (Vorsaison ${prev.illDays})${cur.illDays < prev.illDays ? ' – weniger Ausfälle, gut so.' : cur.illDays > prev.illDays ? ' – mehr Ausfälle, auf Belastungssprünge und Schlaf achten.' : '.'}`);
+  if (cur.maxWeek) highlights.push(`Größte Woche: ${Math.round(cur.maxWeek * 10) / 10} h${prev.maxWeek ? ` (Vorsaison ${Math.round(prev.maxWeek * 10) / 10} h)` : ''}.`);
+  // Key Sessions: Leistung je Puls erste → letzte Einheit der Saison.
+  const keys = keySessions.map((ks) => {
+    const rows = keySessionRows(activities, ks).filter((r) => r.date >= start && r.date <= cutoff && r.intervalRatio);
+    if (rows.length < 2) return null;
+    const p = Math.round(((rows.at(-1).intervalRatio - rows[0].intervalRatio) / rows[0].intervalRatio) * 1000) / 10;
+    return { name: ks.name, count: rows.length, pct: p };
+  }).filter(Boolean);
+  for (const k of keys) highlights.push(`${k.name}: ${k.count}× gemacht, Leistung je Puls ${k.pct >= 0 ? '+' : ''}${String(k.pct).replace('.', ',')} % von der ersten zur letzten.`);
+  return { start, label: seasonLabel(start), cutoff, partial: cutoff < end, cur, prev, prevLabel: seasonLabel(prevStart), keys, highlights: highlights.map((h) => h.replace(/(\d)\.(\d)/g, '$1,$2')) };
 }

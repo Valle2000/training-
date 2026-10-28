@@ -1,14 +1,18 @@
-import React, { useMemo, useState } from 'react';
-import { Plus, Trash2, Trophy, Flag } from 'lucide-react';
+import React, { Suspense, lazy, useMemo, useState } from 'react';
+import { Plus, Trash2, Trophy, Flag, Wand2, Utensils } from 'lucide-react';
 import { useData, update, uid } from '../lib/store.js';
 import { today, weeks as weekStats, mondayOf, dailyLoads } from '../lib/activities.js';
 import { addDays, performanceCurve } from '../lib/metrics.js';
-import { PHASES, seasonPlan, seasonStart, gapPct, parseTime, fmtTime } from '../lib/season.js';
+import { PHASES, seasonPlan, seasonStart, gapPct, parseTime, fmtTime, PRIORITY_INFO, raceAdvice } from '../lib/season.js';
 import { SeasonChart, LineChart } from './charts.jsx';
 import { Sheet, fmtDate, fmtNum, toast } from './common.jsx';
 
+import { RaceReport, RacePlanSheet } from './race-plan.jsx';
+
+const PlanWizard = lazy(() => import('./plan-wizard.jsx').then((m) => ({ default: m.PlanWizard })));
+
 const PRIORITY = { A: 'Saisonhöhepunkt', B: 'wichtig', C: 'Trainingsrennen' };
-const TECHNIQUE = ['Skating', 'Klassisch', 'Skiathlon', 'Rollski', 'Lauf', 'Rad', 'Sonstiges'];
+const TECHNIQUE = ['Skating', 'Klassisch', 'Skiathlon', 'Rollski', 'Lauf', 'Rad', 'Triathlon', 'Sonstiges'];
 
 export const nextRace = (races, t) => [...races].filter((r) => r.date >= t).sort((a, b) => a.date.localeCompare(b.date))[0];
 
@@ -43,8 +47,11 @@ export function Season() {
   const proj = nr ? projectedForm(activities, plan, wk, t, nr.date) : null;
   const setS = (k, v) => update((d) => ({ ...d, settings: { ...d.settings, season: { ...(d.settings.season || {}), [k]: v } } }));
   const total = wk.reduce((a, w) => a + w.targetHours, 0), done = wk.filter((w) => w.to < t).reduce((a, w) => a + (actual[w.from] || 0), 0);
+  const [wizard, setWizard] = useState(false);
   return (
     <>
+      <button className="primary wide" style={{ marginTop: 10 }} onClick={() => setWizard(true)}><Wand2 size={18} />Saisonplan-Assistent: Ansatz wählen und Wochen planen</button>
+      {wizard && <Suspense fallback={null}><PlanWizard onClose={() => setWizard(false)} /></Suspense>}
       {nr && <div className="card" style={{ borderColor: 'var(--accent)' }}>
         <div className="row" style={{ justifyContent: 'space-between' }}><b style={{ flex: 'none' }}><Flag size={16} /> {nr.name}</b><span className="badge b-info" style={{ flex: 'none' }}>{nr.priority}-Rennen</span></div>
         <p style={{ margin: '6px 0' }}>{fmtDate(nr.date, { weekday: 'long', day: 'numeric', month: 'long' })} · noch {Math.round((Date.parse(nr.date) - Date.parse(t)) / 864e5)} Tage</p>
@@ -93,6 +100,7 @@ export function Races({ openActivity }) {
   return (
     <>
       <button className="primary wide" style={{ marginTop: 12 }} onClick={() => setEdit({ id: uid(), date: t, name: '', priority: 'B', technique: 'Skating', distanceKm: '', goal: '', notes: '' })}><Plus size={17} />Rennen eintragen</button>
+      {raceAdvice(races, t).map((a) => <div key={a.text} className="notice" style={a.level === 'gelb' ? { background: 'var(--warnbg)', color: 'var(--warn)' } : undefined}>{a.text}</div>)}
       <h2>Kommende Rennen</h2>
       {!upcoming.length && <p className="muted">Noch keine Rennen geplant.</p>}
       {upcoming.map((r) => <button key={r.id} className="item" onClick={() => setEdit(r)}><div className="grow"><b>{r.name}</b><p>{fmtDate(r.date)} · {r.technique}{r.distanceKm ? ` · ${r.distanceKm} km` : ''}{r.goal ? ` · Ziel: ${r.goal}` : ''}</p></div><span className={`badge ${r.priority === 'A' ? 'b-kritisch' : r.priority === 'B' ? 'b-achtung' : 'b-info'}`}>{r.priority} · {PRIORITY[r.priority]}</span></button>)}
@@ -107,6 +115,7 @@ export function Races({ openActivity }) {
 
 function RaceEditor({ race, activities, onClose, openActivity, t }) {
   const [r, setR] = useState({ result: {}, ...race });
+  const [planOpen, setPlanOpen] = useState(false);
   const [timeStr, setTimeStr] = useState(r.result?.timeS ? fmtTime(r.result.timeS) : '');
   const [winStr, setWinStr] = useState(r.result?.winnerS ? fmtTime(r.result.winnerS) : '');
   const set = (k) => (e) => setR({ ...r, [k]: e.target.value });
@@ -116,7 +125,8 @@ function RaceEditor({ race, activities, onClose, openActivity, t }) {
     if (!r.name.trim()) return toast('Name fehlt');
     const timeS = parseTime(timeStr), winnerS = parseTime(winStr);
     const next = { ...r, result: { ...r.result, timeS, winnerS, gapPct: gapPct(timeS, winnerS) } };
-    update((d) => ({ ...d, races: [...d.races.filter((x) => x.id !== next.id), next] }));
+    // Rennplan wird im eigenen Fenster gespeichert – hier nicht überschreiben.
+    update((d) => ({ ...d, races: [...d.races.filter((x) => x.id !== next.id), { ...next, plan: d.races.find((x) => x.id === next.id)?.plan ?? next.plan }] }));
     onClose();
   };
   const remove = () => { update((d) => ({ ...d, races: d.races.filter((x) => x.id !== r.id) })); onClose(); };
@@ -129,7 +139,10 @@ function RaceEditor({ race, activities, onClose, openActivity, t }) {
         <div><label>Technik</label><select value={r.technique} onChange={set('technique')}>{TECHNIQUE.map((x) => <option key={x}>{x}</option>)}</select></div>
         <div><label>Distanz (km)</label><input inputMode="decimal" value={r.distanceKm} onChange={set('distanceKm')} /></div>
       </div>
+      <p className="muted small">{PRIORITY_INFO[r.priority]}</p>
       <label>Ziel</label><input value={r.goal} onChange={set('goal')} placeholder="z. B. unter 2:00 h, Top 50" />
+      <button className="secondary wide" style={{ marginTop: 10 }} onClick={() => { update((d) => ({ ...d, races: [...d.races.filter((x) => x.id !== r.id), { ...(d.races.find((x) => x.id === r.id) || {}), ...r }] })); setPlanOpen(true); }}><Utensils size={16} />Rennplan & Verpflegung</button>
+      {planOpen && <RacePlanSheet race={r} onClose={() => setPlanOpen(false)} />}
       {r.date <= t && <>
         <h3>Ergebnis</h3>
         <div className="grid2">
@@ -139,7 +152,7 @@ function RaceEditor({ race, activities, onClose, openActivity, t }) {
           <div><label>Starter</label><input inputMode="numeric" value={r.result.fieldSize ?? ''} onChange={(e) => setRes('fieldSize', e.target.value)} /></div>
         </div>
         {parseTime(timeStr) && parseTime(winStr) && <p className="muted small">Rückstand: +{fmtNum(gapPct(parseTime(timeStr), parseTime(winStr)), 1)} %</p>}
-        <label>Gefühl / Ski / Verlauf</label><textarea value={r.result.feeling ?? ''} onChange={(e) => setRes('feeling', e.target.value)} />
+        <RaceReport report={r.report || (r.result.feeling ? { notes: r.result.feeling } : undefined)} onChange={(rep) => setR({ ...r, report: rep })} />
         {sameDay.length > 0 && <><label>Einheit verknüpfen</label><select value={r.result.activityId ?? ''} onChange={(e) => setRes('activityId', e.target.value || null)}><option value="">–</option>{sameDay.map((a) => <option key={a.id} value={a.id}>{a.title || a.sport} · {Math.round(a.durationS / 60)} min</option>)}</select></>}
         {r.result.activityId && <button className="ghost" onClick={() => openActivity(activities.find((a) => a.id === r.result.activityId))}>Einheit öffnen</button>}
       </>}
@@ -159,6 +172,17 @@ export function RaceCountdown({ go }) {
   const nr = nextRace(races, t);
   if (!nr) return null;
   const days = Math.round((Date.parse(nr.date) - Date.parse(t)) / 864e5);
-  return <button className="item" onClick={() => go('training')}><div className="grow"><b><Flag size={14} /> {nr.name}</b><p>{fmtDate(nr.date)} · {nr.priority}-Rennen · {nr.technique}</p></div><span className="num">{days === 0 ? 'heute' : `${days} T`}</span></button>;
+  return <RaceCountdownItem nr={nr} days={days} go={go} />;
+}
+
+function RaceCountdownItem({ nr, days, go }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button className="item" onClick={() => go('training')}><div className="grow"><b><Flag size={14} /> {nr.name}</b><p>{fmtDate(nr.date)} · {nr.priority}-Rennen · {nr.technique}</p></div><span className="num">{days === 0 ? 'heute' : `${days} T`}</span></button>
+      {days <= 7 && <button className="secondary wide" onClick={() => setOpen(true)}><Utensils size={16} />Rennplan & Verpflegung{days <= 2 ? ' – jetzt Speicher füllen' : ''}</button>}
+      {open && <RacePlanSheet race={nr} onClose={() => setOpen(false)} />}
+    </>
+  );
 }
 

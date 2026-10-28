@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { Sun } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Sun, Activity } from 'lucide-react';
 import { useData, update } from '../lib/store.js';
-import { SYMPTOMS, readinessFor } from '../lib/readiness.js';
+import { SYMPTOMS, readinessFor, hrvStatus, loadStatus } from '../lib/readiness.js';
+import { addDays } from '../lib/metrics.js';
+import { LineChart } from './charts.jsx';
 import { Sheet, toast } from './common.jsx';
 
 const SCALES = [
@@ -13,8 +15,8 @@ const SCALES = [
 const LEVEL = { gruen: ['Grün', 'var(--good)', 'var(--goodbg)'], gelb: ['Gelb', 'var(--warn)', 'var(--warnbg)'], rot: ['Rot', 'var(--bad)', 'var(--badbg)'] };
 
 export function ReadinessCard({ date, form, onCheck }) {
-  const { wellness } = useData();
-  const r = readinessFor(date, wellness, form);
+  const { wellness, activities } = useData();
+  const r = readinessFor(date, wellness, form, activities);
   const [label, color, bg] = LEVEL[r.level];
   return (
     <div style={{ background: bg, color, borderRadius: 14, padding: '12px 14px', marginTop: 12 }}>
@@ -64,5 +66,40 @@ export function MorningSheet({ date, onClose }) {
       <button className="primary wide" onClick={save}>Speichern</button>
       <p className="muted small">Bei Symptomen unterhalb des Halses (Fieber, Husten, Gliederschmerzen) kein Training. Die Ampel ist eine Orientierung, keine Diagnose.</p>
     </Sheet>
+  );
+}
+
+const HRV_TEXT = { low: ['unter deinem Normalbereich', 'var(--bad)'], normal: ['im Normalbereich', 'var(--good)'], high: ['über dem Normalbereich (meist gut erholt)', 'var(--good)'] };
+// HRV-Trend mit persönlichem Normalbereich, Monotonie/Strain und Belastungssprung.
+export function RecoveryCard({ t }) {
+  const { wellness, activities } = useData();
+  const data = useMemo(() => {
+    const dates = Array.from({ length: 60 }, (_, i) => addDays(t, i - 59));
+    const st = dates.map((d) => hrvStatus(d, wellness));
+    return { dates, st, now: st.at(-1), load: loadStatus(addDays(t, -1), activities) };
+  }, [wellness, activities, t]);
+  const { dates, st, now, load } = data;
+  if (!now && !load) return null;
+  const fmt = (v) => String(v).replace('.', ',');
+  return (
+    <div className="card">
+      <h3 style={{ marginTop: 0 }}><Activity size={16} /> Erholung und Belastung</h3>
+      {now ? <>
+        <p className="small" style={{ margin: '0 0 4px' }}>HRV 7-Tage-Schnitt <b>{now.avg7} ms</b> – <b style={{ color: HRV_TEXT[now.status][1] }}>{HRV_TEXT[now.status][0]}</b> ({now.low}–{now.high} ms, aus {now.n} Messungen der letzten 60 Tage)</p>
+        <LineChart shared height={170} labels={dates} xFormat={(d) => `${+d.slice(8)}.${+d.slice(5, 7)}.`} series={[
+          { label: 'HRV 7 Tage (ms)', values: st.map((x) => x?.avg7 ?? null), color: 'var(--z2)', width: 2 },
+          { label: 'Normalbereich unten', values: st.map((x) => x?.low ?? null), color: 'var(--muted)', dashed: true },
+          { label: 'oben', values: st.map((x) => x?.high ?? null), color: 'var(--muted)', dashed: true },
+        ]} />
+      </> : <p className="muted small">Für den HRV-Normalbereich braucht es mindestens 14 Morgenwerte (Polar Nightly Recharge oder Morgen-Check).</p>}
+      {load && (
+        <div className="stats" style={{ marginTop: 8 }}>
+          <div><b style={{ color: load.monotony > 2 ? 'var(--warn)' : undefined }}>{fmt(load.monotony)}</b><span>Monotonie (letzte 7 T.)</span></div>
+          <div><b style={{ color: load.strainHigh ? 'var(--warn)' : undefined }}>{load.strain}</b><span>Strain{load.strainP90 ? ` (90 %: ${load.strainP90})` : ''}</span></div>
+          <div><b style={{ color: load.acwr > 1.5 ? 'var(--bad)' : load.acwr > 1.3 ? 'var(--warn)' : undefined }}>{load.acwr != null ? `${fmt(load.acwr)}×` : '–'}</b><span>Belastung 7 T. vs. 4 Wo.</span></div>
+        </div>
+      )}
+      <p className="muted small" style={{ marginBottom: 0 }}>Normalbereich = dein Mittel ± kleinste relevante Änderung (Plews/Buchheit). Monotonie über 2 bei hoher Belastung (Foster) und Belastungssprünge über 1,5× (Gabbett) gehen mit mehr Krankheit und Verletzungen einher – beides fließt in die Ampel ein.</p>
+    </div>
   );
 }

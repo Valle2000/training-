@@ -2,8 +2,14 @@
 // der Browser schickt nur eine kompakte Zusammenfassung der Trainingsdaten.
 import Anthropic from '@anthropic-ai/sdk';
 import { AsyncLocalStorage } from 'node:async_hooks';
+import { TOPICS } from '../src/lib/knowledge.js';
+import { AI_MODELS, AI_EFFORTS, modelById, costOf } from '../src/lib/ai-models.js';
 
 const MODEL = 'claude-opus-5-5';
+
+// Wissensbasis der App (auch Erkenntnisse aus Laufen, Radsport, Rudern, Triathlon) – wird dem Coach mitgegeben,
+// damit Antworten und App-Wissen übereinstimmen. Steht im System-Prompt und wird daher zwischengespeichert.
+const KNOWLEDGE = TOPICS.map((t) => `### ${t.title} (${t.cat}, Evidenz: ${t.evidence})\n${t.facts.map((f) => `- ${f}`).join('\n')}\nPraxis: ${t.practice}\nQuellen: ${t.sources.map((x) => x.text).join('; ')}`).join('\n\n');
 
 const COACH_SYSTEM = `Du bist ein erfahrener Skilanglauf-Trainer mit sportwissenschaftlichem Hintergrund und berätst einen ambitionierten Athleten.
 Du bekommst eine kompakte Zusammenfassung seiner Trainingsdaten: Wochenumfänge je Intensitätszone (Olympiatoppen I1–I5 nach % HFmax), Belastung, Fitness/Ermüdung/Form (Modell wie CTL/ATL/TSB), Einheiten der letzten 21 Tage, Krafttraining, Erholungswerte (HRV, Schlaf, Ruhepuls) und seine eigene Strategie.
@@ -57,6 +63,12 @@ Regeln:
 - Plane die Mahlzeiten um die Trainingszeiten herum, inklusive Verpflegung während langer Einheiten.
 - Rezepte mit realistischen Mengen für die angegebene Portionszahl, einfachen Zutaten aus dem deutschen Supermarkt und klaren Schritten. Makros pro Portion schätzen.
 - Rezepte dürfen über Tage wiederverwendet werden (Meal Prep), das spart Zeit.
+- Ein Rezeptkatalog der App wird mitgeschickt (Name [Mahlzeit; Situation; Ernährungsform]). Nutze passende Katalogrezepte gern mit genau diesem Namen (Mengen an die Ziele anpassen) und ergänze eigene Rezepte für Abwechslung.
+- Vor harten Einheiten (Schwelle, Intervalle, Double Threshold) kohlenhydratreich und leicht verdaulich; zwischen zwei Einheiten am selben Tag schnell auffüllen (ca. 1 g KH/kg pro Stunde bis zur nächsten Einheit). Vor lockeren Einheiten unter 90 min darf es gelegentlich eiweiß- und gemüsebetont mit wenig Kohlenhydraten sein (Train Low, max. 1–2× pro Woche, nur wenn erlaubt).
+- Mikronährstoffe: über die Tage Eisen (Hülsenfrüchte, Hirse, Haferflocken, rotes Fleisch 1–2×/Woche, mit Vitamin C kombiniert), Calcium, Vitamin D (Fisch, Eier; Winter), Omega-3 (1–2× Fisch/Woche, Leinöl, Walnüsse), Magnesium/Kalium (Vollkorn, Nüsse, Kerne, Kartoffeln) und Folat (grünes Gemüse) gezielt abdecken; vegan: B12-Hinweis.
+- Hitze (Feld hitze): mehr Flüssigkeit und Natrium einplanen (Getränk mit 500–1000 mg Natrium pro Liter, salzige Snacks), kühle, leichte Mahlzeiten; bei angegebener Schweißrate die Trinkmenge pro Stunde daraus ableiten (ca. 70–80 % ersetzen).
+- Während Einheiten über 75 min konkrete Verpflegung pro Stunde angeben (Getränk, Gel, Riegel, Banane).
+- Hinweise: 2–4 kurze, konkrete Tipps zu Timing, Trinken und Mikronährstoffen für genau diese Tage.
 - Antworte auf Deutsch.`;
 
 const FOOD_SCHEMA = {
@@ -89,13 +101,17 @@ function client() {
   return new Anthropic({ apiKey });
 }
 
-async function askClaude({ system, schema, content, effort }) {
+// Modell und Gründlichkeit wählt die App (Einstellungen); nur bekannte Werte zulassen.
+const pickModel = (id) => (AI_MODELS.some((m) => m.id === id) ? id : MODEL);
+const pickEffort = (e, fallback) => (AI_EFFORTS.some(([k]) => k === e) ? e : fallback);
+
+async function askClaude({ system, schema, content, effort, model = MODEL }) {
+  const m = modelById(model);
   const response = await client().beta.messages.stream({
-    model: MODEL,
+    model,
     max_tokens: 64000,
-    // Lehnt das Modell ab, springt automatisch ein passendes Ersatzmodell ein.
-    betas: ['server-side-fallback-2026-07-01'],
-    fallbacks: 'default',
+    // Lehnt das Modell ab, springt automatisch ein passendes Ersatzmodell ein (nicht bei Haiku verfügbar).
+    ...(m.fallback ? { betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' } : {}),
     cache_control: { type: 'ephemeral' },
     system,
     output_config: { effort, format: { type: 'json_schema', schema } },
@@ -107,21 +123,23 @@ async function askClaude({ system, schema, content, effort }) {
   if (response.stop_reason === 'refusal') throw httpError(422, 'Die KI hat die Anfrage abgelehnt.');
   if (response.stop_reason === 'max_tokens') throw httpError(502, 'Antwort wurde abgeschnitten.');
   const text = response.content.filter((b) => b.type === 'text').map((b) => b.text).join('');
-  return { ...JSON.parse(text), model: response.model };
+  const u = response.usage || {};
+  const usage = { input: u.input_tokens || 0, output: u.output_tokens || 0, cacheRead: u.cache_read_input_tokens || 0, cacheWrite: u.cache_creation_input_tokens || 0 };
+  return { ...JSON.parse(text), model: response.model, usage, costUsd: costOf(response.model, usage) };
 }
 
 async function coach(body) {
-  const { daten, frage } = body;
+  const { daten, frage, model, effort } = body;
   if (!daten) throw httpError(400, 'Trainingsdaten fehlen');
   const content = `Trainingsdaten (JSON):\n${JSON.stringify(daten)}\n\n${frage ? `Frage des Athleten: ${frage}` : 'Analysiere mein Training und erstelle den Plan für die nächsten 7 Tage.'}`;
-  return askClaude({ system: COACH_SYSTEM, schema: COACH_SCHEMA, content, effort: 'high' });
+  return askClaude({ system: `${COACH_SYSTEM}\n\nWissensbasis der App (nutze sie; Erkenntnisse aus anderen Sportarten immer mit Übertrag auf den Langlauf; Evidenzstärke ehrlich nennen):\n\n${KNOWLEDGE}`, schema: COACH_SCHEMA, content, effort: pickEffort(effort, 'high'), model: pickModel(model) });
 }
 
 async function food(body) {
-  const { tage, vorlieben } = body;
+  const { tage, vorlieben, model, effort } = body;
   if (!tage?.length) throw httpError(400, 'Tage fehlen');
-  const content = `Tagesziele und Training (JSON):\n${JSON.stringify(tage)}\n\nVorlieben und Rahmen:\n${JSON.stringify(vorlieben || {})}\n\nErstelle den Ernährungsplan mit Rezepten und Einkaufsliste.`;
-  return askClaude({ system: FOOD_SYSTEM, schema: FOOD_SCHEMA, content, effort: 'medium' });
+  const content = `Tagesziele und Training (JSON):\n${JSON.stringify(tage)}\n\nVorlieben und Rahmen:\n${JSON.stringify(vorlieben || {})}${Array.isArray(body.katalog) ? `\n\nRezeptkatalog der App:\n${body.katalog.slice(0, 150).map((x) => String(x).slice(0, 160)).join('\n')}` : ''}\n\nErstelle den Ernährungsplan mit Rezepten und Einkaufsliste.`;
+  return askClaude({ system: FOOD_SYSTEM, schema: FOOD_SCHEMA, content, effort: pickEffort(effort, 'medium'), model: pickModel(model) });
 }
 
 const routes = { '/api/coach': coach, '/api/ernaehrung': food };

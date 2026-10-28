@@ -1,15 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check, Copy } from 'lucide-react';
-import { useData, update, getSeries, deleteSeries, uid } from '../lib/store.js';
-import { today, weeks, mondayOf, buildActivity, evaluate, estimatePlanLoad, matchPlan, compliance } from '../lib/activities.js';
+import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check, Copy, Scissors, Undo2, CalendarClock, CalendarCheck, Wand2, Download } from 'lucide-react';
+import { useData, update, getData, getSeries, getLocalSeries, putSeries, uid } from '../lib/store.js';
+import { today, weeks, mondayOf, buildActivity, evaluate, estimatePlanLoad, matchPlan, compliance, cropActivity, localDate, reevaluate } from '../lib/activities.js';
 import { addDays, ZONES, cleanSeries } from '../lib/metrics.js';
-import { SPORTS, sportLabel } from '../lib/sports.js';
-import { importFiles } from '../lib/sync.js';
+import { SPORTS, sportLabel, guessSport } from '../lib/sports.js';
+import { recomputeAll } from '../lib/recompute.js';
+import { importFiles, deleteActivities, mapPolarSport, askTempoGroups } from '../lib/sync.js';
+import { deleteRemoteSeries } from '../lib/cloud-sync.js';
 import { ZoneWeeks, ZoneBar, LineChart, ZONE_COLORS } from './charts.jsx';
 import { Sheet, Seg, fmtDuration, fmtNum, fmtDate, fmtKm, toast } from './common.jsx';
 import { Season, Races } from './season.jsx';
 import { Workouts } from './workouts.jsx';
 import { durationOf, workoutLoad, mainZone, describe } from '../lib/workouts.js';
+import { ScheduleSheet, AdaptCard, WeekReviewSheet } from './week.jsx';
+import { slotDay, freeMinutes, hasSchedule, fmtTime, weekPeriod } from '../lib/week-adapt.js';
 import { LapsCard } from './laps.jsx';
 import { ActivityChart } from './activity-chart.jsx';
 import { fmtPace } from '../lib/laps.js';
@@ -21,7 +25,15 @@ export function Training({ openActivity, openAdd }) {
   const [view, setView] = useState('week');
   const [monday, setMonday] = useState(mondayOf(t));
   const [planItem, setPlanItem] = useState(null);
-  const sorted = useMemo(() => [...activities].sort((a, b) => b.start.localeCompare(a.start)), [activities]);
+  const [schedOpen, setSchedOpen] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const sched = hasSchedule(settings.schedule) ? settings.schedule : null;
+  const [sportFilter, setSportFilter] = useState('');
+  const sorted = useMemo(() => [...activities].filter((a) => !sportFilter || a.sport === sportFilter).sort((a, b) => b.start.localeCompare(a.start)), [activities, sportFilter]);
+  // Nummern für „Sonstiges“ nach Datum (älteste zuerst): bleiben stabil, auch wenn neue Einheiten dazukommen.
+  const otherNo = useMemo(() => (sportFilter === 'other' ? new Map([...sorted].sort((a, b) => a.start.localeCompare(b.start)).map((a, i) => [a.id, i + 1])) : null), [sorted, sportFilter]);
+  // Nur Sportarten anbieten, die tatsächlich vorkommen (mit Anzahl), „Sonstiges“ zum Aufräumen.
+  const sportCounts = useMemo(() => activities.reduce((m, a) => ({ ...m, [a.sport]: (m[a.sport] || 0) + 1 }), {}), [activities]);
   const w12 = useMemo(() => weeks(activities, 12, t), [activities, t]);
   const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
   const wk = weeks(activities.filter((a) => a.date >= monday && a.date <= days[6]), 1, days[6])[0];
@@ -48,16 +60,19 @@ export function Training({ openActivity, openAdd }) {
             <b style={{ flex: 'none' }}>{fmtDate(monday, { day: 'numeric', month: 'short' })} – {fmtDate(days[6], { day: 'numeric', month: 'short' })}</b>
             <button className="ghost" style={{ flex: 'none' }} onClick={() => setMonday(addDays(monday, 7))} aria-label="Nächste Woche"><ChevronRight /></button>
           </div>
+          {(() => { const wp = weekPeriod(monday, settings.schedule); return wp && <div className="notice">{wp.label}: {wp.days} Tag(e) diese Woche · Umfang ca. {Math.round(wp.factor * 100)} %</div>; })()}
+          {monday === mondayOf(t) && <AdaptCard />}
           <div className="week">
-            {days.map((d) => (
+            {days.map((d) => { const open = plan.filter((p) => p.date === d && !p.done && !(d <= t && matchPlan(p, activities))); const slot = sched ? slotDay(d, open, sched) : null; return (
               <div key={d} className={`day${d === t ? ' today' : ''}`} onClick={(e) => e.target === e.currentTarget && setPlanItem({ date: d })}>
                 <b onClick={() => setPlanItem({ date: d })}>{fmtDate(d, { weekday: 'short', day: 'numeric' })}</b>
                 {activities.filter((a) => a.date === d).map((a) => <div key={a.id} className="a" onClick={() => openActivity(a)}>{Math.round(a.durationS / 60)}′ {sportLabel(a.sport)}</div>)}
-                {plan.filter((p) => p.date === d && !p.done && !(d <= t && matchPlan(p, activities))).map((p) => <div key={p.id} className={`p${d < t ? ' missed' : ''}`} onClick={() => setPlanItem(p)}>{p.minutes}′ {p.title || sportLabel(p.sport)}</div>)}
+                {open.map((p) => <div key={p.id} className={`p${d < t ? ' missed' : ''}`} style={slot?.overflow.includes(p.id) && d >= t ? { borderColor: 'var(--bad)' } : undefined} onClick={() => setPlanItem(p)}>{slot?.slots[p.id] && d >= t && <span style={{ display: 'block', fontWeight: 700 }}>{fmtTime(slot.slots[p.id].from)}</span>}{p.minutes}′ {p.title || sportLabel(p.sport)}</div>)}
+                {sched && d >= t && <div className="muted" style={{ fontSize: 11 }}>frei {fmtNum(freeMinutes(d, sched) / 60, 1)} h</div>}
               </div>
-            ))}
+            ); })}
           </div>
-          <p className="muted small">Tippe auf einen Tag, um eine Einheit zu planen. Gestrichelt = geplant, durchgestrichen = verpasst.</p>
+          <p className="muted small">Tippe auf einen Tag, um eine Einheit zu planen. Gestrichelt = geplant, durchgestrichen = verpasst.{sched ? ' Uhrzeit = Vorschlag in deiner freien Zeit, rot umrandet = passt nicht in den Tag.' : ''}</p>
           <div className="stats">
             <div><b>{fmtNum(comp.actualMin / 60, 1)}<small className="muted">/{fmtNum(comp.plannedMin / 60, 1)}</small></b><span>Stunden Ist/Soll</span></div>
             <div><b>{fmtNum(comp.actualLoad)}<small className="muted">/{fmtNum(comp.plannedLoad)}</small></b><span>Belastung Ist/Soll</span></div>
@@ -66,6 +81,8 @@ export function Training({ openActivity, openAdd }) {
           <div className="row">
             <button className="secondary" onClick={() => setPlanItem({ date: days.find((d) => d >= t) || days[0] })}><Plus size={17} />Einheit planen</button>
             <button className="secondary" onClick={copyLastWeek}><Copy size={17} />Vorwoche kopieren</button>
+            <button className="secondary" onClick={() => setSchedOpen(true)}><CalendarClock size={17} />Alltag</button>
+            {monday <= t && <button className="secondary" onClick={() => setReviewOpen(true)}><CalendarCheck size={17} />Rückblick</button>}
           </div>
           <div className="card">
             <h3 style={{ marginTop: 0 }}>Zonen dieser Woche</h3>
@@ -77,12 +94,18 @@ export function Training({ openActivity, openAdd }) {
 
       {view === 'list' && (
         <>
+          <label>Sportart</label>
+          <select value={sportFilter} onChange={(e) => setSportFilter(e.target.value)}>
+            <option value="">Alle ({activities.length})</option>
+            {Object.entries(sportCounts).sort((x, y) => y[1] - x[1]).map(([id, n]) => <option key={id} value={id}>{sportLabel(id)} ({n})</option>)}
+          </select>
+          {sportFilter === 'other' && <><OtherTools list={sorted} /><OtherGroups list={sorted} /></>}
           {!sorted.length && <p className="muted">Noch keine Einheiten.</p>}
           {sorted.map((a) => (
             <button key={a.id} className="item" onClick={() => openActivity(a)}>
               <div className="grow">
-                <b>{a.title || sportLabel(a.sport)}</b>
-                <p>{fmtDate(a.date)} · {fmtDuration(a.durationS)} h {fmtKm(a.distanceM) && '· ' + fmtKm(a.distanceM)}{a.avgHr ? ` · Ø ${a.avgHr}` : ''} · {a.source}</p>
+                <b>{otherNo && <span className="muted">#{otherNo.get(a.id)} </span>}{a.title || sportLabel(a.sport)}</b>
+                <p>{fmtDate(a.date, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} · {fmtDuration(a.durationS)} h {fmtKm(a.distanceM) && '· ' + fmtKm(a.distanceM)}{a.avgHr ? ` · Ø ${a.avgHr}` : ''} · {a.source}</p>
                 <ZoneBar zones={a.zones} />
               </div>
               <span className="num" title={a.load == null ? 'Schwellenwerte fehlen' : undefined}>{a.load == null ? '?' : fmtNum(a.load)}</span>
@@ -101,6 +124,8 @@ export function Training({ openActivity, openAdd }) {
       {view === 'season' && <Season />}
       {view === 'races' && <Races openActivity={openActivity} />}
       {view === 'workouts' && <Workouts />}
+      {schedOpen && <ScheduleSheet onClose={() => setSchedOpen(false)} />}
+      {reviewOpen && <WeekReviewSheet monday={monday} onClose={() => setReviewOpen(false)} />}
       {planItem && <PlanEditor item={planItem} onClose={() => setPlanItem(null)} />}
     </>
   );
@@ -165,23 +190,66 @@ export function ActivitySheet({ activity, onClose }) {
   const [a, setA] = useState(activity);
   const [series, setSeries] = useState(null);
   useEffect(() => { if (activity.hasSeries) getSeries(activity.id).then((x) => setSeries(cleanSeries(x))); }, [activity]);
-  const save = () => {
-    const next = activity.hasSeries ? { ...a } : { ...a, ...evaluate({ ...a, durationS: a.durationS }, settings) };
-    update((d) => ({ ...d, activities: d.activities.map((x) => (x.id === a.id ? next : x)) }));
-    toast('Gespeichert');
+  // Datum/Uhrzeit (und ohne Verlauf auch Dauer, Distanz, Ø Puls) lassen sich nachträglich ändern.
+  const tz = settings.timezone || 'Europe/Berlin';
+  const [when, setWhen] = useState(() => ({ date: activity.date, time: new Date(activity.start).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) }));
+  const save = async () => {
+    let next = { ...a };
+    if (when.date !== activity.date || when.time !== new Date(activity.start).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })) {
+      next.start = new Date(`${when.date}T${when.time}:00`).toISOString();
+      next.date = localDate(next.start, tz);
+    }
+    // Titel geändert und weitere Einheiten heißen genauso (z. B. Concept2-Aufbau): alle umbenennen und als Regel merken.
+    const same = activity.title && next.title !== activity.title ? getData().activities.filter((x) => x.id !== a.id && x.title === activity.title) : [];
+    const renameAll = same.length > 0 && confirm(`${same.length} weitere Einheit(en) heißen „${activity.title}“. Alle in „${next.title}“ umbenennen und künftige Importe automatisch so nennen?`);
+    if (!activity.hasSeries) next = { ...next, elapsedS: next.durationS, ...evaluate({ ...next, durationS: next.durationS }, settings) };
+    else if (next.sport !== activity.sport) { const s5 = await getSeries(a.id); if (s5) next = reevaluate(next, settings, s5); } // Sportart bestimmt FTP und Watt-Belastung
+    update((d) => ({
+      ...d,
+      settings: renameAll ? { ...d.settings, titleRules: { ...(d.settings.titleRules || {}), [activity.title]: next.title } } : d.settings,
+      activities: d.activities.map((x) => (x.id === a.id ? next : renameAll && x.title === activity.title ? { ...x, title: next.title } : x)),
+    }));
+    toast(renameAll ? `${same.length + 1} Einheiten umbenannt` : 'Gespeichert');
     onClose();
   };
   const remove = async () => {
-    if (!confirm('Einheit löschen?')) return;
-    await deleteSeries(a.id);
-    update((d) => ({ ...d, activities: d.activities.filter((x) => x.id !== a.id) }));
+    if (!confirm('Einheit löschen? Sie verschwindet auch auf deinen anderen Geräten.')) return;
+    await deleteActivities([a.id]);
+    toast('Gelöscht');
+    onClose();
+  };
+  // Zuschneiden auf den im Diagramm gewählten Bereich (Ziehen oder Regler).
+  const [sel, setSel] = useState(null);
+  const n = series?.hr?.length || series?.power?.length || 0;
+  const partial = sel && n && (sel[0] > 0 || sel[1] < n - 1);
+  const crop = async () => {
+    const raw = await getLocalSeries(a.id) || await getSeries(a.id);
+    if (!raw) return toast('Verlauf nicht gefunden');
+    const mins = (x) => fmtDuration(x * 5);
+    if (!confirm(`Auf ${mins(sel[0])}–${mins(sel[1] + 1)} h zuschneiden? Alles außerhalb wird entfernt (auf diesem Gerät rückgängig zu machen).`)) return;
+    if (!a.original) await putSeries(`${a.id}:original`, raw);
+    const { activity: next, series: cut } = cropActivity({ ...a, ...activity, title: a.title, notes: a.notes, rpe: a.rpe, lactate: a.lactate, sport: a.sport }, raw, sel[0], sel[1], settings);
+    await putSeries(a.id, cut);
+    await deleteRemoteSeries([a.id]).catch(() => {}); // neu hochladen
+    update((d) => ({ ...d, activities: d.activities.map((x) => (x.id === a.id ? next : x)) }));
+    toast(`Zugeschnitten · ${fmtDuration(next.durationS)} h`);
+    onClose();
+  };
+  const uncrop = async () => {
+    const orig = await getLocalSeries(`${a.id}:original`);
+    if (!orig) return toast('Original nur auf dem Gerät gespeichert, auf dem zugeschnitten wurde');
+    const back = { ...a.original, title: a.title, notes: a.notes, rpe: a.rpe, lactate: a.lactate, sport: a.sport, original: undefined };
+    await putSeries(a.id, orig);
+    await deleteRemoteSeries([a.id]).catch(() => {});
+    update((d) => ({ ...d, activities: d.activities.map((x) => (x.id === a.id ? back : x)) }));
+    toast('Original wiederhergestellt');
     onClose();
   };
   return (
     <Sheet title={a.title || sportLabel(a.sport)} onClose={onClose}>
-      <p className="muted">{fmtDate(a.date, { weekday: 'long', day: 'numeric', month: 'long' })} · {new Date(a.start).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} · Quelle: {a.source}</p>
+      <p className="muted">{fmtDate(a.date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} · {new Date(a.start).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} · Quelle: {a.source}</p>
       <div className="stats">
-        <div><b>{fmtNum(a.load)}</b><span>Belastung ({{ power: 'Watt', hr: 'Puls', hr_avg: 'Ø Puls', rpe: 'RPE' }[a.loadSource] || '–'})</span></div>
+        <div><b>{fmtNum(a.load)}</b><span>Belastung ({{ power: 'Watt', hr: 'Puls', hr_avg: 'Ø Puls', rpe: 'RPE', polar: 'Polar', lucia: 'Zonen' }[a.loadSource] || '–'})</span></div>
         <div><b>{fmtDuration(a.durationS)}</b><span>Dauer</span></div>
         <div><b>{a.distanceM ? fmtNum(a.distanceM / 1000, 1) : '–'}</b><span>km</span></div>
         <div><b>{a.avgHr ?? '–'}/{a.maxHr ?? '–'}</b><span>Ø/max Puls</span></div>
@@ -199,9 +267,21 @@ export function ActivitySheet({ activity, onClose }) {
       </div>
       {a.load == null && (() => { const at = athleteOf(settings, a.sport); const miss = [!at.hrMax && 'Maximalpuls', !at.hrRest && 'Ruhepuls', !at.lthr && 'Schwellenpuls', !at.ftp && 'FTP'].filter(Boolean); return <div className="notice">Für die Belastung fehlen: {miss.join(', ')}. Unter Mehr → Einstellungen → Athlet eintragen, dann rechnet die App alle Einheiten neu.</div>; })()}
       <ZoneBar zones={a.zones} />
-      {series && <ActivityChart series={series} sport={a.sport} laps={a.laps} />}
-      <LapsCard laps={a.laps} erg={['skierg', 'row'].includes(a.sport) ? 'erg' : a.sport === 'bikeerg' ? 'bike' : null} />
+      {series && <ActivityChart series={series} sport={a.sport} laps={a.laps?.length ? a.laps : a.autoLaps} onSelect={setSel} />}
+      {series && <div className="row" style={{ marginTop: 6 }}>
+        <button className="secondary" disabled={!partial} onClick={crop} title="Im Diagramm einen Bereich ziehen oder die Regler verschieben"><Scissors size={16} />{partial ? `Auf Auswahl zuschneiden (${fmtDuration(sel[0] * 5)}–${fmtDuration((sel[1] + 1) * 5)})` : 'Zuschneiden: Bereich im Diagramm wählen'}</button>
+        {a.original && <button className="ghost" style={{ flex: 'none' }} onClick={uncrop}><Undo2 size={16} />Original</button>}
+      </div>}
+      <LapsCard laps={a.laps} autoLaps={a.autoLaps} sport={a.sport} erg={['skierg', 'row'].includes(a.sport) ? 'erg' : a.sport === 'bikeerg' ? 'bike' : null} />
       <div className="grid2">
+        <div><label>Datum</label><input type="date" value={when.date} onChange={(e) => setWhen({ ...when, date: e.target.value })} /></div>
+        <div><label>Uhrzeit</label><input type="time" value={when.time} onChange={(e) => setWhen({ ...when, time: e.target.value })} /></div>
+        {!activity.hasSeries && <>
+          <div><label>Dauer (Minuten)</label><input type="number" value={Math.round((a.durationS || 0) / 60)} onChange={(e) => setA({ ...a, durationS: (Number(e.target.value) || 0) * 60 })} /></div>
+          <div><label>Distanz (km)</label><input inputMode="decimal" value={a.distanceM ? String(Math.round(a.distanceM / 100) / 10).replace('.', ',') : ''} onChange={(e) => setA({ ...a, distanceM: e.target.value ? Number(e.target.value.replace(',', '.')) * 1000 : null })} /></div>
+          <div><label>Ø Puls</label><input type="number" value={a.avgHr ?? ''} onChange={(e) => setA({ ...a, avgHr: e.target.value ? Number(e.target.value) : null })} /></div>
+          {a.sport !== 'strength' && <div><label>Hauptzone</label><select value={a.zone || ''} onChange={(e) => setA({ ...a, zone: e.target.value || null })}><option value="">–</option>{ZONES.map((z) => <option key={z.id} value={z.id}>{z.label}</option>)}</select></div>}
+        </>}
         <div><label>Titel</label><input value={a.title} onChange={(e) => setA({ ...a, title: e.target.value })} placeholder="z. B. 5×6 min Schwelle" /></div>
         <div><label>Sportart</label><select value={a.sport} onChange={(e) => setA({ ...a, sport: e.target.value })}>{SPORTS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}</select></div>
         <div><label>RPE (1–10)</label><input type="number" min="1" max="10" step="0.5" value={a.rpe ?? ''} onChange={(e) => setA({ ...a, rpe: e.target.value ? Number(e.target.value) : null })} /></div>
@@ -273,5 +353,111 @@ export function AddSheet({ onClose }) {
         </>
       )}
     </Sheet>
+  );
+}
+
+// Werkzeuge für Einheiten mit Sportart „Sonstiges“: automatisch erkennen oder alle sichtbaren auf eine Sportart setzen.
+// Sonstiges nach Gruppen (Quelle + Titel): eine Gruppe auf einmal zuordnen – bei vielen Einheiten schneller als einzeln.
+const median = (xs) => { if (!xs.length) return null; const s = [...xs].sort((a, b) => a - b); return s[Math.floor(s.length / 2)]; };
+function OtherGroups({ list }) {
+  const [busy, setBusy] = useState(false);
+  const [pick, setPick] = useState({});
+  const groups = useMemo(() => {
+    const m = new Map();
+    for (const a of list) {
+      const title = (a.title || '').trim() || '(ohne Titel)';
+      const source = a.source || 'manuell';
+      const key = `${source}|${title}`;
+      if (!m.has(key)) m.set(key, { key, source, title, items: [] });
+      m.get(key).items.push(a);
+    }
+    return [...m.values()].map((g) => {
+      const kmh = g.items.map((a) => (a.distanceM && a.durationS ? (a.distanceM / a.durationS) * 3.6 : null)).filter((v) => v > 0);
+      const hr = g.items.map((a) => a.avgHr).filter(Boolean);
+      return { ...g, n: g.items.length, kmh: median(kmh), hr: median(hr) };
+    }).sort((a, b) => b.n - a.n);
+  }, [list]);
+  const apply = async (g) => {
+    const to = pick[g.key];
+    if (!to) return;
+    setBusy(true);
+    const polarIds = [...new Set(g.items.map((a) => a.polarSportId))];
+    if (polarIds.length === 1 && polarIds[0] != null) {
+      // Polar-Sportnummer: als Regel speichern, gilt für alle Einheiten mit dieser Nummer und für künftige Importe.
+      toast(`Polar-Sportnummer ${polarIds[0]} → ${sportLabel(to)} gespeichert`);
+      await mapPolarSport(polarIds[0], to);
+    } else {
+      const ids = new Set(g.items.map((a) => a.id));
+      update((d) => ({ ...d, activities: d.activities.map((a) => (ids.has(a.id) ? { ...a, sport: to } : a)) }));
+      toast(`${g.n} Einheiten auf ${sportLabel(to)} gesetzt. Belastung wird neu berechnet …`);
+      await recomputeAll();
+    }
+    setBusy(false);
+  };
+  return (
+    <div className="card">
+      <b className="small">Sonstiges nach Gruppen</b>
+      <p className="muted small">Gleicher Titel und gleiche Quelle – Tempo und Puls (Median) helfen bei der Zuordnung: Rollski ca. 10–16 km/h, Rad meist über 20 km/h.</p>
+      {groups.slice(0, 60).map((g) => (
+        <div key={g.key} className="row" style={{ flexWrap: 'nowrap', alignItems: 'center', gap: 6, marginTop: 6 }}>
+          <div className="grow small" style={{ minWidth: 0 }}>
+            <b>{g.n}× {g.title}</b>
+            <div className="muted">{g.source}{g.kmh ? ` · Ø ${String(Math.round(g.kmh * 10) / 10).replace('.', ',')} km/h` : ''}{g.hr ? ` · Puls ${Math.round(g.hr)}` : ''}</div>
+          </div>
+          <select value={pick[g.key] || ''} onChange={(e) => setPick({ ...pick, [g.key]: e.target.value })} style={{ flex: 'none', width: 130 }}>
+            <option value="">–</option>
+            {SPORTS.filter((x) => x.id !== 'other').map((x) => <option key={x.id} value={x.id}>{x.label}</option>)}
+          </select>
+          <button className="secondary" style={{ flex: 'none' }} disabled={busy || !pick[g.key]} onClick={() => apply(g)}>Setzen</button>
+        </div>
+      ))}
+      {groups.length > 60 && <p className="muted small">Weitere {groups.length - 60} Gruppen – nach dem Setzen der ersten rücken sie nach oben.</p>}
+    </div>
+  );
+}
+
+function OtherTools({ list }) {
+  const [busy, setBusy] = useState(false);
+  const [target, setTarget] = useState('');
+  const recognizable = list.map((a) => ({ a, to: guessSport(a) })).filter((x) => x.to !== 'other');
+  const apply = async (pairs, label) => {
+    if (!pairs.length) return toast('Nichts zu ändern');
+    setBusy(true);
+    const map = new Map(pairs.map((x) => [x.a.id, x.to]));
+    update((d) => ({ ...d, activities: d.activities.map((a) => (map.has(a.id) ? { ...a, sport: map.get(a.id) } : a)) }));
+    toast(`${pairs.length} Einheiten ${label}. Belastung wird neu berechnet …`);
+    await recomputeAll();
+    setBusy(false);
+  };
+  // Liste aller „Sonstiges“-Einheiten als JSON zum Durchsehen (ohne Kurven und Verläufe).
+  const exportList = () => {
+    const rows = list.map((a) => ({ id: a.id, date: a.date, start: a.start, title: a.title || '', source: a.source, importFormat: a.importFormat || null, polarSportId: a.polarSportId ?? null, durationMin: Math.round((a.durationS || 0) / 60), distanceKm: a.distanceM ? Math.round(a.distanceM / 100) / 10 : null, avgHr: a.avgHr ?? null, notes: a.notes || '' }));
+    const blob = new Blob([JSON.stringify(rows, null, 1)], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `sonstiges-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+  };
+  const removeAll = async () => {
+    if (!list.length) return;
+    if (!confirm(`${list.length} Sonstiges-Einheiten löschen? Notizen, RPE und Laktat dieser Einheiten gehen verloren. Das gilt auch für Supabase und andere Geräte.`)) return;
+    setBusy(true);
+    try { toast(`${await deleteActivities(list.map((a) => a.id))} Einheiten gelöscht`); } catch (e) { toast(e.message); }
+    setBusy(false);
+  };
+  return (
+    <div className="card">
+      <b className="small">Sonstiges zuordnen</b>
+      <p className="muted small">{recognizable.length} von {list.length} lassen sich aus Titel oder Notiz erkennen.</p>
+      <button className="secondary wide" disabled={busy || !recognizable.length} onClick={() => apply(recognizable, 'erkannt und umgestellt')}><Wand2 size={16} />Aus Titel erkennen ({recognizable.length})</button>
+      <button className="secondary wide" style={{ marginTop: 8 }} disabled={!list.length} onClick={() => askTempoGroups(list)}><Wand2 size={16} />Nach Tempo und Jahreszeit fragen</button>
+      <button className="secondary wide" style={{ marginTop: 8 }} disabled={!list.length} onClick={exportList}><Download size={16} />Liste als JSON ({list.length})</button>
+      <button className="ghost wide" style={{ marginTop: 8, color: '#ffc9bf' }} disabled={busy || !list.length} onClick={removeAll}><Trash2 size={16} />Alle {list.length} Sonstiges löschen</button>
+      <label style={{ marginTop: 10 }}>Oder alle {list.length} sichtbaren auf eine Sportart setzen</label>
+      <div className="row" style={{ flexWrap: 'nowrap' }}>
+        <select value={target} onChange={(e) => setTarget(e.target.value)}><option value="">–</option>{SPORTS.filter((x) => x.id !== 'other').map((x) => <option key={x.id} value={x.id}>{x.label}</option>)}</select>
+        <button className="secondary" style={{ flex: 'none' }} disabled={busy || !target || !list.length} onClick={() => apply(list.map((a) => ({ a, to: target })), `auf ${sportLabel(target)} gesetzt`)}>Setzen</button>
+      </div>
+    </div>
   );
 }

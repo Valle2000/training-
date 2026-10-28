@@ -8,6 +8,8 @@ import { sportLabel } from '../lib/sports.js';
 import { kiPost } from '../lib/ai.js';
 import { fmtDate, toast, Seg } from './common.jsx';
 import { TOPICS, FAQ, EVIDENCE_LABEL } from '../lib/knowledge.js';
+import { AiQuality, AiCost, aiChoice, logAiCost, budgetOk } from './ai-quality.jsx';
+import { requestKey } from '../lib/ai-models.js';
 
 export const DEFAULT_STRATEGY = 'Aktuell ca. 15 h Ausdauer pro Woche plus 2 Krafteinheiten (zusammen ca. 2 h). Bald möchte ich Double-Threshold-Tage einbauen und später auch etwas mehr Intensität.';
 
@@ -33,7 +35,7 @@ function Knowledge() {
   const list = TOPICS.filter((t) => (!cat || t.cat === cat) && (!q || JSON.stringify(t).toLowerCase().includes(q.toLowerCase())));
   return (
     <>
-      <p className="muted" style={{ marginTop: 12 }}>Kernaussagen aus der Trainingswissenschaft mit Fokus Langlauf, inklusive aktueller Studien (2023–2026). Jede Aussage hat eine Quelle und eine Einschätzung, wie belastbar sie ist.</p>
+      <p className="muted" style={{ marginTop: 12 }}>Kernaussagen aus der Trainingswissenschaft mit Fokus Langlauf, inklusive aktueller Studien (2023–2026) und übertragbarer Erkenntnisse aus Laufen, Radsport, Rudern und Triathlon. Jede Aussage hat eine Quelle und eine Einschätzung, wie belastbar sie ist.</p>
       <div className="row"><Search size={18} style={{ flex: 'none' }} /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Suchen, z. B. Schwelle, HRV, Eiweiß" /></div>
       <div className="chips"><button className={`chip${!cat ? ' on' : ''}`} onClick={() => setCat('')}>Alle</button>{cats.map((c) => <button key={c} className={`chip${cat === c ? ' on' : ''}`} onClick={() => setCat(c)}>{c}</button>)}</div>
       {list.map((t) => (
@@ -72,8 +74,9 @@ function CoachAi() {
   const [openId, setOpenId] = useState(coach.at(-1)?.id);
   const current = coach.find((c) => c.id === openId);
 
-  const run = async () => {
-    setBusy(true); setError('');
+  // force: trotzdem neu analysieren (sonst wird bei gleichen Daten und Frage die letzte Antwort gezeigt).
+  const run = async (force = false) => {
+    setError('');
     update((d) => ({ ...d, settings: { ...d.settings, strategy } }));
     try {
       const data = getData();
@@ -86,8 +89,15 @@ function CoachAi() {
       const start = ss.start || seasonStart(t);
       const wk = seasonPlan(data.races, { start, end: ss.end || addDays(addDays(start, 365), -1), baseHours: base, peakHours: peak });
       daten.saison = wk.filter((w) => w.to >= t).slice(0, 4).map((w) => ({ ab: w.from, phase: PHASES[w.phase].label, zielStunden: w.targetHours }));
-      const result = await kiPost('/api/coach', { daten, frage: question });
-      const entry = { id: uid(), date: t, question, result };
+      const choice = aiChoice(data.settings, 'coach');
+      const key = requestKey({ daten, frage: question, ...choice });
+      const same = coach.find((c) => c.key === key);
+      if (same && !force) { setOpenId(same.id); toast('Gleiche Daten und Frage: letzte Antwort gezeigt – keine neue Anfrage, keine Kosten.'); return; }
+      if (!budgetOk(data.settings, 'coach', choice.model, choice.effort, t)) return;
+      setBusy(true);
+      const result = await kiPost('/api/coach', { daten, frage: question, ...choice });
+      logAiCost('coach', result, t);
+      const entry = { id: uid(), date: t, question, result, key };
       update((d) => ({ ...d, coach: [...d.coach, entry].slice(-20) }));
       setOpenId(entry.id);
       setQuestion('');
@@ -109,7 +119,9 @@ function CoachAi() {
       <textarea value={strategy} onChange={(e) => setStrategy(e.target.value)} rows={4} />
       <label>Frage (optional)</label>
       <textarea value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="z. B. Wie baue ich den ersten Double-Threshold-Tag ein? Lieber Rollski oder Laufen?" rows={2} />
-      <button className="primary wide" onClick={run} disabled={busy} style={{ marginTop: 12 }}><BrainCircuit size={18} className={busy ? 'spin' : ''} />{busy ? 'Analysiere … (bis zu 1–2 Minuten)' : 'Analyse und Wochenplan'}</button>
+      <AiQuality kind="coach" t={today(settings.timezone)} />
+      <button className="primary wide" onClick={() => run(false)} disabled={busy} style={{ marginTop: 12 }}><BrainCircuit size={18} className={busy ? 'spin' : ''} />{busy ? 'Analysiere … (bis zu 1–2 Minuten)' : 'Analyse und Wochenplan'}</button>
+      {current && <button className="ghost wide" style={{ marginTop: 6 }} onClick={() => run(true)} disabled={busy}>Trotzdem neu analysieren (kostet erneut)</button>}
       {error && <div className="notice" style={{ color: 'var(--bad)' }}>{error}</div>}
 
       {current && <Result entry={current} onAdopt={adopt} />}
@@ -133,6 +145,7 @@ function Result({ entry, onAdopt }) {
     <div className="card">
       <p className="muted small" style={{ marginTop: 0 }}>{fmtDate(entry.date)} {entry.question && `· „${entry.question}“`}</p>
       <p><b>{r.zusammenfassung}</b></p>
+      <AiCost result={r} />
       {r.warnungen?.length > 0 && <div className="notice" style={{ background: 'var(--badbg)', color: 'var(--bad)' }}>{r.warnungen.map((w, i) => <div key={i}>⚠ {w}</div>)}</div>}
       {r.analyse?.map((a, i) => (
         <div key={i} style={{ borderTop: '1px solid var(--line)', padding: '8px 0' }}>

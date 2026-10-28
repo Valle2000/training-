@@ -24,7 +24,7 @@ test('Fallback Durchschnittspuls und RPE', () => {
 });
 test('Zonen nach % HFmax', () => {
   const z = zoneSeconds([100, 120, 150, 160, 170, 180], 190);
-  assert.deepEqual(z, { I1: 1, I2: 1, I3: 1, I4: 1, I5: 1 }); // 100 liegt unter I1
+  assert.deepEqual(z, { I1: 2, I2: 1, I3: 1, I4: 1, I5: 1 }); // I1 ist nach unten offen: 100 zählt als I1
 });
 test('Fitness konvergiert, Form nutzt Vortag', () => {
   const loads = {};

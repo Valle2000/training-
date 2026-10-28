@@ -1,8 +1,9 @@
 // Einheiten anlegen, Dubletten erkennen, Auswertungen über Tage und Wochen.
-import { computeLoad, zoneSeconds, performanceCurve, addDays, ZONES, seriesStats, cleanSeries } from './metrics.js';
+import { computeLoad, luciaLoad, zoneSeconds, performanceCurve, addDays, ZONES, seriesStats, cleanSeries } from './metrics.js';
 import { tolerance, seasonTable } from './longterm.js';
 import { sportById } from './sports.js';
 import { thin } from './series.js';
+import { lapsFromSeries } from './laps.js';
 import { keySessionRows } from './keysessions.js';
 
 // FTP je Sportart: SkiErg und Rudern haben eigene Schwellenleistungen, sonst gilt die Rad-FTP.
@@ -18,20 +19,53 @@ export const today = (tz) => localDate(new Date().toISOString(), tz);
 
 // Gleiche Startminute = gleiche Einheit (z. B. Polar-Uhr und Wahoo zeichnen parallel auf).
 // Bei ±2 min Abweichung und ähnlicher Dauer ebenfalls Dublette.
+// Dieselbe Einheit von zwei Geräten/Quellen (z. B. Polar-Uhr und Wahoo, oder Strava-Kopie): gleicher Anbieter-ID,
+// oder Start innerhalb 2 min bei ähnlicher Dauer (Bewegungszeit oder Gesamtzeit), oder zeitlich zu mindestens 80 %
+// überlappend bei Start innerhalb 15 min (anders gestartet, Pausen unterschiedlich gezählt).
 export function findDuplicate(activities, a) {
   const t = Date.parse(a.start);
+  const lensA = [a.durationS, a.elapsedS].filter((v) => v > 0);
   return activities.find((x) => {
     if (a.source && x.source === a.source && a.externalId && x.externalId === a.externalId) return true;
-    const dt = Math.abs(Date.parse(x.start) - t);
-    return dt < 120000 && Math.abs((x.durationS || 0) - (a.durationS || 0)) < Math.max(300, 0.15 * (a.durationS || 0));
+    const tx = Date.parse(x.start), dt = Math.abs(tx - t);
+    const lensX0 = [x.durationS, x.elapsedS].filter((v) => v > 0);
+    // Concept2-Einheit und Strava-Kopie (Startzeit oft verschoben, Gesamtzeit ähnlich): am selben Tag gleiche Dauer ist dieselbe Einheit.
+    if ((a.source === 'concept2' || x.source === 'concept2') && dt < 3 * 3600000 && lensA.some((la) => lensX0.some((lx) => Math.abs(la - lx) < Math.max(300, 0.1 * la)))) return true;
+    if (dt > 900000) return false;
+    const lensX = [x.durationS, x.elapsedS].filter((v) => v > 0);
+    if (dt < 120000 && lensA.some((la) => lensX.some((lx) => Math.abs(la - lx) < Math.max(300, 0.15 * la)))) return true;
+    const la = Math.max(0, ...lensA), lx = Math.max(0, ...lensX);
+    if (!la || !lx || Math.min(la, lx) / Math.max(la, lx) < 0.6) return false; // Teilstück (z. B. 20 min SkiErg in 1 h) ist keine Dublette
+    const overlap = Math.min(t + la * 1000, tx + lx * 1000) - Math.max(t, tx);
+    return overlap >= 0.8 * Math.min(la, lx) * 1000;
   });
+}
+
+// Bewegungszeit aus dem Tempo: Stillstand bis 2 min (Ampel, kurzes Warten) zählt mit, längerer Stillstand nicht.
+export function movingSeconds(speed, { stopS = 120, minMs = 0.8 } = {}) {
+  let total = 0, stop = 0;
+  for (const v of speed) {
+    if (v != null && v > minMs) {
+      // Kurzer Stopp (unter 2 min) gehört zur Fahrt, ein langer nicht.
+      total += 1 + (stop < stopS ? stop : 0);
+      stop = 0;
+    } else stop++;
+  }
+  return total;
 }
 
 // Belastung, Zonen usw. aus Rohdaten berechnen. raw.series in 1 Hz (optional).
 export function evaluate(raw, settings) {
   const athlete = athleteOf(settings, raw.sport);
   const series = cleanSeries(raw.series);
-  const movingS = series?.hr?.length || raw.durationS || raw.elapsedS || 0;
+  // Dauer wie auf der Uhr (Polar/Garmin/Wahoo-Timer). Ohne Uhrzeit (ältere Importe, GPX) die Gesamtzeit der Datei wie
+  // bei Polar/Strava – Aufzeichnungslücken zählen nicht als Pause. Nur bei sehr langen Unterbrechungen (Gesamtzeit über
+  // 1,5× der aufgezeichneten Zeit, z. B. Einkehr) zählt die aufgezeichnete Zeit. Concept2: Arbeitszeit aus dem Verlauf.
+  const recS = series?.hr?.length || series?.power?.length || 0;
+  // Ohne Gerätezeit: Bewegungszeit aus dem Tempo (Stillstand an Ampeln und Pausen zählt nicht, wie Strava und Polar).
+  const movingFromSpeed = series?.speed?.some((v) => v > 0) ? movingSeconds(series.speed) : null;
+  const movingS = !recS ? raw.durationS || raw.timerS || raw.elapsedS || 0
+    : raw.timerS || movingFromSpeed || (raw.source !== 'concept2' && raw.elapsedS > recS && raw.elapsedS <= recS * 1.5 ? raw.elapsedS : recS);
   const res = computeLoad(athlete, {
     durationS: movingS, power: series?.power, hr: series?.hr, avgHr: raw.avgHr, rpe: raw.rpe,
     kind: raw.sport === 'strength' ? 'strength' : 'endurance', powerSport: !!sportById(raw.sport).power,
@@ -39,10 +73,13 @@ export function evaluate(raw, settings) {
   let zones = series?.hr?.some(Boolean) ? zoneSeconds(series.hr, athlete.hrMax, settings.zoneHr) : null;
   // Ohne Verlauf: ganze Dauer der Zone des Durchschnittspulses bzw. der manuell gewählten Zone zuordnen.
   if (!zones && raw.zone) zones = { I1: 0, I2: 0, I3: 0, I4: 0, I5: 0, [raw.zone]: movingS };
+  // Wahlweise umfangsbetontes Zonenmodell (Einstellungen → Belastungsmodell), wenn Pulszonen vorliegen.
+  const lucia = settings.loadModel === 'lucia' && raw.sport !== 'strength' && zones ? luciaLoad(zones) : null;
   return {
     durationS: movingS,
-    load: res.load != null ? Math.round(res.load * 10) / 10 : null,
-    loadSource: res.source,
+      // Ohne Puls, Watt und RPE: Polars eigene Trainingsbelastung aus dem Export (grobe Näherung).
+    load: lucia != null ? Math.round(lucia * 10) / 10 : res.load != null ? Math.round(res.load * 10) / 10 : raw.externalLoad ?? null,
+    loadSource: lucia != null ? 'lucia' : res.load != null ? res.source : raw.externalLoad != null ? 'polar' : res.source,
     np: res.np ? Math.round(res.np) : null,
     intensity: res.intensity ? Math.round(res.intensity * 100) / 100 : null,
     trimp: res.trimp ? Math.round(res.trimp) : null,
@@ -50,6 +87,8 @@ export function evaluate(raw, settings) {
     // Bestwertkurven, Leistungszonen, kJ, VI, EF, Entkopplung (nur mit Verlauf)
     hrCurve: null, powerCurve: null, powerZones: null, kj: null, vi: null, ef: null, decoupling: null, hrHist: null, powerHist: null, powerHr: null,
     ...(series ? seriesStats(series, { ftp: athlete.ftp, powerSport: !!sportById(raw.sport).power }) : {}),
+    // Automatische Runden: von der Uhr (Polar-Autolaps), sonst aus dem Tempo berechnet (Laufen/Ski 1 km, Rad 5 km).
+    autoLaps: raw.deviceAutoLaps || (series ? distanceSplits(series, raw.sport) : null),
   };
 }
 
@@ -63,21 +102,48 @@ export function buildActivity(raw, settings, extra = {}) {
     id: extra.id || Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
     source: raw.source || 'upload', externalId: raw.externalId ?? null,
     start: raw.start, date: localDate(raw.start, settings.timezone), sport: raw.sport,
-    title: raw.title || '', notes: raw.notes || '', rpe: raw.rpe ?? null, lactate: raw.lactate || '',
+    title: renameTitle(raw.title || '', settings), notes: raw.notes || '', rpe: raw.rpe ?? null, lactate: raw.lactate || '',
     zone: raw.zone || null, elapsedS: raw.elapsedS ?? raw.durationS ?? null,
     distanceM: raw.distanceM ?? null, avgHr: round(raw.avgHr), maxHr: round(raw.maxHr), avgPower: round(raw.avgPower),
     calories: raw.calories ?? null, ascentM: raw.ascentM ?? null, strengthId: raw.strengthId ?? null,
-    laps: raw.laps || null, pace: raw.pace ?? null, spm: raw.spm ?? null, workS: raw.workS ?? null,
+    laps: raw.laps || null, timerS: raw.timerS ?? null, deviceAutoLaps: raw.deviceAutoLaps || null, externalLoad: raw.externalLoad ?? null, pace: raw.pace ?? null, spm: raw.spm ?? null, workS: raw.workS ?? null,
     hasSeries: !!raw.series?.hr?.length, ...ev,
   };
   return { activity, series: raw.series ? thin(raw.series) : null };
 }
 const round = (v) => (v == null ? null : Math.round(v));
 
+// Splits nach Distanz aus dem 1-Hz-Tempoverlauf (m/s): jeder km (Rad: alle 5 km), wie die Autolap-Funktion der Uhr.
+const SPLIT_M = { run: 1000, hike: 1000, xc_skate: 1000, xc_classic: 1000, rollerski_skate: 1000, rollerski_classic: 1000, rollerski: 1000, bike: 5000 };
+export function distanceSplits(series, sport) {
+  const step = SPLIT_M[sport], sp = series?.speed;
+  if (!step || !sp?.some((v) => v > 0)) return null;
+  const bounds = [];
+  let dist = 0, start = 0, next = step;
+  for (let i = 0; i < sp.length; i++) {
+    dist += sp[i] > 0 ? sp[i] : 0;
+    if (dist >= next) { bounds.push({ startS: start, durationS: i + 1 - start, distanceM: step }); start = i + 1; next += step; }
+  }
+  const restM = dist - (next - step);
+  if (restM >= step * 0.2 && sp.length - start > 10) bounds.push({ startS: start, durationS: sp.length - start, distanceM: Math.round(restM) });
+  if (bounds.length < 2) return null;
+  return lapsFromSeries({ hr: series.hr || [], power: series.power || [] }, bounds).map((l) => ({ ...l, pace: (l.durationS / l.distanceM) * 1000 }));
+}
+
+// Umbenennen-Regeln (Einstellungen): z. B. „20:00, 2×20:00/2:00r, 2×20:00“ → „3x20min“. Gilt für neue Importe.
+export const renameTitle = (title, settings = {}) => settings.titleRules?.[title] || title;
+
 // Neuberechnung (z. B. nach geänderter Schwelle). Verlauf liegt nur ausgedünnt (5 s) vor → hochrechnen.
 export function reevaluate(a, settings, series5) {
   const series = series5 ? Object.fromEntries(Object.entries(series5).map(([k, v]) => [k, v.flatMap((x) => [x, x, x, x, x])])) : null;
-  return { ...a, ...evaluate({ ...a, series, durationS: series ? null : a.durationS }, settings) };
+  // Fehlende Ø/max Puls bzw. Ø Leistung (z. B. „0“ aus älteren Polar-Importen) aus dem Verlauf ergänzen.
+  const hr = series5?.hr?.filter((h) => h > 0) || [], pw = series5?.power?.filter((p) => p != null) || [];
+  const fill = {
+    avgHr: a.avgHr || (hr.length ? round(hr.reduce((x, y) => x + y, 0) / hr.length) : a.avgHr ?? null),
+    maxHr: a.maxHr || (hr.length ? Math.max(...hr) : a.maxHr ?? null),
+    avgPower: a.avgPower || (pw.some(Boolean) ? round(pw.reduce((x, y) => x + y, 0) / pw.length) : a.avgPower ?? null),
+  };
+  return { ...a, ...fill, ...evaluate({ ...a, ...fill, series, durationS: series ? null : a.durationS }, settings) };
 }
 
 export function dailyLoads(activities) {
@@ -140,7 +206,7 @@ export function coachSummary(data, t) {
     athlet: {
       sport: 'Skilanglauf', ftp: settings.ftp, laktatschwellenPuls: settings.lthr, maxPuls: settings.hrMax, ruhePuls: settings.hrRest,
       gewichtKg: settings.weightKg, geschlecht: settings.sex === 'f' ? 'weiblich' : 'männlich', alter: settings.age,
-      ziele: settings.goals, wettkaempfe: settings.races, strategie: settings.strategy, verfuegbarkeit: settings.availability,
+      ziele: settings.goals, wettkaempfe: settings.races, strategie: settings.strategy, verfuegbarkeit: settings.availability, alltag: (settings.schedule?.blocks || []).map((b) => `${b.label || 'Termin'} ${(b.dows || []).map((d) => ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'][d - 1]).join('/')} ${b.from}–${b.to}`).join('; ') || undefined,
     },
     formHeute: now ? { fitness: r1(now.fitness), ermuedung: r1(now.fatigue), form: r1(now.form) } : null,
     wochen: weeks(activities, 12, t).map((w) => ({
@@ -193,4 +259,27 @@ export function compliance(plan, activities, from, to) {
     plannedMin: items.reduce((a, p) => a + (Number(p.minutes) || 0), 0), actualMin: acts.reduce((a, x) => a + (x.durationS || 0) / 60, 0),
     plannedLoad: items.reduce((a, p) => a + (p.load || 0), 0), actualLoad: acts.reduce((a, x) => a + (x.load || 0), 0),
   };
+}
+
+// Einheit auf einen Abschnitt zuschneiden (z. B. vergessenes Stoppen, Heimweg). Verlauf im 5-s-Raster,
+// from/to sind Indizes darin. Werte, die nur als Summe vorliegen (Distanz ohne Tempo, Kalorien), anteilig.
+export function cropActivity(a, series5, from, to, settings) {
+  const cut = Object.fromEntries(Object.entries(series5).map(([k, v]) => [k, v.slice(from, to + 1)]));
+  const total = series5.hr?.length || series5.power?.length || 1, share = (to - from + 1) / total;
+  const speedSum = cut.speed?.some((v) => v > 0) ? cut.speed.reduce((s, v) => s + (v || 0) * 5, 0) : null;
+  const base = {
+    ...a, avgHr: null, maxHr: null, avgPower: null, elapsedS: null, timerS: null,
+    start: new Date(Date.parse(a.start) + from * 5000).toISOString(),
+    distanceM: speedSum ?? (a.distanceM ? a.distanceM * share : null),
+    calories: a.calories ? Math.round(a.calories * share) : null,
+    ascentM: null, laps: (a.laps || []).filter((l) => l.startS >= from * 5 && l.startS < (to + 1) * 5).map((l, i) => ({ ...l, n: i + 1, startS: l.startS - from * 5 })),
+    original: a.original || { ...a, original: undefined },
+  };
+  const next = reevaluate(base, settings, cut);
+  next.date = localDate(next.start, settings.timezone);
+  next.elapsedS = next.durationS;
+  next.externalLoad = null;
+  next.timerS = null; next.deviceAutoLaps = null;
+  if (!next.laps.length) next.laps = null;
+  return { activity: next, series: cut };
 }

@@ -91,3 +91,59 @@ test('Workout: Dauer, Belastung, FIT-Export lässt sich wieder lesen', async () 
   assert.ok(st.some((s) => s.durationType === 'repeatUntilStepsCmplt'));
   assert.ok(toZwo(w).includes('<SteadyState Duration="480" Power="0.92"/>'));
 });
+
+test('Einheit zuschneiden: Dauer, Distanz, Startzeit, Original bleibt', async () => {
+  const { buildActivity, cropActivity } = await import('../src/lib/activities.js');
+  const settings = { hrMax: 196, hrRest: 42, lthr: 172, ftp: 300, timezone: 'Europe/Berlin' };
+  const n = 3600;
+  const { activity, series } = buildActivity({ start: '2026-08-01T08:00:00Z', sport: 'bike', distanceM: 36000, calories: 900, series: { hr: Array.from({ length: n }, (_, i) => (i < 2700 ? 140 : 100)), power: Array.from({ length: n }, (_, i) => (i < 2700 ? 200 : 0)), speed: Array(n).fill(10) } }, settings, { id: 'x' });
+  const { activity: c, series: cut } = cropActivity(activity, series, 0, 2700 / 5 - 1, settings);
+  assert.equal(c.durationS, 2700);
+  assert.equal(Math.round(c.distanceM), 27000);
+  assert.equal(c.avgHr, 140);
+  assert.equal(c.avgPower, 200);
+  assert.equal(cut.hr.length, 540);
+  assert.equal(c.original.durationS, 3600);
+  const late = cropActivity(activity, series, 120, 539, settings).activity;
+  assert.equal(late.start, '2026-08-01T08:10:00.000Z');
+});
+
+test('Key Session: nur Runden 2–4 auswerten (3×20 min ohne Ein-/Auslaufen)', async () => {
+  const { keySessionRows, parseLapRange } = await import('../src/lib/keysessions.js');
+  assert.deepEqual(parseLapRange('2-4'), [2, 3, 4]);
+  assert.deepEqual(parseLapRange('1, 3-4'), [1, 3, 4]);
+  const laps = [{ n: 1, durationS: 1200, avgPower: 120, avgHr: 120 }, ...[2, 3, 4].map((n) => ({ n, durationS: 1200, avgPower: 200 + n, avgHr: 150 })), { n: 5, durationS: 1200, avgPower: 100, avgHr: 115 }];
+  const rows = keySessionRows([{ id: 'a', date: '2026-10-01', sport: 'skierg', title: '3x20min', laps, durationS: 6000 }], { id: 'k', sport: 'skierg', keywords: '3x20', laps: '2-4', intervalSec: 1200 });
+  assert.equal(rows[0].intervalPower, 203);
+  assert.equal(rows[0].intervalHr, 150);
+  assert.equal(rows[0].fromLaps, true);
+});
+
+test('Umfangsbetontes Belastungsmodell (Lucia-TRIMP)', async () => {
+  const { luciaLoad } = await import('../src/lib/metrics.js');
+  const { evaluate } = await import('../src/lib/activities.js');
+  assert.equal(luciaLoad({ I1: 3600, I2: 0, I3: 0, I4: 0, I5: 0 }), 50);
+  assert.equal(luciaLoad({ I1: 0, I2: 0, I3: 3600, I4: 0, I5: 0 }), 100);
+  const hr = Array(3600).fill(130);
+  const base = { sport: 'run', series: { hr } }, st = { hrMax: 196, hrRest: 42, lthr: 172 };
+  const std = evaluate(base, st), vol = evaluate(base, { ...st, loadModel: 'lucia' });
+  assert.equal(vol.loadSource, 'lucia');
+  assert.ok(vol.load > std.load, `${vol.load} > ${std.load}`);
+});
+
+test('Wiedereinstieg nach Krankheit: Stufen nach Dauer und Fieber', async () => {
+  const { returnPlan } = await import('../src/lib/gear.js');
+  const cold = { type: 'ill', start: '2026-10-01', end: '2026-10-04', systemic: false }; // 4 Tage
+  const r = returnPlan(cold, '2026-10-06');
+  assert.equal(r.steps[0].from, '2026-10-05'); // 1 Tag beschwerdefrei
+  assert.equal(r.steps.length, 4);
+  assert.equal(r.current, 1);
+  assert.equal(returnPlan(cold, '2026-10-20'), null); // vorbei
+  const flu = { type: 'ill', start: '2026-10-01', end: '2026-10-08', systemic: true }; // 8 Tage, Fieber
+  const f = returnPlan(flu, '2026-10-09');
+  assert.equal(f.current, -1);
+  assert.equal(f.steps[0].from, '2026-10-10');
+  assert.equal(f.steps[0].to, '2026-10-13'); // 4 Tage je Stufe
+  assert.equal(returnPlan({ ...flu, end: null }, '2026-10-05').active, true);
+  assert.equal(returnPlan({ type: 'injury', start: '2026-10-01' }, '2026-10-05'), null);
+});

@@ -54,3 +54,35 @@ export function lapAnalysis(laps) {
   if (ratio.length >= 2) out.efficiencyDrop = Math.round(((ratio[0] - ratio.at(-1)) / ratio[0]) * 1000) / 10;
   return out;
 }
+
+// Name einer Concept2-Einheit: eigener Name, falls die Schnittstelle einen liefert, sonst der Kommentar
+// (kurz, einzeilig), sonst aus dem Aufbau wie im Logbuch („5×6:00/1:00r“, „10.000m“, „30:00“).
+const WORKOUT_TYPES = /^(JustRow|Fixed\w*|Variable\w*|WattMinute\w*|FixedWattMinute\w*)$/;
+export const isAutoC2Title = (t) => !t || WORKOUT_TYPES.test(t);
+const c2Time = (tenths) => {
+  const s = Math.round(tenths / 10), h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = String(s % 60).padStart(2, '0');
+  return h ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`;
+};
+const c2Dist = (m) => `${Number(m).toLocaleString('de-DE')}m`;
+export function concept2Title(r, workout) {
+  const own = [r.name, r.workout_name, r.title, workout?.name, r.metadata?.name].find((x) => typeof x === 'string' && x.trim());
+  if (own) return own.trim();
+  const c = (r.comments || '').trim();
+  if (c && c.length <= 60 && !c.includes('\n')) return c;
+  const wt = r.workout_type || '';
+  if (/^FixedTime/.test(wt) && !/Interval/.test(wt)) return c2Time(r.time);
+  if (/^FixedDistance/.test(wt) && !/Interval/.test(wt)) return c2Dist(r.distance);
+  const iv = workout?.intervals || [];
+  if (!iv.length) return '';
+  const kind = (x) => x.type || (/Distance/.test(wt) ? 'distance' : /Calorie/.test(wt) ? 'calorie' : /Time/.test(wt) ? 'time'
+    : (Number(x.time) % 600 === 0 ? 'time' : Number(x.distance) % 100 === 0 ? 'distance' : 'time'));
+  const target = (x) => { const k = kind(x); return k === 'distance' ? c2Dist(x.distance) : k === 'calorie' ? `${x.calories_total}cal` : c2Time(x.time); };
+  // Gleiche Intervalle hintereinander zusammenfassen; die (fehlende) Pause nach dem letzten zählt nicht.
+  const groups = [];
+  iv.forEach((x, i) => {
+    const t = target(x), rest = Number(x.rest_time) || 0, g = groups.at(-1);
+    if (g && g.t === t && (g.rest === rest || i === iv.length - 1)) g.n++; else groups.push({ t, rest, n: 1 });
+  });
+  const label = (g, last) => g.t + (g.rest && !(last && g.n === 1) ? `/${c2Time(g.rest)}r` : '');
+  return groups.map((g, i) => (g.n > 1 ? `${g.n}×` : '') + label(g, i === groups.length - 1)).join(', ');
+}

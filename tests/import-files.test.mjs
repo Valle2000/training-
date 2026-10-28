@@ -101,3 +101,121 @@ test('Pace-Format rundet richtig', async () => {
   assert.equal(fmtPace(119.7), '2:00');
   assert.equal(fmtPace(121.1), '2:01');
 });
+
+test('Polar-Konto-Export: Zeitzone, Tempo, Titel, nur Trainingsdateien, Alpin ≠ Langlauf', async () => {
+  const { parsePolarJson, importable, zipEntries } = await import('../src/lib/importers.js');
+  const { polarSport } = await import('../src/lib/sports.js');
+  const { zipSync, strToU8 } = await import('fflate');
+  const samples = Array.from({ length: 60 }, (_, k) => ({ dateTime: `2019-05-05T10:00:${String(k).padStart(2, '0')}.000`, value: 130 }));
+  const doc = { startTime: '2019-05-05T10:00:00.000', timeZoneOffset: 120, name: 'Intervalle', note: 'hart', exercises: [{ startTime: '2019-05-05T10:00:00.000', sport: 'RUNNING', samples: { heartRate: samples, speed: samples.map((s) => ({ ...s, value: 36 })) } }] };
+  const r = parsePolarJson(doc);
+  assert.equal(r.start, '2019-05-05T08:00:00.000Z');
+  assert.equal(r.title, 'Intervalle');
+  assert.equal(r.notes, 'hart');
+  assert.equal(r.series.speed[5], 10);
+  assert.ok(importable('x/training-session-2019.json') && !importable('x/activity-2019.json') && importable('a/1.fit.gz') && !importable('x/sleep.json'));
+  assert.equal(polarSport('DOWNHILL_SKIING'), 'other');
+  assert.equal(polarSport('CROSS-COUNTRY_SKIING'), 'xc_classic');
+  const zip = zipSync({ 'e/training-session-1.json': strToU8(JSON.stringify(doc)), 'e/activity-1.json': strToU8('{}') });
+  const names = [];
+  for await (const e of zipEntries(new File([zip], 'e.zip'))) names.push(e.name);
+  assert.deepEqual(names, ['e/training-session-1.json']);
+});
+
+test('Polar-Export ohne Zusammenfassung: Puls aus dem Verlauf statt 0, Profil wird gelesen', async () => {
+  const { parsePolarJson } = await import('../src/lib/importers.js');
+  const hr = Array.from({ length: 120 }, (_, k) => ({ dateTime: `2022-03-19T19:${String(10 + Math.floor(k / 60)).padStart(2, '0')}:${String(k % 60).padStart(2, '0')}.463`, value: 140 + (k % 10) }));
+  const r = parsePolarJson({ startTime: '2022-03-19T19:10:00.000', timeZoneOffset: -180, physicalInformationSnapshot: { dateTime: '2022-03-19T23:40:03.000', maximumHeartRate: 192, restingHeartRate: 55, anaerobicThreshold: 173, functionalThresholdPower: 310, 'weight, kg': 79, sex: 'MALE' },
+    exercises: [{ startTime: '2022-03-19T19:10:00.000', stopTime: '2022-03-19T19:12:00.000', sport: 'RUNNING', samples: { heartRate: hr } }] });
+  assert.equal(Math.round(r.avgHr), 145);
+  assert.equal(r.maxHr, 149);
+  assert.equal(r.elapsedS, 120);
+  assert.deepEqual({ ...r.athlete, date: undefined }, { date: undefined, hrMax: 192, hrRest: 55, lthr: 173, ftp: 310, weightKg: 79, sex: 'm' });
+});
+
+test('Neues Polar-Format (samples.samples, distanceMeters, Sport als Nummer)', async () => {
+  const { parsePolarJson } = await import('../src/lib/importers.js');
+  const { polarSport } = await import('../src/lib/sports.js');
+  const n = 600;
+  const doc = {
+    startTime: '2018-10-06T11:00:00', stopTime: '2018-10-06T11:10:00', name: 'Freistil-Rollski', durationMillis: 600000, distanceMeters: 3000, calories: 120, trainingLoad: 15, timezoneOffsetMinutes: 120,
+    physicalInformation: { maximumHeartRate: 200, restingHeartRate: 38, anaerobicThreshold: 180, weightKg: 75, sex: 'SEX_MALE', modified: '2018-10-07T20:46:51.000' },
+    sport: { id: '59' },
+    exercises: [{ startTime: '2018-10-06T11:00:00', stopTime: '2018-10-06T11:10:00', durationMillis: 600000, distanceMeters: 3000, timezoneOffsetMinutes: 120,
+      statistics: { statistics: [{ type: 'STATISTICS_TYPE_HEART_RATE', avg: 150, max: 170 }] },
+      samples: { samples: [
+        { type: 'HEART_RATE', intervalMillis: 1000, values: Array.from({ length: n }, (_, i) => (i < 5 ? 'NaN' : 150)) },
+        { type: 'SPEED', intervalMillis: 1000, values: Array(n).fill(18) },
+      ] },
+      pauseTimes: [{ startTime: '2018-10-06T11:05:00.000', endTime: '2018-10-06T11:06:00.000' }] }],
+  };
+  const r = parsePolarJson(doc);
+  assert.equal(r.start, '2018-10-06T09:00:00.000Z');
+  assert.equal(r.sport, 'rollerski_skate');
+  assert.equal(r.distanceM, 3000);
+  assert.equal(r.calories, 120);
+  assert.equal(r.avgHr, 150);
+  assert.equal(r.externalLoad, 15);
+  assert.equal(r.series.hr.length, 540); // Pause herausgenommen
+  assert.equal(r.series.hr[0], null);
+  assert.equal(r.series.speed[10], 5);
+  assert.equal(r.athlete.hrMax, 200);
+  assert.equal(polarSport('Klassischer Skilanglauf'), 'xc_classic');
+  assert.equal(polarSport('Freistil-Skilanglauf'), 'xc_skate');
+  assert.equal(polarSport('Schwimmen Freistil'), 'swim');
+});
+
+test('Polar: Sportnummer, geplante Einheiten nicht importieren', async () => {
+  const { parsePolarJson, readExport, importable } = await import('../src/lib/importers.js');
+  const base = { startTime: '2020-01-01T10:00:00', durationMillis: 3600000, timezoneOffsetMinutes: 60, exercises: [{ startTime: '2020-01-01T10:00:00', durationMillis: 3600000, sport: { id: '25' } }] };
+  assert.equal(parsePolarJson({ ...base, name: '' }).sport, 'xc_classic');
+  assert.equal(parsePolarJson({ ...base, deviceId: 'X' }).recorded, true);
+  assert.equal(parsePolarJson(base).recorded, false);
+  assert.equal(importable('e/training-target_2020.json'), false);
+  const bytes = new TextEncoder().encode(JSON.stringify({ name: 'Plan', startTime: '2020-01-01T10:00:00' }));
+  assert.deepEqual(await readExport('training-session_x.json', bytes), []);
+});
+
+test('Polar: Zeit wie auf der Uhr, Runden und Autolaps aus dem Export, km-Splits berechnet', async () => {
+  const { parsePolarJson } = await import('../src/lib/importers.js');
+  const { buildActivity, distanceSplits } = await import('../src/lib/activities.js');
+  const n = 1500;
+  const doc = { startTime: '2024-05-01T07:00:00', durationMillis: 1500000, distanceMeters: 4500, timezoneOffsetMinutes: 120, deviceId: 'X', name: 'Laufen',
+    exercises: [{ startTime: '2024-05-01T07:00:00', durationMillis: 1500000, distanceMeters: 4500, sport: { id: '1' },
+      samples: { samples: [{ type: 'HEART_RATE', intervalMillis: 1000, values: Array(n).fill(150) }, { type: 'SPEED', intervalMillis: 1000, values: Array(n).fill(10.8) }] },
+      laps: { laps: [{ durationMillis: 600000, distanceMeters: 1800, heartRate: { avg: 145, max: 152 } }, { durationMillis: 900000, distanceMeters: 2700, heartRate: { avg: 155, max: 162 } }],
+        autoLaps: Array.from({ length: 4 }, () => ({ duration: 'PT333.3S', distance: 1000 })) },
+      // Pause, die die App früher herausgeschnitten hat
+      pauseTimes: [{ startTime: '2024-05-01T07:10:00.000', endTime: '2024-05-01T07:12:00.000' }] }] };
+  const raw = parsePolarJson(doc);
+  assert.equal(raw.timerS, 1500);
+  assert.equal(raw.laps.length, 2);
+  assert.equal(raw.laps[1].startS, 600);
+  assert.equal(raw.laps[1].avgHr, 155);
+  assert.equal(raw.deviceAutoLaps.length, 4);
+  const { activity } = buildActivity(raw, { hrMax: 196, hrRest: 42, lthr: 172 });
+  assert.equal(activity.durationS, 1500); // Polar-Zeit, nicht die gekürzte Bewegungszeit
+  assert.equal(activity.autoLaps.length, 4);
+  const splits = distanceSplits({ speed: Array(1500).fill(3), hr: Array(1500).fill(150), power: [] }, 'run');
+  assert.equal(splits.length, 5); // 4,5 km → 4 volle km + 500 m Rest
+  assert.equal(Math.round(splits[0].pace), 334); // 3 m/s: 1000 m nach 334 s
+  assert.equal(splits[4].distanceM, 500);
+  assert.equal(distanceSplits({ speed: Array(100).fill(3) }, 'strength'), null);
+});
+
+test('Polar-Runden im Geräteformat (header + statistics, Dauer als Objekt oder Millis)', async () => {
+  const { parsePolarJson } = await import('../src/lib/importers.js');
+  const lap = (min, km, hr) => ({ header: { splitTime: { minutes: min * 2 }, duration: { minutes: min }, distance: km * 1000, autolapType: 'AUTOLAP_TYPE_DISTANCE' }, statistics: { heartRate: { average: hr, maximum: hr + 8 }, speed: { average: (km / min) * 60, maximum: 15 } } });
+  const doc = { startTime: '2024-05-01T07:00:00', durationMillis: 1200000, timezoneOffsetMinutes: 120, deviceId: 'X', exercises: [{ startTime: '2024-05-01T07:00:00', durationMillis: 1200000, sport: { id: '1' },
+    laps: { laps: [{ header: { splitTimeMillis: 300000, durationMillis: 300000, distanceMeters: 1000 }, statistics: { heartRate: { average: 140, maximum: 150 } } }, { header: { splitTimeMillis: 1200000, durationMillis: 900000, distanceMeters: 3200 }, statistics: { heartRate: { average: 160, maximum: 172 }, power: { average: 280 } } }], summary: {} },
+    autoLaps: { autoLaps: [lap(5, 1, 141), { ...lap(5, 1, 150), header: { splitTime: { minutes: 10 }, duration: { minutes: 5 }, distance: 1000 } }] } }] };
+  const r = parsePolarJson(doc);
+  assert.equal(r.laps.length, 2);
+  assert.equal(r.laps[1].startS, 300);
+  assert.equal(r.laps[1].durationS, 900);
+  assert.equal(r.laps[1].avgHr, 160);
+  assert.equal(r.laps[1].avgPower, 280);
+  assert.equal(r.deviceAutoLaps.length, 2);
+  assert.equal(r.deviceAutoLaps[1].startS, 300);
+  assert.equal(r.deviceAutoLaps[0].pace, 300);
+});

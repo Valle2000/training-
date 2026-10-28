@@ -1,17 +1,19 @@
 import React, { useMemo, useState } from 'react';
-import { RefreshCw, Plus, HeartPulse, Moon } from 'lucide-react';
+import { RefreshCw, Plus, HeartPulse, Moon, Lightbulb } from 'lucide-react';
 import { useData } from '../lib/store.js';
 import { curve, today, weeks } from '../lib/activities.js';
 import { addDays } from '../lib/metrics.js';
 import { sportLabel } from '../lib/sports.js';
 import { syncAll } from '../lib/sync.js';
 import { dayTargets } from '../lib/nutrition.js';
+import { tipsFor } from '../lib/food-day.js';
 import { FormChart, ZoneBar, LineChart } from './charts.jsx';
 import { rolling } from '../lib/analysis.js';
 import { fmtDuration, fmtNum, toast } from './common.jsx';
-import { ReadinessCard, MorningSheet } from './morning.jsx';
+import { ReadinessCard, MorningSheet, RecoveryCard } from './morning.jsx';
 import { RaceCountdown } from './season.jsx';
 import { HealthBanner } from './more.jsx';
+import { AdaptCard, ThresholdCard, WeekReviewCard } from './week.jsx';
 
 export function Today({ go, openActivity, openAdd }) {
   const data = useData();
@@ -30,6 +32,7 @@ export function Today({ go, openActivity, openAdd }) {
   const longest = Math.max(0, ...todays.filter((a) => a.sport !== 'strength').map((a) => (a.durationS || 0) / 60), ...planned.filter((p) => p.sport !== 'strength').map((p) => p.minutes || 0));
   const food = dayTargets({ weightKg: Number(settings.weightKg), minutes, hardMinutes: hard, strength: [...todays, ...planned].some((x) => x.sport === 'strength'), longestMinutes: longest });
   const lastW = wellness.at(-1);
+  const tip = useMemo(() => tipsFor(data, t)[0], [data, t]);
   const connected = Object.keys(data.connections).length > 0;
 
   const sync = async () => {
@@ -56,6 +59,8 @@ export function Today({ go, openActivity, openAdd }) {
 
       <HealthBanner go={go} />
       <RaceCountdown go={go} />
+      <AdaptCard />
+      <WeekReviewCard />
       <div className="row">
         {connected && <button className="secondary" onClick={sync} disabled={busy}><RefreshCw size={17} className={busy ? 'spin' : ''} />Abgleichen</button>}
         <button className="primary" onClick={openAdd}><Plus size={18} />Einheit</button>
@@ -79,6 +84,7 @@ export function Today({ go, openActivity, openAdd }) {
         <h3 style={{ marginTop: 0 }}>Fitness, Ermüdung, Form</h3>
         <FormChart days={shown} />
       </div>
+      <RecoveryCard t={t} />
       {wellness.some((w) => w.hrv || w.sleepH) && (() => {
         const w = wellness.filter((x) => x.date >= addDays(t, -60));
         const fByDay = Object.fromEntries(days.map((d) => [d.day, d.form]));
@@ -119,6 +125,13 @@ export function Today({ go, openActivity, openAdd }) {
             </button>
           )}
         </div>
+      )}
+      <ThresholdCard compact />
+      {tip && (
+        <button className="card" style={{ textAlign: 'left', display: 'block', width: '100%' }} onClick={() => go('food')}>
+          <h3 style={{ marginTop: 0 }}><Lightbulb size={16} /> Ernährungstipp: {tip.title}</h3>
+          <p className="small" style={{ margin: 0 }}>{tip.text}</p>
+        </button>
       )}
       {!settings.hrMax && <div className="notice">Trag unter „Mehr → Einstellungen → Athlet“ Maximalpuls, Ruhepuls und Schwellenpuls ein (und FTP, falls du mit Watt trainierst), sonst kann keine Belastung berechnet werden.</div>}
       {checking && <MorningSheet date={t} onClose={() => setChecking(false)} />}

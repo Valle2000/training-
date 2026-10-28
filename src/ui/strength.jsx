@@ -102,7 +102,8 @@ function ExerciseSheet({ ex, onClose }) {
     <Sheet title={ex.name} onClose={onClose}>
       <p className="muted">{CATEGORIES[ex.cat]} · {ex.muscles}</p>
       {ex.why && <p><b>Warum:</b> {ex.why}</p>}
-      {ex.cues && <p><b>Ausführung:</b> {ex.cues}</p>}
+      {ex.cues && <p><b>Kurz:</b> {ex.cues}</p>}
+      {ex.tech && <><b>Technik</b><ul className="small" style={{ paddingLeft: 18, lineHeight: 1.55, marginTop: 4 }}>{ex.tech.map((x, i) => <li key={i}>{x}</li>)}</ul></>}
       {h.length > 0 && <>
         {h.some((r) => r.best) && <div className="card"><LineChart labels={h.map((r) => r.date)} xFormat={(d) => fmtDate(d, { day: 'numeric', month: 'numeric' })} series={[{ label: 'geschätztes 1RM (kg)', values: h.map((r) => r.best), color: 'var(--fit)', dots: true }]} /></div>}
         <table className="t"><thead><tr><th>Datum</th><th>Sätze</th><th>1RM</th></tr></thead>
@@ -156,6 +157,7 @@ function SessionEditor({ session, onDone }) {
         return (
           <div key={i} className="ex">
             <div className="ex-head"><b>{it.name}</b><button className="ghost" onClick={() => setS({ ...s, items: s.items.filter((_, k) => k !== i) })} aria-label="Übung entfernen"><Trash2 size={16} /></button></div>
+            {ex?.tech && <details className="small" style={{ margin: '2px 0 4px' }}><summary className="muted" style={{ cursor: 'pointer' }}>Technik</summary><ul style={{ paddingLeft: 18, lineHeight: 1.5, margin: '4px 0' }}>{ex.tech.map((x, k) => <li key={k}>{x}</li>)}</ul></details>}
             {last && <p className="muted small" style={{ margin: '2px 0 6px' }}>Letztes Mal ({fmtDate(last.date, { day: 'numeric', month: 'short' })}): {setsText(last.sets, ex)}</p>}
             <div className="set-row"><span>#</span><span>{unit(ex)}</span><span>{ex?.type === 'bodyweight' ? '+kg' : 'kg'}</span><span>RPE</span><span /></div>
             {it.sets.map((x, j) => (

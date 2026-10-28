@@ -24,6 +24,7 @@ export function AccountCard() {
       <h3 style={{ marginTop: 0 }}><Cloud size={16} /> Konto & Abgleich</h3>
       <p style={{ margin: '4px 0' }}>Angemeldet als <b>{st.email}</b></p>
       <p className="muted small" style={{ margin: '4px 0' }}>{st.state === 'syncing' ? 'Gleiche ab …' : st.state === 'error' ? `Fehler: ${st.error}` : `Zuletzt abgeglichen: ${fmtTime(st.last)}`}</p>
+      {st.detail && st.state !== 'error' && <p className="small" style={{ margin: '4px 0' }}>{st.detail} – App dafür eine Weile offen lassen; danach ist der Abgleich wieder ruhig.</p>}
       <p className="muted small">Deine Daten, Einstellungen und Verbindungen liegen in deinem Konto und sind auf allen Geräten gleich, auf denen du angemeldet bist.</p>
       <div className="row">
         <button className="secondary" onClick={() => syncNow()} disabled={st.state === 'syncing'}><RefreshCw size={16} className={st.state === 'syncing' ? 'spin' : ''} />Jetzt abgleichen</button>

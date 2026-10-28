@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { TrendingUp, TrendingDown, Plus, Trash2 } from 'lucide-react';
 import { useData, update, uid } from '../lib/store.js';
 import { today, curve as formCurve, ftpFor } from '../lib/activities.js';
-import { ZONES, POWER_ZONES, CURVE_DURATIONS } from '../lib/metrics.js';
+import { ZONES, POWER_ZONES, CURVE_DURATIONS, addDays } from '../lib/metrics.js';
 import { SPORTS, sportLabel } from '../lib/sports.js';
 import { PRESETS, SPORT_FILTERS, periodRange, previousRange, inRange, totals, buckets, delta, bestCurve, estimateFtp, rampRate, rolling, intensityShare, fmtDur, KEY_DURATIONS, daysBetween } from '../lib/analysis.js';
 import { KEY_TEMPLATES, keySessionRows, trend } from '../lib/keysessions.js';
@@ -146,17 +146,41 @@ function Curves({ acts, prevActs, all, settings, filter, openActivity, activitie
 }
 
 function Zones({ acts, range, by, setBy }) {
+  const { settings } = useData();
   const tot = totals(acts);
   const bk = buckets(acts, range, by);
   const hasPower = Object.values(tot.powerZones).some((v) => v > 0);
   const zsum = Object.values(tot.zones).reduce((a, b) => a + b, 0), psum = Object.values(tot.powerZones).reduce((a, b) => a + b, 0);
+  // Pulsgrenzen wie in der Auswertung (Laktattest-Grenzen, sonst % der maximalen Herzfrequenz).
+  const hrMax = Number(settings.hrMax) || null;
+  const bounds = settings.zoneHr?.length === 4 && settings.zoneHr.every(Boolean) ? settings.zoneHr.map(Number) : ZONES.slice(1).map((z) => z.from * (hrMax || 0));
+  const edges = hrMax ? [ZONES[0].from * hrMax, ...bounds, hrMax] : null;
+  // I1 ist nach unten offen: nur die Obergrenze, kein Mindestpuls.
+  const bpm = (i) => (edges ? (i === 0 ? `unter ${Math.round(edges[1])} bpm` : `${Math.round(edges[i])}–${Math.round(edges[i + 1])} bpm`) : '');
+  // Kraft zählt als eigene Gruppe, nicht als Pulszone (ohne Pulsverlauf nicht sinnvoll einzuordnen).
+  const kraftH = tot.groups.strength || 0;
+  const totalH = tot.hours || 0;
+  const share = (h) => (totalH ? Math.round((h / totalH) * 100) : 0);
+  const withoutHr = Math.max(0, totalH - zsum - kraftH);
   return (
     <>
       <div style={{ marginTop: 12 }}><Seg value={by} onChange={setBy} options={[['week', 'Wochen'], ['month', 'Monate']]} /></div>
       <div className="card">
+        <h3 style={{ marginTop: 0 }}>Intensitätsverteilung</h3>
+        {totalH ? <>
+          <StackedBars buckets={bk} unit=" h" stacks={[...ZONES.map((z) => ({ key: z.id, label: z.label, color: ZONE_COLORS[z.id] })), { key: 'strength', label: 'Kraft', color: 'var(--load)' }]} value={(b, k) => (k === 'strength' ? b.groups.strength : b.zones[k])} />
+          <table className="t"><tbody>
+            {ZONES.map((z, i) => <tr key={z.id}><td><i style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 3, background: ZONE_COLORS[z.id], marginRight: 6 }} />{z.label}{bpm(i) && <span className="muted small"> · {bpm(i)}</span>}</td><td>{share(tot.zones[z.id])} % · {fmtDuration(tot.zones[z.id] * 3600)} h</td></tr>)}
+            <tr><td><i style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 3, background: 'var(--load)', marginRight: 6 }} />Kraft</td><td>{share(kraftH)} % · {fmtDuration(kraftH * 3600)} h</td></tr>
+            {withoutHr > 0.05 && <tr><td className="muted">ohne Pulsdaten</td><td className="muted">{share(withoutHr)} %</td></tr>}
+          </tbody></table>
+          <p className="muted small">Anteil an allen Stunden im Zeitraum. Kraft ist eine eigene Gruppe, nicht Teil der Pulszonen.</p>
+        </> : <p className="muted small">Noch keine Einheiten im Zeitraum.</p>}
+      </div>
+      <div className="card">
         <h3 style={{ marginTop: 0 }}>Pulszonen (I1–I5)</h3>
         <StackedBars buckets={bk} unit=" h" stacks={ZONES.map((z) => ({ key: z.id, label: z.label, color: ZONE_COLORS[z.id] }))} value={(b, k) => b.zones[k]} />
-        <table className="t">{ZONES.map((z) => <tbody key={z.id}><tr><td><i style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 3, background: ZONE_COLORS[z.id], marginRight: 6 }} />{z.label}</td><td>{fmtDuration(tot.zones[z.id] * 3600)} h</td><td>{zsum ? Math.round((tot.zones[z.id] / zsum) * 100) : 0} %</td></tr></tbody>)}</table>
+        <table className="t">{ZONES.map((z, i) => <tbody key={z.id}><tr><td><i style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 3, background: ZONE_COLORS[z.id], marginRight: 6 }} />{z.label}{bpm(i) && <span className="muted small"> · {bpm(i)}</span>}</td><td>{fmtDuration(tot.zones[z.id] * 3600)} h</td><td>{zsum ? Math.round((tot.zones[z.id] / zsum) * 100) : 0} %</td></tr></tbody>)}</table>
       </div>
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Leistungszonen (Coggan, % FTP)</h3>
@@ -188,6 +212,7 @@ function Recovery({ activities, plan, wellness, range, t, acts }) {
       </div>
       {ramp != null && ramp > 8 && <div className="notice">Fitness steigt um mehr als 8 Punkte pro Woche – das ist ein steiler Anstieg; auf Erholung und Infekte achten (große Belastungssprünge gehen bei Langläufern mit mehr Infekten einher, Svendsen et al. 2016).</div>}
       <div className="card"><h3 style={{ marginTop: 0 }}>Fitness, Ermüdung, Form</h3><FormChart days={shown} /></div>
+      <HoursFitness activities={activities} labels={labels} />
       <div className="card">
         <h3 style={{ marginTop: 0 }}>HRV und Form</h3>
         {hrv.some(Boolean) ? <LineChart labels={labels} xFormat={(d) => fmtDate(d, { day: 'numeric', month: 'numeric' })} series={[
@@ -241,6 +266,7 @@ function KeySessions({ activities, openActivity }) {
 
 function KeyDetail({ ks, activities, openActivity, onEdit }) {
   const rows = keySessionRows(activities, ks);
+  const part = ks.laps ? `Runden ${ks.laps}` : `beste ${fmtDur(ks.intervalSec || 300)}`;
   const hasPower = rows.some((r) => r.intervalPower), hasLac = rows.some((r) => r.lactateAvg);
   const T = ({ k, lower, label }) => {
     const v = trend(rows, k, lower);
@@ -250,16 +276,16 @@ function KeyDetail({ ks, activities, openActivity, onEdit }) {
   return (
     <div className="card">
       <div className="row" style={{ justifyContent: 'space-between' }}><h3 style={{ margin: 0, flex: 'none' }}>{ks.name}</h3><button className="ghost" style={{ flex: 'none' }} onClick={onEdit}>Bearbeiten</button></div>
-      <p className="muted small">{ks.sport ? sportLabel(ks.sport) : 'alle Sportarten'} · Stichwörter: {ks.keywords || '–'} · Vergleichsdauer {fmtDur(ks.intervalSec || 300)}{ks.description ? ` · ${ks.description}` : ''}</p>
+      <p className="muted small">{ks.sport ? sportLabel(ks.sport) : 'alle Sportarten'} · Stichwörter: {ks.keywords || '–'} · Auswertung: {part}{ks.description ? ` · ${ks.description}` : ''}</p>
       {!rows.length ? <p className="muted">Noch keine passenden Einheiten. Gib deinen Einheiten einen Titel mit einem der Stichwörter oder ordne sie in der Einheit zu.</p> : <>
         <div className="stats">
           <div><b>{rows.length}</b><span>Einheiten</span></div>
-          {hasPower ? <T k="intervalPower" label={`Leistung ${fmtDur(ks.intervalSec || 300)}`} /> : <T k="intervalHr" lower label="Puls" />}
+          {hasPower ? <T k="intervalPower" label={`Leistung ${part}`} /> : <T k="intervalHr" lower label="Puls" />}
           {hasPower ? <T k="intervalRatio" label="Watt pro Puls" /> : hasLac ? <T k="lactateAvg" lower label="Laktat" /> : <T k="rpe" lower label="RPE" />}
         </div>
         <LineChart labels={rows.map((r) => r.date)} xFormat={(d) => fmtDate(d, { day: 'numeric', month: 'numeric' })} series={[
-          ...(hasPower ? [{ label: `Beste ${fmtDur(ks.intervalSec || 300)} (W)`, values: rows.map((r) => r.intervalPower), color: 'var(--fit)', dots: true }] : []),
-          { label: `Puls über ${fmtDur(ks.intervalSec || 300)}`, values: rows.map((r) => r.intervalHr ?? r.avgHr), color: 'var(--fat)', dots: true },
+          ...(hasPower ? [{ label: `${part} (W)`, values: rows.map((r) => r.intervalPower), color: 'var(--fit)', dots: true }] : []),
+          { label: `Puls ${part}`, values: rows.map((r) => r.intervalHr ?? r.avgHr), color: 'var(--fat)', dots: true },
         ]} />
         {hasLac && <LineChart labels={rows.map((r) => r.date)} xFormat={(d) => fmtDate(d, { day: 'numeric', month: 'numeric' })} series={[{ label: 'Laktat Ø (mmol/l)', values: rows.map((r) => r.lactateAvg), color: 'var(--z3)', dots: true }]} />}
         <div style={{ overflowX: 'auto' }}>
@@ -290,6 +316,8 @@ function KeyEditor({ ks, onClose, onSaved }) {
         <div><label>Sportart</label><select value={k.sport} onChange={(e) => setK({ ...k, sport: e.target.value })}><option value="">alle</option>{SPORTS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}</select></div>
         <div><label>Vergleichsdauer (Sek.)</label><input type="number" value={k.intervalSec} onChange={(e) => setK({ ...k, intervalSec: e.target.value })} /></div>
       </div>
+      <label>Nur diese Runden auswerten (optional)</label><input value={k.laps || ''} onChange={(e) => setK({ ...k, laps: e.target.value })} placeholder="z. B. 2-4 für die 3×20 min ohne Ein- und Auslaufen" />
+      <p className="muted small">Mit Runden: Ø Watt und Ø Puls nur über diese Runden (z. B. Concept2-Intervalle). Ohne: bester Abschnitt der Vergleichsdauer.</p>
       <label>Stichwörter im Titel (mit Komma getrennt)</label><input value={k.keywords} onChange={(e) => setK({ ...k, keywords: e.target.value })} placeholder="5x6, schwelle" />
       <label>Beschreibung</label><textarea value={k.description} onChange={(e) => setK({ ...k, description: e.target.value })} />
       <div className="row" style={{ marginTop: 12 }}>
@@ -297,5 +325,36 @@ function KeyEditor({ ks, onClose, onSaved }) {
         {k.id && <button className="danger" onClick={remove}><Trash2 size={17} />Löschen</button>}
       </div>
     </Sheet>
+  );
+}
+
+// Umfang als eigene „Fitness“: Stunden der letzten 7 Tage und Wochenschnitt über 42 Tage (wie CTL, nur in Stunden).
+// Belastungsmodelle gewichten lockeren Umfang unterschiedlich – die Stunden zeigen ihn ungewichtet.
+function HoursFitness({ activities, labels }) {
+  const data = useMemo(() => {
+    const perDay = {};
+    for (const a of activities) if (a.sport !== 'strength') perDay[a.date] = (perDay[a.date] || 0) + (a.durationS || 0) / 3600;
+    const lowPerDay = {};
+    for (const a of activities) if (a.zones) lowPerDay[a.date] = (lowPerDay[a.date] || 0) + ((a.zones.I1 || 0) + (a.zones.I2 || 0)) / 3600;
+    const sumBack = (map, d, n) => { let s = 0; for (let i = 0; i < n; i++) s += map[addDays(d, -i)] || 0; return s; };
+    return labels.map((d) => ({ d, week: sumBack(perDay, d, 7), avg: (sumBack(perDay, d, 42) / 42) * 7, low: (sumBack(lowPerDay, d, 42) / 42) * 7 }));
+  }, [activities, labels]);
+  if (!data.length || !data.some((x) => x.week > 0)) return null;
+  const last = data.at(-1);
+  return (
+    <div className="card">
+      <h3 style={{ marginTop: 0 }}>Umfang: Stunden pro Woche</h3>
+      <div className="stats">
+        <div><b>{fmtNum(last.week, 1)}</b><span>letzte 7 Tage</span></div>
+        <div><b>{fmtNum(last.avg, 1)}</b><span>Ø Woche (42 Tage)</span></div>
+        <div><b>{fmtNum(last.low, 1)}</b><span>davon I1–I2 (Ø/Woche)</span></div>
+      </div>
+      <LineChart labels={data.map((x) => x.d)} xFormat={(d) => fmtDate(d, { day: 'numeric', month: 'numeric' })} shared series={[
+        { label: 'Stunden letzte 7 Tage', values: data.map((x) => x.week), color: 'var(--accent)' },
+        { label: 'Ø Woche (42 Tage)', values: data.map((x) => x.avg), color: 'var(--fit)', width: 2.4 },
+        { label: 'davon locker I1–I2', values: data.map((x) => x.low), color: 'var(--z2)', dashed: true },
+      ]} />
+      <p className="muted small">Die Fitness-Kurve oben gewichtet nach Intensität. Hier zählt jede Stunde gleich – die aerobe Basis wächst vor allem über den lockeren Umfang. Wer ihn stärker in Fitness und Form sehen will: unter Einstellungen das Belastungsmodell „Umfangsbetont“ wählen.</p>
+    </div>
   );
 }

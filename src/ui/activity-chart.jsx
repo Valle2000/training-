@@ -1,6 +1,6 @@
 // Verlaufsdiagramm einer Einheit wie bei TrainingPeaks: Kurven ein-/ausblenden, Bereich per Ziehen oder Regler
 // wählen, Werte des Bereichs, Lesefinger und Zoom. Verlauf liegt im 5-s-Raster vor.
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ZoomIn, ZoomOut } from 'lucide-react';
 import { fmtPace } from '../lib/laps.js';
 import { fmtDuration, fmtNum } from './common.jsx';
@@ -28,13 +28,14 @@ function metricDefs(series, sport) {
 
 const mean = (a) => { const v = a.filter((x) => x != null && x > 0); return v.length ? v.reduce((x, y) => x + y, 0) / v.length : null; };
 
-export function ActivityChart({ series, sport, laps }) {
+export function ActivityChart({ series, sport, laps, onSelect }) {
   const defs = useMemo(() => metricDefs(series, sport), [series, sport]);
   const n = defs[0]?.values.length || 0;
   const [shown, setShown] = useState(() => defs.filter((d) => d.id === 'hr' || d.id === 'power').map((d) => d.id));
   const [sel, setSel] = useState([0, Math.max(0, n - 1)]);
   const [view, setView] = useState([0, Math.max(0, n - 1)]);
   const [hover, setHover] = useState(null);
+  useEffect(() => { onSelect?.(sel); }, [sel[0], sel[1]]);
   const drag = useRef(null);
   const svg = useRef(null);
   // Runden auf die Bewegungszeit abbilden (aufsummierte Rundendauer).
