@@ -22,7 +22,7 @@ export const sportLabel = (id) => sportById(id).label;
 // FIT sport/subSport → eigene Sportart.
 export function sportFromFit(sport, subSport) {
   const s = String(sport || '').toLowerCase(), sub = String(subSport || '').toLowerCase();
-  if (s === 'crossCountrySkiing'.toLowerCase() || s === 'cross_country_skiing') return sub.includes('skate') ? 'xc_skate' : 'xc_classic';
+  if (s === 'crossCountrySkiing'.toLowerCase() || s === 'cross_country_skiing') return /skat|free/.test(sub) ? 'xc_skate' : 'xc_classic';
   if (s === 'rollerskiing' || s === 'roller_skiing' || sub.includes('roller')) return sub.includes('classic') ? 'rollerski_classic' : sub.includes('skate') ? 'rollerski_skate' : 'rollerski';
   if (s === 'running') return sub.includes('trail') ? 'hike' : 'run';
   if (s === 'hiking' || s === 'walking') return 'hike';

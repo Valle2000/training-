@@ -149,6 +149,9 @@ async function syncPolar() {
       if (fit?.length) raw = await parseFit(fit);
     } catch { /* ohne FIT: Zusammenfassung verwenden */ }
     if (raw && raw.sport === 'other' && summarySport !== 'other') raw.sport = summarySport;
+    // Langlauf-Stil aus der benannten Polar-Sportart (z. B. „Freestyle skiing“) gilt vor dem FIT-Stil.
+    const namedXc = polarSport(ex.detailed_sport_info ?? ex['detailed-sport-info']);
+    if (raw && /^xc_/.test(raw.sport) && /^xc_/.test(namedXc)) raw.sport = namedXc;
     if (old) {
       const mappedSport = ex.sport?.id != null ? getData().settings.polarSportMap?.[ex.sport.id] : null;
       const sportNow = mappedSport || raw?.sport;

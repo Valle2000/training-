@@ -76,3 +76,10 @@ test('FIT: Concept2 SkiErg und Rollski-Stil', async () => {
   assert.equal(sportFromFit('rollerSkiing', 'skate'), 'rollerski_skate');
   assert.equal(sportFromFit('rollerSkiing', ''), 'rollerski');
 });
+
+test('Freestyle-Skiing ist Skating (FIT und benannte Polar-Sportart)', async () => {
+  const { sportFromFit, polarSport } = await import('../src/lib/sports.js');
+  assert.equal(sportFromFit('crossCountrySkiing', 'freestyle'), 'xc_skate');
+  assert.equal(polarSport('Freestyle skiing'), 'xc_skate');
+  assert.equal(polarSport('Cross-country skiing'), 'xc_classic');
+});
