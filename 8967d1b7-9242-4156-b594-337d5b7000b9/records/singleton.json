@@ -2,18 +2,106 @@
  {
   "id": "settings",
   "deleted": false,
-  "updated_at": "2026-10-27T08:42:47.568814+00:00",
+  "updated_at": "2026-10-28T08:17:59.15157+00:00",
   "data": {
+   "ai": {
+    "coach": {
+     "model": "claude-sonnet-5-5",
+     "effort": "high"
+    }
+   },
    "age": "26",
+   "ftp": "384",
+   "sex": "m",
    "lthr": "170",
    "hrMax": "193",
    "hrRest": "38",
+   "season": {
+    "focus": [],
+    "wizard": {
+     "end": "2027-03-21",
+     "keys": [
+      "hit_hill",
+      "race_pace",
+      "speed",
+      "long",
+      "dtam_3x20",
+      "dt_pm",
+      "dtpm_8x4",
+      "hit_6x4",
+      "hit_5x5",
+      "hit_6x3",
+      "hit_pyr",
+      "race_tt"
+     ],
+     "start": "2026-11-02",
+     "dtDays": 1,
+     "horizon": 8,
+     "longDay": 7,
+     "profile": {
+      "goal": "allround",
+      "weak": [
+       "threshold",
+       "vo2",
+       "sprint",
+       "strength"
+      ],
+      "likes": [
+       "bike",
+       "run",
+       "rollerski",
+       "skierg",
+       "hike"
+      ],
+      "style": "steady",
+      "strong": [
+       "endurance",
+       "skate"
+      ],
+      "dislikes": [],
+      "seriousness": "performance"
+     },
+     "approach": "norwegian",
+     "dtDouble": "always",
+     "hardDays": [
+      3,
+      6
+     ],
+     "restDays": [
+      1
+     ],
+     "dtAmSport": "skierg",
+     "noSkiDays": [
+      4
+     ],
+     "peakHours": "19",
+     "singleDays": [
+      2
+     ],
+     "startHours": "17",
+     "strengthDays": [
+      4,
+      7
+     ],
+     "strengthPerWeek": 2
+    },
+    "baseHours": "17",
+    "peakHours": "19",
+    "winterRunHours": "3"
+   },
+   "lastSync": "2026-10-28T08:17:54.576Z",
    "weightKg": "80",
    "ftpSkierg": "224",
    "titleRules": {
     "20:00, 2×20:00/2:00r, 2×20:00": "3x20min"
    },
-   "metricsVersion": 7,
+   "sportByTempo": {
+    "über 17 km/h|Winter": "xc_skate"
+   },
+   "polarSportMap": {
+    "83": "strength"
+   },
+   "metricsVersion": 9,
    "titleRulesSeeded": true,
    "thresholdDismissed": {
     "ftp": 338,

@@ -1,0 +1,148 @@
+[
+ {
+  "id": "mvqhefvahtx32",
+  "deleted": true,
+  "updated_at": "2026-10-27T22:01:38.394549+00:00",
+  "data": null
+ },
+ {
+  "id": "mvr8e88qs60zv",
+  "deleted": false,
+  "updated_at": "2026-10-27T22:03:08.706964+00:00",
+  "data": {
+   "id": "mvr8e88qs60zv",
+   "date": "2026-12-19",
+   "goal": "Podest",
+   "name": "Gastein Classics ",
+   "notes": "",
+   "result": {
+    "timeS": null,
+    "gapPct": null,
+    "winnerS": null
+   },
+   "priority": "B",
+   "technique": "Klassisch",
+   "distanceKm": "30"
+  }
+ },
+ {
+  "id": "mvr8f09xu3ygl",
+  "deleted": false,
+  "updated_at": "2026-10-27T22:05:23.474153+00:00",
+  "data": {
+   "id": "mvr8f09xu3ygl",
+   "date": "2027-03-14",
+   "goal": "Top 10",
+   "name": "Engadiner ",
+   "notes": "",
+   "result": {
+    "timeS": null,
+    "gapPct": null,
+    "winnerS": null
+   },
+   "priority": "A",
+   "technique": "Skating",
+   "distanceKm": "45"
+  }
+ },
+ {
+  "id": "mvr8hx4ct7rn0",
+  "deleted": false,
+  "updated_at": "2026-10-27T22:05:52.31663+00:00",
+  "data": {
+   "id": "mvr8hx4ct7rn0",
+   "date": "2027-02-06",
+   "goal": "Sieg",
+   "name": "KLL",
+   "notes": "",
+   "result": {
+    "timeS": null,
+    "gapPct": null,
+    "winnerS": null
+   },
+   "priority": "B",
+   "technique": "Skating",
+   "distanceKm": "42"
+  }
+ },
+ {
+  "id": "mvr8ikgxm6xt2",
+  "deleted": false,
+  "updated_at": "2026-10-27T22:06:17.95368+00:00",
+  "data": {
+   "id": "mvr8ikgxm6xt2",
+   "date": "2027-02-07",
+   "goal": "",
+   "name": "KLL Klassik",
+   "notes": "",
+   "result": {
+    "timeS": null,
+    "gapPct": null,
+    "winnerS": null
+   },
+   "priority": "B",
+   "technique": "Klassisch",
+   "distanceKm": "42"
+  }
+ },
+ {
+  "id": "mvr8j1vzt8l1m",
+  "deleted": false,
+  "updated_at": "2026-10-27T22:06:44.073545+00:00",
+  "data": {
+   "id": "mvr8j1vzt8l1m",
+   "date": "2027-01-10",
+   "goal": "Podest",
+   "name": "Planoiras",
+   "notes": "",
+   "result": {
+    "timeS": null,
+    "gapPct": null,
+    "winnerS": null
+   },
+   "priority": "B",
+   "technique": "Skating",
+   "distanceKm": "25"
+  }
+ },
+ {
+  "id": "mvr8jn4fd09aw",
+  "deleted": false,
+  "updated_at": "2026-10-27T22:07:20.116606+00:00",
+  "data": {
+   "id": "mvr8jn4fd09aw",
+   "date": "2027-01-16",
+   "goal": "Amateur gewinnen",
+   "name": "La Diagonela",
+   "notes": "",
+   "result": {
+    "timeS": null,
+    "gapPct": null,
+    "winnerS": null
+   },
+   "priority": "C",
+   "technique": "Klassisch",
+   "distanceKm": "54"
+  }
+ },
+ {
+  "id": "mvr8keodoqx2f",
+  "deleted": false,
+  "updated_at": "2026-10-27T22:07:50.94423+00:00",
+  "data": {
+   "id": "mvr8keodoqx2f",
+   "date": "2027-01-17",
+   "goal": "Top 3",
+   "name": "La Sfida",
+   "notes": "",
+   "result": {
+    "timeS": null,
+    "gapPct": null,
+    "winnerS": null
+   },
+   "priority": "B",
+   "technique": "Skating",
+   "distanceKm": "23"
+  }
+ }
+]
