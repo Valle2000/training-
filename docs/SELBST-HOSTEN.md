@@ -130,7 +130,7 @@ ob der Anbieter antwortet. **Trennen** entfernt nur die Verbindung, die Einheite
 ### Über Datei importieren (ohne Verbindung)
 
 Unter **Mehr → Einstellungen → Vergangene Einheiten importieren → Dateien wählen** nimmst du FIT, TCX,
-GPX, CSV, JSON oder ZIP-Archive. Das eignet sich für alles, was keine direkte Verbindung hat:
+GPX, CSV, JSON oder ZIP-Archive. Das eignet sich für alles, was keine direkte Verbindung hat. Die Menüpfade der Anbieter ändern sich manchmal – wenn ein Punkt nicht mehr so heißt, suche nach „Export“ oder „Daten herunterladen“:
 
 | Quelle | So exportierst du | Hinweis |
 | --- | --- | --- |
