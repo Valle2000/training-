@@ -288,3 +288,14 @@ test('Hauptziel Laufen gilt auch im Sommer ohne Schwerpunkt-Zeitraum', () => {
   assert.ok(runs > 0, 'Laufen im Sommer geplant');
   assert.ok(runs > ski, `mehr Laufen (${runs}) als Ski (${ski})`);
 });
+
+test('Multisport-Sommer (Rad + Lauf) plant beide Sportarten, danach Ski', () => {
+  const sum = [{ date: '2027-08-15', name: 'Sommerrennen', priority: 'A', distanceKm: 21 }];
+  const focus = (m) => (m >= '2027-05-01' && m <= '2027-09-30' ? 'tri' : null);
+  const w = generatePlan({ ...base, start: '2027-05-03', end: '2027-10-31', approach: 'polarized', focusFor: focus }, sum);
+  const summer = w.filter((x) => x.from < '2027-09-30').flatMap((x) => x.days.flatMap((d) => d.sessions));
+  const sports = new Set(summer.map((s) => s.sport));
+  assert.ok(sports.has('run') && sports.has('bike'), `Rad und Lauf im Sommer: ${[...sports]}`);
+  const autumn = w.filter((x) => x.from > '2027-10-01').flatMap((x) => x.days.flatMap((d) => d.sessions));
+  assert.ok(autumn.some((s) => /^(xc_|rollerski)/.test(s.sport || '')), 'Ski nach dem Sommer');
+});

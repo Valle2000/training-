@@ -363,9 +363,9 @@ function HardDays({ o, set, setO, schedule }) {
 }
 
 const FOCUS_PRESETS = [
-  { label: 'Sommer Laufen', sport: 'run', from: '06-01', to: '08-31' },
-  { label: 'Sommer Rad', sport: 'bike', from: '06-01', to: '08-31' },
-  { label: 'Triathlon-Block', sport: 'tri', from: '05-01', to: '08-31' },
+  { label: 'Multisport Rad + Lauf (Mai–Sep)', sport: 'tri', from: '05-01', to: '09-30' },
+  { label: 'Sommer Laufen (Mai–Sep)', sport: 'run', from: '05-01', to: '09-30' },
+  { label: 'Sommer Rad (Mai–Sep)', sport: 'bike', from: '05-01', to: '09-30' },
 ];
 const FOCUS_WHY = {
   run: 'Laufen im Sommer: viel Ausdauer ohne Ski. Die Stoßbelastung steigt – Laufumfang langsam steigern (max. ca. 10 % pro Woche), Schwellen- und Intervalleinheiten laufen.',
