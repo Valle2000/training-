@@ -109,6 +109,48 @@ Monatsbudget einstellen.
 - **Änderungen erscheinen nicht:** Nach Änderungen an Variablen immer neu deployen.
 - **Daten fehlen auf dem zweiten Gerät:** Auf dem anderen Gerät mit demselben Konto anmelden und kurz warten.
 
+## Geräte und Apps verbinden
+
+Alles findest du unter **Mehr → Einstellungen**. Die Karte **„Verbindungen“** zeigt jeden Anbieter mit
+Verbinden-Schaltfläche. Ist ein Anbieter auf dem Server nicht eingerichtet, steht der Hinweis
+„Auf dem Server nicht eingerichtet“ dabei. Dann fehlt die Anbieter-App aus Schritt 5.
+
+### Direkt verbinden (automatischer Abgleich)
+
+| Gerät / App | So verbindest du | Was kommt in die App |
+| --- | --- | --- |
+| **Polar** (Uhr, Band, Polar Flow) | Verbindungen → Polar → **Verbinden** → Polar-Konto anmelden und zustimmen | Einheiten, Nightly Recharge (HRV) und Schlaf der **letzten 30 Tage** |
+| **Concept2** (ErgData, SkiErg, RowErg, BikeErg) | Verbindungen → Concept2 → **Verbinden** → Concept2-Konto anmelden | Einheiten inkl. Schlagdaten, mit **„Ganze Historie“** die komplette Liste |
+| **Wahoo** (Geräte und Apps) | Verbindungen → Wahoo → **Verbinden** | Einheiten als FIT-Datei, mit **„Ganze Historie“** alles |
+
+Nach dem Verbinden gleicht die App beim Öffnen und beim Zurückkehren in die App automatisch ab, höchstens
+alle 30 Minuten. Mit **Abgleichen** auf dem Heute-Tab kannst du es sofort auslösen. Mit **Testen** siehst du,
+ob der Anbieter antwortet. **Trennen** entfernt nur die Verbindung, die Einheiten bleiben.
+
+### Über Datei importieren (ohne Verbindung)
+
+Unter **Mehr → Einstellungen → Vergangene Einheiten importieren → Dateien wählen** nimmst du FIT, TCX,
+GPX, CSV, JSON oder ZIP-Archive. Das eignet sich für alles, was keine direkte Verbindung hat:
+
+| Quelle | So exportierst du | Hinweis |
+| --- | --- | --- |
+| **Polar** (ältere Einheiten) | Polar Flow im Web → Tagebuch → Einheit → Exportieren (TCX, CSV oder FIT). Mehrere auch als ZIP. Oder den Komplett-Export deines Kontos | Für alles vor den letzten 30 Tagen. Der Konto-Export enthält die Polar-Sportnummer |
+| **Garmin** (Uhr, Garmin Connect) | Garmin Connect → Aktivität öffnen → Zahnrad / Exportieren → Original (FIT) oder TCX. Ganzes Konto: Einstellungen → Datenschutz → Daten exportieren | Garmin liefert von sich aus keine Verbindung ohne Anbieter-Freigabe (siehe unten) |
+| **Strava** | Strava → Einstellungen → Dein Konto → **Daten herunterladen** → ZIP | Die ZIP enthält die Liste der Aktivitäten. Bei Rollski und Moving Time nutzt die App die Angaben aus Strava |
+| **Andere Apps oder Geräte** | Die App exportiert FIT, TCX oder GPX. Diese Dateien direkt hochladen | Sportart kommt aus der Datei, bei „Other“ fragt die App nach |
+
+### Neue Sportarten zuordnen
+
+Kennt die App eine Sportnummer oder einen Namen noch nicht, erscheint nach dem Import das Fenster
+**„Neue Polar-Sportarten“**. Du wählst die passende Sportart, die Zuordnung gilt für alle künftigen
+Einheiten mit dieser Nummer oder diesem Namen. Einheiten ohne Angabe findest du unter dem Filter
+**Sonstiges** und kannst sie nach Tempo und Jahreszeit zuordnen.
+
+### Garmin: Stand
+
+Eine direkte Garmin-Verbindung gibt es nicht. Garmin prüft neue Entwickler-Zugänge selbst, und der
+Antrag war im Herbst 2026 teilweise pausiert. Bis dahin funktioniert der Weg über den Export oben.
+
 ## Updates aus dem Original übernehmen
 
 In deiner Kopie auf GitHub **Sync fork** wählen, dann in Vercel neu deployen. Deine Umgebungsvariablen
