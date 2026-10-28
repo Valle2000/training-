@@ -95,7 +95,7 @@ Ab dann gleicht die App deine Daten zwischen Geräten ab.
 ## Eigener Anthropic-Schlüssel (für den KI-Coach)
 
 Wenn du den Schlüssel nicht in Vercel hinterlegen willst, trägst du ihn in der App selbst ein
-(**Einstellungen → KI**). Er bleibt auf deinem Gerät und wird nur bei jeder Anfrage mitgeschickt.
+(**Einstellungen → Karte „KI-Zugang“**). Er bleibt auf deinem Gerät und wird nur bei jeder Anfrage mitgeschickt.
 Die Kosten werden dann über dein Anthropic-Konto abgerechnet. In der App lässt sich außerdem ein
 Monatsbudget einstellen.
 
