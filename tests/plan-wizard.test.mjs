@@ -278,3 +278,13 @@ test('Winter: eine Ski-Einheit pro Tag, Double Threshold morgens am SkiErg, Tage
   const am = days.flatMap((d) => d.sessions).filter((s) => /Double Threshold morgens/.test(s.title));
   assert.ok(am.length > 0 && am.every((s) => s.sport === 'skierg'), 'DT morgens SkiErg');
 });
+
+test('Hauptziel Laufen gilt auch im Sommer ohne Schwerpunkt-Zeitraum', () => {
+  const summerRaces = [{ date: '2027-08-15', name: 'Lauf-Ziel', priority: 'A', distanceKm: 21 }];
+  const w = generatePlan({ ...base, start: '2027-06-01', end: '2027-08-31', approach: 'polarized', focusFor: () => 'run' }, summerRaces);
+  const sessions = w.flatMap((x) => x.days.flatMap((d) => d.sessions));
+  const runs = sessions.filter((s) => s.sport === 'run').length;
+  const ski = sessions.filter((s) => /^(xc_|rollerski)/.test(s.sport || '')).length;
+  assert.ok(runs > 0, 'Laufen im Sommer geplant');
+  assert.ok(runs > ski, `mehr Laufen (${runs}) als Ski (${ski})`);
+});

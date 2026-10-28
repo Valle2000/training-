@@ -10,6 +10,7 @@ import { Sheet, fmtDate, fmtNum, toast } from './common.jsx';
 import { freeMinutes, hasSchedule, periodForWeek, busyOn } from '../lib/week-adapt.js';
 
 const DOW = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+const MAIN_GOALS = [['rollerski', 'Ski / Rollski'], ['run', 'Laufen'], ['bike', 'Rad'], ['tri', 'Triathlon']];
 // Gruppen im Katalog; Intervalle nach Zone getrennt.
 const GROUPS = [
   ...KEY_TYPES.map(([id, label]) => ({ id, label, match: (k) => (id.startsWith('hit_') ? k.type === 'hit' && k.zone === id.slice(4) : k.type === id) })),
@@ -48,7 +49,9 @@ export function PlanWizard({ onClose }) {
   const keys = o.keys || ap.defaults;
   const pr = o.profile || {};
   const rec = recommend(pr, Number(o.startHours) || 10);
-  const plan = useMemo(() => (step >= 5 ? generatePlan({ ...o, keys, customKeys: custom, capFor: hasSchedule(settings.schedule) ? (d) => freeMinutes(d, settings.schedule) : null, periodFor: settings.schedule?.periods?.length ? (m) => periodForWeek(m, settings.schedule) : null, busyFor: hasSchedule(settings.schedule) ? (d) => busyOn(d, settings.schedule).length > 0 : null, focusFor: (m) => focusOn(m, settings.season?.focus, settings.season?.snow, settings.season?.winterSub), winterRunHours: settings.season?.winterRunHours ?? 2.5 }, races) : []), [step, o, keys, races, custom, settings.schedule, settings.season?.focus, settings.season?.snow, settings.season?.winterSub, settings.season?.winterRunHours]);
+  // Hauptziel der Saison: gilt in allen Wochen ohne Schwerpunkt-Zeitraum (Ski/Rollski ist der Standard, dann null).
+  const mainFocus = ['run', 'bike', 'tri'].includes(settings.season?.mainSport) ? settings.season.mainSport : null;
+  const plan = useMemo(() => (step >= 5 ? generatePlan({ ...o, keys, customKeys: custom, capFor: hasSchedule(settings.schedule) ? (d) => freeMinutes(d, settings.schedule) : null, periodFor: settings.schedule?.periods?.length ? (m) => periodForWeek(m, settings.schedule) : null, busyFor: hasSchedule(settings.schedule) ? (d) => busyOn(d, settings.schedule).length > 0 : null, focusFor: (m) => focusOn(m, settings.season?.focus, settings.season?.snow, settings.season?.winterSub) || mainFocus, winterRunHours: settings.season?.winterRunHours ?? 2.5 }, races) : []), [step, o, keys, races, custom, settings.schedule, settings.season?.focus, settings.season?.snow, settings.season?.winterSub, settings.season?.winterRunHours, settings.season?.mainSport]);
   const set = (k, v) => setO({ ...o, [k]: v });
   const toggleKey = (id) => set('keys', keys.includes(id) ? keys.filter((k) => k !== id) : [...keys, id]);
   const setPr = (k, v) => set('profile', { ...pr, [k]: v });
@@ -375,9 +378,14 @@ function FocusBlocks({ t, focus, snow, winterSub, settings }) {
   const set = (list) => update((d) => ({ ...d, settings: { ...d.settings, season: { ...(d.settings.season || {}), focus: list } } }));
   const setSnow = (list) => update((d) => ({ ...d, settings: { ...d.settings, season: { ...(d.settings.season || {}), snow: list } } }));
   const setSub = (v) => update((d) => ({ ...d, settings: { ...d.settings, season: { ...(d.settings.season || {}), winterSub: v } } }));
+  const mainSport = settings.season?.mainSport || 'rollerski';
+  const setMain = (v) => update((d) => ({ ...d, settings: { ...d.settings, season: { ...(d.settings.season || {}), mainSport: v } } }));
   return (
     <div className="card">
-      <b>Sport-Schwerpunkte</b>
+      <b>Hauptziel der Saison</b>
+      <p className="muted small">Welche Sportart steht im Vordergrund? Gilt für alle Wochen, die kein Schwerpunkt-Zeitraum unten abdeckt – auch im Sommer.</p>
+      <div className="chips">{MAIN_GOALS.map(([id, label]) => <button key={id} className={`chip${mainSport === id ? ' on' : ''}`} onClick={() => setMain(id)}>{label}</button>)}</div>
+      <b style={{ display: 'block', marginTop: 12 }}>Sport-Schwerpunkte</b>
       <p className="muted small">Du machst mehrere Sportarten? Lege Zeiträume fest, in denen der Plan auf eine andere Sportart setzt – z. B. im Sommer Laufen oder Rad. Außerhalb davon bleibt es beim Rollski/Ski-Plan.</p>
       <div className="chips">{FOCUS_PRESETS.map((p) => <button key={p.label} className="chip" onClick={() => set([...focus, { id: uid(), sport: p.sport, label: p.label, from: `${year}-${p.from}`, to: `${year}-${p.to}` }])}><Plus size={13} /> {p.label}</button>)}</div>
       {focus.some((f, i) => focus.slice(i + 1).some((g) => f.from <= g.to && g.from <= f.to)) && <div className="notice" style={{ background: 'var(--warnbg)', color: 'var(--warn)' }}>Zwei Zeiträume überschneiden sich – im Plan gilt der oben stehende.</div>}
