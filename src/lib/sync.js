@@ -132,46 +132,53 @@ async function syncPolar() {
   const list = (await call('polar', '/v3/exercises')) || [];
   let added = 0;
   const known = new Map(getData().activities.filter((a) => a.source === 'polar').map((a) => [a.externalId, a]));
+  const failed = [];
   for (const ex of list) {
-    const old = known.get(String(ex.id));
-    if (old) {
-      // Bekannte „Sonstiges“-Einheit: mit gespeicherter Zuordnung umstellen, sonst unverändert lassen.
-      const mappedSport = ex.sport?.id != null ? getData().settings.polarSportMap?.[ex.sport.id] : null;
-      if (mappedSport && old.sport === 'other') setSport(old.id, mappedSport);
-      if (old.sport === 'other') askPolar(ex, mappedSport || 'other');
-      continue;
-    }
-    let raw = null;
-    // Sportart aus der Zusammenfassung (Bezeichnung, sonst Sportnummer) – gilt auch, wenn die FIT-Datei nur „Sonstiges“ liefert.
-    const summarySport = polarSport(ex.detailed_sport_info ?? ex['detailed-sport-info']) !== 'other' ? polarSport(ex.detailed_sport_info ?? ex['detailed-sport-info']) : (polarSportId(ex.sport?.id ?? ex.sport) || 'other');
     try {
-      const fit = await call('polar', `/v3/exercises/${ex.id}/fit`, { binary: true });
-      if (fit?.length) raw = await parseFit(fit);
-    } catch { /* ohne FIT: Zusammenfassung verwenden */ }
-    if (raw && raw.sport === 'other' && summarySport !== 'other') raw.sport = summarySport;
-    // Langlauf-Stil aus der benannten Polar-Sportart (z. B. „Freestyle skiing“) gilt vor dem FIT-Stil.
-    const namedXc = polarSport(ex.detailed_sport_info ?? ex['detailed-sport-info']);
-    if (raw && /^xc_/.test(raw.sport) && /^xc_/.test(namedXc)) raw.sport = namedXc;
-    if (old) {
-      const mappedSport = ex.sport?.id != null ? getData().settings.polarSportMap?.[ex.sport.id] : null;
-      const sportNow = mappedSport || raw?.sport;
-      if (sportNow && sportNow !== 'other') setSport(old.id, sportNow);
-      continue;
+      const old = known.get(String(ex.id));
+      if (old) {
+        // Bekannte „Sonstiges“-Einheit: mit gespeicherter Zuordnung umstellen, sonst unverändert lassen.
+        const mappedSport = ex.sport?.id != null ? getData().settings.polarSportMap?.[ex.sport.id] : null;
+        if (mappedSport && old.sport === 'other') setSport(old.id, mappedSport);
+        if (old.sport === 'other') askPolar(ex, mappedSport || 'other');
+        continue;
+      }
+      let raw = null;
+      // Sportart aus der Zusammenfassung (Bezeichnung, sonst Sportnummer) – gilt auch, wenn die FIT-Datei nur „Sonstiges“ liefert.
+      const summarySport = polarSport(ex.detailed_sport_info ?? ex['detailed-sport-info']) !== 'other' ? polarSport(ex.detailed_sport_info ?? ex['detailed-sport-info']) : (polarSportId(ex.sport?.id ?? ex.sport) || 'other');
+      try {
+        const fit = await call('polar', `/v3/exercises/${ex.id}/fit`, { binary: true });
+        if (fit?.length) raw = await parseFit(fit);
+      } catch { /* ohne FIT: Zusammenfassung verwenden */ }
+      if (raw && raw.sport === 'other' && summarySport !== 'other') raw.sport = summarySport;
+      // Langlauf-Stil aus der benannten Polar-Sportart (z. B. „Freestyle skiing“) gilt vor dem FIT-Stil.
+      const namedXc = polarSport(ex.detailed_sport_info ?? ex['detailed-sport-info']);
+      if (raw && /^xc_/.test(raw.sport) && /^xc_/.test(namedXc)) raw.sport = namedXc;
+      if (old) {
+        const mappedSport = ex.sport?.id != null ? getData().settings.polarSportMap?.[ex.sport.id] : null;
+        const sportNow = mappedSport || raw?.sport;
+        if (sportNow && sportNow !== 'other') setSport(old.id, sportNow);
+        continue;
+      }
+      if (!raw) {
+        // Die Schnittstelle liefert Feldnamen mit Unterstrich (start_time), ältere Exporte mit Bindestrich – beides lesen.
+        const f = (k) => ex[k.replace(/-/g, '_')] ?? ex[k];
+        const offset = f('start-time-utc-offset') || 0; // Minuten
+        const start = new Date(Date.parse(f('start-time') + 'Z') - offset * 60000).toISOString();
+        // Sportart: Bezeichnung zuerst, dann Sportnummer; sonst „Sonstiges“.
+        const sport = polarSport(f('detailed-sport-info')) !== 'other' ? polarSport(f('detailed-sport-info')) : (polarSportId(ex.sport?.id ?? ex.sport) || polarSport(typeof ex.sport === 'string' ? ex.sport : ''));
+        const hr = f('heart-rate') || {};
+        raw = { start, sport, elapsedS: isoDuration(f('duration')), distanceM: f('distance'), avgHr: hr.average, maxHr: hr.maximum, calories: f('calories') };
+      }
+      askPolar(ex, raw.sport);
+      if (await store({ ...raw, source: 'polar', externalId: String(ex.id), polarSportId: ex.sport?.id ?? null })) added++;
+    } catch (e) {
+      // Eine fehlerhafte Einheit darf nicht den ganzen Abgleich abbrechen.
+      failed.push(`${ex.id}: ${e.message}`);
     }
-    if (!raw) {
-      // Die Schnittstelle liefert Feldnamen mit Unterstrich (start_time), ältere Exporte mit Bindestrich – beides lesen.
-      const f = (k) => ex[k.replace(/-/g, '_')] ?? ex[k];
-      const offset = f('start-time-utc-offset') || 0; // Minuten
-      const start = new Date(Date.parse(f('start-time') + 'Z') - offset * 60000).toISOString();
-      // Sportart: Bezeichnung zuerst, dann Sportnummer; sonst „Sonstiges“.
-      const sport = polarSport(f('detailed-sport-info')) !== 'other' ? polarSport(f('detailed-sport-info')) : (polarSportId(ex.sport?.id ?? ex.sport) || polarSport(typeof ex.sport === 'string' ? ex.sport : ''));
-      const hr = f('heart-rate') || {};
-      raw = { start, sport, elapsedS: isoDuration(f('duration')), distanceM: f('distance'), avgHr: hr.average, maxHr: hr.maximum, calories: f('calories') };
-    }
-    askPolar(ex, raw.sport);
-    if (await store({ ...raw, source: 'polar', externalId: String(ex.id), polarSportId: ex.sport?.id ?? null })) added++;
   }
   flushPolarAsk();
+  if (failed.length) console.warn('[polar] übersprungen:', failed);
   await syncPolarWellness();
   return added;
 }
