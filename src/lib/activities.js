@@ -5,6 +5,7 @@ import { sportById } from './sports.js';
 import { thin } from './series.js';
 import { lapsFromSeries } from './laps.js';
 import { keySessionRows } from './keysessions.js';
+import { rollerPower } from './rollerski-power.js';
 
 // FTP je Sportart: SkiErg und Rudern haben eigene Schwellenleistungen, sonst gilt die Rad-FTP.
 export const ftpFor = (s = {}, sport) => num({ skierg: s.ftpSkierg, row: s.ftpRow, bikeerg: s.ftp }[sport]) ?? num(s.ftp);
@@ -55,6 +56,25 @@ export function movingSeconds(speed, { stopS = 120, minMs = 0.8 } = {}) {
 }
 
 // Belastung, Zonen usw. aus Rohdaten berechnen. raw.series in 1 Hz (optional).
+// Rollski ohne Wattmesser: geschätzte Leistung gesamt und je Runde (Stufe vorne/hinten aus den Einstellungen).
+function rollerExtra(raw, series, settings, movingS) {
+  if (!String(raw.sport || '').startsWith('rollerski') || !series?.speed?.length || !series?.alt?.length) return {};
+  const front = settings.rollRes?.front ?? 3, rear = settings.rollRes?.rear ?? 3;
+  const opts = { massKg: Number(settings.weightKg) || 75, front, rear, dt: 1 };
+  const est = rollerPower(series, opts);
+  const slice = (from, to) => ({ speed: series.speed.slice(from, to), alt: series.alt.slice(from, to) });
+  const perLap = (raw.laps || []).map((l) => {
+    const from = Math.max(0, Math.round(l.startS || 0)), to = Math.min(series.speed.length, Math.round((l.startS || 0) + (l.durationS || 0)));
+    const r = to > from ? rollerPower(slice(from, to), opts) : null;
+    return r ? r.watts : null;
+  });
+  return {
+    rollPower: est ? est.watts : null,
+    rollPowerLaps: perLap.some((w) => w != null) ? perLap : null,
+    rollRes: { front, rear },
+  };
+}
+
 export function evaluate(raw, settings) {
   const athlete = athleteOf(settings, raw.sport);
   const series = cleanSeries(raw.series);
@@ -89,6 +109,7 @@ export function evaluate(raw, settings) {
     ...(series ? seriesStats(series, { ftp: athlete.ftp, powerSport: !!sportById(raw.sport).power }) : {}),
     // Automatische Runden: von der Uhr (Polar-Autolaps), sonst aus dem Tempo berechnet (Laufen/Ski 1 km, Rad 5 km).
     autoLaps: raw.deviceAutoLaps || (series ? distanceSplits(series, raw.sport) : null),
+    ...rollerExtra(raw, series, settings, movingS),
   };
 }
 

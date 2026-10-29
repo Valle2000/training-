@@ -58,11 +58,15 @@ export function keySessionRows(activities, ks) {
   return activities.filter((a) => matchesKey(a, ks)).sort((a, b) => a.date.localeCompare(b.date)).map((a) => {
     const lac = parseLactate(a.lactate);
     const lapAvg = range ? lapAverages(a.laps, range) : null;
-    const pw = lapAvg ? lapAvg.power : curveAt(a.powerCurve, d), hr = lapAvg ? lapAvg.hr : curveAt(a.hrCurve, d);
+    // Ohne Wattmesser (Rollski): geschätzte Leistung je Runde, nur als Hinweis gekennzeichnet.
+    const rollLap = range && a.rollPowerLaps && a.laps ? lapAverages(a.laps.map((l, i) => ({ ...l, avgPower: a.rollPowerLaps[i] })), range) : null;
+    const measured = (lapAvg && lapAvg.power) || curveAt(a.powerCurve, d);
+    const pw = measured || rollLap?.power || null, hr = lapAvg ? lapAvg.hr : curveAt(a.hrCurve, d);
+    const powerEstimated = !measured && !!rollLap?.power;
     return {
       id: a.id, date: a.date, minutes: Math.round((a.durationS || 0) / 60), load: a.load, rpe: a.rpe,
       avgHr: a.avgHr, avgPower: a.avgPower, np: a.np, ef: a.ef, decoupling: a.decoupling,
-      intervalPower: pw, intervalHr: hr, fromLaps: !!lapAvg, intervalRatio: pw && hr ? Math.round((pw / hr) * 100) / 100 : null,
+      intervalPower: pw, intervalHr: hr, fromLaps: !!lapAvg, powerEstimated, intervalRatio: pw && hr ? Math.round((pw / hr) * 100) / 100 : null,
       lactateAvg: lac.length ? Math.round((lac.reduce((x, y) => x + y, 0) / lac.length) * 10) / 10 : null, lactateMax: lac.length ? Math.max(...lac) : null,
     };
   });
