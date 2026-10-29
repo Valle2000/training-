@@ -394,5 +394,20 @@
    "restHrManual": null,
    "sleepHManual": null
   }
+ },
+ {
+  "id": "2026-10-29",
+  "deleted": false,
+  "updated_at": "2026-10-29T07:08:04.13181+00:00",
+  "data": {
+   "hrv": 150,
+   "date": "2026-10-29",
+   "restHr": 38,
+   "sleepH": 7.2,
+   "source": "polar",
+   "recharge": 6,
+   "ansCharge": 7.5,
+   "sleepScore": 76
+  }
  }
 ]
