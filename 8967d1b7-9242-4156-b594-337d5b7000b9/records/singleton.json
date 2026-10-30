@@ -2,7 +2,7 @@
  {
   "id": "settings",
   "deleted": false,
-  "updated_at": "2026-10-29T09:05:19.956112+00:00",
+  "updated_at": "2026-10-29T21:54:21.965832+00:00",
   "data": {
    "ai": {
     "coach": {
@@ -89,7 +89,7 @@
     "peakHours": "19",
     "winterRunHours": "3"
    },
-   "lastSync": "2026-10-29T09:05:15.251Z",
+   "lastSync": "2026-10-29T21:54:17.355Z",
    "weightKg": "80",
    "ftpSkierg": "224",
    "titleRules": {
@@ -101,7 +101,7 @@
    "polarSportMap": {
     "83": "strength"
    },
-   "metricsVersion": 9,
+   "metricsVersion": 10,
    "titleRulesSeeded": true,
    "thresholdDismissed": {
     "ftp": 338,
