@@ -2,7 +2,7 @@
  {
   "id": "settings",
   "deleted": false,
-  "updated_at": "2026-10-29T21:54:21.965832+00:00",
+  "updated_at": "2026-10-31T08:43:31.540729+00:00",
   "data": {
    "ai": {
     "coach": {
@@ -17,7 +17,15 @@
    "hrMax": "193",
    "hrRest": "38",
    "season": {
-    "focus": [],
+    "focus": [
+     {
+      "id": "mvw36pa5rfqde",
+      "to": "2026-09-30",
+      "from": "2026-05-01",
+      "label": "Sommer Laufen (Mai–Sep)",
+      "sport": "run"
+     }
+    ],
     "wizard": {
      "end": "2027-03-21",
      "keys": [
@@ -86,10 +94,11 @@
      "strengthPerWeek": 2
     },
     "baseHours": "17",
+    "mainSport": "rollerski",
     "peakHours": "19",
     "winterRunHours": "3"
    },
-   "lastSync": "2026-10-29T21:54:17.355Z",
+   "lastSync": "2026-10-31T08:43:26.986Z",
    "weightKg": "80",
    "ftpSkierg": "224",
    "titleRules": {
