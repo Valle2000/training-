@@ -54,6 +54,8 @@ export function MorningSheet({ date, onClose }) {
           <div className="chips">{words.map((w, i) => <button key={w} className={`chip${f[k] === i + 1 ? ' on' : ''}`} onClick={() => set(k, i + 1)}>{w}</button>)}</div>
         </div>
       ))}
+      <label>Alkohol (Gläser, letzte 24 h)</label>
+      <div className="chips">{[0, 1, 2, 3, 4].map((n) => <button key={n} className={`chip${(f.alcohol ?? -1) === n ? ' on' : ''}`} onClick={() => set('alcohol', n)}>{n === 4 ? '4+' : n}</button>)}</div>
       <label>Symptome</label>
       <div className="chips">{SYMPTOMS.map(([id, label]) => <button key={id} className={`chip${f.symptoms.includes(id) ? ' on' : ''}`} onClick={() => set('symptoms', f.symptoms.includes(id) ? f.symptoms.filter((x) => x !== id) : [...f.symptoms, id])}>{label}</button>)}</div>
       <div className="grid2">
