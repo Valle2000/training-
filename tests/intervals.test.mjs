@@ -26,3 +26,14 @@ test('kurze Ausreißer unter einer Minute zählen nicht', () => {
   for (let i = 300; i < 330; i++) v[i] = 300;
   assert.equal(detectIntervals(v).length, 0);
 });
+
+test('Key Session nutzt erkannte Intervalle, wenn keine Runden passen', async () => {
+  const { keySessionRows } = await import('../src/lib/keysessions.js');
+  const act = { id: 'k', keySessionId: 'k1', date: '2026-10-20', sport: 'bike', durationS: 1800, load: 40, intervals: [
+    { durationS: 120, avg: 280, watts: true, hr: 170 }, { durationS: 120, avg: 280, watts: true, hr: 172 },
+  ] };
+  const ks = { id: 'k1', name: 'Test', sport: 'bike', keywords: 'test', intervalSec: 120 };
+  const [row] = keySessionRows([act], ks);
+  assert.equal(row.intervalPower, 280);
+  assert.equal(row.intervalCount, 2);
+});

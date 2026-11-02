@@ -6,6 +6,7 @@ import { thin } from './series.js';
 import { lapsFromSeries } from './laps.js';
 import { keySessionRows } from './keysessions.js';
 import { rollerPower } from './rollerski-power.js';
+import { detectIntervals } from './intervals.js';
 
 // FTP je Sportart: SkiErg und Rudern haben eigene Schwellenleistungen, sonst gilt die Rad-FTP.
 export const ftpFor = (s = {}, sport) => num({ skierg: s.ftpSkierg, row: s.ftpRow, bikeerg: s.ftp }[sport]) ?? num(s.ftp);
@@ -56,6 +57,19 @@ export function movingSeconds(speed, { stopS = 120, minMs = 0.8 } = {}) {
 }
 
 // Belastung, Zonen usw. aus Rohdaten berechnen. raw.series in 1 Hz (optional).
+// Erkannte Intervalle mit Ø-Watt (Rad, Ergometer) bzw. Ø-Tempo und Puls, für die Key Sessions.
+function intervalsOf(series) {
+  if (!series) return null;
+  const usePower = series.power?.some((p) => p > 0);
+  const src = usePower ? series.power : series.speed?.some((v) => v > 0) ? series.speed : null;
+  if (!src) return null;
+  const list = detectIntervals(src).map((x) => {
+    const hr = (series.hr || []).slice(x.startS, x.endS + 1).filter((h) => h > 0);
+    return { ...x, watts: usePower, hr: hr.length ? Math.round(hr.reduce((a, b) => a + b, 0) / hr.length) : null };
+  });
+  return list.length ? list : [];
+}
+
 // Rollski ohne Wattmesser: geschätzte Leistung gesamt und je Runde (Stufe vorne/hinten aus den Einstellungen).
 function rollerExtra(raw, series, settings, movingS) {
   if (!String(raw.sport || '').startsWith('rollerski') || !series?.speed?.length || !series?.alt?.length) return {};
@@ -110,6 +124,7 @@ export function evaluate(raw, settings) {
     // Automatische Runden: von der Uhr (Polar-Autolaps), sonst aus dem Tempo berechnet (Laufen/Ski 1 km, Rad 5 km).
     autoLaps: raw.deviceAutoLaps || (series ? distanceSplits(series, raw.sport) : null),
     ...rollerExtra(raw, series, settings, movingS),
+    intervals: intervalsOf(series),
   };
 }
 

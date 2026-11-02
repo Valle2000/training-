@@ -60,13 +60,19 @@ export function keySessionRows(activities, ks) {
     const lapAvg = range ? lapAverages(a.laps, range) : null;
     // Ohne Wattmesser (Rollski): geschätzte Leistung je Runde, nur als Hinweis gekennzeichnet.
     const rollLap = range && a.rollPowerLaps && a.laps ? lapAverages(a.laps.map((l, i) => ({ ...l, avgPower: a.rollPowerLaps[i] })), range) : null;
+    // Erkannte Intervalle (relativ zum Schnitt der Einheit): dauergewichteter Mittelwert, nur mit Watt.
+    const ivs = a.intervals?.length && a.intervals[0].watts ? a.intervals : null;
+    const ivDur = ivs ? ivs.reduce((x, i) => x + i.durationS, 0) : 0;
+    const ivAvg = ivs && ivDur ? Math.round(ivs.reduce((x, i) => x + i.avg * i.durationS, 0) / ivDur) : null;
+    const ivHr = ivs && ivDur && ivs.some((i) => i.hr) ? Math.round(ivs.reduce((x, i) => x + (i.hr || 0) * i.durationS, 0) / ivDur) : null;
     const measured = (lapAvg && lapAvg.power) || curveAt(a.powerCurve, d);
-    const pw = measured || rollLap?.power || null, hr = lapAvg ? lapAvg.hr : curveAt(a.hrCurve, d);
-    const powerEstimated = !measured && !!rollLap?.power;
+    const pw = measured || ivAvg || rollLap?.power || null, hr = lapAvg ? lapAvg.hr : (ivHr || curveAt(a.hrCurve, d));
+    const powerEstimated = !measured && !ivAvg && !!rollLap?.power;
+    const intervalCount = ivs ? ivs.length : null;
     return {
       id: a.id, date: a.date, minutes: Math.round((a.durationS || 0) / 60), load: a.load, rpe: a.rpe,
       avgHr: a.avgHr, avgPower: a.avgPower, np: a.np, ef: a.ef, decoupling: a.decoupling,
-      intervalPower: pw, intervalHr: hr, fromLaps: !!lapAvg, powerEstimated, intervalRatio: pw && hr ? Math.round((pw / hr) * 100) / 100 : null,
+      intervalPower: pw, intervalHr: hr, intervalCount, fromLaps: !!lapAvg, powerEstimated, intervalRatio: pw && hr ? Math.round((pw / hr) * 100) / 100 : null,
       lactateAvg: lac.length ? Math.round((lac.reduce((x, y) => x + y, 0) / lac.length) * 10) / 10 : null, lactateMax: lac.length ? Math.max(...lac) : null,
     };
   });

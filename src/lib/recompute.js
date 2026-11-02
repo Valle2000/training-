@@ -10,7 +10,8 @@ import { reevaluate } from './activities.js';
 // 8: ohne Gerätezeit nur die Bewegungszeit aus dem Tempo (Stillstand zählt nicht, wie Strava/Polar).
 // 9: I1 nach unten offen – Pulse unter 55 % HFmax zählen als I1 statt als Pause.
 // 10: Rollski-Leistung aus Tempo und Steigung (gesamt und je Runde), für Key Sessions ohne Wattmesser.
-export const METRICS_VERSION = 10;
+// 11: erkannte Intervalle je Einheit (relativ zum Schnitt), für die Key Sessions.
+export const METRICS_VERSION = 11;
 
 export async function recomputeAll() {
   const st = getData().settings;
