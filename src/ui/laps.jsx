@@ -17,18 +17,20 @@ export function LapsCard({ laps, autoLaps, erg, sport, estWatts, grades }) {
   return (
     <>
       {hasLaps && hasAuto && <div style={{ marginTop: 8 }}><Seg value={v} onChange={setView} options={[['laps', `Runden (${laps.length})`], ['auto', `Splits je ${unit} (${autoLaps.length})`]]} /></div>}
-      {v === 'laps' ? <LapsTable laps={laps} erg={erg} estWatts={estWatts} grades={grades} title={`Runden / Intervalle (${laps.length})`} /> : <LapsTable laps={autoLaps} erg={null} title={`Splits je ${unit} (${autoLaps.length})`} splits />}
+      {v === 'laps' ? <LapsTable laps={laps} erg={erg} sport={sport} estWatts={estWatts} grades={grades} title={`Runden / Intervalle (${laps.length})`} /> : <LapsTable laps={autoLaps} erg={null} title={`Splits je ${unit} (${autoLaps.length})`} splits />}
     </>
   );
 }
 
 // Rundentabelle mit Balken für Leistung bzw. Pace und eine kurze Auswertung der Belastungsrunden.
-function LapsTable({ laps, erg, title, splits = false, estWatts = null, grades = null }) {
+function LapsTable({ laps, erg, title, splits = false, estWatts = null, grades = null, sport = null }) {
+  // Laufen und Wandern nutzen die Laufleistung und die Schwelle; Ski und Rollski haben eigene Logik.
+  const isRun = sport === 'run' || sport === 'hike';
   const { settings } = useData();
   const thresholdSec = paceSec(settings.thresholdPace);
   // Ohne Puls: Laufleistung aus Tempo und Steigung (Näherung), wie bei Watt bewertet.
   const massKg = Number(settings.weightKg) || 75;
-  const runW = (l, i) => (l.pace && !l.avgHr ? runPower(1000 / l.pace, grades?.[i] ?? 0, massKg) : null);
+  const runW = (l, i) => (isRun && l.pace && !l.avgHr ? runPower(1000 / l.pace, grades?.[i] ?? 0, massKg) : null);
   const runVals = laps.map((l, i) => runW(l, i)).filter(Boolean);
   const runMean = runVals.length ? runVals.reduce((x, y) => x + y, 0) / runVals.length : 0;
   if (!laps?.length) return null;
@@ -63,7 +65,7 @@ function LapsTable({ laps, erg, title, splits = false, estWatts = null, grades =
     const g = grades?.[i] ?? 0;
     const hrHigh = !!l.avgHr && hrMean != null && l.avgHr >= hrMean + 8;
     // Bergab: Tempo an der Schwelle (oder schneller). Ohne Schwelle: deutlich über dem Schnitt.
-    if (g <= -2 && l.pace) return thresholdSec ? l.pace <= thresholdSec * 1.03 : 1000 / l.pace >= rawMean * 1.6;
+    if (isRun && g <= -2 && l.pace) return thresholdSec ? l.pace <= thresholdSec * 1.03 : 1000 / l.pace >= rawMean * 1.6;
     // Flach und bergauf: hoher Puls zählt als Aufwand, sonst das Tempo (steigungskorrigiert) über dem Schnitt.
     if (hrHigh) return true;
     const pace = adjPace(l, i);
