@@ -160,10 +160,49 @@ export function balancePlan(plan, from, to, id, newMinutes) {
   return next.map((p) => (p.id === id ? { ...p, minutes: target, load: estimatePlanLoad(target, p.zone) } : p));
 }
 
+// Wochenziel bewusst ändern: Lockere Einheiten zuerst anpassen, sonst alle Einheiten gleichmäßig.
+// Gibt null zurück, wenn es keine geplanten Einheiten gibt.
+export function scaleWeek(plan, from, to, targetMin) {
+  const inWeek = plan.filter((p) => p.date >= from && p.date <= to && !p.done);
+  const total = inWeek.reduce((a, p) => a + (Number(p.minutes) || 0), 0);
+  if (!inWeek.length || !total) return null;
+  const target = Math.max(0, Math.round(targetMin));
+  const factor = target / total;
+  const easy = inWeek.filter((p) => ['I1', 'I2'].includes(p.zone));
+  const easyTotal = easy.reduce((a, p) => a + (Number(p.minutes) || 0), 0);
+  const scale = new Map();
+  if (factor < 1 && easyTotal > 0 && (total - target) <= easyTotal - 30 * easy.length) {
+    // Nur lockere Einheiten kürzen, harte bleiben.
+    const cut = total - target, k = (easyTotal - cut) / easyTotal;
+    for (const p of easy) scale.set(p.id, Math.max(30, Math.round((Number(p.minutes) || 0) * k)));
+  } else {
+    for (const p of inWeek) scale.set(p.id, Math.max(15, Math.round((Number(p.minutes) || 0) * factor)));
+  }
+  return plan.map((p) => (scale.has(p.id) ? { ...p, minutes: scale.get(p.id), load: estimatePlanLoad(scale.get(p.id), p.zone) } : p));
+}
+
 // Wochenliste: alle Einheiten der Woche untereinander. Verschieben, Dauer anpassen und streichen, mit Hinweis bei harten Tagen hintereinander.
 const HARD_ZONES = ['I3', 'I4', 'I5'];
 function WeekList({ monday, onEdit }) {
-  const { plan, activities } = useData();
+  const { plan, activities, settings } = useData();
+  const sunday = addDays(monday, 6);
+  const adjust0 = (settings.weekAdjust || {})[monday];
+  const [tuning, setTuning] = useState(false);
+  const [reason, setReason] = useState('');
+  const [hours, setHours] = useState('');
+  const suggest = { krank: 0.6, erschoepft: 0.8, alltag: 0.85, reise: 0.7, gut: 1.05 };
+  const REASONS = [['krank', 'Krank'], ['erschoepft', 'Erholung schlecht'], ['alltag', 'Alltag / Beruf'], ['reise', 'Reise'], ['gut', 'Gut erholt, mehr Umfang']];
+  const plannedNow = plan.filter((p) => p.date >= monday && p.date <= sunday && !p.done).reduce((a, p) => a + (Number(p.minutes) || 0), 0) / 60;
+  const applyTarget = () => {
+    const h = Number(String(hours).replace(',', '.'));
+    if (!reason) return toast('Bitte einen Grund wählen');
+    if (!(h > 0)) return toast('Wochenstunden eingeben');
+    const next = scaleWeek(getData().plan, monday, sunday, h * 60);
+    if (!next) return toast('Keine geplanten Einheiten in dieser Woche');
+    update((d) => ({ ...d, plan: scaleWeek(d.plan, monday, sunday, h * 60) || next, settings: { ...d.settings, weekAdjust: { ...(d.settings.weekAdjust || {}), [monday]: { hours: h, reason, at: new Date().toISOString() } } } }));
+    setTuning(false);
+    toast(`Woche auf ${h} h gesetzt`);
+  };
   const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
   const items = plan.filter((p) => p.date >= monday && p.date <= days[6]);
   const planned = items.filter((p) => !p.done).reduce((a, p) => a + (Number(p.minutes) || 0), 0);
@@ -219,6 +258,16 @@ function WeekList({ monday, onEdit }) {
           <select value={form.zone} onChange={(e) => setForm({ ...form, zone: e.target.value })}>{ZONES.map((z) => <option key={z.id} value={z.id}>{z.label}</option>)}</select>
           <p className="muted small">Die Minuten gehen von lockeren Einheiten dieser Woche ab, damit die Wochenstunden fix bleiben.</p>
           <div className="row" style={{ gap: 6 }}><button className="primary" onClick={addItem}><Check size={16} />Hinzufügen</button><button className="ghost" onClick={() => setAdding(false)}>Abbrechen</button></div>
+        </div>}
+        {adjust0 && <p className="small" style={{ margin: '6px 0 0' }}>Angepasst auf {adjust0.hours} h · {REASONS.find((r) => r[0] === adjust0.reason)?.[1] || adjust0.reason}</p>}
+        {!tuning && <button className="ghost wide" style={{ marginTop: 6 }} onClick={() => { setTuning(true); setReason(''); setHours(plannedNow ? (Math.round(plannedNow * 10) / 10).toString() : ''); }}>Woche bewusst anpassen</button>}
+        {tuning && <div style={{ marginTop: 8 }}>
+          <label>Warum?</label>
+          <div className="chips">{REASONS.map(([id, label]) => <button key={id} className={`chip${reason === id ? ' on' : ''}`} onClick={() => { setReason(id); setHours((Math.round(plannedNow * (suggest[id] || 1) * 10) / 10).toString()); }}>{label}</button>)}</div>
+          <label>Neue Wochenstunden (bisher {(Math.round(plannedNow * 10) / 10).toString().replace('.', ',')} h)</label>
+          <input inputMode="decimal" value={hours} onChange={(e) => setHours(e.target.value)} />
+          <p className="muted small">Lockere Einheiten werden zuerst angepasst, harte Einheiten bleiben möglichst. Die neue Summe gilt dann wieder als fester Wert.</p>
+          <div className="row" style={{ gap: 6 }}><button className="primary" onClick={applyTarget}><Check size={16} />Übernehmen</button><button className="ghost" onClick={() => setTuning(false)}>Abbrechen</button></div>
         </div>}
         <p className="muted small" style={{ margin: '6px 0 0' }}>Die Wochenstunden bleiben fix: Wenn du eine Einheit verlängerst oder streichst, wird die Differenz auf lockere Einheiten derselben Woche verteilt. Verschieben ändert die Summe nicht.</p>
         {adjacentHard.length > 0 && <div className="notice" style={{ marginTop: 8 }}>Harte Einheiten an zwei Tagen hintereinander ({adjacentHard.length}×). Ein lockerer Tag dazwischen erholt besser.</div>}
