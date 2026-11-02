@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { fmtPace, lapAnalysis } from '../lib/laps.js';
 import { fmtNum, Seg } from './common.jsx';
 import { useData } from '../lib/store.js';
+import { runPower } from '../lib/running-power.js';
 
 // „3:35“ → Sekunden je km. Ohne gültige Angabe null.
 const paceSec = (str) => { const m = /^(\d{1,2}):([0-5]\d)$/.exec(String(str || '').trim()); return m ? Number(m[1]) * 60 + Number(m[2]) : null; };
@@ -25,6 +26,11 @@ export function LapsCard({ laps, autoLaps, erg, sport, estWatts, grades }) {
 function LapsTable({ laps, erg, title, splits = false, estWatts = null, grades = null }) {
   const { settings } = useData();
   const thresholdSec = paceSec(settings.thresholdPace);
+  // Ohne Puls: Laufleistung aus Tempo und Steigung (Näherung), wie bei Watt bewertet.
+  const massKg = Number(settings.weightKg) || 75;
+  const runW = (l, i) => (l.pace && !l.avgHr ? runPower(1000 / l.pace, grades?.[i] ?? 0, massKg) : null);
+  const runVals = laps.map((l, i) => runW(l, i)).filter(Boolean);
+  const runMean = runVals.length ? runVals.reduce((x, y) => x + y, 0) / runVals.length : 0;
   if (!laps?.length) return null;
   // Arbeitsrunden: deutlich über dem Schnitt der Runden (Watt, sonst Tempo). Einlaufen und Auslaufen zählen nicht.
   // Leistung je Runde: Wattmesser, sonst Schätzung aus Tempo und Steigung (Rollski). Ohne beides: Tempo.
@@ -52,6 +58,8 @@ function LapsTable({ laps, erg, title, splits = false, estWatts = null, grades =
     const l = laps[i];
     if (splits) return false;
     if (hasWatts(l, i)) return watts(l, i) >= mean * 1.08 && (!hrs.length || !l.avgHr || l.avgHr >= hrMean + 5);
+    // Kein Puls, Laufen: Watt-Näherung aus Tempo und Steigung.
+    if (!l.avgHr && runW(l, i) != null) return runW(l, i) >= runMean * 1.08;
     const g = grades?.[i] ?? 0;
     const hrHigh = !!l.avgHr && hrMean != null && l.avgHr >= hrMean + 8;
     // Bergab: Tempo an der Schwelle (oder schneller). Ohne Schwelle: deutlich über dem Schnitt.
