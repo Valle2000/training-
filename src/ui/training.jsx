@@ -132,6 +132,33 @@ export function Training({ openActivity, openAdd }) {
   );
 }
 
+// Wochensumme halten: Eine Änderung an einer Einheit wird über lockere Einheiten (I1/I2) derselben Woche ausgeglichen.
+// Gibt null zurück, wenn der Ausgleich nicht möglich ist.
+export function balancePlan(plan, from, to, id, newMinutes) {
+  const item = plan.find((p) => p.id === id);
+  if (!item) return null;
+  const target = Math.max(0, Math.round(newMinutes));
+  const delta = target - (Number(item.minutes) || 0);
+  const easy = plan.filter((p) => p.id !== id && !p.done && p.date >= from && p.date <= to && ['I1', 'I2'].includes(p.zone));
+  const byLength = [...easy].sort((a, b) => (Number(b.minutes) || 0) - (Number(a.minutes) || 0));
+  const next = plan.map((p) => ({ ...p }));
+  const find = (pid) => next.find((p) => p.id === pid);
+  const setMin = (pid, m) => { const x = find(pid); x.minutes = m; x.load = estimatePlanLoad(m, x.zone); };
+  if (delta > 0) {
+    let need = delta;
+    for (const o of byLength) {
+      const take = Math.min(need, Math.max(0, (Number(o.minutes) || 0) - 30));
+      if (take > 0) { setMin(o.id, Number(o.minutes) - take); need -= take; }
+      if (need <= 0) break;
+    }
+    if (need > 0) return null;
+  } else if (delta < 0) {
+    if (!byLength.length) return null;
+    setMin(byLength[0].id, (Number(byLength[0].minutes) || 0) - delta);
+  }
+  return next.map((p) => (p.id === id ? { ...p, minutes: target, load: estimatePlanLoad(target, p.zone) } : p));
+}
+
 // Wochenliste: alle Einheiten der Woche untereinander. Verschieben, Dauer anpassen und streichen, mit Hinweis bei harten Tagen hintereinander.
 const HARD_ZONES = ['I3', 'I4', 'I5'];
 function WeekList({ monday, onEdit }) {
@@ -143,9 +170,15 @@ function WeekList({ monday, onEdit }) {
   const hardDays = new Set(items.filter((p) => HARD_ZONES.includes(p.zone) && !p.done).map((p) => p.date));
   const adjacentHard = days.slice(0, 6).filter((d, i) => hardDays.has(d) && hardDays.has(days[i + 1]));
   const change = (p, patch) => update((d) => ({ ...d, plan: d.plan.map((x) => (x.id === p.id ? { ...x, ...patch } : x)) }));
-  const shift = (p, dm) => change(p, { minutes: Math.max(0, (Number(p.minutes) || 0) + dm), load: estimatePlanLoad(Math.max(0, (Number(p.minutes) || 0) + dm), p.zone) });
+  // Die Wochensumme bleibt fix: Dauer- und Löschänderungen werden über lockere Einheiten derselben Woche ausgeglichen.
+  const adjust = (p, minutes, removeIt = false) => {
+    const res = balancePlan(getData().plan, monday, days[6], p.id, minutes);
+    if (!res) return toast('Kein Ausgleich möglich – keine lockere Einheit in dieser Woche');
+    update((d) => ({ ...d, plan: removeIt ? res.filter((x) => x.id !== p.id) : res }));
+  };
+  const shift = (p, dm) => adjust(p, (Number(p.minutes) || 0) + dm);
   const moveDay = (p, dd) => change(p, { date: addDays(p.date, dd) });
-  const remove = (p) => { if (confirm('Einheit aus dem Plan löschen?')) update((d) => ({ ...d, plan: d.plan.filter((x) => x.id !== p.id) })); };
+  const remove = (p) => { if (confirm('Einheit streichen? Die Minuten gehen auf eine lockere Einheit dieser Woche über.')) adjust(p, 0, true); };
   return (
     <>
       <div className="card">
@@ -155,6 +188,7 @@ function WeekList({ monday, onEdit }) {
           <div><b>{fmtDuration(done * 60)}</b><span>erledigt</span></div>
           <div><b>{hardDays.size}</b><span>harte Tage</span></div>
         </div>
+        <p className="muted small" style={{ margin: '6px 0 0' }}>Die Wochenstunden bleiben fix: Wenn du eine Einheit verlängerst oder streichst, wird die Differenz auf lockere Einheiten derselben Woche verteilt. Verschieben ändert die Summe nicht.</p>
         {adjacentHard.length > 0 && <div className="notice" style={{ marginTop: 8 }}>Harte Einheiten an zwei Tagen hintereinander ({adjacentHard.length}×). Ein lockerer Tag dazwischen erholt besser.</div>}
       </div>
       {days.map((d) => {
