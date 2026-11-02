@@ -24,7 +24,10 @@ function LapsTable({ laps, erg, title, splits = false }) {
   const value = (l) => (l.avgPower ? l.avgPower : l.pace ? 1000 / l.pace : null);
   const vals = laps.map(value).filter(Boolean);
   const mean = vals.length ? vals.reduce((x, y) => x + y, 0) / vals.length : 0;
-  const isWork = (l) => !splits && value(l) != null && value(l) >= mean * 1.12;
+  // Arbeit: deutlich schneller als der Schnitt UND merklich höherer Puls (Pausen haben hohen Tempo-Schnitt nicht).
+  const hrs = laps.map((l) => l.avgHr).filter(Boolean);
+  const hrMean = hrs.length ? hrs.reduce((x, y) => x + y, 0) / hrs.length : null;
+  const isWork = (l) => !splits && value(l) != null && value(l) >= mean * 1.08 && (hrMean == null || !l.avgHr || l.avgHr >= hrMean + 5);
   const work = laps.filter(isWork);
   const useWork = work.length >= 2 && work.length < laps.length;
   const shown = useWork ? work : laps;
