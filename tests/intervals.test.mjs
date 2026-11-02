@@ -1,0 +1,28 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { detectIntervals } from '../src/lib/intervals.js';
+
+// 20 min Grundlage bei 200 W, dazwischen 4 × 2 min bei 280 W, Pausen bei 200 W
+const build = () => {
+  const out = [];
+  for (let i = 0; i < 600; i++) out.push(200);
+  for (let k = 0; k < 4; k++) { for (let i = 0; i < 120; i++) out.push(280); for (let i = 0; i < 120; i++) out.push(200); }
+  return out;
+};
+
+test('vier Intervalle über dem Schnitt werden erkannt', () => {
+  const r = detectIntervals(build());
+  assert.equal(r.length, 4, JSON.stringify(r));
+  assert.ok(r.every((x) => x.durationS >= 110 && x.avg > 250));
+});
+
+test('gleichmäßige Einheit hat keine Intervalle', () => {
+  const r = detectIntervals(Array(1200).fill(210));
+  assert.equal(r.length, 0);
+});
+
+test('kurze Ausreißer unter einer Minute zählen nicht', () => {
+  const v = Array(900).fill(200);
+  for (let i = 300; i < 330; i++) v[i] = 300;
+  assert.equal(detectIntervals(v).length, 0);
+});
