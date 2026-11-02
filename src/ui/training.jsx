@@ -494,7 +494,7 @@ export function ActivitySheet({ activity, onClose }) {
       </div>
       {gear.some((g) => !g.retired) && <><label>Material {a.gearIds ? '' : '(automatisch nach Sportart)'}</label><div className="chips">{gear.filter((g) => !g.retired).map((g) => { const on = a.gearIds ? a.gearIds.includes(g.id) : (g.defaultSports || []).includes(a.sport); return <button key={g.id} className={`chip${on ? ' on' : ''}`} onClick={() => { const cur = a.gearIds || gear.filter((x) => (x.defaultSports || []).includes(a.sport)).map((x) => x.id); setA({ ...a, gearIds: on ? cur.filter((x) => x !== g.id) : [...cur, g.id] }); }}>{g.name}</button>; })}</div></>}
       {keySessions.length > 0 && <><label>Key Session</label><select value={a.keySessionId || ''} onChange={(e) => setA({ ...a, keySessionId: e.target.value || null })}><option value="">automatisch (über Stichwörter)</option>{keySessions.map((k) => <option key={k.id} value={k.id}>{k.name}</option>)}</select></>}
-      <IntervalList series={series} sport={a.sport} />
+      {!(a.laps?.length) && <IntervalList series={series} sport={a.sport} />}
       <label>Notiz</label><textarea value={a.notes} onChange={(e) => setA({ ...a, notes: e.target.value })} />
       {linkedRace ? <p className="small muted">Rennen: {linkedRace.name} (Kalender → Rennen)</p> : <button className="secondary wide" style={{ marginTop: 10 }} onClick={markRace}><Trophy size={16} />Als Rennen markieren</button>}
       {raceDraft && <RaceEditor race={raceDraft} activities={activities} onClose={() => setRaceDraft(null)} openActivity={() => {}} t={today(settings.timezone)} />}
