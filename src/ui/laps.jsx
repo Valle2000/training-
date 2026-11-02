@@ -59,19 +59,26 @@ function LapsTable({ laps, erg, title, splits = false, estWatts = null, grades =
   const rawSpeeds = laps.map((l) => (l.pace ? 1000 / l.pace : null)).filter(Boolean);
   const rawMean = rawSpeeds.length ? rawSpeeds.reduce((x, y) => x + y, 0) / rawSpeeds.length : 0;
   const adjMean = adjVals.length ? adjVals.reduce((x, y) => x + y, 0) / adjVals.length : 0;
+  // Reihenfolge: Wattmesser, dann plausibler Puls, dann geschätzte Leistung (Rollski oder Laufen), zuletzt das Tempo.
+  const measuredMean = (() => { const v = laps.map((l) => l.avgPower).filter(Boolean); return v.length ? v.reduce((x, y) => x + y, 0) / v.length : 0; })();
+  const estOf = (l, i) => estWatts?.[i] ?? runW(l, i) ?? null;
+  const estVals = laps.map((l, i) => estOf(l, i)).filter((x) => x != null);
+  const estMean = estVals.length ? estVals.reduce((x, y) => x + y, 0) / estVals.length : 0;
   const workIdx = new Set(laps.map((l, i) => i).filter((i) => {
     const l = laps[i];
     if (splits) return false;
-    const h = hrOf(l);
-    if (hasWatts(l, i)) return watts(l, i) >= mean * 1.08 && (h == null || hrMean == null || h >= hrMean + 5);
-    // Kein plausibler Puls, Laufen: Watt-Näherung aus Tempo und Steigung.
-    if (h == null && runW(l, i) != null) return runW(l, i) >= runMean * 1.08;
     const g = grades?.[i] ?? 0;
-    const hrHigh = h != null && hrMean != null && h >= hrMean + 8;
-    // Bergab: Tempo an der Schwelle (oder schneller). Ohne Schwelle: deutlich über dem Schnitt.
+    const h = hrOf(l);
+    // 1. Wattmesser
+    if (l.avgPower) return l.avgPower >= measuredMean * 1.08;
+    // Laufen bergab: Schwelle (Tempo ohne Steigungskorrektur)
     if (isRun && g <= -2 && l.pace) return thresholdSec ? l.pace <= thresholdSec * 1.03 : 1000 / l.pace >= rawMean * 1.6;
-    // Flach und bergauf: hoher Puls zählt als Aufwand, sonst das Tempo (steigungskorrigiert) über dem Schnitt.
-    if (hrHigh) return true;
+    // 2. Plausibler Puls
+    if (h != null && hrMean != null) return h >= hrMean + 8;
+    // 3. Geschätzte Leistung (Rollski aus Steigung und Rollen, Laufen aus Tempo und Steigung)
+    const est = estOf(l, i);
+    if (est != null) return est >= estMean * 1.08;
+    // 4. Tempo, steigungskorrigiert
     const pace = adjPace(l, i);
     return pace != null && pace >= adjMean * 1.08;
   }));
