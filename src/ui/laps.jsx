@@ -3,7 +3,7 @@ import { fmtPace, lapAnalysis } from '../lib/laps.js';
 import { fmtNum, Seg } from './common.jsx';
 
 // Runden der Uhr/des Geräts und automatische Splits (km) – umschaltbar.
-export function LapsCard({ laps, autoLaps, erg, sport }) {
+export function LapsCard({ laps, autoLaps, erg, sport, estWatts }) {
   const hasLaps = laps?.length > 0, hasAuto = autoLaps?.length > 0;
   const [view, setView] = useState(hasLaps ? 'laps' : 'auto');
   if (!hasLaps && !hasAuto) return null;
@@ -12,22 +12,32 @@ export function LapsCard({ laps, autoLaps, erg, sport }) {
   return (
     <>
       {hasLaps && hasAuto && <div style={{ marginTop: 8 }}><Seg value={v} onChange={setView} options={[['laps', `Runden (${laps.length})`], ['auto', `Splits je ${unit} (${autoLaps.length})`]]} /></div>}
-      {v === 'laps' ? <LapsTable laps={laps} erg={erg} title={`Runden / Intervalle (${laps.length})`} /> : <LapsTable laps={autoLaps} erg={null} title={`Splits je ${unit} (${autoLaps.length})`} splits />}
+      {v === 'laps' ? <LapsTable laps={laps} erg={erg} estWatts={estWatts} title={`Runden / Intervalle (${laps.length})`} /> : <LapsTable laps={autoLaps} erg={null} title={`Splits je ${unit} (${autoLaps.length})`} splits />}
     </>
   );
 }
 
 // Rundentabelle mit Balken für Leistung bzw. Pace und eine kurze Auswertung der Belastungsrunden.
-function LapsTable({ laps, erg, title, splits = false }) {
+function LapsTable({ laps, erg, title, splits = false, estWatts = null }) {
   if (!laps?.length) return null;
   // Arbeitsrunden: deutlich über dem Schnitt der Runden (Watt, sonst Tempo). Einlaufen und Auslaufen zählen nicht.
-  const value = (l) => (l.avgPower ? l.avgPower : l.pace ? 1000 / l.pace : null);
-  const vals = laps.map(value).filter(Boolean);
+  // Leistung je Runde: Wattmesser, sonst Schätzung aus Tempo und Steigung (Rollski). Ohne beides: Tempo.
+  const watts = (l, i) => l.avgPower || (estWatts?.[i] ? estWatts[i] : null);
+  const hasWatts = (l, i) => watts(l, i) != null;
+  const value = (l, i) => (hasWatts(l, i) ? watts(l, i) : l.pace ? 1000 / l.pace : null);
+  const vals = laps.map((l, i) => (hasWatts(l, i) ? watts(l, i) : null)).filter(Boolean);
   const mean = vals.length ? vals.reduce((x, y) => x + y, 0) / vals.length : 0;
   // Arbeit: deutlich schneller als der Schnitt UND merklich höherer Puls (Pausen haben hohen Tempo-Schnitt nicht).
   const hrs = laps.map((l) => l.avgHr).filter(Boolean);
   const hrMean = hrs.length ? hrs.reduce((x, y) => x + y, 0) / hrs.length : null;
-  const isWork = (l) => !splits && value(l) != null && value(l) >= mean * 1.08 && (hrMean == null || !l.avgHr || l.avgHr >= hrMean + 5);
+  const workIdx = new Set(laps.map((l, i) => i).filter((i) => {
+    const l = laps[i];
+    if (splits || !hrs.length) return false;
+    const hrOk = !l.avgHr || l.avgHr >= hrMean + 5;
+    // Mit Leistung (Watt oder geschätzt, also auch bergauf): Leistung über dem Schnitt. Ohne: nur der Puls.
+    return hasWatts(l, i) ? (watts(l, i) >= mean * 1.08 && hrOk) : (!!l.avgHr && l.avgHr >= hrMean + 8);
+  }));
+  const isWork = (l) => workIdx.has(laps.indexOf(l));
   const work = laps.filter(isWork);
   const useWork = work.length >= 2 && work.length < laps.length;
   const shown = useWork ? work : laps;
