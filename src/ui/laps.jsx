@@ -30,7 +30,8 @@ function LapsTable({ laps, erg, title, splits = false, estWatts = null, grades =
   // Arbeit: deutlich schneller als der Schnitt UND merklich höherer Puls (Pausen haben hohen Tempo-Schnitt nicht).
   const hrs = laps.map((l) => l.avgHr).filter(Boolean);
   const hrMean = hrs.length ? hrs.reduce((x, y) => x + y, 0) / hrs.length : null;
-  // Laufen ohne Leistung: flach zählt das Tempo, bergauf der Aufwand (Puls, falls vorhanden). Steigung korrigiert das Tempo grob (≈3,5 % pro 1 % Steigung).
+  // Laufen ohne Leistung: flach zählt das Tempo, bergauf der Aufwand (Puls, falls vorhanden), bergab braucht es klar mehr Tempo.
+  // Steigung korrigiert das Tempo grob (≈3,5 % pro 1 % Steigung).
   const adjPace = (l, i) => {
     if (!l.pace) return null;
     const g = grades?.[i] ?? 0;
@@ -45,7 +46,10 @@ function LapsTable({ laps, erg, title, splits = false, estWatts = null, grades =
     const pace = adjPace(l, i);
     if (pace != null) {
       // Flach (oder bergab): Tempo entscheidet. Bergauf: Aufwand, also zusätzlich der Puls, wenn er vorhanden ist.
-      const uphill = (grades?.[i] ?? 0) >= 2;
+      const g = grades?.[i] ?? 0;
+      // Bergab fällt man leicht schnell: dafür muss das Tempo klar höher sein.
+      if (g <= -2) return pace >= adjMean * 1.25;
+      const uphill = g >= 2;
       if (pace >= adjMean * 1.08) return true;
       return uphill && !!l.avgHr && hrMean != null && l.avgHr >= hrMean + 8;
     }
