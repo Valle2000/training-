@@ -59,7 +59,7 @@ export function Today({ go, openActivity, openAdd }) {
         <details style={{ margin: '4px 0 8px' }}>
           <summary className="small" style={{ cursor: 'pointer' }}>Morgen-Check für einen anderen Tag</summary>
           <div className="row" style={{ gap: 6, marginTop: 6 }}>
-            <input type="date" value={checkDay} max={t} onChange={(e) => setCheckDay(e.target.value)} />
+            <input type="date" value={checkDay} max={t} onChange={(e) => setCheckDay(e.target.value)} style={{ color: '#1b1f1d', background: '#fff', colorScheme: 'light', flex: 1 }} />
             <button className="secondary" disabled={!checkDay} onClick={() => setChecking(true)}>Öffnen</button>
           </div>
         </details>
