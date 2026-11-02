@@ -51,7 +51,7 @@ export function Training({ openActivity, openAdd }) {
         <h1 style={{ flex: 'none', margin: '8px 0' }}>Kalender</h1>
         <button className="primary" style={{ flex: 'none' }} onClick={openAdd}><Plus size={18} />Einheit</button>
       </div>
-      <Seg value={view} onChange={setView} options={[['week', 'Woche'], ['list', 'Liste'], ['season', 'Saison'], ['races', 'Rennen'], ['workouts', 'Workouts'], ['zones', 'Zonen']]} />
+      <Seg value={view} onChange={setView} options={[['week', 'Woche'], ['weeklist', 'Wochenliste'], ['list', 'Liste'], ['season', 'Saison'], ['races', 'Rennen'], ['workouts', 'Workouts'], ['zones', 'Zonen']]} />
 
       {view === 'week' && (
         <>
@@ -114,6 +114,7 @@ export function Training({ openActivity, openAdd }) {
         </>
       )}
 
+      {view === 'weeklist' && <WeekList monday={monday} onEdit={setPlanItem} />}
       {view === 'zones' && (
         <div className="card">
           <h3 style={{ marginTop: 0 }}>Stunden je Woche nach Zone</h3>
@@ -127,6 +128,61 @@ export function Training({ openActivity, openAdd }) {
       {schedOpen && <ScheduleSheet onClose={() => setSchedOpen(false)} />}
       {reviewOpen && <WeekReviewSheet monday={monday} onClose={() => setReviewOpen(false)} />}
       {planItem && <PlanEditor item={planItem} onClose={() => setPlanItem(null)} />}
+    </>
+  );
+}
+
+// Wochenliste: alle Einheiten der Woche untereinander. Verschieben, Dauer anpassen und streichen, mit Hinweis bei harten Tagen hintereinander.
+const HARD_ZONES = ['I3', 'I4', 'I5'];
+function WeekList({ monday, onEdit }) {
+  const { plan, activities } = useData();
+  const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
+  const items = plan.filter((p) => p.date >= monday && p.date <= days[6]);
+  const planned = items.filter((p) => !p.done).reduce((a, p) => a + (Number(p.minutes) || 0), 0);
+  const done = activities.filter((a) => a.date >= monday && a.date <= days[6]).reduce((a, x) => a + (x.durationS || 0) / 60, 0);
+  const hardDays = new Set(items.filter((p) => HARD_ZONES.includes(p.zone) && !p.done).map((p) => p.date));
+  const adjacentHard = days.slice(0, 6).filter((d, i) => hardDays.has(d) && hardDays.has(days[i + 1]));
+  const change = (p, patch) => update((d) => ({ ...d, plan: d.plan.map((x) => (x.id === p.id ? { ...x, ...patch } : x)) }));
+  const shift = (p, dm) => change(p, { minutes: Math.max(0, (Number(p.minutes) || 0) + dm), load: estimatePlanLoad(Math.max(0, (Number(p.minutes) || 0) + dm), p.zone) });
+  const moveDay = (p, dd) => change(p, { date: addDays(p.date, dd) });
+  const remove = (p) => { if (confirm('Einheit aus dem Plan löschen?')) update((d) => ({ ...d, plan: d.plan.filter((x) => x.id !== p.id) })); };
+  return (
+    <>
+      <div className="card">
+        <b className="small">Diese Woche</b>
+        <div className="stats" style={{ marginTop: 6 }}>
+          <div><b>{fmtDuration(planned * 60)}</b><span>geplant</span></div>
+          <div><b>{fmtDuration(done * 60)}</b><span>erledigt</span></div>
+          <div><b>{hardDays.size}</b><span>harte Tage</span></div>
+        </div>
+        {adjacentHard.length > 0 && <div className="notice" style={{ marginTop: 8 }}>Harte Einheiten an zwei Tagen hintereinander ({adjacentHard.length}×). Ein lockerer Tag dazwischen erholt besser.</div>}
+      </div>
+      {days.map((d) => {
+        const list = items.filter((p) => p.date === d).sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+        return (
+          <div key={d} style={{ marginTop: 10 }}>
+            <b className="small">{fmtDate(d, { weekday: 'short', day: 'numeric', month: 'short' })}</b>
+            {!list.length && <p className="muted small" style={{ margin: '2px 0 0' }}>frei</p>}
+            {list.map((p) => (
+              <div key={p.id} className="item" style={{ flexDirection: 'column', alignItems: 'stretch', opacity: p.done ? 0.6 : 1 }}>
+                <div className="row" style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
+                  <button className="grow" style={{ textAlign: 'left', background: 'none', border: 0, padding: 0, color: 'inherit' }} onClick={() => onEdit(p)}>
+                    <b>{p.title || sportLabel(p.sport)}</b>
+                    <p className="small muted" style={{ margin: 0 }}>{sportLabel(p.sport)} · {p.minutes} min · {p.zone}{p.done ? ' · erledigt' : ''}</p>
+                  </button>
+                </div>
+                {!p.done && <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+                  <button className="ghost" onClick={() => moveDay(p, -1)} aria-label="Einen Tag früher">◀ Tag</button>
+                  <button className="ghost" onClick={() => moveDay(p, 1)} aria-label="Einen Tag später">Tag ▶</button>
+                  <button className="ghost" onClick={() => shift(p, -15)}>−15</button>
+                  <button className="ghost" onClick={() => shift(p, 15)}>+15</button>
+                  <button className="ghost" onClick={() => remove(p)} aria-label="Löschen"><Trash2 size={15} /></button>
+                </div>}
+              </div>
+            ))}
+          </div>
+        );
+      })}
     </>
   );
 }
