@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check, Copy, Scissors,
 import { useData, update, getData, getSeries, getLocalSeries, putSeries, uid } from '../lib/store.js';
 import { today, weeks, mondayOf, buildActivity, evaluate, estimatePlanLoad, matchPlan, compliance, cropActivity, localDate, reevaluate } from '../lib/activities.js';
 import { addDays, ZONES, cleanSeries } from '../lib/metrics.js';
+import { detectIntervals } from '../lib/intervals.js';
 import { SPORTS, sportLabel, guessSport } from '../lib/sports.js';
 import { recomputeAll } from '../lib/recompute.js';
 import { importFiles, deleteActivities, mapPolarSport, askTempoGroups } from '../lib/sync.js';
@@ -307,6 +308,29 @@ function PlanEditor({ item, onClose }) {
   );
 }
 
+// Intervalle aus dem Verlauf: Abschnitte deutlich über dem Schnitt der Einheit (Watt, sonst Tempo).
+function IntervalList({ series, sport }) {
+  if (!series) return null;
+  const usePower = series.power?.some((p) => p > 0);
+  const src = usePower ? series.power : series.speed?.some((v) => v > 0) ? series.speed : null;
+  if (!src) return null;
+  const list = detectIntervals(src);
+  if (!list.length) return <p className="muted small">Keine Intervalle erkannt – die Einheit liegt gleichmäßig nahe am Schnitt.</p>;
+  const fmt = (sec) => `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
+  return (
+    <div className="card" style={{ marginTop: 10 }}>
+      <b className="small">Intervalle ({list.length})</b>
+      {list.map((x, i) => (
+        <div key={x.startS} className="row small" style={{ justifyContent: 'space-between', marginTop: 4 }}>
+          <span>{i + 1}. · {fmt(x.durationS)} min</span>
+          <span>{usePower ? `Ø ${x.avg} W` : `Ø ${fmt(1000 / x.avg)} min/km`}{series.hr?.length ? ` · Puls ${Math.round(series.hr.slice(x.startS, x.endS + 1).filter((h) => h > 0).reduce((a, b) => a + b, 0) / Math.max(1, series.hr.slice(x.startS, x.endS + 1).filter((h) => h > 0).length))}` : ''}</span>
+        </div>
+      ))}
+      <p className="muted small" style={{ margin: '6px 0 0' }}>Erkannt als Abschnitte mindestens 12 % über dem Schnitt der Einheit.</p>
+    </div>
+  );
+}
+
 // Sportart → Technik im Rennen (für die Vorbelegung aus einer Einheit).
 const raceTechnique = (sport) => (sport?.startsWith('xc_skate') ? 'Skating' : sport?.startsWith('xc_') ? 'Klassisch' : sport?.startsWith('rollerski') ? 'Rollski' : sport === 'run' ? 'Lauf' : sport === 'bike' ? 'Rad' : 'Sonstiges');
 
@@ -421,6 +445,7 @@ export function ActivitySheet({ activity, onClose }) {
       </div>
       {gear.some((g) => !g.retired) && <><label>Material {a.gearIds ? '' : '(automatisch nach Sportart)'}</label><div className="chips">{gear.filter((g) => !g.retired).map((g) => { const on = a.gearIds ? a.gearIds.includes(g.id) : (g.defaultSports || []).includes(a.sport); return <button key={g.id} className={`chip${on ? ' on' : ''}`} onClick={() => { const cur = a.gearIds || gear.filter((x) => (x.defaultSports || []).includes(a.sport)).map((x) => x.id); setA({ ...a, gearIds: on ? cur.filter((x) => x !== g.id) : [...cur, g.id] }); }}>{g.name}</button>; })}</div></>}
       {keySessions.length > 0 && <><label>Key Session</label><select value={a.keySessionId || ''} onChange={(e) => setA({ ...a, keySessionId: e.target.value || null })}><option value="">automatisch (über Stichwörter)</option>{keySessions.map((k) => <option key={k.id} value={k.id}>{k.name}</option>)}</select></>}
+      <IntervalList series={series} sport={a.sport} />
       <label>Notiz</label><textarea value={a.notes} onChange={(e) => setA({ ...a, notes: e.target.value })} />
       {linkedRace ? <p className="small muted">Rennen: {linkedRace.name} (Kalender → Rennen)</p> : <button className="secondary wide" style={{ marginTop: 10 }} onClick={markRace}><Trophy size={16} />Als Rennen markieren</button>}
       {raceDraft && <RaceEditor race={raceDraft} activities={activities} onClose={() => setRaceDraft(null)} openActivity={() => {}} t={today(settings.timezone)} />}
