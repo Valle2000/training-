@@ -11,6 +11,12 @@ const setsText = (sets, ex) => sets.filter((s) => s.reps).map((s) => `${s.reps}$
 
 export function Strength() {
   const { strength, customExercises, settings } = useData();
+  // Vorgegebene Vorlagen lassen sich ausblenden (nur auf diesem Konto, Daten bleiben unberührt).
+  const hiddenIds = settings.hiddenTemplates || [];
+  const visibleTemplates = TEMPLATES.filter((t) => !hiddenIds.includes(t.id));
+  const setHidden = (list) => update((d) => ({ ...d, settings: { ...d.settings, hiddenTemplates: list } }));
+  const hideTemplate = (t) => { if (confirm(`„${t.name}“ ausblenden? Du kannst sie später wieder anzeigen.`)) setHidden([...hiddenIds, t.id]); };
+  const showAllTemplates = () => setHidden([]);
   const [view, setView] = useState('log');
   const [editing, setEditing] = useState(null);
   const [exInfo, setExInfo] = useState(null);
@@ -36,7 +42,13 @@ export function Strength() {
       {view === 'log' && (
         <>
           <h2>Neue Einheit</h2>
-          {TEMPLATES.map((t) => <button key={t.id} className="item" onClick={() => start(t)}><div className="grow"><b>{t.name}</b><p>{t.items.map((i) => exerciseById(i.ex)?.name).join(' · ')}</p></div><Plus size={18} /></button>)}
+          {visibleTemplates.map((t) => (
+            <div key={t.id} className="item" style={{ alignItems: 'center' }}>
+              <button className="grow" style={{ textAlign: 'left', background: 'none', border: 0, padding: 0, color: 'inherit' }} onClick={() => start(t)}><b>{t.name}</b><p>{t.items.map((i) => exerciseById(i.ex)?.name).join(' · ')}</p></button>
+              <button className="ghost" style={{ flex: 'none' }} aria-label="Vorlage ausblenden" onClick={() => hideTemplate(t)}><Trash2 size={16} /></button>
+            </div>
+          ))}
+          {hiddenIds.length > 0 && <button className="ghost wide" onClick={showAllTemplates}>Ausgeblendete Vorlagen wieder anzeigen ({hiddenIds.length})</button>}
           <button className="secondary wide" onClick={() => start(null)}><Plus size={17} />Leere Einheit</button>
           <h2>Letzte Einheiten</h2>
           {!sorted.length && <p className="muted">Noch keine Krafteinheiten.</p>}
