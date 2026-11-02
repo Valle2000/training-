@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check, Copy, Scissors, Undo2, CalendarClock, CalendarCheck, Wand2, Download } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check, Copy, Scissors, Undo2, CalendarClock, CalendarCheck, Wand2, Download, Trophy } from 'lucide-react';
 import { useData, update, getData, getSeries, getLocalSeries, putSeries, uid } from '../lib/store.js';
 import { today, weeks, mondayOf, buildActivity, evaluate, estimatePlanLoad, matchPlan, compliance, cropActivity, localDate, reevaluate } from '../lib/activities.js';
 import { addDays, ZONES, cleanSeries } from '../lib/metrics.js';
@@ -9,7 +9,7 @@ import { importFiles, deleteActivities, mapPolarSport, askTempoGroups } from '..
 import { deleteRemoteSeries } from '../lib/cloud-sync.js';
 import { ZoneWeeks, ZoneBar, LineChart, ZONE_COLORS } from './charts.jsx';
 import { Sheet, Seg, fmtDuration, fmtNum, fmtDate, fmtKm, toast } from './common.jsx';
-import { Season, Races } from './season.jsx';
+import { Season, Races, RaceEditor } from './season.jsx';
 import { Workouts } from './workouts.jsx';
 import { durationOf, workoutLoad, mainZone, describe } from '../lib/workouts.js';
 import { ScheduleSheet, AdaptCard, WeekReviewSheet } from './week.jsx';
@@ -307,9 +307,19 @@ function PlanEditor({ item, onClose }) {
   );
 }
 
+// Sportart → Technik im Rennen (für die Vorbelegung aus einer Einheit).
+const raceTechnique = (sport) => (sport?.startsWith('xc_skate') ? 'Skating' : sport?.startsWith('xc_') ? 'Klassisch' : sport?.startsWith('rollerski') ? 'Rollski' : sport === 'run' ? 'Lauf' : sport === 'bike' ? 'Rad' : 'Sonstiges');
+
 export function ActivitySheet({ activity, onClose }) {
-  const { settings, keySessions, gear } = useData();
+  const { settings, keySessions, gear, races, activities } = useData();
   const [a, setA] = useState(activity);
+  const [raceDraft, setRaceDraft] = useState(null);
+  const linkedRace = races.find((r) => r.result?.activityId === activity.id);
+  const markRace = () => setRaceDraft({
+    id: uid(), date: activity.date, name: activity.title || 'Rennen', priority: 'C', technique: raceTechnique(activity.sport),
+    distanceKm: activity.distanceM ? Math.round(activity.distanceM / 100) / 10 : '', goal: '', notes: '', report: {},
+    result: { activityId: activity.id, timeS: activity.durationS || null },
+  });
   const [series, setSeries] = useState(null);
   useEffect(() => { if (activity.hasSeries) getSeries(activity.id).then((x) => setSeries(cleanSeries(x))); }, [activity]);
   // Datum/Uhrzeit (und ohne Verlauf auch Dauer, Distanz, Ø Puls) lassen sich nachträglich ändern.
@@ -412,6 +422,8 @@ export function ActivitySheet({ activity, onClose }) {
       {gear.some((g) => !g.retired) && <><label>Material {a.gearIds ? '' : '(automatisch nach Sportart)'}</label><div className="chips">{gear.filter((g) => !g.retired).map((g) => { const on = a.gearIds ? a.gearIds.includes(g.id) : (g.defaultSports || []).includes(a.sport); return <button key={g.id} className={`chip${on ? ' on' : ''}`} onClick={() => { const cur = a.gearIds || gear.filter((x) => (x.defaultSports || []).includes(a.sport)).map((x) => x.id); setA({ ...a, gearIds: on ? cur.filter((x) => x !== g.id) : [...cur, g.id] }); }}>{g.name}</button>; })}</div></>}
       {keySessions.length > 0 && <><label>Key Session</label><select value={a.keySessionId || ''} onChange={(e) => setA({ ...a, keySessionId: e.target.value || null })}><option value="">automatisch (über Stichwörter)</option>{keySessions.map((k) => <option key={k.id} value={k.id}>{k.name}</option>)}</select></>}
       <label>Notiz</label><textarea value={a.notes} onChange={(e) => setA({ ...a, notes: e.target.value })} />
+      {linkedRace ? <p className="small muted">Rennen: {linkedRace.name} (Kalender → Rennen)</p> : <button className="secondary wide" style={{ marginTop: 10 }} onClick={markRace}><Trophy size={16} />Als Rennen markieren</button>}
+      {raceDraft && <RaceEditor race={raceDraft} activities={activities} onClose={() => setRaceDraft(null)} openActivity={() => {}} t={today(settings.timezone)} />}
       <div className="row" style={{ marginTop: 12 }}>
         <button className="primary" onClick={save}>Speichern</button>
         <button className="danger" onClick={remove}><Trash2 size={17} />Löschen</button>

@@ -107,13 +107,13 @@ export function Races({ openActivity }) {
       <h2>Ergebnisse</h2>
       {withGap.length > 1 && <div className="card"><LineChart labels={withGap.map((r) => r.date)} xFormat={(d) => fmtDate(d, { day: 'numeric', month: 'numeric' })} series={[{ label: 'Rückstand auf Sieger (%)', values: withGap.map((r) => r.result.gapPct), color: 'var(--fat)', dots: true }]} /><p className="muted small">Weniger Rückstand = besser. Distanz und Technik beim Vergleich beachten.</p></div>}
       {!past.length && <p className="muted">Nach dem Rennen hier Zeit, Platz und Siegerzeit eintragen – die App berechnet den Rückstand in % und verknüpft die Einheit.</p>}
-      {past.map((r) => <button key={r.id} className="item" onClick={() => setEdit(r)}><div className="grow"><b><Trophy size={14} /> {r.name}</b><p>{fmtDate(r.date)} · {r.technique}{r.distanceKm ? ` · ${r.distanceKm} km` : ''}{r.result?.place ? ` · Platz ${r.result.place}${r.result.fieldSize ? '/' + r.result.fieldSize : ''}` : ''}{r.result?.timeS ? ` · ${fmtTime(r.result.timeS)}` : ''}</p></div>{r.result?.gapPct != null && <span className="num">+{fmtNum(r.result.gapPct, 1)} %</span>}</button>)}
+      {past.map((r) => <button key={r.id} className="item" onClick={() => setEdit(r)}><div className="grow"><b><Trophy size={14} /> {r.name}</b><p>{fmtDate(r.date)} · {r.technique}{r.distanceKm ? ` · ${r.distanceKm} km` : ''}{r.report?.rating ? ` · ${r.report.rating}/5` : ''}{r.result?.place ? ` · Platz ${r.result.place}${r.result.fieldSize ? '/' + r.result.fieldSize : ''}` : ''}{r.result?.timeS ? ` · ${fmtTime(r.result.timeS)}` : ''}</p></div>{r.result?.gapPct != null && <span className="num">+{fmtNum(r.result.gapPct, 1)} %</span>}</button>)}
       {edit && <RaceEditor race={edit} activities={activities} onClose={() => setEdit(null)} openActivity={openActivity} t={t} />}
     </>
   );
 }
 
-function RaceEditor({ race, activities, onClose, openActivity, t }) {
+export function RaceEditor({ race, activities, onClose, openActivity, t }) {
   const [r, setR] = useState({ result: {}, ...race });
   const [planOpen, setPlanOpen] = useState(false);
   const [timeStr, setTimeStr] = useState(r.result?.timeS ? fmtTime(r.result.timeS) : '');
