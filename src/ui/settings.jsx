@@ -16,6 +16,7 @@ const FIELDS = [
   ['hrMax', 'Maximalpuls', 'z. B. 196'], ['hrRest', 'Ruhepuls', 'z. B. 42'], ['lthr', 'Laktatschwellen-Puls', 'z. B. 172'],
   ['ftp', 'FTP Rad (W)', 'z. B. 300'], ['ftpSkierg', 'FTP SkiErg (W)', 'optional'], ['ftpRow', 'FTP Rudern (W)', 'optional'],
   ['weightKg', 'Gewicht (kg)', 'für W/kg und Ernährung'], ['age', 'Alter', ''],
+  ['thresholdPace', 'Schwellen-Tempo Laufen (min/km)', 'z. B. 3:35'],
 ];
 
 export function Settings() {
@@ -72,7 +73,7 @@ export function Settings() {
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Athlet</h3>
         <div className="grid2">
-          {FIELDS.map(([k, l, ph]) => <div key={k}><label>{l}</label><input inputMode="decimal" value={s[k] ?? ''} placeholder={ph} onChange={(e) => setS({ ...s, [k]: e.target.value })} /></div>)}
+          {FIELDS.map(([k, l, ph]) => <div key={k}><label>{l}</label><input inputMode={k === 'thresholdPace' ? 'text' : 'decimal'} value={s[k] ?? ''} placeholder={ph} onChange={(e) => setS({ ...s, [k]: e.target.value })} /></div>)}
           <div><label>Geschlecht (TRIMP)</label><select value={s.sex || 'm'} onChange={(e) => setS({ ...s, sex: e.target.value })}><option value="m">männlich</option><option value="f">weiblich</option></select></div>
           <div><label>Belastungsmodell</label><select value={s.loadModel || 'standard'} onChange={(e) => setS({ ...s, loadModel: e.target.value })}><option value="standard">Standard (Watt-TSS / Puls-TRIMP)</option><option value="lucia">Umfangsbetont (Zonen, Lucia)</option></select></div>
           <div><label>Zeitzone</label><input value={s.timezone || 'Europe/Berlin'} onChange={(e) => setS({ ...s, timezone: e.target.value })} /></div>

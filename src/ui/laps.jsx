@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { fmtPace, lapAnalysis } from '../lib/laps.js';
 import { fmtNum, Seg } from './common.jsx';
+import { useData } from '../lib/store.js';
+
+// „3:35“ → Sekunden je km. Ohne gültige Angabe null.
+const paceSec = (str) => { const m = /^(\d{1,2}):([0-5]\d)$/.exec(String(str || '').trim()); return m ? Number(m[1]) * 60 + Number(m[2]) : null; };
 
 // Runden der Uhr/des Geräts und automatische Splits (km) – umschaltbar.
 export function LapsCard({ laps, autoLaps, erg, sport, estWatts, grades }) {
@@ -19,6 +23,8 @@ export function LapsCard({ laps, autoLaps, erg, sport, estWatts, grades }) {
 
 // Rundentabelle mit Balken für Leistung bzw. Pace und eine kurze Auswertung der Belastungsrunden.
 function LapsTable({ laps, erg, title, splits = false, estWatts = null, grades = null }) {
+  const { settings } = useData();
+  const thresholdSec = paceSec(settings.thresholdPace);
   if (!laps?.length) return null;
   // Arbeitsrunden: deutlich über dem Schnitt der Runden (Watt, sonst Tempo). Einlaufen und Auslaufen zählen nicht.
   // Leistung je Runde: Wattmesser, sonst Schätzung aus Tempo und Steigung (Rollski). Ohne beides: Tempo.
@@ -51,7 +57,8 @@ function LapsTable({ laps, erg, title, splits = false, estWatts = null, grades =
       // Flach (oder bergab): Tempo entscheidet. Bergauf: Aufwand, also zusätzlich der Puls, wenn er vorhanden ist.
       const g = grades?.[i] ?? 0;
       // Bergab fällt man leicht schnell: dafür muss das Tempo klar höher sein.
-      if (g <= -2) return 1000 / l.pace >= rawMean * 1.6;
+      // Bergab: Tempo an der Schwelle (oder schneller) zählt, ohne Steigungskorrektur. Ohne Schwelle: deutlich über dem Schnitt.
+      if (g <= -2) return thresholdSec ? l.pace <= thresholdSec * 1.03 : 1000 / l.pace >= rawMean * 1.6;
       const uphill = g >= 2;
       if (pace >= adjMean * 1.08) return true;
       return uphill && !!l.avgHr && hrMean != null && l.avgHr >= hrMean + 8;
