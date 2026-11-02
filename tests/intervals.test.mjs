@@ -37,3 +37,12 @@ test('Key Session nutzt erkannte Intervalle, wenn keine Runden passen', async ()
   assert.equal(row.intervalPower, 280);
   assert.equal(row.intervalCount, 2);
 });
+
+test('Kurzer Einbruch innerhalb eines Intervalls trennt es nicht', () => {
+  const v = [];
+  for (let i = 0; i < 300; i++) v.push(120);
+  for (let i = 0; i < 1200; i++) v.push(i >= 500 && i < 530 ? 190 : 260);
+  for (let i = 0; i < 300; i++) v.push(120);
+  const r = detectIntervals(v);
+  assert.equal(r.length, 1, JSON.stringify(r));
+});

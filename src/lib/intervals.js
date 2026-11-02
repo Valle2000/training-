@@ -1,7 +1,7 @@
 // Intervalle erkennen: Abschnitte, die deutlich über dem Schnitt der Einheit liegen.
 // Gilt für Watt (Rad, Ergometer) und für geschätzte Leistung (Laufen, Rollski). Sub-Threshold-Einheiten
 // haben dann kaum oder keine Intervalle, weil ihr Schnitt schon nahe am Niveau liegt.
-export function detectIntervals(values, { minS = 60, factor = 1.12, gapS = 15, smoothS = 15 } = {}) {
+export function detectIntervals(values, { minS = 60, factor = 1.12, gapS = 60, smoothS = 30 } = {}) {
   const v = values.map((x) => (x == null || Number.isNaN(x) ? null : x));
   const moving = v.filter((x) => x != null && x > 0);
   if (moving.length < minS) return [];
