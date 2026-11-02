@@ -42,7 +42,10 @@ function LapsTable({ laps, erg, title, splits = false, estWatts = null, grades =
   const vals = laps.map((l, i) => (hasWatts(l, i) ? watts(l, i) : null)).filter(Boolean);
   const mean = vals.length ? vals.reduce((x, y) => x + y, 0) / vals.length : 0;
   // Arbeit: deutlich schneller als der Schnitt UND merklich höherer Puls (Pausen haben hohen Tempo-Schnitt nicht).
-  const hrs = laps.map((l) => l.avgHr).filter(Boolean);
+  // Puls nur, wenn er plausibel ist (Sensor ausgefallen oder Ausreißer fallen weg, dann zählen Watt bzw. Tempo).
+  const hrMaxS = Number(settings.hrMax) || 200;
+  const hrOf = (l) => (l.avgHr && l.avgHr >= 60 && l.avgHr <= hrMaxS + 5 ? l.avgHr : null);
+  const hrs = laps.map((l) => hrOf(l)).filter(Boolean);
   const hrMean = hrs.length ? hrs.reduce((x, y) => x + y, 0) / hrs.length : null;
   // Laufen ohne Leistung: flach zählt das Tempo, bergauf der Aufwand (Puls, falls vorhanden), bergab braucht es klar mehr Tempo.
   // Steigung korrigiert das Tempo grob (≈3,5 % pro 1 % Steigung).
@@ -59,11 +62,12 @@ function LapsTable({ laps, erg, title, splits = false, estWatts = null, grades =
   const workIdx = new Set(laps.map((l, i) => i).filter((i) => {
     const l = laps[i];
     if (splits) return false;
-    if (hasWatts(l, i)) return watts(l, i) >= mean * 1.08 && (!hrs.length || !l.avgHr || l.avgHr >= hrMean + 5);
-    // Kein Puls, Laufen: Watt-Näherung aus Tempo und Steigung.
-    if (!l.avgHr && runW(l, i) != null) return runW(l, i) >= runMean * 1.08;
+    const h = hrOf(l);
+    if (hasWatts(l, i)) return watts(l, i) >= mean * 1.08 && (h == null || hrMean == null || h >= hrMean + 5);
+    // Kein plausibler Puls, Laufen: Watt-Näherung aus Tempo und Steigung.
+    if (h == null && runW(l, i) != null) return runW(l, i) >= runMean * 1.08;
     const g = grades?.[i] ?? 0;
-    const hrHigh = !!l.avgHr && hrMean != null && l.avgHr >= hrMean + 8;
+    const hrHigh = h != null && hrMean != null && h >= hrMean + 8;
     // Bergab: Tempo an der Schwelle (oder schneller). Ohne Schwelle: deutlich über dem Schnitt.
     if (isRun && g <= -2 && l.pace) return thresholdSec ? l.pace <= thresholdSec * 1.03 : 1000 / l.pace >= rawMean * 1.6;
     // Flach und bergauf: hoher Puls zählt als Aufwand, sonst das Tempo (steigungskorrigiert) über dem Schnitt.
