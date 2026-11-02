@@ -52,19 +52,14 @@ function LapsTable({ laps, erg, title, splits = false, estWatts = null, grades =
     const l = laps[i];
     if (splits) return false;
     if (hasWatts(l, i)) return watts(l, i) >= mean * 1.08 && (!hrs.length || !l.avgHr || l.avgHr >= hrMean + 5);
+    const g = grades?.[i] ?? 0;
+    const hrHigh = !!l.avgHr && hrMean != null && l.avgHr >= hrMean + 8;
+    // Bergab: Tempo an der Schwelle (oder schneller). Ohne Schwelle: deutlich über dem Schnitt.
+    if (g <= -2 && l.pace) return thresholdSec ? l.pace <= thresholdSec * 1.03 : 1000 / l.pace >= rawMean * 1.6;
+    // Flach und bergauf: hoher Puls zählt als Aufwand, sonst das Tempo (steigungskorrigiert) über dem Schnitt.
+    if (hrHigh) return true;
     const pace = adjPace(l, i);
-    if (pace != null) {
-      // Flach (oder bergab): Tempo entscheidet. Bergauf: Aufwand, also zusätzlich der Puls, wenn er vorhanden ist.
-      const g = grades?.[i] ?? 0;
-      // Bergab fällt man leicht schnell: dafür muss das Tempo klar höher sein.
-      // Bergab: Tempo an der Schwelle (oder schneller) zählt, ohne Steigungskorrektur. Ohne Schwelle: deutlich über dem Schnitt.
-      if (g <= -2) return thresholdSec ? l.pace <= thresholdSec * 1.03 : 1000 / l.pace >= rawMean * 1.6;
-      const uphill = g >= 2;
-      // Bergauf zählt der Aufwand: mit Puls der Puls, sonst das steigungskorrigierte Tempo.
-      if (uphill && l.avgHr && hrMean != null) return l.avgHr >= hrMean + 8;
-      return pace >= adjMean * 1.08;
-    }
-    return !!l.avgHr && hrMean != null && l.avgHr >= hrMean + 8;
+    return pace != null && pace >= adjMean * 1.08;
   }));
   const isWork = (l) => workIdx.has(laps.indexOf(l));
   const work = laps.filter(isWork);
