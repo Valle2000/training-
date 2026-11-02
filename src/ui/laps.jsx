@@ -38,6 +38,9 @@ function LapsTable({ laps, erg, title, splits = false, estWatts = null, grades =
     return (1000 / l.pace) * (1 + 0.035 * g);
   };
   const adjVals = laps.map((l, i) => (hasWatts(l, i) ? null : adjPace(l, i))).filter(Boolean);
+  // Bergab: Tempo ohne Steigungskorrektur, verglichen mit dem Schnitt der Runden (ca. 4:00 gegen 7:00 zählt).
+  const rawSpeeds = laps.map((l) => (l.pace ? 1000 / l.pace : null)).filter(Boolean);
+  const rawMean = rawSpeeds.length ? rawSpeeds.reduce((x, y) => x + y, 0) / rawSpeeds.length : 0;
   const adjMean = adjVals.length ? adjVals.reduce((x, y) => x + y, 0) / adjVals.length : 0;
   const workIdx = new Set(laps.map((l, i) => i).filter((i) => {
     const l = laps[i];
@@ -48,7 +51,7 @@ function LapsTable({ laps, erg, title, splits = false, estWatts = null, grades =
       // Flach (oder bergab): Tempo entscheidet. Bergauf: Aufwand, also zusätzlich der Puls, wenn er vorhanden ist.
       const g = grades?.[i] ?? 0;
       // Bergab fällt man leicht schnell: dafür muss das Tempo klar höher sein.
-      if (g <= -2) return pace >= adjMean * 1.25;
+      if (g <= -2) return 1000 / l.pace >= rawMean * 1.6;
       const uphill = g >= 2;
       if (pace >= adjMean * 1.08) return true;
       return uphill && !!l.avgHr && hrMean != null && l.avgHr >= hrMean + 8;
