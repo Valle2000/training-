@@ -20,20 +20,30 @@ export function LapsCard({ laps, autoLaps, erg, sport }) {
 // Rundentabelle mit Balken für Leistung bzw. Pace und eine kurze Auswertung der Belastungsrunden.
 function LapsTable({ laps, erg, title, splits = false }) {
   if (!laps?.length) return null;
-  const a = lapAnalysis(laps);
+  // Arbeitsrunden: deutlich über dem Schnitt der Runden (Watt, sonst Tempo). Einlaufen und Auslaufen zählen nicht.
+  const value = (l) => (l.avgPower ? l.avgPower : l.pace ? 1000 / l.pace : null);
+  const vals = laps.map(value).filter(Boolean);
+  const mean = vals.length ? vals.reduce((x, y) => x + y, 0) / vals.length : 0;
+  const isWork = (l) => !splits && value(l) != null && value(l) >= mean * 1.12;
+  const work = laps.filter(isWork);
+  const useWork = work.length >= 2 && work.length < laps.length;
+  const shown = useWork ? work : laps;
+  const a = lapAnalysis(shown);
   // Balken ab 90 % der schwächsten Runde, damit Unterschiede sichtbar werden.
-  const pws = laps.map((l) => l.avgPower).filter(Boolean);
+  const pws = shown.map((l) => l.avgPower).filter(Boolean);
   const maxP = Math.max(...pws, 1), minP = pws.length ? Math.min(...pws) * 0.9 : 0;
   const per = erg === 'bike' ? '/1000 m' : erg ? '/500 m' : '/km';
   const hasP = laps.some((l) => l.avgPower), hasPace = laps.some((l) => l.pace), hasSpm = laps.some((l) => l.spm), hasRest = laps.some((l) => l.restS);
+  const rowStyle = (l) => ({ fontWeight: a && (l.n === a.best) ? 700 : 400, opacity: useWork && !isWork(l) ? 0.4 : 1 });
   return (
     <div className="card">
-      <h3 style={{ marginTop: 0 }}>{title}</h3>
+      <h3 style={{ marginTop: 0 }}>{useWork ? `Intervalle (${work.length} von ${laps.length})` : title}</h3>
+      {useWork && <p className="muted small" style={{ marginTop: 0 }}>Einlaufen und Auslaufen sind ausgegraut und fließen nicht in die Auswertung ein.</p>}
       <div style={{ overflowX: 'auto' }}>
         <table className="t nowrap">
           <thead><tr><th>#</th><th>Zeit</th><th>m</th>{hasPace && <th>Pace{per}</th>}{hasP && <th>W</th>}<th>Ø/max Puls</th>{hasSpm && <th>{erg ? 'SPM' : 'Kad.'}</th>}{hasRest && <th>Pause</th>}</tr></thead>
           <tbody>{laps.map((l) => (
-            <tr key={l.n} style={{ fontWeight: a && (l.n === a.best) ? 700 : 400 }}>
+            <tr key={l.n} style={rowStyle(l)}>
               <td>{l.n}</td><td>{fmtPace(l.durationS)}</td>
               <td>{l.distanceM ? Math.round(l.distanceM) : '–'}</td>
               {hasPace && <td>{fmtPace(l.pace)}</td>}
