@@ -449,5 +449,35 @@
    "restHrManual": null,
    "sleepHManual": null
   }
+ },
+ {
+  "id": "2026-11-01",
+  "deleted": false,
+  "updated_at": "2026-11-01T13:10:38.568676+00:00",
+  "data": {
+   "hrv": 57,
+   "date": "2026-11-01",
+   "restHr": 61,
+   "sleepH": 6.5,
+   "source": "polar",
+   "recharge": 1,
+   "ansCharge": -10,
+   "sleepScore": 57
+  }
+ },
+ {
+  "id": "2026-11-02",
+  "deleted": false,
+  "updated_at": "2026-11-02T07:04:22.111475+00:00",
+  "data": {
+   "hrv": 165,
+   "date": "2026-11-02",
+   "restHr": 38,
+   "sleepH": 7,
+   "source": "polar",
+   "recharge": 6,
+   "ansCharge": 9.4,
+   "sleepScore": 80
+  }
  }
 ]
