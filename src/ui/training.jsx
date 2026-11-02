@@ -177,7 +177,13 @@ function WeekList({ monday, onEdit }) {
     update((d) => ({ ...d, plan: removeIt ? res.filter((x) => x.id !== p.id) : res }));
   };
   const shift = (p, dm) => adjust(p, (Number(p.minutes) || 0) + dm);
-  const moveDay = (p, dd) => change(p, { date: addDays(p.date, dd) });
+  // Montag ist fester Ruhetag: keine Einheit darauf verschieben.
+  const isRest = (d) => new Date(`${d}T12:00:00Z`).getUTCDay() === 1;
+  const moveDay = (p, dd) => {
+    const to = addDays(p.date, dd);
+    if (isRest(to)) return toast('Montag ist Ruhetag');
+    change(p, { date: to });
+  };
   const remove = (p) => { if (confirm('Einheit streichen? Die Minuten gehen auf eine lockere Einheit dieser Woche über.')) adjust(p, 0, true); };
   return (
     <>
@@ -196,7 +202,8 @@ function WeekList({ monday, onEdit }) {
         return (
           <div key={d} style={{ marginTop: 10 }}>
             <b className="small">{fmtDate(d, { weekday: 'short', day: 'numeric', month: 'short' })}</b>
-            {!list.length && <p className="muted small" style={{ margin: '2px 0 0' }}>frei</p>}
+            {isRest(d) && <span className="small muted" style={{ marginLeft: 6 }}>Ruhetag</span>}
+            {!list.length && <p className="muted small" style={{ margin: '2px 0 0' }}>{isRest(d) ? 'Ruhe' : 'frei'}</p>}
             {list.map((p) => (
               <div key={p.id} className="item" style={{ flexDirection: 'column', alignItems: 'stretch', opacity: p.done ? 0.6 : 1 }}>
                 <div className="row" style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
