@@ -4,7 +4,7 @@ import { useData, update } from '../lib/store.js';
 import { SYMPTOMS, readinessFor, hrvStatus, loadStatus } from '../lib/readiness.js';
 import { addDays } from '../lib/metrics.js';
 import { LineChart } from './charts.jsx';
-import { Sheet, toast } from './common.jsx';
+import { Sheet, toast, fmtDate } from './common.jsx';
 
 const SCALES = [
   ['feel', 'Wie fühlst du dich?', ['sehr schlecht', 'schlecht', 'okay', 'gut', 'super']],
@@ -47,7 +47,7 @@ export function MorningSheet({ date, onClose }) {
     onClose();
   };
   return (
-    <Sheet title="Morgen-Check" onClose={onClose}>
+    <Sheet title={`Morgen-Check · ${fmtDate(date, { weekday: 'short', day: 'numeric', month: 'short' })}`} onClose={onClose}>
       {SCALES.map(([k, label, words]) => (
         <div key={k}>
           <label>{label}</label>
