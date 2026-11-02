@@ -60,8 +60,9 @@ function LapsTable({ laps, erg, title, splits = false, estWatts = null, grades =
       // Bergab: Tempo an der Schwelle (oder schneller) zählt, ohne Steigungskorrektur. Ohne Schwelle: deutlich über dem Schnitt.
       if (g <= -2) return thresholdSec ? l.pace <= thresholdSec * 1.03 : 1000 / l.pace >= rawMean * 1.6;
       const uphill = g >= 2;
-      if (pace >= adjMean * 1.08) return true;
-      return uphill && !!l.avgHr && hrMean != null && l.avgHr >= hrMean + 8;
+      // Bergauf zählt der Aufwand: mit Puls der Puls, sonst das steigungskorrigierte Tempo.
+      if (uphill && l.avgHr && hrMean != null) return l.avgHr >= hrMean + 8;
+      return pace >= adjMean * 1.08;
     }
     return !!l.avgHr && hrMean != null && l.avgHr >= hrMean + 8;
   }));
