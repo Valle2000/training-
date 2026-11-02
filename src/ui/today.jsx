@@ -27,6 +27,8 @@ export function Today({ go, openActivity, openAdd }) {
   const todays = activities.filter((a) => a.date === t);
   const planned = plan.filter((p) => p.date === t && !p.done);
   const [checking, setChecking] = useState(false);
+  // Morgen-Check auch für vergangene Tage nachtragen (Standard: heute).
+  const [checkDay, setCheckDay] = useState(t);
   const minutes = [...todays.map((a) => (a.durationS || 0) / 60), ...planned.map((p) => p.minutes || 0)].reduce((a, b) => a + b, 0);
   const hard = [...todays.map((a) => ((a.zones?.I3 || 0) + (a.zones?.I4 || 0) + (a.zones?.I5 || 0)) / 60), ...planned.filter((p) => ['I3', 'I4', 'I5'].includes(p.zone)).map((p) => p.minutes || 0)].reduce((a, b) => a + b, 0);
   const longest = Math.max(0, ...todays.filter((a) => a.sport !== 'strength').map((a) => (a.durationS || 0) / 60), ...planned.filter((p) => p.sport !== 'strength').map((p) => p.minutes || 0));
@@ -53,7 +55,14 @@ export function Today({ go, openActivity, openAdd }) {
           <div className="fat"><b>{fmtNum(now?.fatigue)}</b><span>Ermüdung</span></div>
           <div className="form"><b>{fmtNum(now?.form)}</b><span>Form</span></div>
         </div>
-        <ReadinessCard date={t} form={now?.form ?? null} onCheck={() => setChecking(true)} />
+        <ReadinessCard date={t} form={now?.form ?? null} onCheck={() => { setCheckDay(t); setChecking(true); }} />
+        <details style={{ margin: '4px 0 8px' }}>
+          <summary className="small" style={{ cursor: 'pointer' }}>Morgen-Check für einen anderen Tag</summary>
+          <div className="row" style={{ gap: 6, marginTop: 6 }}>
+            <input type="date" value={checkDay} max={t} onChange={(e) => setCheckDay(e.target.value)} />
+            <button className="secondary" disabled={!checkDay} onClick={() => setChecking(true)}>Öffnen</button>
+          </div>
+        </details>
         {!activities.length && <p>Noch keine Einheiten. Verbinde Polar, Concept2 oder Wahoo unter „Mehr → Einstellungen“ oder trag eine Einheit ein.</p>}
       </div>
 
@@ -134,7 +143,7 @@ export function Today({ go, openActivity, openAdd }) {
         </button>
       )}
       {!settings.hrMax && <div className="notice">Trag unter „Mehr → Einstellungen → Athlet“ Maximalpuls, Ruhepuls und Schwellenpuls ein (und FTP, falls du mit Watt trainierst), sonst kann keine Belastung berechnet werden.</div>}
-      {checking && <MorningSheet date={t} onClose={() => setChecking(false)} />}
+      {checking && <MorningSheet date={checkDay || t} onClose={() => setChecking(false)} />}
     </>
   );
 }
