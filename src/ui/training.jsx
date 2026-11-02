@@ -177,6 +177,18 @@ function WeekList({ monday, onEdit }) {
     update((d) => ({ ...d, plan: removeIt ? res.filter((x) => x.id !== p.id) : res }));
   };
   const shift = (p, dm) => adjust(p, (Number(p.minutes) || 0) + dm);
+  // Neue Einheit: die Minuten werden von lockeren Einheiten derselben Woche abgezogen, die Wochensumme bleibt.
+  const [adding, setAdding] = useState(false);
+  const [form, setForm] = useState({ date: monday, sport: 'run', minutes: 60, zone: 'I1' });
+  const addItem = () => {
+    const m = Math.max(0, Math.round(Number(form.minutes) || 0));
+    if (!m || isRest(form.date)) return toast(isRest(form.date) ? 'Montag ist Ruhetag' : 'Minuten eingeben');
+    const item = { id: uid(), date: form.date, sport: form.sport, minutes: 0, zone: form.zone, title: '', description: '', load: 0, done: false, source: 'manual' };
+    const res = balancePlan([...getData().plan, item], monday, days[6], item.id, m);
+    if (!res) return toast('Kein Ausgleich möglich – zuerst eine lockere Einheit in dieser Woche kürzen');
+    update((d) => ({ ...d, plan: res }));
+    setAdding(false);
+  };
   // Montag ist fester Ruhetag: keine Einheit darauf verschieben.
   const isRest = (d) => new Date(`${d}T12:00:00Z`).getUTCDay() === 1;
   const moveDay = (p, dd) => {
@@ -194,6 +206,19 @@ function WeekList({ monday, onEdit }) {
           <div><b>{fmtDuration(done * 60)}</b><span>erledigt</span></div>
           <div><b>{hardDays.size}</b><span>harte Tage</span></div>
         </div>
+        {!adding && <button className="secondary wide" style={{ marginTop: 8 }} onClick={() => setAdding(true)}><Plus size={16} />Einheit hinzufügen</button>}
+        {adding && <div style={{ marginTop: 8 }}>
+          <label>Tag</label>
+          <select value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })}>{days.filter((d) => !isRest(d)).map((d) => <option key={d} value={d}>{fmtDate(d, { weekday: 'long', day: 'numeric', month: 'short' })}</option>)}</select>
+          <div className="grid2">
+            <div><label>Sportart</label><select value={form.sport} onChange={(e) => setForm({ ...form, sport: e.target.value })}>{SPORTS.filter((x) => x.id !== 'other').map((x) => <option key={x.id} value={x.id}>{x.label}</option>)}</select></div>
+            <div><label>Minuten</label><input inputMode="numeric" value={form.minutes} onChange={(e) => setForm({ ...form, minutes: e.target.value })} /></div>
+          </div>
+          <label>Zone</label>
+          <select value={form.zone} onChange={(e) => setForm({ ...form, zone: e.target.value })}>{ZONES.map((z) => <option key={z.id} value={z.id}>{z.label}</option>)}</select>
+          <p className="muted small">Die Minuten gehen von lockeren Einheiten dieser Woche ab, damit die Wochenstunden fix bleiben.</p>
+          <div className="row" style={{ gap: 6 }}><button className="primary" onClick={addItem}><Check size={16} />Hinzufügen</button><button className="ghost" onClick={() => setAdding(false)}>Abbrechen</button></div>
+        </div>}
         <p className="muted small" style={{ margin: '6px 0 0' }}>Die Wochenstunden bleiben fix: Wenn du eine Einheit verlängerst oder streichst, wird die Differenz auf lockere Einheiten derselben Woche verteilt. Verschieben ändert die Summe nicht.</p>
         {adjacentHard.length > 0 && <div className="notice" style={{ marginTop: 8 }}>Harte Einheiten an zwei Tagen hintereinander ({adjacentHard.length}×). Ein lockerer Tag dazwischen erholt besser.</div>}
       </div>
