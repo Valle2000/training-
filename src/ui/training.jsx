@@ -477,7 +477,7 @@ export function ActivitySheet({ activity, onClose }) {
         <button className="secondary" disabled={!partial} onClick={crop} title="Im Diagramm einen Bereich ziehen oder die Regler verschieben"><Scissors size={16} />{partial ? `Auf Auswahl zuschneiden (${fmtDuration(sel[0] * 5)}–${fmtDuration((sel[1] + 1) * 5)})` : 'Zuschneiden: Bereich im Diagramm wählen'}</button>
         {a.original && <button className="ghost" style={{ flex: 'none' }} onClick={uncrop}><Undo2 size={16} />Original</button>}
       </div>}
-      <LapsCard laps={a.laps} autoLaps={a.autoLaps} estWatts={a.rollPowerLaps} sport={a.sport} erg={['skierg', 'row'].includes(a.sport) ? 'erg' : a.sport === 'bikeerg' ? 'bike' : null} />
+      <LapsCard laps={a.laps} autoLaps={a.autoLaps} estWatts={a.rollPowerLaps} grades={a.lapGrades} sport={a.sport} erg={['skierg', 'row'].includes(a.sport) ? 'erg' : a.sport === 'bikeerg' ? 'bike' : null} />
       <div className="grid2">
         <div><label>Datum</label><input type="date" value={when.date} onChange={(e) => setWhen({ ...when, date: e.target.value })} /></div>
         <div><label>Uhrzeit</label><input type="time" value={when.time} onChange={(e) => setWhen({ ...when, time: e.target.value })} /></div>

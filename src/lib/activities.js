@@ -57,6 +57,20 @@ export function movingSeconds(speed, { stopS = 120, minMs = 0.8 } = {}) {
 }
 
 // Belastung, Zonen usw. aus Rohdaten berechnen. raw.series in 1 Hz (optional).
+// Steigung je Runde in Prozent, aus Höhe und Strecke des Verlaufs (für Laufen bergauf/bergab).
+function lapGradesOf(laps, series) {
+  if (!laps?.length || !series?.speed?.length || !series?.alt?.length) return null;
+  const out = laps.map((l) => {
+    const from = Math.max(0, Math.round(l.startS || 0));
+    const to = Math.min(series.speed.length - 1, Math.round((l.startS || 0) + (l.durationS || 0)));
+    if (to <= from) return null;
+    const dist = series.speed.slice(from, to + 1).reduce((x, v) => x + (v || 0), 0);
+    const dAlt = (series.alt[to] ?? 0) - (series.alt[from] ?? 0);
+    return dist > 20 ? Math.round((dAlt / dist) * 1000) / 10 : null;
+  });
+  return out.some((g) => g != null) ? out : null;
+}
+
 // Erkannte Intervalle mit Ø-Watt (Rad, Ergometer) bzw. Ø-Tempo und Puls, für die Key Sessions.
 function intervalsOf(series) {
   if (!series) return null;
@@ -125,6 +139,7 @@ export function evaluate(raw, settings) {
     autoLaps: raw.deviceAutoLaps || (series ? distanceSplits(series, raw.sport) : null),
     ...rollerExtra(raw, series, settings, movingS),
     intervals: intervalsOf(series),
+    lapGrades: lapGradesOf(raw.laps, series),
   };
 }
 
