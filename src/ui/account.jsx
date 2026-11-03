@@ -23,7 +23,7 @@ export function AccountCard() {
     <div className="card">
       <h3 style={{ marginTop: 0 }}><Cloud size={16} /> Trainer-Ansicht</h3>
       <p style={{ margin: '4px 0' }}>Angemeldet als <b>{st.email}</b></p>
-      <p className="muted small">Du siehst die Daten des Betreibers nur. Nichts kann geändert oder gespeichert werden.</p>
+      <p className="muted small">Du siehst die Daten des Betreibers. Nur der Trainingsplan lässt sich ändern, alles andere ist nur lesbar.</p>
       <button className="ghost" onClick={() => signOut()}><LogOut size={16} />Abmelden</button>
     </div>
   );
@@ -97,7 +97,7 @@ function CoachAccess() {
   return (
     <div className="card" style={{ marginTop: 12 }}>
       <h3 style={{ marginTop: 0 }}>Trainer-Zugang</h3>
-      <p className="muted small">Die Trainerin sieht alles wie du (Einheiten, Pläne, Rennen, Key Sessions, Wellness, Krankheit, Verläufe), kann aber nichts ändern. Sie muss zuerst selbst ein SkiWax-Konto haben. Gesundheitsdaten sind dabei enthalten.</p>
+      <p className="muted small">Die Trainerin sieht alles wie du (Einheiten, Pläne, Rennen, Key Sessions, Wellness, Krankheit, Verläufe). Sie kann den Trainingsplan ändern, sonst nichts. Sie muss zuerst selbst ein SkiWax-Konto haben. Gesundheitsdaten sind dabei enthalten.</p>
       {coaches?.map((c) => (
         <div key={c.coach} className="item" style={{ alignItems: 'center' }}>
           <div className="grow small">Freigegeben seit {fmtTime(c.created_at)}</div>

@@ -62,7 +62,12 @@ async function loadAsCoach(session, athleteId) {
     if (data.length < 1000) break;
   }
   const base = JSON.parse(JSON.stringify(EMPTY));
-  enterReadOnly(applyRows(base, rows), { athleteId });
+  const { data: link } = await supabase.from('training_coaches').select('can_plan').eq('athlete', athleteId).eq('coach', session.user.id).maybeSingle();
+  const writePlan = async (changed) => {
+    const { error } = await supabase.from('training_records').upsert(changed.map((r) => ({ owner: athleteId, collection: 'plan', ...r })), { onConflict: 'owner,collection,id' });
+    if (error) setStatus({ state: 'error', error: `Plan nicht gespeichert: ${error.message}` });
+  };
+  enterReadOnly(applyRows(base, rows), { athleteId, canPlan: !!link?.can_plan, writePlan });
   setStatus({ state: 'readonly', email: session.user.email, error: null });
 }
 

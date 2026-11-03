@@ -50,3 +50,10 @@ revoke all on function public.training_grant_coach(text) from public;
 revoke all on function public.training_revoke_coach(uuid) from public;
 grant execute on function public.training_grant_coach(text) to authenticated;
 grant execute on function public.training_revoke_coach(uuid) to authenticated;
+
+-- Planen: Die Trainerin darf nur den Trainingsplan (Sammlung „plan“) des Betreibers ändern.
+alter table public.training_coaches add column if not exists can_plan boolean not null default true;
+drop policy if exists training_records_coach_plan on public.training_records;
+create policy training_records_coach_plan on public.training_records for all to authenticated
+  using (collection = 'plan' and exists (select 1 from public.training_coaches c where c.athlete = training_records.owner and c.coach = auth.uid() and c.can_plan))
+  with check (collection = 'plan' and exists (select 1 from public.training_coaches c where c.athlete = training_records.owner and c.coach = auth.uid() and c.can_plan));
