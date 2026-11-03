@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 
 const KEY = 'trainings-app-v1';
-const EMPTY = { activities: [], strength: [], plan: [], recipes: [], coach: [], food: null, settings: {}, wellness: [], connections: {}, customExercises: [], keySessions: [], lactateTests: [], races: [], gear: [], health: [], workouts: [] };
+export const EMPTY = { activities: [], strength: [], plan: [], recipes: [], coach: [], food: null, settings: {}, wellness: [], connections: {}, customExercises: [], keySessions: [], lactateTests: [], races: [], gear: [], health: [], workouts: [] };
 
 export function loadData() {
   try { return { ...EMPTY, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch { return { ...EMPTY }; }
@@ -37,7 +37,17 @@ let idbTimer = null;
 let hydrated = false;
 const early = [];
 const initial = state;
+// Nur-Lese-Modus (Trainer-Ansicht): fremde Daten anzeigen, nichts speichern und nichts abgleichen.
+let readOnly = null;
+export const isReadOnly = () => readOnly;
+export function enterReadOnly(data, info) {
+  readOnly = info;
+  hydrated = true;
+  state = { ...data, savedAt: Date.now() };
+  listeners.forEach((l) => l(state));
+}
 export function update(fn) {
+  if (readOnly) return;
   if (!hydrated) early.push(fn);
   state = fn(state);
   state.savedAt = Date.now();

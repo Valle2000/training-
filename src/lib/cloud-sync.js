@@ -2,7 +2,7 @@
 // beim Zurückkehren in die App und kurz nach jeder lokalen Änderung.
 import { useEffect, useState } from 'react';
 import { supabase, cloudConfigured } from './supabase.js';
-import { getData, update, subscribe, getLocalSeries, setSeriesFallback, kvGet, kvPut } from './store.js';
+import { getData, update, subscribe, getLocalSeries, setSeriesFallback, kvGet, kvPut, isReadOnly, enterReadOnly, EMPTY } from './store.js';
 import { planSync, applyRows, fingerprint } from './cloud.js';
 
 const META_KEY = 'trainings-app-sync-meta';
@@ -52,10 +52,30 @@ async function pullAll(since) {
   }
 }
 
+// Trainer-Ansicht: Betreiber-Daten lesen, ohne sie zu speichern oder abzugleichen.
+async function loadAsCoach(session, athleteId) {
+  const rows = [];
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await supabase.from('training_records').select('collection,id,data,deleted,updated_at').eq('owner', athleteId).order('updated_at', { ascending: true }).range(from, from + 999);
+    if (error) throw error;
+    rows.push(...data);
+    if (data.length < 1000) break;
+  }
+  const base = JSON.parse(JSON.stringify(EMPTY));
+  enterReadOnly(applyRows(base, rows), { athleteId });
+  setStatus({ state: 'readonly', email: session.user.email, error: null });
+}
+
 async function run() {
   await metaReady;
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) { setStatus({ state: 'off', email: null }); return; }
+  // Keine Betreiber-Freigabe, aber eine Trainer-Verknüpfung: nur lesen.
+  const { data: admin } = await supabase.from('training_admins').select('user_id').eq('user_id', session.user.id).maybeSingle();
+  if (!admin) {
+    const { data: links } = await supabase.from('training_coaches').select('athlete').eq('coach', session.user.id).limit(1);
+    if (links?.length) return loadAsCoach(session, links[0].athlete);
+  }
   setStatus({ state: 'syncing', email: session.user.email, error: null });
   let meta = loadMeta();
   if (meta.userId !== session.user.id) meta = { userId: session.user.id, fp: {}, lastPulled: null, seriesPushed: {} };
@@ -94,7 +114,7 @@ async function run() {
 }
 
 export async function syncNow() {
-  if (!cloudConfigured) return;
+  if (!cloudConfigured || isReadOnly()) return;
   if (running) { again = true; return running; }
   running = run().catch((e) => { console.error('[sync]', e); setStatus({ state: 'error', error: e.message || String(e) }); }).finally(() => { running = null; if (again) { again = false; syncNow(); } });
   return running;
@@ -133,6 +153,9 @@ async function requireAdmin() {
   const { data: { user } } = await supabase.auth.getUser();
   const { data } = await supabase.from('training_admins').select('user_id').eq('user_id', user?.id || '').maybeSingle();
   if (data) return;
+  // Trainerin mit Freigabe: Anmeldung erlaubt, Daten nur lesend.
+  const { data: links } = await supabase.from('training_coaches').select('athlete').eq('coach', user?.id || '').limit(1);
+  if (links?.length) return;
   await supabase.auth.signOut();
   throw new Error(ADMIN_ONLY);
 }
@@ -150,3 +173,18 @@ export async function resetPassword(email) {
   if (error) throw error;
 }
 export async function signOut() { await supabase.auth.signOut(); setStatus({ state: 'off', email: null }); }
+
+// Trainer-Freigaben (nur Betreiber): anzeigen, hinzufügen, entfernen.
+export async function listCoaches() {
+  const { data, error } = await supabase.from('training_coaches').select('coach,created_at');
+  if (error) throw error;
+  return data || [];
+}
+export async function grantCoach(email) {
+  const { error } = await supabase.rpc('training_grant_coach', { coach_email: email });
+  if (error) throw error;
+}
+export async function revokeCoach(coachId) {
+  const { error } = await supabase.rpc('training_revoke_coach', { coach_id: coachId });
+  if (error) throw error;
+}

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Cloud, CloudOff, RefreshCw, LogOut } from 'lucide-react';
 import { cloudConfigured } from '../lib/supabase.js';
-import { useCloudStatus, syncNow, signIn, signUp, resetPassword, signOut } from '../lib/cloud-sync.js';
+import { useCloudStatus, syncNow, signIn, signUp, resetPassword, signOut, listCoaches, grantCoach, revokeCoach } from '../lib/cloud-sync.js';
 import { toast } from './common.jsx';
 
 const fmtTime = (iso) => (iso ? new Date(iso).toLocaleString('de-DE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '–');
@@ -19,7 +19,16 @@ export function AccountCard() {
       <p className="muted small">Noch nicht eingerichtet: Bei Vercel <code>VITE_SUPABASE_URL</code> und <code>VITE_SUPABASE_ANON_KEY</code> eintragen (dieselben Werte wie bei SkiWax) und neu veröffentlichen. Bis dahin liegen alle Daten nur in diesem Browser.</p>
     </div>
   );
+  if (st.email && st.state === 'readonly') return (
+    <div className="card">
+      <h3 style={{ marginTop: 0 }}><Cloud size={16} /> Trainer-Ansicht</h3>
+      <p style={{ margin: '4px 0' }}>Angemeldet als <b>{st.email}</b></p>
+      <p className="muted small">Du siehst die Daten des Betreibers nur. Nichts kann geändert oder gespeichert werden.</p>
+      <button className="ghost" onClick={() => signOut()}><LogOut size={16} />Abmelden</button>
+    </div>
+  );
   if (st.email) return (
+    <>
     <div className="card">
       <h3 style={{ marginTop: 0 }}><Cloud size={16} /> Konto & Abgleich</h3>
       <p style={{ margin: '4px 0' }}>Angemeldet als <b>{st.email}</b></p>
@@ -31,6 +40,8 @@ export function AccountCard() {
         <button className="ghost" onClick={() => signOut()}><LogOut size={16} />Abmelden</button>
       </div>
     </div>
+    <CoachAccess />
+    </>
   );
   const submit = async (e) => {
     e.preventDefault(); setBusy(true); setMsg('');
@@ -63,4 +74,42 @@ export function SyncBadge({ onClick }) {
   const Icon = st.state === 'off' ? CloudOff : st.state === 'syncing' ? RefreshCw : Cloud;
   const label = st.state === 'off' ? 'Offline' : st.state === 'syncing' ? 'Sync' : st.state === 'error' ? 'Fehler' : 'Sync';
   return <button className="pill" onClick={onClick} aria-label={`Abgleich: ${label}`} style={st.state === 'error' ? { borderColor: '#e08a7c', color: '#ffc9bf' } : undefined}><Icon size={14} className={st.state === 'syncing' ? 'spin' : ''} />{label}</button>;
+}
+
+// Trainer-Zugang: E-Mail-Adresse freigeben oder Freigabe entfernen (nur lesender Zugriff für die Trainerin).
+function CoachAccess() {
+  const [coaches, setCoaches] = useState(null);
+  const [email, setEmail] = useState('');
+  const [busy, setBusy] = useState(false);
+  const load = () => listCoaches().then(setCoaches).catch(() => setCoaches([]));
+  useEffect(() => { load(); }, []);
+  const grant = async () => {
+    if (!email.trim()) return;
+    setBusy(true);
+    try { await grantCoach(email.trim()); setEmail(''); toast('Freigegeben – sie sieht deine Daten jetzt nur lesend'); load(); }
+    catch (err) { toast(err.message); }
+    setBusy(false);
+  };
+  const revoke = async (id) => {
+    if (!confirm('Trainer-Zugang entfernen?')) return;
+    try { await revokeCoach(id); toast('Freigabe entfernt'); load(); } catch (err) { toast(err.message); }
+  };
+  return (
+    <div className="card" style={{ marginTop: 12 }}>
+      <h3 style={{ marginTop: 0 }}>Trainer-Zugang</h3>
+      <p className="muted small">Die Trainerin sieht alles wie du (Einheiten, Pläne, Rennen, Key Sessions, Wellness, Krankheit, Verläufe), kann aber nichts ändern. Sie muss zuerst selbst ein SkiWax-Konto haben. Gesundheitsdaten sind dabei enthalten.</p>
+      {coaches?.map((c) => (
+        <div key={c.coach} className="item" style={{ alignItems: 'center' }}>
+          <div className="grow small">Freigegeben seit {fmtTime(c.created_at)}</div>
+          <button className="ghost" onClick={() => revoke(c.coach)}>Entfernen</button>
+        </div>
+      ))}
+      {coaches && !coaches.length && <p className="small muted">Noch niemand freigegeben.</p>}
+      <label>E-Mail der Trainerin</label>
+      <div className="row" style={{ gap: 6 }}>
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ flex: 1 }} />
+        <button className="primary" disabled={busy || !email.trim()} onClick={grant}>Freigeben</button>
+      </div>
+    </div>
+  );
 }
