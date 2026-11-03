@@ -30,5 +30,117 @@
    "bodyPart": "",
    "severity": "1"
   }
+ },
+ {
+  "id": "mvzaw98w2wfiz",
+  "deleted": false,
+  "updated_at": "2026-11-02T13:35:37.247103+00:00",
+  "data": {
+   "id": "mvzaw98w2wfiz",
+   "end": "2025-08-17",
+   "type": "ill",
+   "notes": "",
+   "start": "2025-07-07",
+   "title": "EBV",
+   "impact": "pause",
+   "bodyPart": "",
+   "severity": "3"
+  }
+ },
+ {
+  "id": "mvzaxiquwv9tn",
+  "deleted": false,
+  "updated_at": "2026-11-02T13:38:30.099076+00:00",
+  "data": {
+   "id": "mvzaxiquwv9tn",
+   "end": "2025-06-24",
+   "type": "ill",
+   "notes": "",
+   "start": "2025-06-10",
+   "title": "Erkältung",
+   "impact": "pause",
+   "bodyPart": "",
+   "severity": 2
+  }
+ },
+ {
+  "id": "mvzb1igu942u3",
+  "deleted": false,
+  "updated_at": "2026-11-02T13:42:20.536377+00:00",
+  "data": {
+   "id": "mvzb1igu942u3",
+   "end": "2025-05-11",
+   "type": "ill",
+   "notes": "",
+   "start": "2025-05-05",
+   "title": "Erkältung ",
+   "impact": "pause",
+   "bodyPart": "",
+   "severity": 2
+  }
+ },
+ {
+  "id": "mvzb2m27ncbks",
+  "deleted": false,
+  "updated_at": "2026-11-02T13:40:17.373332+00:00",
+  "data": {
+   "id": "mvzb2m27ncbks",
+   "end": "2025-04-13",
+   "type": "ill",
+   "notes": "",
+   "start": "2025-04-07",
+   "title": "Erkältung",
+   "impact": "pause",
+   "bodyPart": "",
+   "severity": 2
+  }
+ },
+ {
+  "id": "mvzb6v2ifcu06",
+  "deleted": false,
+  "updated_at": "2026-11-02T13:43:34.63913+00:00",
+  "data": {
+   "id": "mvzb6v2ifcu06",
+   "end": "2025-04-27",
+   "type": "ill",
+   "notes": "",
+   "start": "2025-04-21",
+   "title": "Erkältung ",
+   "impact": "pause",
+   "bodyPart": "",
+   "severity": 2
+  }
+ },
+ {
+  "id": "mvzeiglb620zb",
+  "deleted": false,
+  "updated_at": "2026-11-02T15:19:21.406004+00:00",
+  "data": {
+   "id": "mvzeiglb620zb",
+   "end": "2026-03-16",
+   "type": "ill",
+   "notes": "",
+   "start": "2026-03-13",
+   "title": "Erkältung ",
+   "impact": "pause",
+   "bodyPart": "",
+   "severity": 2
+  }
+ },
+ {
+  "id": "mvzenv62086ck",
+  "deleted": false,
+  "updated_at": "2026-11-02T15:20:48.306847+00:00",
+  "data": {
+   "id": "mvzenv62086ck",
+   "end": "2026-03-31",
+   "type": "ill",
+   "notes": "",
+   "start": "2026-03-26",
+   "title": "Erkältung ",
+   "impact": "pause",
+   "bodyPart": "",
+   "severity": 2
+  }
  }
 ]

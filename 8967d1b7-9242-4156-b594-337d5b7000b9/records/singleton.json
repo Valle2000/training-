@@ -2,11 +2,11 @@
  {
   "id": "settings",
   "deleted": false,
-  "updated_at": "2026-11-02T10:47:33.190286+00:00",
+  "updated_at": "2026-11-03T09:44:32.530774+00:00",
   "data": {
    "ai": {
     "coach": {
-     "model": "claude-sonnet-5-5",
+     "model": "claude-opus-5-5",
      "effort": "high"
     }
    },
@@ -14,6 +14,20 @@
    "ftp": "384",
    "sex": "m",
    "lthr": "170",
+   "aiLog": [
+    {
+     "usd": 0.3881,
+     "date": "2026-11-02",
+     "kind": "coach",
+     "model": "claude-opus-5-5"
+    },
+    {
+     "usd": 0.4401,
+     "date": "2026-11-02",
+     "kind": "coach",
+     "model": "claude-opus-5-5"
+    }
+   ],
    "hrMax": "193",
    "hrRest": "38",
    "season": {
@@ -97,7 +111,8 @@
     "peakHours": "19",
     "winterRunHours": "5"
    },
-   "lastSync": "2026-11-02T10:47:28.536Z",
+   "lastSync": "2026-11-03T09:44:27.891Z",
+   "strategy": "Aktuell ca. 15 h Ausdauer pro Woche plus 2 Krafteinheiten (zusammen ca. 2 h). Bald möchte ich Double-Threshold-Tage einbauen und später auch etwas mehr Intensität.\n",
    "weightKg": "80",
    "ftpSkierg": "224",
    "titleRules": {
@@ -109,7 +124,8 @@
    "polarSportMap": {
     "83": "strength"
    },
-   "metricsVersion": 10,
+   "thresholdPace": "3:40",
+   "metricsVersion": 12,
    "hiddenTemplates": [
     "A",
     "B",

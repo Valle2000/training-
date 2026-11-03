@@ -453,16 +453,27 @@
  {
   "id": "2026-11-01",
   "deleted": false,
-  "updated_at": "2026-11-01T13:10:38.568676+00:00",
+  "updated_at": "2026-11-02T13:14:15.712792+00:00",
   "data": {
    "hrv": 57,
    "date": "2026-11-01",
+   "feel": 2,
+   "note": "",
    "restHr": 61,
    "sleepH": 6.5,
+   "sleepQ": 1,
    "source": "polar",
+   "stress": 2,
+   "alcohol": 4,
    "recharge": 1,
+   "soreness": 1,
+   "symptoms": [],
+   "weightKg": null,
    "ansCharge": -10,
-   "sleepScore": 57
+   "hrvManual": null,
+   "sleepScore": 57,
+   "restHrManual": null,
+   "sleepHManual": null
   }
  },
  {

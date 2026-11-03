@@ -144,5 +144,385 @@
    "technique": "Skating",
    "distanceKm": "23"
   }
+ },
+ {
+  "id": "mvzew6s6uvbag",
+  "deleted": false,
+  "updated_at": "2026-11-02T15:27:53.35516+00:00",
+  "data": {
+   "id": "mvzew6s6uvbag",
+   "date": "2026-10-11",
+   "goal": "PB",
+   "name": "Halbmarathon ",
+   "notes": "",
+   "report": {
+    "notes": "Super pacing evt muskulär nicht ganz alles rausholen was von Cardio geht ",
+    "rating": 5,
+    "nutritionNote": "2 Gels "
+   },
+   "result": {
+    "timeS": 4514,
+    "gapPct": null,
+    "winnerS": null,
+    "activityId": "mvpxp50qku0d"
+   },
+   "priority": "C",
+   "technique": "Lauf",
+   "distanceKm": 21.2
+  }
+ },
+ {
+  "id": "mvzey2aamedlt",
+  "deleted": false,
+  "updated_at": "2026-11-02T15:29:01.982756+00:00",
+  "data": {
+   "id": "mvzey2aamedlt",
+   "date": "2026-10-03",
+   "goal": "Sieg",
+   "name": "Seebach Roller",
+   "notes": "",
+   "report": {
+    "notes": "Beine nicht gut nach Hyrox und Puls nicht hochgekommen dafür aber sehr solide Leistung ",
+    "rating": 3
+   },
+   "result": {
+    "place": "2",
+    "timeS": 1610,
+    "gapPct": 1.6,
+    "winnerS": 1585,
+    "activityId": "mvpxpx1no9n7"
+   },
+   "priority": "C",
+   "technique": "Rollski",
+   "distanceKm": 7.5
+  }
+ },
+ {
+  "id": "mvzezdzzv7yq1",
+  "deleted": false,
+  "updated_at": "2026-11-02T15:29:45.125293+00:00",
+  "data": {
+   "id": "mvzezdzzv7yq1",
+   "date": "2026-10-01",
+   "goal": "Sub 60",
+   "name": "Hyrox",
+   "notes": "",
+   "report": {
+    "notes": "Kardio gut spezielle Übungen weniger",
+    "rating": 5
+   },
+   "result": {
+    "timeS": 3599,
+    "gapPct": null,
+    "winnerS": null,
+    "activityId": "mvpxpmgdj5sf"
+   },
+   "priority": "C",
+   "technique": "Sonstiges",
+   "distanceKm": 11
+  }
+ },
+ {
+  "id": "mvzf0fuuyexg2",
+  "deleted": false,
+  "updated_at": "2026-11-02T15:30:51.579335+00:00",
+  "data": {
+   "id": "mvzf0fuuyexg2",
+   "date": "2026-09-19",
+   "goal": "Gutes Feeling",
+   "name": "BFUTR19",
+   "notes": "",
+   "report": {
+    "notes": "Sehr gut gepaced alles super geklappt auch ohne tapern",
+    "rating": 5,
+    "nutritionNote": "3 Gels"
+   },
+   "result": {
+    "place": "2",
+    "timeS": 5896,
+    "gapPct": null,
+    "winnerS": null,
+    "activityId": "mvpxoxycr8k3"
+   },
+   "priority": "C",
+   "technique": "Lauf",
+   "distanceKm": 19.7
+  }
+ },
+ {
+  "id": "mvzf1z07n51wj",
+  "deleted": false,
+  "updated_at": "2026-11-02T15:31:50.459528+00:00",
+  "data": {
+   "id": "mvzf1z07n51wj",
+   "date": "2026-07-19",
+   "goal": "Sub 35",
+   "name": "Schauinslandkönig",
+   "notes": "",
+   "report": {
+    "notes": "Ganz gut gefühlt und Erwartung übertroffen von Anfang an hart aber halten können",
+    "rating": 4
+   },
+   "result": {
+    "timeS": 2014,
+    "gapPct": null,
+    "winnerS": null,
+    "activityId": "mvq0a1u57rp4"
+   },
+   "priority": "C",
+   "technique": "Rad",
+   "distanceKm": 11.3
+  }
+ },
+ {
+  "id": "mvzf45ff9etkv",
+  "deleted": false,
+  "updated_at": "2026-11-02T15:33:22.421175+00:00",
+  "data": {
+   "id": "mvzf45ff9etkv",
+   "date": "2026-07-04",
+   "goal": "Top3",
+   "name": "Orne Lauf",
+   "notes": "",
+   "report": {
+    "notes": "Super gepaced anfangs kein gutes Feeling dann immer besser reingekommen",
+    "rating": 5
+   },
+   "result": {
+    "place": "2",
+    "timeS": 2270,
+    "gapPct": null,
+    "winnerS": null,
+    "activityId": "mvpxp7hqpymk"
+   },
+   "priority": "C",
+   "technique": "Lauf",
+   "distanceKm": 9.9
+  }
+ },
+ {
+  "id": "mvzf5e40yy8yn",
+  "deleted": false,
+  "updated_at": "2026-11-02T15:34:25.581735+00:00",
+  "data": {
+   "id": "mvzf5e40yy8yn",
+   "date": "2026-06-27",
+   "goal": "Sieg",
+   "name": "XTrail",
+   "notes": "",
+   "report": {
+    "notes": "Ganz gute Beine aber im Finish keine Chance ",
+    "rating": 4
+   },
+   "result": {
+    "place": "2",
+    "timeS": 2602,
+    "gapPct": null,
+    "winnerS": null,
+    "activityId": "mvpxpb5tfcjj"
+   },
+   "priority": "C",
+   "technique": "Lauf",
+   "distanceKm": 9.8
+  }
+ },
+ {
+  "id": "mvzf6l1jr9f6c",
+  "deleted": false,
+  "updated_at": "2026-11-02T15:35:17.424459+00:00",
+  "data": {
+   "id": "mvzf6l1jr9f6c",
+   "date": "2026-06-28",
+   "goal": "",
+   "name": "Waldhaus",
+   "notes": "",
+   "report": {
+    "notes": "Beine so semi leider nicht so gut wie vor zwei Jahren nicht so viel Druck gehabt "
+   },
+   "result": {
+    "timeS": 5574,
+    "gapPct": null,
+    "winnerS": null,
+    "activityId": "mvq0a4wekmwv"
+   },
+   "priority": "C",
+   "technique": "Rad",
+   "distanceKm": 39.8
+  }
+ },
+ {
+  "id": "mvzf7hz4nga3z",
+  "deleted": false,
+  "updated_at": "2026-11-02T15:35:45.456157+00:00",
+  "data": {
+   "id": "mvzf7hz4nga3z",
+   "date": "2026-07-05",
+   "goal": "",
+   "name": "Triathlon",
+   "notes": "",
+   "report": {
+    "notes": "Kann nicht schwimmen",
+    "rating": 1
+   },
+   "result": {
+    "timeS": 490,
+    "gapPct": null,
+    "winnerS": null,
+    "activityId": "mvqyx31o9h23"
+   },
+   "priority": "C",
+   "technique": "Sonstiges",
+   "distanceKm": 0.4
+  }
+ },
+ {
+  "id": "mvzf7zeekwxka",
+  "deleted": false,
+  "updated_at": "2026-11-02T15:36:05.416125+00:00",
+  "data": {
+   "id": "mvzf7zeekwxka",
+   "date": "2026-07-05",
+   "goal": "",
+   "name": "Triathlon Ride",
+   "notes": "",
+   "report": {
+    "notes": "Sehr gute Beine"
+   },
+   "result": {
+    "timeS": 1835,
+    "gapPct": null,
+    "winnerS": null,
+    "activityId": "mvq0a3tnlv5r"
+   },
+   "priority": "C",
+   "technique": "Rad",
+   "distanceKm": 21.1
+  }
+ },
+ {
+  "id": "mvzf8g398rvcn",
+  "deleted": false,
+  "updated_at": "2026-11-02T15:36:47.615463+00:00",
+  "data": {
+   "id": "mvzf8g398rvcn",
+   "date": "2026-07-05",
+   "goal": "",
+   "name": "Run Triathlon",
+   "notes": "",
+   "report": {
+    "notes": "Trotz keinem Koppeltraining sehr gut reingekommen und dann stark gefühlt ",
+    "rating": 5
+   },
+   "result": {
+    "place": "1",
+    "timeS": 1103,
+    "gapPct": null,
+    "winnerS": null,
+    "activityId": "mvpxp76llkht"
+   },
+   "priority": "C",
+   "technique": "Lauf",
+   "distanceKm": 5.1
+  }
+ },
+ {
+  "id": "mvzf9mxu2le58",
+  "deleted": false,
+  "updated_at": "2026-11-02T15:37:25.499001+00:00",
+  "data": {
+   "id": "mvzf9mxu2le58",
+   "date": "2026-06-19",
+   "goal": "",
+   "name": "Stöffeleslauf",
+   "notes": "",
+   "report": {
+    "notes": "Gut für Treppenrennen ",
+    "rating": 4
+   },
+   "result": {
+    "timeS": 585,
+    "gapPct": null,
+    "winnerS": null,
+    "activityId": "mvpxpuvh2h2r"
+   },
+   "priority": "C",
+   "technique": "Lauf",
+   "distanceKm": 0.8
+  }
+ },
+ {
+  "id": "mvzfb4lx27mbw",
+  "deleted": false,
+  "updated_at": "2026-11-02T15:38:52.246861+00:00",
+  "data": {
+   "id": "mvzfb4lx27mbw",
+   "date": "2026-05-17",
+   "goal": "",
+   "name": "Kandern",
+   "notes": "",
+   "report": {
+    "notes": "Zu schnell los und kaum Longruns also sehr gelitten am Ende erster Ultra Trail",
+    "rating": 1
+   },
+   "result": {
+    "timeS": 26524,
+    "gapPct": null,
+    "winnerS": null,
+    "activityId": "mvpxpu1bgzts"
+   },
+   "priority": "C",
+   "technique": "Lauf",
+   "distanceKm": 68.7
+  }
+ },
+ {
+  "id": "mvzfc7j7kfcgj",
+  "deleted": false,
+  "updated_at": "2026-11-02T15:39:40.983471+00:00",
+  "data": {
+   "id": "mvzfc7j7kfcgj",
+   "date": "2026-05-13",
+   "goal": "PB",
+   "name": "Feierabendlauf",
+   "notes": "",
+   "report": {
+    "notes": "Leider keine guten Beine und 1:30 langsamer als vor 2 Jahren",
+    "rating": 2
+   },
+   "result": {
+    "timeS": 2174,
+    "gapPct": null,
+    "winnerS": null,
+    "activityId": "mvpxpn2dzu26"
+   },
+   "priority": "C",
+   "technique": "Lauf",
+   "distanceKm": 10
+  }
+ },
+ {
+  "id": "mvzfd6k72wxjf",
+  "deleted": false,
+  "updated_at": "2026-11-02T15:40:25.720602+00:00",
+  "data": {
+   "id": "mvzfd6k72wxjf",
+   "date": "2026-05-10",
+   "goal": "",
+   "name": "Schluchseelauf",
+   "notes": "",
+   "report": {
+    "notes": "Nicht gut reingefunden anfangs sehr zäh aber dann gut stabilisiert ",
+    "rating": 3
+   },
+   "result": {
+    "timeS": 4100,
+    "gapPct": null,
+    "winnerS": null,
+    "activityId": "mvpxpv100asu"
+   },
+   "priority": "C",
+   "technique": "Lauf",
+   "distanceKm": 18.5
+  }
  }
 ]
