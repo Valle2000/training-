@@ -79,6 +79,8 @@ export function RaceReport({ report = {}, onChange }) {
         <div><label>Energie hinten raus</label><select value={report.energy ?? ''} onChange={(e) => set('energy', e.target.value)}><option value="">–</option>{SCALE.map((s, i) => <option key={s} value={i + 1}>{s}</option>)}</select></div>
         <div><label>Magen</label><select value={report.stomach ?? ''} onChange={(e) => set('stomach', e.target.value)}><option value="">–</option><option value="ok">problemlos</option><option value="leicht">leichte Probleme</option><option value="stark">starke Probleme</option></select></div>
       </div>
+      <label>Gesamt: wie gut ging es? (1 = schlecht, 5 = sehr gut)</label>
+      <div className="chips">{[1, 2, 3, 4, 5].map((n) => <button key={n} className={`chip${Number(report.rating) === n ? ' on' : ''}`} onClick={() => set('rating', n)}>{n}</button>)}</div>
       <label>Verpflegung: was genommen, was hat funktioniert?</label><input value={report.nutritionNote ?? ''} onChange={(e) => set('nutritionNote', e.target.value)} placeholder="z. B. 4 Gels + 2 Becher, ab km 30 leer" />
       <label>Was lief gut, was nicht?</label><textarea value={report.notes ?? ''} onChange={(e) => set('notes', e.target.value)} />
       <label>Wichtigste Erkenntnis fürs nächste Rennen</label><input value={report.lesson ?? ''} onChange={(e) => set('lesson', e.target.value)} placeholder="z. B. Start ruhiger, früher essen" />

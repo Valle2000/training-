@@ -1,15 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check, Copy, Scissors, Undo2, CalendarClock, CalendarCheck, Wand2, Download } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check, Copy, Scissors, Undo2, CalendarClock, CalendarCheck, Wand2, Download, Trophy } from 'lucide-react';
 import { useData, update, getData, getSeries, getLocalSeries, putSeries, uid } from '../lib/store.js';
 import { today, weeks, mondayOf, buildActivity, evaluate, estimatePlanLoad, matchPlan, compliance, cropActivity, localDate, reevaluate } from '../lib/activities.js';
 import { addDays, ZONES, cleanSeries } from '../lib/metrics.js';
+import { detectIntervals } from '../lib/intervals.js';
 import { SPORTS, sportLabel, guessSport } from '../lib/sports.js';
 import { recomputeAll } from '../lib/recompute.js';
 import { importFiles, deleteActivities, mapPolarSport, askTempoGroups } from '../lib/sync.js';
 import { deleteRemoteSeries } from '../lib/cloud-sync.js';
 import { ZoneWeeks, ZoneBar, LineChart, ZONE_COLORS } from './charts.jsx';
 import { Sheet, Seg, fmtDuration, fmtNum, fmtDate, fmtKm, toast } from './common.jsx';
-import { Season, Races } from './season.jsx';
+import { Season, Races, RaceEditor } from './season.jsx';
 import { Workouts } from './workouts.jsx';
 import { durationOf, workoutLoad, mainZone, describe } from '../lib/workouts.js';
 import { ScheduleSheet, AdaptCard, WeekReviewSheet } from './week.jsx';
@@ -51,7 +52,7 @@ export function Training({ openActivity, openAdd }) {
         <h1 style={{ flex: 'none', margin: '8px 0' }}>Kalender</h1>
         <button className="primary" style={{ flex: 'none' }} onClick={openAdd}><Plus size={18} />Einheit</button>
       </div>
-      <Seg value={view} onChange={setView} options={[['week', 'Woche'], ['list', 'Liste'], ['season', 'Saison'], ['races', 'Rennen'], ['workouts', 'Workouts'], ['zones', 'Zonen']]} />
+      <Seg value={view} onChange={setView} options={[['week', 'Woche'], ['weeklist', 'Wochenliste'], ['list', 'Liste'], ['season', 'Saison'], ['races', 'Rennen'], ['workouts', 'Workouts'], ['zones', 'Zonen']]} />
 
       {view === 'week' && (
         <>
@@ -114,6 +115,7 @@ export function Training({ openActivity, openAdd }) {
         </>
       )}
 
+      {view === 'weeklist' && <WeekList monday={monday} onEdit={setPlanItem} />}
       {view === 'zones' && (
         <div className="card">
           <h3 style={{ marginTop: 0 }}>Stunden je Woche nach Zone</h3>
@@ -127,6 +129,176 @@ export function Training({ openActivity, openAdd }) {
       {schedOpen && <ScheduleSheet onClose={() => setSchedOpen(false)} />}
       {reviewOpen && <WeekReviewSheet monday={monday} onClose={() => setReviewOpen(false)} />}
       {planItem && <PlanEditor item={planItem} onClose={() => setPlanItem(null)} />}
+    </>
+  );
+}
+
+// Wochensumme halten: Eine Änderung an einer Einheit wird über lockere Einheiten (I1/I2) derselben Woche ausgeglichen.
+// Gibt null zurück, wenn der Ausgleich nicht möglich ist.
+export function balancePlan(plan, from, to, id, newMinutes) {
+  const item = plan.find((p) => p.id === id);
+  if (!item) return null;
+  const target = Math.max(0, Math.round(newMinutes));
+  const delta = target - (Number(item.minutes) || 0);
+  const easy = plan.filter((p) => p.id !== id && !p.done && p.date >= from && p.date <= to && ['I1', 'I2'].includes(p.zone));
+  const byLength = [...easy].sort((a, b) => (Number(b.minutes) || 0) - (Number(a.minutes) || 0));
+  const next = plan.map((p) => ({ ...p }));
+  const find = (pid) => next.find((p) => p.id === pid);
+  const setMin = (pid, m) => { const x = find(pid); x.minutes = m; x.load = estimatePlanLoad(m, x.zone); };
+  if (delta > 0) {
+    let need = delta;
+    for (const o of byLength) {
+      const take = Math.min(need, Math.max(0, (Number(o.minutes) || 0) - 30));
+      if (take > 0) { setMin(o.id, Number(o.minutes) - take); need -= take; }
+      if (need <= 0) break;
+    }
+    if (need > 0) return null;
+  } else if (delta < 0) {
+    if (!byLength.length) return null;
+    setMin(byLength[0].id, (Number(byLength[0].minutes) || 0) - delta);
+  }
+  return next.map((p) => (p.id === id ? { ...p, minutes: target, load: estimatePlanLoad(target, p.zone) } : p));
+}
+
+// Wochenziel bewusst ändern: Lockere Einheiten zuerst anpassen, sonst alle Einheiten gleichmäßig.
+// Gibt null zurück, wenn es keine geplanten Einheiten gibt.
+export function scaleWeek(plan, from, to, targetMin) {
+  const inWeek = plan.filter((p) => p.date >= from && p.date <= to && !p.done);
+  const total = inWeek.reduce((a, p) => a + (Number(p.minutes) || 0), 0);
+  if (!inWeek.length || !total) return null;
+  const target = Math.max(0, Math.round(targetMin));
+  const factor = target / total;
+  const easy = inWeek.filter((p) => ['I1', 'I2'].includes(p.zone));
+  const easyTotal = easy.reduce((a, p) => a + (Number(p.minutes) || 0), 0);
+  const scale = new Map();
+  if (factor < 1 && easyTotal > 0 && (total - target) <= easyTotal - 30 * easy.length) {
+    // Nur lockere Einheiten kürzen, harte bleiben.
+    const cut = total - target, k = (easyTotal - cut) / easyTotal;
+    for (const p of easy) scale.set(p.id, Math.max(30, Math.round((Number(p.minutes) || 0) * k)));
+  } else {
+    for (const p of inWeek) scale.set(p.id, Math.max(15, Math.round((Number(p.minutes) || 0) * factor)));
+  }
+  return plan.map((p) => (scale.has(p.id) ? { ...p, minutes: scale.get(p.id), load: estimatePlanLoad(scale.get(p.id), p.zone) } : p));
+}
+
+// Wochenliste: alle Einheiten der Woche untereinander. Verschieben, Dauer anpassen und streichen, mit Hinweis bei harten Tagen hintereinander.
+const HARD_ZONES = ['I3', 'I4', 'I5'];
+function WeekList({ monday, onEdit }) {
+  const { plan, activities, settings } = useData();
+  const sunday = addDays(monday, 6);
+  const adjust0 = (settings.weekAdjust || {})[monday];
+  const [tuning, setTuning] = useState(false);
+  const [reason, setReason] = useState('');
+  const [hours, setHours] = useState('');
+  const suggest = { krank: 0.6, erschoepft: 0.8, alltag: 0.85, reise: 0.7, gut: 1.05 };
+  const REASONS = [['krank', 'Krank'], ['erschoepft', 'Erholung schlecht'], ['alltag', 'Alltag / Beruf'], ['reise', 'Reise'], ['gut', 'Gut erholt, mehr Umfang']];
+  const plannedNow = plan.filter((p) => p.date >= monday && p.date <= sunday && !p.done).reduce((a, p) => a + (Number(p.minutes) || 0), 0) / 60;
+  const applyTarget = () => {
+    const h = Number(String(hours).replace(',', '.'));
+    if (!reason) return toast('Bitte einen Grund wählen');
+    if (!(h > 0)) return toast('Wochenstunden eingeben');
+    const next = scaleWeek(getData().plan, monday, sunday, h * 60);
+    if (!next) return toast('Keine geplanten Einheiten in dieser Woche');
+    update((d) => ({ ...d, plan: scaleWeek(d.plan, monday, sunday, h * 60) || next, settings: { ...d.settings, weekAdjust: { ...(d.settings.weekAdjust || {}), [monday]: { hours: h, reason, at: new Date().toISOString() } } } }));
+    setTuning(false);
+    toast(`Woche auf ${h} h gesetzt`);
+  };
+  const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
+  const items = plan.filter((p) => p.date >= monday && p.date <= days[6]);
+  const planned = items.filter((p) => !p.done).reduce((a, p) => a + (Number(p.minutes) || 0), 0);
+  const done = activities.filter((a) => a.date >= monday && a.date <= days[6]).reduce((a, x) => a + (x.durationS || 0) / 60, 0);
+  const hardDays = new Set(items.filter((p) => HARD_ZONES.includes(p.zone) && !p.done).map((p) => p.date));
+  const adjacentHard = days.slice(0, 6).filter((d, i) => hardDays.has(d) && hardDays.has(days[i + 1]));
+  const change = (p, patch) => update((d) => ({ ...d, plan: d.plan.map((x) => (x.id === p.id ? { ...x, ...patch } : x)) }));
+  // Die Wochensumme bleibt fix: Dauer- und Löschänderungen werden über lockere Einheiten derselben Woche ausgeglichen.
+  const adjust = (p, minutes, removeIt = false) => {
+    const res = balancePlan(getData().plan, monday, days[6], p.id, minutes);
+    if (!res) return toast('Kein Ausgleich möglich – keine lockere Einheit in dieser Woche');
+    update((d) => ({ ...d, plan: removeIt ? res.filter((x) => x.id !== p.id) : res }));
+  };
+  const shift = (p, dm) => adjust(p, (Number(p.minutes) || 0) + dm);
+  // Neue Einheit: die Minuten werden von lockeren Einheiten derselben Woche abgezogen, die Wochensumme bleibt.
+  const [adding, setAdding] = useState(false);
+  const [form, setForm] = useState({ date: monday, sport: 'run', minutes: 60, zone: 'I1' });
+  const addItem = () => {
+    const m = Math.max(0, Math.round(Number(form.minutes) || 0));
+    if (!m || isRest(form.date)) return toast(isRest(form.date) ? 'Montag ist Ruhetag' : 'Minuten eingeben');
+    const item = { id: uid(), date: form.date, sport: form.sport, minutes: 0, zone: form.zone, title: '', description: '', load: 0, done: false, source: 'manual' };
+    const res = balancePlan([...getData().plan, item], monday, days[6], item.id, m);
+    if (!res) return toast('Kein Ausgleich möglich – zuerst eine lockere Einheit in dieser Woche kürzen');
+    update((d) => ({ ...d, plan: res }));
+    setAdding(false);
+  };
+  // Montag ist fester Ruhetag: keine Einheit darauf verschieben.
+  const isRest = (d) => new Date(`${d}T12:00:00Z`).getUTCDay() === 1;
+  const moveDay = (p, dd) => {
+    const to = addDays(p.date, dd);
+    if (isRest(to)) return toast('Montag ist Ruhetag');
+    change(p, { date: to });
+  };
+  const remove = (p) => { if (confirm('Einheit streichen? Die Minuten gehen auf eine lockere Einheit dieser Woche über.')) adjust(p, 0, true); };
+  return (
+    <>
+      <div className="card">
+        <b className="small">Diese Woche</b>
+        <div className="stats" style={{ marginTop: 6 }}>
+          <div><b>{fmtDuration(planned * 60)}</b><span>geplant</span></div>
+          <div><b>{fmtDuration(done * 60)}</b><span>erledigt</span></div>
+          <div><b>{hardDays.size}</b><span>harte Tage</span></div>
+        </div>
+        {!adding && <button className="secondary wide" style={{ marginTop: 8 }} onClick={() => setAdding(true)}><Plus size={16} />Einheit hinzufügen</button>}
+        {adding && <div style={{ marginTop: 8 }}>
+          <label>Tag</label>
+          <select value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })}>{days.filter((d) => !isRest(d)).map((d) => <option key={d} value={d}>{fmtDate(d, { weekday: 'long', day: 'numeric', month: 'short' })}</option>)}</select>
+          <div className="grid2">
+            <div><label>Sportart</label><select value={form.sport} onChange={(e) => setForm({ ...form, sport: e.target.value })}>{SPORTS.filter((x) => x.id !== 'other').map((x) => <option key={x.id} value={x.id}>{x.label}</option>)}</select></div>
+            <div><label>Minuten</label><input inputMode="numeric" value={form.minutes} onChange={(e) => setForm({ ...form, minutes: e.target.value })} /></div>
+          </div>
+          <label>Zone</label>
+          <select value={form.zone} onChange={(e) => setForm({ ...form, zone: e.target.value })}>{ZONES.map((z) => <option key={z.id} value={z.id}>{z.label}</option>)}</select>
+          <p className="muted small">Die Minuten gehen von lockeren Einheiten dieser Woche ab, damit die Wochenstunden fix bleiben.</p>
+          <div className="row" style={{ gap: 6 }}><button className="primary" onClick={addItem}><Check size={16} />Hinzufügen</button><button className="ghost" onClick={() => setAdding(false)}>Abbrechen</button></div>
+        </div>}
+        {adjust0 && <p className="small" style={{ margin: '6px 0 0' }}>Angepasst auf {adjust0.hours} h · {REASONS.find((r) => r[0] === adjust0.reason)?.[1] || adjust0.reason}</p>}
+        {!tuning && <button className="ghost wide" style={{ marginTop: 6 }} onClick={() => { setTuning(true); setReason(''); setHours(plannedNow ? (Math.round(plannedNow * 10) / 10).toString() : ''); }}>Woche bewusst anpassen</button>}
+        {tuning && <div style={{ marginTop: 8 }}>
+          <label>Warum?</label>
+          <div className="chips">{REASONS.map(([id, label]) => <button key={id} className={`chip${reason === id ? ' on' : ''}`} onClick={() => { setReason(id); setHours((Math.round(plannedNow * (suggest[id] || 1) * 10) / 10).toString()); }}>{label}</button>)}</div>
+          <label>Neue Wochenstunden (bisher {(Math.round(plannedNow * 10) / 10).toString().replace('.', ',')} h)</label>
+          <input inputMode="decimal" value={hours} onChange={(e) => setHours(e.target.value)} />
+          <p className="muted small">Lockere Einheiten werden zuerst angepasst, harte Einheiten bleiben möglichst. Die neue Summe gilt dann wieder als fester Wert.</p>
+          <div className="row" style={{ gap: 6 }}><button className="primary" onClick={applyTarget}><Check size={16} />Übernehmen</button><button className="ghost" onClick={() => setTuning(false)}>Abbrechen</button></div>
+        </div>}
+        <p className="muted small" style={{ margin: '6px 0 0' }}>Die Wochenstunden bleiben fix: Wenn du eine Einheit verlängerst oder streichst, wird die Differenz auf lockere Einheiten derselben Woche verteilt. Verschieben ändert die Summe nicht.</p>
+        {adjacentHard.length > 0 && <div className="notice" style={{ marginTop: 8 }}>Harte Einheiten an zwei Tagen hintereinander ({adjacentHard.length}×). Ein lockerer Tag dazwischen erholt besser.</div>}
+      </div>
+      {days.map((d) => {
+        const list = items.filter((p) => p.date === d).sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+        return (
+          <div key={d} style={{ marginTop: 10 }}>
+            <b className="small">{fmtDate(d, { weekday: 'short', day: 'numeric', month: 'short' })}</b>
+            {isRest(d) && <span className="small muted" style={{ marginLeft: 6 }}>Ruhetag</span>}
+            {!list.length && <p className="muted small" style={{ margin: '2px 0 0' }}>{isRest(d) ? 'Ruhe' : 'frei'}</p>}
+            {list.map((p) => (
+              <div key={p.id} className="item" style={{ flexDirection: 'column', alignItems: 'stretch', opacity: p.done ? 0.6 : 1 }}>
+                <div className="row" style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
+                  <button className="grow" style={{ textAlign: 'left', background: 'none', border: 0, padding: 0, color: 'inherit' }} onClick={() => onEdit(p)}>
+                    <b>{p.title || sportLabel(p.sport)}</b>
+                    <p className="small muted" style={{ margin: 0 }}>{sportLabel(p.sport)} · {p.minutes} min · {p.zone}{p.done ? ' · erledigt' : ''}</p>
+                  </button>
+                </div>
+                {!p.done && <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+                  <button className="ghost" onClick={() => moveDay(p, -1)} aria-label="Einen Tag früher">◀ Tag</button>
+                  <button className="ghost" onClick={() => moveDay(p, 1)} aria-label="Einen Tag später">Tag ▶</button>
+                  <button className="ghost" onClick={() => shift(p, -15)}>−15</button>
+                  <button className="ghost" onClick={() => shift(p, 15)}>+15</button>
+                  <button className="ghost" onClick={() => remove(p)} aria-label="Löschen"><Trash2 size={15} /></button>
+                </div>}
+              </div>
+            ))}
+          </div>
+        );
+      })}
     </>
   );
 }
@@ -185,9 +357,42 @@ function PlanEditor({ item, onClose }) {
   );
 }
 
+// Intervalle aus dem Verlauf: Abschnitte deutlich über dem Schnitt der Einheit (Watt, sonst Tempo).
+function IntervalList({ series, sport }) {
+  if (!series) return null;
+  const usePower = series.power?.some((p) => p > 0);
+  const src = usePower ? series.power : series.speed?.some((v) => v > 0) ? series.speed : null;
+  if (!src) return null;
+  const list = detectIntervals(src);
+  if (!list.length) return <p className="muted small">Keine Intervalle erkannt – die Einheit liegt gleichmäßig nahe am Schnitt.</p>;
+  const fmt = (sec) => `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
+  return (
+    <div className="card" style={{ marginTop: 10 }}>
+      <b className="small">Intervalle ({list.length})</b>
+      {list.map((x, i) => (
+        <div key={x.startS} className="row small" style={{ justifyContent: 'space-between', marginTop: 4 }}>
+          <span>{i + 1}. · {fmt(x.durationS)} min</span>
+          <span>{usePower ? `Ø ${x.avg} W` : `Ø ${fmt(1000 / x.avg)} min/km`}{series.hr?.length ? ` · Puls ${Math.round(series.hr.slice(x.startS, x.endS + 1).filter((h) => h > 0).reduce((a, b) => a + b, 0) / Math.max(1, series.hr.slice(x.startS, x.endS + 1).filter((h) => h > 0).length))}` : ''}</span>
+        </div>
+      ))}
+      <p className="muted small" style={{ margin: '6px 0 0' }}>Erkannt als Abschnitte mindestens 12 % über dem Schnitt der Einheit.</p>
+    </div>
+  );
+}
+
+// Sportart → Technik im Rennen (für die Vorbelegung aus einer Einheit).
+const raceTechnique = (sport) => (sport?.startsWith('xc_skate') ? 'Skating' : sport?.startsWith('xc_') ? 'Klassisch' : sport?.startsWith('rollerski') ? 'Rollski' : sport === 'run' ? 'Lauf' : sport === 'bike' ? 'Rad' : 'Sonstiges');
+
 export function ActivitySheet({ activity, onClose }) {
-  const { settings, keySessions, gear } = useData();
+  const { settings, keySessions, gear, races, activities } = useData();
   const [a, setA] = useState(activity);
+  const [raceDraft, setRaceDraft] = useState(null);
+  const linkedRace = races.find((r) => r.result?.activityId === activity.id);
+  const markRace = () => setRaceDraft({
+    id: uid(), date: activity.date, name: activity.title || 'Rennen', priority: 'C', technique: raceTechnique(activity.sport),
+    distanceKm: activity.distanceM ? Math.round(activity.distanceM / 100) / 10 : '', goal: '', notes: '', report: {},
+    result: { activityId: activity.id, timeS: activity.durationS || null },
+  });
   const [series, setSeries] = useState(null);
   useEffect(() => { if (activity.hasSeries) getSeries(activity.id).then((x) => setSeries(cleanSeries(x))); }, [activity]);
   // Datum/Uhrzeit (und ohne Verlauf auch Dauer, Distanz, Ø Puls) lassen sich nachträglich ändern.
@@ -272,7 +477,7 @@ export function ActivitySheet({ activity, onClose }) {
         <button className="secondary" disabled={!partial} onClick={crop} title="Im Diagramm einen Bereich ziehen oder die Regler verschieben"><Scissors size={16} />{partial ? `Auf Auswahl zuschneiden (${fmtDuration(sel[0] * 5)}–${fmtDuration((sel[1] + 1) * 5)})` : 'Zuschneiden: Bereich im Diagramm wählen'}</button>
         {a.original && <button className="ghost" style={{ flex: 'none' }} onClick={uncrop}><Undo2 size={16} />Original</button>}
       </div>}
-      <LapsCard laps={a.laps} autoLaps={a.autoLaps} sport={a.sport} erg={['skierg', 'row'].includes(a.sport) ? 'erg' : a.sport === 'bikeerg' ? 'bike' : null} />
+      <LapsCard laps={a.laps} autoLaps={a.autoLaps} estWatts={a.rollPowerLaps} grades={a.lapGrades} sport={a.sport} erg={['skierg', 'row'].includes(a.sport) ? 'erg' : a.sport === 'bikeerg' ? 'bike' : null} />
       <div className="grid2">
         <div><label>Datum</label><input type="date" value={when.date} onChange={(e) => setWhen({ ...when, date: e.target.value })} /></div>
         <div><label>Uhrzeit</label><input type="time" value={when.time} onChange={(e) => setWhen({ ...when, time: e.target.value })} /></div>
@@ -289,7 +494,10 @@ export function ActivitySheet({ activity, onClose }) {
       </div>
       {gear.some((g) => !g.retired) && <><label>Material {a.gearIds ? '' : '(automatisch nach Sportart)'}</label><div className="chips">{gear.filter((g) => !g.retired).map((g) => { const on = a.gearIds ? a.gearIds.includes(g.id) : (g.defaultSports || []).includes(a.sport); return <button key={g.id} className={`chip${on ? ' on' : ''}`} onClick={() => { const cur = a.gearIds || gear.filter((x) => (x.defaultSports || []).includes(a.sport)).map((x) => x.id); setA({ ...a, gearIds: on ? cur.filter((x) => x !== g.id) : [...cur, g.id] }); }}>{g.name}</button>; })}</div></>}
       {keySessions.length > 0 && <><label>Key Session</label><select value={a.keySessionId || ''} onChange={(e) => setA({ ...a, keySessionId: e.target.value || null })}><option value="">automatisch (über Stichwörter)</option>{keySessions.map((k) => <option key={k.id} value={k.id}>{k.name}</option>)}</select></>}
+      {!(a.laps?.length) && <IntervalList series={series} sport={a.sport} />}
       <label>Notiz</label><textarea value={a.notes} onChange={(e) => setA({ ...a, notes: e.target.value })} />
+      {linkedRace ? <p className="small muted">Rennen: {linkedRace.name} (Kalender → Rennen)</p> : <button className="secondary wide" style={{ marginTop: 10 }} onClick={markRace}><Trophy size={16} />Als Rennen markieren</button>}
+      {raceDraft && <RaceEditor race={raceDraft} activities={activities} onClose={() => setRaceDraft(null)} openActivity={() => {}} t={today(settings.timezone)} />}
       <div className="row" style={{ marginTop: 12 }}>
         <button className="primary" onClick={save}>Speichern</button>
         <button className="danger" onClick={remove}><Trash2 size={17} />Löschen</button>

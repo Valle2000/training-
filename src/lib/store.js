@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 
 const KEY = 'trainings-app-v1';
-const EMPTY = { activities: [], strength: [], plan: [], recipes: [], coach: [], food: null, settings: {}, wellness: [], connections: {}, customExercises: [], keySessions: [], lactateTests: [], races: [], gear: [], health: [], workouts: [] };
+export const EMPTY = { activities: [], strength: [], plan: [], recipes: [], coach: [], food: null, settings: {}, wellness: [], connections: {}, customExercises: [], keySessions: [], lactateTests: [], races: [], gear: [], health: [], workouts: [] };
 
 export function loadData() {
   try { return { ...EMPTY, ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch { return { ...EMPTY }; }
@@ -37,7 +37,30 @@ let idbTimer = null;
 let hydrated = false;
 const early = [];
 const initial = state;
+// Nur-Lese-Modus (Trainer-Ansicht): fremde Daten anzeigen, nichts speichern und nichts abgleichen.
+let readOnly = null;
+export const isReadOnly = () => readOnly;
+export function enterReadOnly(data, info) {
+  readOnly = info;
+  hydrated = true;
+  state = { ...data, savedAt: Date.now() };
+  listeners.forEach((l) => l(state));
+}
 export function update(fn) {
+  if (readOnly) {
+    // Trainer-Ansicht: nur der Plan darf sich ändern, und nur wenn die Freigabe das erlaubt.
+    if (!readOnly.canPlan) return;
+    const next = fn(state);
+    const before = new Map(state.plan.map((p) => [p.id, JSON.stringify(p)]));
+    const after = new Map(next.plan.map((p) => [p.id, JSON.stringify(p)]));
+    const rows = [];
+    for (const p of next.plan) if (before.get(p.id) !== after.get(p.id)) rows.push({ id: p.id, data: p, deleted: false });
+    for (const p of state.plan) if (!after.has(p.id)) rows.push({ id: p.id, data: p, deleted: true });
+    state = { ...state, plan: next.plan, savedAt: Date.now() };
+    if (rows.length) readOnly.writePlan(rows);
+    listeners.forEach((l) => l(state));
+    return;
+  }
   if (!hydrated) early.push(fn);
   state = fn(state);
   state.savedAt = Date.now();

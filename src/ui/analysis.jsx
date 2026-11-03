@@ -51,12 +51,13 @@ export function Analysis({ openActivity }) {
         </select>
         <span className="muted small" style={{ flex: '2 1 160px' }}>{fmtDate(range.from, { day: 'numeric', month: 'short', year: '2-digit' })} – {fmtDate(range.to, { day: 'numeric', month: 'short', year: '2-digit' })} · Vergleich: Vorzeitraum gleicher Länge</span>
       </div>
-      <Seg value={section} onChange={setSection} options={[['overview', 'Überblick'], ['curves', 'Bestwerte'], ['zones', 'Zonen'], ['recovery', 'Form & Erholung'], ['long', 'Langzeit'], ['keys', 'Key Sessions'], ['lactate', 'Laktat']]} />
+      <Seg value={section} onChange={setSection} options={[['overview', 'Überblick'], ['keys', 'Key Sessions'], ['curves', 'Bestwerte'], ['zones', 'Zonen'], ['recovery', 'Form & Erholung'], ['weight', 'Gewicht'], ['long', 'Langzeit'], ['lactate', 'Laktat']]} />
 
       {section === 'overview' && <Overview acts={acts} prevActs={prevActs} range={range} by={by} setBy={setBy} />}
       {section === 'curves' && <Curves acts={acts} prevActs={prevActs} all={inRange(activities, { from: '0000', to: t }, filter)} settings={settings} filter={filter} openActivity={openActivity} activities={activities} />}
       {section === 'zones' && <Zones acts={acts} range={range} by={by} setBy={setBy} />}
       {section === 'recovery' && <Recovery activities={activities} plan={plan} wellness={wellness} range={range} t={t} acts={acts} />}
+      {section === 'weight' && <Weight wellness={wellness} range={range} />}
       {section === 'long' && <LongTerm activities={activities} acts={acts} range={range} filter={filter} settings={settings} health={data.health} t={t} openActivity={openActivity} />}
       {section === 'keys' && <KeySessions activities={activities} openActivity={openActivity} />}
       {section === 'lactate' && <LactateSection />}
@@ -189,6 +190,37 @@ function Zones({ acts, range, by, setBy }) {
           <table className="t">{POWER_ZONES.map((z, i) => <tbody key={z.id}><tr><td><i style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 3, background: PZ_COLORS[i], marginRight: 6 }} />{z.label}</td><td>{fmtDuration(tot.powerZones[z.id] * 3600)} h</td><td>{psum ? Math.round((tot.powerZones[z.id] / psum) * 100) : 0} %</td></tr></tbody>)}</table>
         </> : <p className="muted small">Noch keine Einheiten mit Wattmessung und eingetragener FTP im Zeitraum.</p>}
       </div>
+    </>
+  );
+}
+
+// Gewicht aus dem Morgen-Check: Verlauf mit 7-Tage-Schnitt, dazu die Tage mit Alkohol.
+function Weight({ wellness, range }) {
+  const w = wellness.filter((x) => x.date >= range.from && x.date <= range.to && x.weightKg).sort((a, b) => a.date.localeCompare(b.date));
+  if (!w.length) return <div className="card"><p className="muted small">Noch kein Gewicht im Zeitraum. Trage es im Morgen-Check ein.</p></div>;
+  const vals = w.map((x) => Number(x.weightKg));
+  const first = vals[0], last = vals.at(-1), diff = Math.round((last - first) * 10) / 10;
+  const alcoholDays = w.filter((x) => x.alcohol > 0).map((x) => x.date);
+  return (
+    <>
+      <div className="stats">
+        <div><b>{fmtNum(last, 1)}</b><span>letzter Wert (kg)</span></div>
+        <div><b>{(diff > 0 ? '+' : '') + fmtNum(diff, 1)}</b><span>Veränderung im Zeitraum</span></div>
+        <div><b>{w.length}</b><span>Messungen</span></div>
+      </div>
+      <div className="card">
+        <h3 style={{ marginTop: 0 }}>Gewicht</h3>
+        <LineChart labels={w.map((x) => x.date)} xFormat={(d) => fmtDate(d, { day: 'numeric', month: 'numeric' })} series={[
+          { label: 'Gewicht (kg)', values: vals, color: 'var(--z2)' },
+          { label: '7-Tage-Schnitt (kg)', values: rolling(vals, 7), color: 'var(--form)' },
+        ]} />
+        <p className="muted small">Gewicht schwankt täglich um ein bis zwei Kilo. Der 7-Tage-Schnitt zeigt den Trend.</p>
+      </div>
+      {alcoholDays.length > 0 && <div className="card">
+        <h3 style={{ marginTop: 0 }}>Tage mit Alkohol</h3>
+        <p className="small">{alcoholDays.map((d) => fmtDate(d, { day: 'numeric', month: 'numeric' })).join(' · ')}</p>
+        <p className="muted small">Hilft beim Abgleich mit HRV und Gewicht: Alkohol drückt Erholung und Schlaf.</p>
+      </div>}
     </>
   );
 }

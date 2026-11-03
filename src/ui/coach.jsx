@@ -98,7 +98,7 @@ function CoachAi() {
       const result = await kiPost('/api/coach', { daten, frage: question, ...choice });
       logAiCost('coach', result, t);
       const entry = { id: uid(), date: t, question, result, key };
-      update((d) => ({ ...d, coach: [...d.coach, entry].slice(-20) }));
+      update((d) => ({ ...d, coach: [...d.coach, entry].slice(-200) })); // die letzten 200 Analysen bleiben erhalten
       setOpenId(entry.id);
       setQuestion('');
     } catch (e) { setError(e.message); } finally { setBusy(false); }
@@ -128,6 +128,7 @@ function CoachAi() {
 
       {coach.length > 1 && <>
         <h2>Frühere Analysen</h2>
+        <p className="muted small">Die letzten 200 Analysen bleiben gespeichert. Ältere werden automatisch entfernt.</p>
         {[...coach].reverse().map((c) => (
           <div key={c.id} className="item">
             <button className="ghost grow" style={{ justifyContent: 'flex-start' }} onClick={() => setOpenId(c.id)}>{fmtDate(c.date)} {c.question ? `· ${c.question.slice(0, 50)}` : ''}</button>

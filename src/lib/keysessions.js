@@ -52,17 +52,46 @@ export function lapAverages(laps, range) {
   return { power: w('avgPower'), hr: w('avgHr'), minutes: Math.round(sel.reduce((a, l) => a + (l.durationS || 0), 0) / 60), count: sel.length };
 }
 
+// Arbeitsrunden aus den Geräte-Runden: die nahe am stärksten Block liegen (Einlaufen und Auslaufen fallen weg).
+// Gleiche Zahlen wie in der Rundentabelle der Einheit.
+function workLapAverage(laps) {
+  const w = (laps || []).filter((l) => l.avgPower > 0 && l.durationS > 0);
+  if (w.length < 2) return null;
+  const max = Math.max(...w.map((l) => l.avgPower));
+  const sel = w.filter((l) => l.avgPower >= max * 0.92);
+  if (sel.length < 2) return null;
+  const dur = sel.reduce((x, l) => x + l.durationS, 0);
+  const power = Math.round(sel.reduce((x, l) => x + l.avgPower * l.durationS, 0) / dur);
+  const hrL = sel.filter((l) => l.avgHr > 0);
+  const hr = hrL.length ? Math.round(hrL.reduce((x, l) => x + l.avgHr * l.durationS, 0) / hrL.reduce((x, l) => x + l.durationS, 0)) : null;
+  return { power, hr };
+}
+
 export function keySessionRows(activities, ks) {
   const d = ks.intervalSec || 300;
   const range = parseLapRange(ks.laps);
   return activities.filter((a) => matchesKey(a, ks)).sort((a, b) => a.date.localeCompare(b.date)).map((a) => {
     const lac = parseLactate(a.lactate);
-    const lapAvg = range ? lapAverages(a.laps, range) : null;
-    const pw = lapAvg ? lapAvg.power : curveAt(a.powerCurve, d), hr = lapAvg ? lapAvg.hr : curveAt(a.hrCurve, d);
+    // Die festgelegten Runden nur nehmen, wenn die Einheit so viele Runden hat (sonst passen sie nicht: dann erkannte Intervalle).
+    const lapAvg = range && a.laps?.length >= Math.max(...range) ? lapAverages(a.laps, range) : null;
+    // Ohne Wattmesser (Rollski): geschätzte Leistung je Runde, nur als Hinweis gekennzeichnet.
+    const rollLap = range && a.rollPowerLaps && a.laps ? lapAverages(a.laps.map((l, i) => ({ ...l, avgPower: a.rollPowerLaps[i] })), range) : null;
+    // Erkannte Intervalle (relativ zum Schnitt der Einheit): dauergewichteter Mittelwert, nur mit Watt.
+    const ivs = a.intervals?.length && a.intervals[0].watts ? a.intervals : null;
+    const ivDur = ivs ? ivs.reduce((x, i) => x + i.durationS, 0) : 0;
+    const ivAvg = ivs && ivDur ? Math.round(ivs.reduce((x, i) => x + i.avg * i.durationS, 0) / ivDur) : null;
+    const ivHr = ivs && ivDur && ivs.some((i) => i.hr) ? Math.round(ivs.reduce((x, i) => x + (i.hr || 0) * i.durationS, 0) / ivDur) : null;
+    // Referenz: erkannte Intervalle (Watt). Festgelegte Runden nur, wenn es keine erkannten gibt.
+    // Referenz: Arbeitsrunden der Einheit (wie in der Rundentabelle), sonst erkannte Intervalle, sonst festgelegte Runden.
+    const wl = workLapAverage(a.laps);
+    const measured = wl?.power || ivAvg || (lapAvg && lapAvg.power) || curveAt(a.powerCurve, d);
+    const pw = measured || rollLap?.power || null, hr = wl?.hr ?? (ivHr || (lapAvg ? lapAvg.hr : curveAt(a.hrCurve, d)));
+    const powerEstimated = !measured && !!rollLap?.power;
+    const intervalCount = ivs ? ivs.length : null;
     return {
       id: a.id, date: a.date, minutes: Math.round((a.durationS || 0) / 60), load: a.load, rpe: a.rpe,
       avgHr: a.avgHr, avgPower: a.avgPower, np: a.np, ef: a.ef, decoupling: a.decoupling,
-      intervalPower: pw, intervalHr: hr, fromLaps: !!lapAvg, intervalRatio: pw && hr ? Math.round((pw / hr) * 100) / 100 : null,
+      intervalPower: pw, intervalHr: hr, intervalCount, fromLaps: !!lapAvg, powerEstimated, intervalRatio: pw && hr ? Math.round((pw / hr) * 100) / 100 : null,
       lactateAvg: lac.length ? Math.round((lac.reduce((x, y) => x + y, 0) / lac.length) * 10) / 10 : null, lactateMax: lac.length ? Math.max(...lac) : null,
     };
   });
