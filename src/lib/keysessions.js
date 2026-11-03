@@ -52,6 +52,21 @@ export function lapAverages(laps, range) {
   return { power: w('avgPower'), hr: w('avgHr'), minutes: Math.round(sel.reduce((a, l) => a + (l.durationS || 0), 0) / 60), count: sel.length };
 }
 
+// Arbeitsrunden aus den Geräte-Runden: die nahe am stärksten Block liegen (Einlaufen und Auslaufen fallen weg).
+// Gleiche Zahlen wie in der Rundentabelle der Einheit.
+function workLapAverage(laps) {
+  const w = (laps || []).filter((l) => l.avgPower > 0 && l.durationS > 0);
+  if (w.length < 2) return null;
+  const max = Math.max(...w.map((l) => l.avgPower));
+  const sel = w.filter((l) => l.avgPower >= max * 0.92);
+  if (sel.length < 2) return null;
+  const dur = sel.reduce((x, l) => x + l.durationS, 0);
+  const power = Math.round(sel.reduce((x, l) => x + l.avgPower * l.durationS, 0) / dur);
+  const hrL = sel.filter((l) => l.avgHr > 0);
+  const hr = hrL.length ? Math.round(hrL.reduce((x, l) => x + l.avgHr * l.durationS, 0) / hrL.reduce((x, l) => x + l.durationS, 0)) : null;
+  return { power, hr };
+}
+
 export function keySessionRows(activities, ks) {
   const d = ks.intervalSec || 300;
   const range = parseLapRange(ks.laps);
@@ -67,8 +82,10 @@ export function keySessionRows(activities, ks) {
     const ivAvg = ivs && ivDur ? Math.round(ivs.reduce((x, i) => x + i.avg * i.durationS, 0) / ivDur) : null;
     const ivHr = ivs && ivDur && ivs.some((i) => i.hr) ? Math.round(ivs.reduce((x, i) => x + (i.hr || 0) * i.durationS, 0) / ivDur) : null;
     // Referenz: erkannte Intervalle (Watt). Festgelegte Runden nur, wenn es keine erkannten gibt.
-    const measured = ivAvg || (lapAvg && lapAvg.power) || curveAt(a.powerCurve, d);
-    const pw = measured || rollLap?.power || null, hr = ivHr || (lapAvg ? lapAvg.hr : curveAt(a.hrCurve, d));
+    // Referenz: Arbeitsrunden der Einheit (wie in der Rundentabelle), sonst erkannte Intervalle, sonst festgelegte Runden.
+    const wl = workLapAverage(a.laps);
+    const measured = wl?.power || ivAvg || (lapAvg && lapAvg.power) || curveAt(a.powerCurve, d);
+    const pw = measured || rollLap?.power || null, hr = wl?.hr ?? (ivHr || (lapAvg ? lapAvg.hr : curveAt(a.hrCurve, d)));
     const powerEstimated = !measured && !!rollLap?.power;
     const intervalCount = ivs ? ivs.length : null;
     return {

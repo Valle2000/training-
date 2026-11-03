@@ -56,3 +56,13 @@ test('Festgelegte Runden passen nicht zur Einheit: erkannte Intervalle statt Tei
   const [row] = keySessionRows([act], ks);
   assert.equal(row.intervalPower, 210);
 });
+
+test('Key Session: Arbeitsrunden wie in der Rundentabelle (210 W statt 208)', async () => {
+  const { keySessionRows } = await import('../src/lib/keysessions.js');
+  const act = { id: 'k4', keySessionId: 'k5', date: '2026-11-03', sport: 'skierg', durationS: 6000, load: 40,
+    laps: [{ n: 1, durationS: 1200, avgPower: 118 }, { n: 2, durationS: 1200, avgPower: 209, avgHr: 150 }, { n: 3, durationS: 1200, avgPower: 209, avgHr: 156 }, { n: 4, durationS: 1200, avgPower: 213, avgHr: 160 }, { n: 5, durationS: 1200, avgPower: 89, avgHr: 123 }],
+    intervals: [{ durationS: 1190, avg: 206, watts: true, hr: 150 }, { durationS: 1210, avg: 208, watts: true, hr: 156 }, { durationS: 1180, avg: 209, watts: true, hr: 160 }] };
+  const ks = { id: 'k5', name: '3x20', sport: 'skierg', keywords: '3x20', laps: '2,4,6', intervalSec: 1200 };
+  const [row] = keySessionRows([act], ks);
+  assert.equal(row.intervalPower, 210);
+});
