@@ -51,7 +51,7 @@ export function Analysis({ openActivity }) {
         </select>
         <span className="muted small" style={{ flex: '2 1 160px' }}>{fmtDate(range.from, { day: 'numeric', month: 'short', year: '2-digit' })} – {fmtDate(range.to, { day: 'numeric', month: 'short', year: '2-digit' })} · Vergleich: Vorzeitraum gleicher Länge</span>
       </div>
-      <Seg value={section} onChange={setSection} options={[['overview', 'Überblick'], ['curves', 'Bestwerte'], ['zones', 'Zonen'], ['recovery', 'Form & Erholung'], ['weight', 'Gewicht'], ['long', 'Langzeit'], ['keys', 'Key Sessions'], ['lactate', 'Laktat']]} />
+      <Seg value={section} onChange={setSection} options={[['overview', 'Überblick'], ['keys', 'Key Sessions'], ['curves', 'Bestwerte'], ['zones', 'Zonen'], ['recovery', 'Form & Erholung'], ['weight', 'Gewicht'], ['long', 'Langzeit'], ['lactate', 'Laktat']]} />
 
       {section === 'overview' && <Overview acts={acts} prevActs={prevActs} range={range} by={by} setBy={setBy} />}
       {section === 'curves' && <Curves acts={acts} prevActs={prevActs} all={inRange(activities, { from: '0000', to: t }, filter)} settings={settings} filter={filter} openActivity={openActivity} activities={activities} />}
