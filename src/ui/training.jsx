@@ -495,6 +495,16 @@ export function ActivitySheet({ activity, onClose }) {
       {gear.some((g) => !g.retired) && <><label>Material {a.gearIds ? '' : '(automatisch nach Sportart)'}</label><div className="chips">{gear.filter((g) => !g.retired).map((g) => { const on = a.gearIds ? a.gearIds.includes(g.id) : (g.defaultSports || []).includes(a.sport); return <button key={g.id} className={`chip${on ? ' on' : ''}`} onClick={() => { const cur = a.gearIds || gear.filter((x) => (x.defaultSports || []).includes(a.sport)).map((x) => x.id); setA({ ...a, gearIds: on ? cur.filter((x) => x !== g.id) : [...cur, g.id] }); }}>{g.name}</button>; })}</div></>}
       {keySessions.length > 0 && <><label>Key Session</label><select value={a.keySessionId || ''} onChange={(e) => setA({ ...a, keySessionId: e.target.value || null })}><option value="">automatisch (über Stichwörter)</option>{keySessions.map((k) => <option key={k.id} value={k.id}>{k.name}</option>)}</select></>}
       {!(a.laps?.length) && <IntervalList series={series} sport={a.sport} />}
+      {a.laps?.length > 0 && <div className="card" style={{ marginTop: 10 }}>
+        <b className="small">Puls je Runde</b>
+        <p className="muted small" style={{ margin: '4px 0 6px' }}>Trage hier die Werte vom Gerät ein (z. B. PM5), wenn sie von den gespeicherten abweichen. Die Auswertung nutzt dann deine Eingabe.</p>
+        {a.laps.map((l, i) => (
+          <div key={i} className="row small" style={{ justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
+            <span>Runde {l.n ?? i + 1}{l.durationS ? ` · ${Math.floor(l.durationS / 60)}:${String(Math.round(l.durationS % 60)).padStart(2, '0')}` : ''}</span>
+            <input inputMode="numeric" style={{ width: 90 }} value={l.avgHr ?? ''} onChange={(e) => setA({ ...a, laps: a.laps.map((x, k) => (k === i ? { ...x, avgHr: e.target.value ? Number(e.target.value) : null, avgHrManual: true } : x)) })} />
+          </div>
+        ))}
+      </div>}
       <label>Notiz</label><textarea value={a.notes} onChange={(e) => setA({ ...a, notes: e.target.value })} />
       {linkedRace ? <p className="small muted">Rennen: {linkedRace.name} (Kalender → Rennen)</p> : <button className="secondary wide" style={{ marginTop: 10 }} onClick={markRace}><Trophy size={16} />Als Rennen markieren</button>}
       {raceDraft && <RaceEditor race={raceDraft} activities={activities} onClose={() => setRaceDraft(null)} openActivity={() => {}} t={today(settings.timezone)} />}
