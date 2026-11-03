@@ -66,9 +66,10 @@ export function keySessionRows(activities, ks) {
     const ivDur = ivs ? ivs.reduce((x, i) => x + i.durationS, 0) : 0;
     const ivAvg = ivs && ivDur ? Math.round(ivs.reduce((x, i) => x + i.avg * i.durationS, 0) / ivDur) : null;
     const ivHr = ivs && ivDur && ivs.some((i) => i.hr) ? Math.round(ivs.reduce((x, i) => x + (i.hr || 0) * i.durationS, 0) / ivDur) : null;
-    const measured = (lapAvg && lapAvg.power) || curveAt(a.powerCurve, d);
-    const pw = measured || ivAvg || rollLap?.power || null, hr = lapAvg ? lapAvg.hr : (ivHr || curveAt(a.hrCurve, d));
-    const powerEstimated = !measured && !ivAvg && !!rollLap?.power;
+    // Referenz: erkannte Intervalle (Watt). Festgelegte Runden nur, wenn es keine erkannten gibt.
+    const measured = ivAvg || (lapAvg && lapAvg.power) || curveAt(a.powerCurve, d);
+    const pw = measured || rollLap?.power || null, hr = ivHr || (lapAvg ? lapAvg.hr : curveAt(a.hrCurve, d));
+    const powerEstimated = !measured && !!rollLap?.power;
     const intervalCount = ivs ? ivs.length : null;
     return {
       id: a.id, date: a.date, minutes: Math.round((a.durationS || 0) / 60), load: a.load, rpe: a.rpe,
