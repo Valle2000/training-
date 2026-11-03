@@ -57,7 +57,8 @@ export function keySessionRows(activities, ks) {
   const range = parseLapRange(ks.laps);
   return activities.filter((a) => matchesKey(a, ks)).sort((a, b) => a.date.localeCompare(b.date)).map((a) => {
     const lac = parseLactate(a.lactate);
-    const lapAvg = range ? lapAverages(a.laps, range) : null;
+    // Die festgelegten Runden nur nehmen, wenn die Einheit so viele Runden hat (sonst passen sie nicht: dann erkannte Intervalle).
+    const lapAvg = range && a.laps?.length >= Math.max(...range) ? lapAverages(a.laps, range) : null;
     // Ohne Wattmesser (Rollski): geschätzte Leistung je Runde, nur als Hinweis gekennzeichnet.
     const rollLap = range && a.rollPowerLaps && a.laps ? lapAverages(a.laps.map((l, i) => ({ ...l, avgPower: a.rollPowerLaps[i] })), range) : null;
     // Erkannte Intervalle (relativ zum Schnitt der Einheit): dauergewichteter Mittelwert, nur mit Watt.

@@ -46,3 +46,13 @@ test('Kurzer Einbruch innerhalb eines Intervalls trennt es nicht', () => {
   const r = detectIntervals(v);
   assert.equal(r.length, 1, JSON.stringify(r));
 });
+
+test('Festgelegte Runden passen nicht zur Einheit: erkannte Intervalle statt Teilwerte', async () => {
+  const { keySessionRows } = await import('../src/lib/keysessions.js');
+  const act = { id: 'k2', keySessionId: 'k3', date: '2026-11-03', sport: 'skierg', durationS: 6000, load: 40,
+    laps: [{ n: 1, durationS: 1200, avgPower: 118 }, { n: 2, durationS: 1200, avgPower: 209 }, { n: 3, durationS: 1200, avgPower: 209 }, { n: 4, durationS: 1200, avgPower: 213 }, { n: 5, durationS: 1200, avgPower: 89 }],
+    intervals: [{ durationS: 1200, avg: 209, watts: true, hr: 150 }, { durationS: 1200, avg: 209, watts: true, hr: 156 }, { durationS: 1200, avg: 213, watts: true, hr: 160 }] };
+  const ks = { id: 'k3', name: '3x20', sport: 'skierg', keywords: '3x20', laps: '2,4,6', intervalSec: 1200 };
+  const [row] = keySessionRows([act], ks);
+  assert.equal(row.intervalPower, 210);
+});
