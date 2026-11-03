@@ -283,6 +283,8 @@ async function concept2Raw(r) {
 export async function reloadConcept2(onProgress) {
   const old = getData().activities.filter((a) => a.source === 'concept2');
   // Titel nur behalten, wenn er selbst vergeben wurde (nicht der alte automatische wie „VariableInterval“).
+  // Von Hand eingetragener Puls je Runde bleibt beim erneuten Laden erhalten.
+  const manualHr = Object.fromEntries(old.filter((a) => a.laps?.some((l) => l.avgHrManual)).map((a) => [a.externalId, a.laps.map((l) => (l.avgHrManual ? l.avgHr : null))]));
   const keep = Object.fromEntries(old.map((a) => [a.externalId, { notes: a.notes, rpe: a.rpe, lactate: a.lactate, title: isAutoC2Title(a.title) ? null : a.title, keySessionId: a.keySessionId, gearIds: a.gearIds }]));
   const fresh = [];
   let page = 1, pages = 1;
@@ -293,6 +295,8 @@ export async function reloadConcept2(onProgress) {
       const { activity, series } = buildActivity(await concept2Raw(r), getData().settings);
       const k = keep[activity.externalId];
       if (k) Object.assign(activity, Object.fromEntries(Object.entries(k).filter(([, v]) => v != null && v !== '')));
+      const hr = manualHr[activity.externalId];
+      if (hr && activity.laps) activity.laps = activity.laps.map((l, i) => (hr[i] != null ? { ...l, avgHr: hr[i], avgHrManual: true } : l));
       fresh.push({ activity, series });
       onProgress?.(`Concept2: ${fresh.length} Einheiten geladen (Seite ${page} von ${pages})`);
     }
