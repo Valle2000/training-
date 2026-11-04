@@ -283,6 +283,224 @@ export const TOPICS = [
     practice: 'Form zwischen etwa −10 und −30 ist in Aufbauphasen normal; für Wettkämpfe sollte sie positiv sein. Werte sind Modelle – das Körpergefühl zählt mit.',
     sources: [],
   },
+  // ——— Einzelerklärungen zu allen Werten, die die App zeigt ———
+  {
+    id: 'k_belastung', cat: 'Kennzahlen', title: 'Belastung (ähnlich TSS)', evidence: 'stark',
+    facts: [
+      'Die Belastung misst, wie anstrengend eine Einheit war. Maßstab: 1 Stunde genau an der Schwelle entspricht 100 Punkten.',
+      'Mit Leistungsdaten (Watt) wird sie aus der normalisierten Leistung (NP) und der FTP berechnet. Ohne Watt schätzt die App sie aus dem Pulsverlauf (Banister-TRIMP, getrennt nach Geschlecht).',
+      'Die Summe der Tage ergibt die Wochenbelastung. Ein absoluter Richtwert fehlt bewusst: Die Zahl ist vor allem für den Vergleich mit deinen eigenen Wochen nützlich.',
+    ],
+    practice: 'Vergleiche Wochen mit ähnlichem Inhalt. Eine hohe Belastung nach mehreren lockeren Wochen ist etwas anderes als ein Sprung nach einer Erholungswoche.',
+    sources: [],
+  },
+  {
+    id: 'k_fitness', cat: 'Kennzahlen', title: 'Fitness (CTL)', evidence: 'stark',
+    facts: [
+      'Die Fitness ist der gleitende Durchschnitt deiner täglichen Belastung über etwa 42 Tage. Sie steigt langsam und sinkt ebenso langsam, sie bildet also deinen längerfristigen Trainingsstand ab.',
+      'Die Kurve im Diagramm „Fitness, Ermüdung, Form“ zeigt diesen Wert. Der Wert am Ende ist deine aktuelle Fitness.',
+    ],
+    practice: 'Fitness steigt über Wochen, nicht über Tage. Für den Aufbau ist ein stetiger Anstieg besser als große Sprünge.',
+    sources: [],
+  },
+  {
+    id: 'k_ermuedung', cat: 'Kennzahlen', title: 'Ermüdung (ATL)', evidence: 'stark',
+    facts: [
+      'Die Ermüdung ist der gleitende Durchschnitt der täglichen Belastung über etwa 7 Tage. Sie reagiert schnell auf harte Blöcke und Ruhetage.',
+      'Nach einer harten Woche steigt sie stark, nach ein bis zwei Ruhetagen sinkt sie wieder deutlich.',
+    ],
+    practice: 'Eine hohe Ermüdung ist im Aufbau normal. Anhalten sollte sie nicht, dann fehlt Erholung.',
+    sources: [],
+  },
+  {
+    id: 'k_form', cat: 'Kennzahlen', title: 'Form (TSB)', evidence: 'stark',
+    facts: [
+      'Form = Fitness minus Ermüdung vom Vortag. Negative Werte bedeuten: du bist belastet und baust gerade Fitness auf. Positive Werte bedeuten: du bist frisch.',
+      'Typisch sind −10 bis −30 in Aufbauphasen. Vor einem Wettkampf sollte die Form leicht positiv sein, weil du ausgeruht startest.',
+      'Die Form ist ein Modell. Dein Körpergefühl, Schlaf und HRV zählen mit, auch wenn die Zahl anders aussieht.',
+    ],
+    practice: 'Im Taperingfenster vor einem Rennen steigt die Form durch weniger Umfang. Liegt sie vor dem Rennen noch tief im Minus, ist das ein Hinweis, den Umfang früher zu senken.',
+    sources: [],
+  },
+  {
+    id: 'k_ramp', cat: 'Kennzahlen', title: 'Ramp Rate (Fitness-Zuwachs pro Woche)', evidence: 'mittel',
+    facts: [
+      'Die Ramp Rate zeigt, wie stark deine Fitness pro Woche steigt. Berechnet wird sie über die letzten vier Wochen.',
+      'Über etwa 8 Punkte pro Woche gilt als steiler Anstieg. Bei Langläufern gehen große Belastungssprünge mit mehr Infekten einher (Svendsen et al. 2016).',
+    ],
+    practice: 'Steigere den Umfang in kleinen Schritten und plane nach drei bis vier harten Wochen eine leichtere ein.',
+    sources: [],
+  },
+  {
+    id: 'k_np', cat: 'Kennzahlen', title: 'NP (normalisierte Leistung)', evidence: 'stark',
+    facts: [
+      'Die NP ist eine Leistung, die die Schwankungen einer Einheit berücksichtigt. Starke Wechsel (Berge, Intervalle) ergeben eine höhere NP als ein gleichmäßiger Durchschnitt.',
+      'Sie ist die Grundlage für IF, VI, EF und die Belastung. Ausreißer werden vorher herausgefiltert, damit einzelne Messfehler nicht alles verfälschen.',
+    ],
+    practice: 'Die NP ist der bessere Vergleichswert für Einheiten mit wechselndem Tempo, z. B. Rollski auf Hügeln.',
+    sources: [],
+  },
+  {
+    id: 'k_if', cat: 'Kennzahlen', title: 'IF (Intensitätsfaktor)', evidence: 'stark',
+    facts: [
+      'IF = NP geteilt durch FTP. Ein IF von 1,0 bedeutet: die Einheit war so anstrengend wie deine FTP, also etwa eine Stunde an der Schwelle.',
+      'Lockere Einheiten liegen meist bei 0,6–0,75, Schwellen-Einheiten um 0,9–1,0, intensive Intervalle darüber.',
+    ],
+    practice: 'Prüfe, ob deine lockeren Einheiten wirklich bei 0,6–0,75 liegen. Liegen sie darüber, trainierst du zu hart.',
+    sources: [],
+  },
+  {
+    id: 'k_vi', cat: 'Kennzahlen', title: 'VI (Variabilitätsindex)', evidence: 'stark',
+    facts: [
+      'VI = NP geteilt durch die Durchschnittsleistung. Bei gleichmäßiger Leistung liegt der Wert bei etwa 1,0.',
+      'Ein höherer VI zeigt eine unruhige Einheit, zum Beispiel viele Antritte oder ein bergiges Profil. Das ist nicht automatisch schlecht, sagt aber etwas über den Stil.',
+    ],
+    practice: 'Bei Grundlageneinheiten ist ein VI nahe 1,0 gut. Bei Intervallen ist ein höherer Wert erwartbar.',
+    sources: [],
+  },
+  {
+    id: 'k_ef', cat: 'Kennzahlen', title: 'EF (Effizienzfaktor)', evidence: 'mittel',
+    facts: [
+      'EF = NP geteilt durch den Durchschnittspuls. Er zeigt, wieviel Leistung du pro Herzschlag erbringst.',
+      'Steigt der EF bei gleicher Intensität über Wochen, wird deine aerobe Basis besser. Er ist nur bei lockeren Einheiten sinnvoll vergleichbar, deshalb zeigt die App nur diese.',
+      'Der EF wird von Hitze, Müdigkeit, Schlaf und Tagesform beeinflusst. Einzelne Einheiten schwanken deshalb stark.',
+    ],
+    practice: 'Vergleiche den EF über mehrere Wochen mit ähnlicher Strecke und Temperatur. Der Trend zählt, nicht der einzelne Wert.',
+    sources: [],
+  },
+  {
+    id: 'k_decoupling', cat: 'Kennzahlen', title: 'Aerobe Entkopplung (Pa:HR / Pace:HR)', evidence: 'mittel',
+    facts: [
+      'Die App teilt eine Einheit in zwei gleich lange Hälften und vergleicht jeweils Leistung (beim Laufen Tempo) geteilt durch Puls.',
+      'Der Wert in Prozent zeigt, wie stark dieses Verhältnis in der zweiten Hälfte abfällt. Ist er groß, steigt der Puls bei gleicher Leistung, das Herz-Kreislauf-System „entkoppelt“.',
+      'Faustregel: unter 5 % stabil und gute Grundlage für die Dauer. Ab 5 % spürbarer Anstieg, oft durch Ermüdung, Hitze oder Flüssigkeitsmangel. Über 10 % deutet auf zu wenig Grundlagenausdauer oder starke Ermüdung hin.',
+      'Ab etwa 60 Minuten aussagekräftig. Bei Intervallen und stark wechselndem Tempo weniger, weil die Hälften dann nicht vergleichbar sind.',
+    ],
+    practice: 'Lange lockere Einheiten (über 1,5 h) sind der beste Test. Werte über 5 % bei sonst gleicher Intensität sind ein Grund, Umfang und Trinken genauer anzuschauen.',
+    sources: [],
+  },
+  {
+    id: 'k_kj', cat: 'Kennzahlen', title: 'kJ (Arbeit)', evidence: 'stark',
+    facts: [
+      'kJ ist die verrichtete Arbeit: Leistung in Watt mal Zeit in Sekunden, geteilt durch 1000. Eine Einheit mit 200 W über eine Stunde ergibt 720 kJ.',
+      'Grob entspricht 1 kJ etwa 1 kcal (bei rund 25 % Wirkungsgrad, je nach Sportart etwas abweichend). Damit lässt sich der Energieverbrauch grob abschätzen.',
+    ],
+    practice: 'Für die Verpflegung nutzen: bei langen Einheiten etwa 1 g Kohlenhydrate pro kg Körpergewicht und Stunde als Richtwert, je nach Intensität.',
+    sources: [],
+  },
+  {
+    id: 'k_bestwert', cat: 'Kennzahlen', title: 'Bestwertkurve', evidence: 'stark',
+    facts: [
+      'Die Bestwertkurve zeigt für jede Dauer (von wenigen Sekunden bis zur Stunde oder länger) die beste Durchschnittsleistung oder den höchsten Puls über alle Einheiten.',
+      'Der Verlauf zeigt deine Stärken: Ein hoher Wert bei kurzen Dauern deutet auf Spitze, bei langen auf Ausdauer. Die Linie „Bestwert aller Zeiten“ bleibt bestehen, auch wenn der Zeitraum enger gewählt ist.',
+    ],
+    practice: 'Schau dir die Kurve nach Saisonabschnitten an. Ein Rückgang bei den langen Dauern kann auf fehlende Umfangsphasen hinweisen.',
+    sources: [],
+  },
+  {
+    id: 'k_pulszonen', cat: 'Kennzahlen', title: 'Pulszonen I1–I5', evidence: 'stark',
+    facts: [
+      'Die Zonen richten sich nach dem Maximalpuls (Olympiatoppen-Modell): I1 locker bis 72 % HFmax, I2 mittel 72–82 %, I3 Schwelle 82–87 %, I4 hart 87–92 %, I5 sehr hart über 92 %.',
+      'Alles unter 72 % HFmax zählt als I1, auch sehr niedrige Werte. Die Zeit in den Zonen zeigt, wie sich deine Einheiten verteilen.',
+      'Die bpm-Bereiche im Diagramm „Zonen“ werden aus deinem Maximalpuls berechnet. Trag den Maximalpuls in den Einstellungen ehrlich ein, sonst stimmen alle Zonen nicht.',
+    ],
+    practice: 'Die meisten lockeren Einheiten liegen in I1 und I2. Achte darauf, dass I3 bewusst und gezielt vorkommt.',
+    sources: [],
+  },
+  {
+    id: 'k_leistungszonen', cat: 'Kennzahlen', title: 'Leistungszonen Z1–Z7 (Coggan, % FTP)', evidence: 'stark',
+    facts: [
+      'Die Zonen richten sich nach deiner FTP: Z1 unter 55 %, Z2 56–75 %, Z3 76–90 %, Z4 91–105 %, Z5 106–120 %, Z6 121–150 %, Z7 über 150 %.',
+      'Z4 ist der Bereich der FTP, also etwa eine Stunde Dauerbelastung. Z6 und Z7 sind kurze Spitzen.',
+    ],
+    practice: 'Wenn du mit Watt trainierst, trag die FTP für jede Sportart einzeln ein (Rollski, Rad, SkiErg), sonst stimmen die Zonen nicht.',
+    sources: [],
+  },
+  {
+    id: 'k_hrv', cat: 'Erholung', title: 'HRV und HRV-7-Tage-Schnitt', evidence: 'mittel',
+    facts: [
+      'Die HRV (Herzfrequenzvariabilität) misst, wie stark der Abstand zwischen zwei Herzschlägen schwankt. Eine höhere HRV bedeutet meist mehr Erholung, eine niedrigere meist mehr Belastung oder Stress.',
+      'Die App rechnet den 7-Tage-Schnitt mit der Normalkurve aus den letzten 60 Tagen. Der Normalbereich liegt bei ±0,5 Standardabweichungen. Dafür braucht es mindestens 14 Messungen.',
+      'Als „niedrig“ gilt der Schnitt erst, wenn er unter dem Normalbereich liegt und mindestens 3 der letzten 7 Werte darunter sind. Ein einzelner schlechter Morgen zählt damit nicht.',
+    ],
+    practice: 'Trend vor Einzelwert: Fällt der Schnitt deutlich unter den Normalbereich und die Form ist tief, ist mehr Erholung sinnvoll (Plews et al. 2013).',
+    sources: [],
+  },
+  {
+    id: 'k_ruhepuls', cat: 'Erholung', title: 'Ruhepuls', evidence: 'mittel',
+    facts: [
+      'Der Ruhepuls ist der Puls am Morgen im Ruhezustand. Bei Polar kommt er aus der Nacht (Nightly Recharge), sonst kannst du ihn im Morgen-Check eintragen.',
+      'Ein Anstieg von mehreren Schlägen über einige Tage gilt als Zeichen für Belastung, Infekt oder Schlafmangel. Ein gleichmäßig niedriger Wert bei stabiler Form zeigt Fitness.',
+    ],
+    practice: 'Bei einem deutlichen Anstieg zusammen mit niedriger HRV und schlechtem Schlaf: Intensität streichen und locker bleiben.',
+    sources: [],
+  },
+  {
+    id: 'k_schlaf', cat: 'Erholung', title: 'Schlaf', evidence: 'mittel',
+    facts: [
+      'Die App zeigt die Schlafdauer aus Leicht-, Tief- und REM-Schlaf (Polar). Der Schlafwert im Diagramm ist die Summe dieser Phasen.',
+      'Erwachsene Ausdauersportler brauchen meist 7–9 Stunden. Ein dauerhafter Schnitt unter 7 Stunden gilt als zu wenig und bremst Erholung und Leistung.',
+    ],
+    practice: 'Schlaf ist der wirksamste Erholungshebel. Bei mehreren Nächten unter 7 h die Umfangsplanung für die Woche überprüfen.',
+    sources: [],
+  },
+  {
+    id: 'k_gewicht', cat: 'Körper', title: 'Gewicht und Gewichtstrend', evidence: 'gering',
+    facts: [
+      'Die Kurve im Diagramm „Gewicht“ zeigt den 7-Tage-Schnitt. Einzelne Tageswerte schwanken oft um 1–2 kg durch Wasser, Salz, Essen und Verdauung.',
+      'Die Alkohol-Tage werden im selben Diagramm markiert, weil Alkohol Erholung und Schlaf verschlechtert.',
+    ],
+    practice: 'Entscheidend ist der Trend über mehrere Wochen, nicht der Morgenwert.',
+    sources: [],
+  },
+  {
+    id: 'k_alkohol', cat: 'Körper', title: 'Alkohol-Tage', evidence: 'mittel',
+    facts: [
+      'Im Morgen-Check trägst du die Alkoholmenge ein (0 bis 4+). Die App zählt die Tage mit Alkohol und zeigt sie zusammen mit HRV, Schlaf und Gewicht.',
+      'Alkohol senkt die Erholung und den Schlaf, oft noch am Folgetag. Schon wenige Gläser können die HRV in der Nacht danach spürbar drücken.',
+    ],
+    practice: 'Die Zusammenhänge sind persönlich. Vergleiche Tage mit und ohne Alkohol über ein paar Wochen.',
+    sources: [],
+  },
+  {
+    id: 'k_stunden', cat: 'Kennzahlen', title: 'Stunden pro Woche und Fitness in Stunden', evidence: 'gering',
+    facts: [
+      'Die Wochenstunden zeigen deine Trainingszeit (ohne Krafttraining) pro Woche. Das Diagramm zeigt zusätzlich einen Durchschnitt über sechs Wochen.',
+      'Die Fitness in Stunden rechnet die Trainingszeit auf eine Wochenstundenzahl um: der Durchschnitt der letzten 42 Tage, auf sieben Tage hochgerechnet. Die Linie für lockere Zeit zeigt nur den Anteil in I1 und I2.',
+    ],
+    practice: 'Wenn du den Umfang steigern willst, achte darauf, dass die lockere Linie mitwächst. Sie ist der Teil, der die Basis trägt.',
+    sources: [],
+  },
+  {
+    id: 'k_belastungsmuster', cat: 'Kennzahlen', title: 'Monotonie, Strain und Belastungssprung', evidence: 'mittel',
+    facts: [
+      'Monotonie = durchschnittliche Tagesbelastung der letzten 7 Tage geteilt durch deren Streuung (Ruhetage zählen als 0). Hohe Werte bedeuten gleichförmiges Training ohne Erholungstage.',
+      'Strain = Wochenbelastung mal Monotonie. Liegt der Wert über dem Schnitt der letzten Wochen, ist die Woche besonders belastend.',
+      'Belastungssprung (ACWR) = Belastung der letzten 7 Tage im Verhältnis zum Wochenschnitt der letzten 28 Tage. Über etwa 1,5 gilt als deutlicher Sprung (Gabbett 2016).',
+    ],
+    practice: 'Auffällig hohe Monotonie und Strain zusammen mit einem Sprung sind ein Grund, die nächste Woche lockerer anzulegen.',
+    sources: [],
+  },
+  {
+    id: 'k_ampel', cat: 'Erholung', title: 'Tagesampel (Bereitschaft)', evidence: 'gering',
+    facts: [
+      'Die Ampel startet bei 100 Punkten und zieht Punkte ab, wenn HRV, Ruhepuls, Schlaf, Gefühl oder Belastung schlechter als dein Normalbereich sind. Die Gründe stehen jeweils dabei.',
+      'Rot (Punkte unter 50 oder ein Warnsignal wie Symptome unterhalb des Halses): Ruhetag oder nur sehr locker. Gelb (50–74): harte Einheit nur bei gutem Gefühl, sonst locker oder kürzer. Grün (75 und mehr): Training wie geplant.',
+      'Die Ampel ist eine Orientierung aus Messwerten, keine Diagnose. Dein Gefühl darf sie übersteuern, wenn du bewusst entscheidest.',
+    ],
+    practice: 'Wenn die Ampel rot zeigt und du dich trotzdem gut fühlst, prüfe die Gründe. Oft steckt ein Schlafproblem oder ein Infekt dahinter.',
+    sources: [],
+  },
+  {
+    id: 'k_rpe', cat: 'Kennzahlen', title: 'RPE, Laktat und Key-Session-Werte', evidence: 'mittel',
+    facts: [
+      'RPE ist die subjektive Anstrengung auf einer Skala von 1 (sehr leicht) bis 10 (maximal). Sie ergänzt die Messwerte, besonders bei Hitze oder Müdigkeit.',
+      'Laktat wird in mmol/l gemessen, meist im Stufentest. Die Schwelle liegt grob bei 2 bis 4 mmol/l, je nach Test und Sportler.',
+      'In den Key Sessions zeigt die App die Werte je Intervall (Watt, Puls, Laktat, RPE), die du über Wochen vergleichen kannst. Der Durchschnitt zählt nur die Arbeitsrunden, nicht die Pausen.',
+    ],
+    practice: 'Vergleiche Key Sessions bei gleicher Form und ähnlicher Temperatur. Wenn bei gleichem Puls mehr Watt kommen, ist das der stärkste Fortschrittsbeweis.',
+    sources: [],
+  },
   // ——— Aus anderen Ausdauersportarten (mit Übertrag auf den Langlauf) ———
   {
     id: 'run_elite', cat: 'Laufen', title: 'Was Weltklasse-Läufer erfolgreich macht', evidence: 'gering',
