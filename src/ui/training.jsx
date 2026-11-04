@@ -211,22 +211,31 @@ function WeekList({ monday, onEdit }) {
   const adjacentHard = days.slice(0, 6).filter((d, i) => hardDays.has(d) && hardDays.has(days[i + 1]));
   const change = (p, patch) => update((d) => ({ ...d, plan: d.plan.map((x) => (x.id === p.id ? { ...x, ...patch } : x)) }));
   // Die Wochensumme bleibt fix: Dauer- und Löschänderungen werden über lockere Einheiten derselben Woche ausgeglichen.
+  // Nur diese Einheit ändert sich. Die Abweichung zum Wochenziel zeigt ein Hinweis, verteilt wird nur auf Wunsch.
   const adjust = (p, minutes, removeIt = false) => {
-    const res = balancePlan(getData().plan, monday, days[6], p.id, minutes);
-    if (!res) return toast('Kein Ausgleich möglich – keine lockere Einheit in dieser Woche');
-    update((d) => ({ ...d, plan: removeIt ? res.filter((x) => x.id !== p.id) : res }));
+    const m = Math.max(0, Math.round(minutes));
+    if (removeIt) return update((d) => ({ ...d, plan: d.plan.filter((x) => x.id !== p.id) }));
+    change(p, { minutes: m, load: estimatePlanLoad(m, p.zone) });
   };
   const shift = (p, dm) => adjust(p, (Number(p.minutes) || 0) + dm);
+  // Wochenziel (Soll) in den Einstellungen: automatisch auf die Einheiten verteilen, nur auf Wunsch.
+  const target = settings.weekTargets?.[monday] ?? adjust0?.hours ?? null;
+  const diffH = target == null ? null : Math.round((plannedNow - target) * 10) / 10;
+  const distribute = () => {
+    const next = scaleWeek(getData().plan, monday, sunday, target * 60);
+    if (!next) return toast('Keine geplanten Einheiten in dieser Woche');
+    update((d) => ({ ...d, plan: next }));
+    toast('Stunden auf die Einheiten verteilt');
+  };
+  const setTarget = () => update((d) => ({ ...d, settings: { ...d.settings, weekTargets: { ...(d.settings.weekTargets || {}), [monday]: Math.round(plannedNow * 2) / 2 } } }));
   // Neue Einheit: die Minuten werden von lockeren Einheiten derselben Woche abgezogen, die Wochensumme bleibt.
   const [adding, setAdding] = useState(false);
   const [form, setForm] = useState({ date: monday, sport: 'run', minutes: 60, zone: 'I1' });
   const addItem = () => {
     const m = Math.max(0, Math.round(Number(form.minutes) || 0));
     if (!m || isRest(form.date)) return toast(isRest(form.date) ? 'Montag ist Ruhetag' : 'Minuten eingeben');
-    const item = { id: uid(), date: form.date, sport: form.sport, minutes: 0, zone: form.zone, title: '', description: '', load: 0, done: false, source: 'manual' };
-    const res = balancePlan([...getData().plan, item], monday, days[6], item.id, m);
-    if (!res) return toast('Kein Ausgleich möglich – zuerst eine lockere Einheit in dieser Woche kürzen');
-    update((d) => ({ ...d, plan: res }));
+    const item = { id: uid(), date: form.date, sport: form.sport, minutes: m, zone: form.zone, title: '', description: '', load: estimatePlanLoad(m, form.zone), done: false, source: 'manual' };
+    update((d) => ({ ...d, plan: [...d.plan, item] }));
     setAdding(false);
   };
   // Montag ist fester Ruhetag: keine Einheit darauf verschieben.
@@ -269,7 +278,12 @@ function WeekList({ monday, onEdit }) {
           <p className="muted small">Lockere Einheiten werden zuerst angepasst, harte Einheiten bleiben möglichst. Die neue Summe gilt dann wieder als fester Wert.</p>
           <div className="row" style={{ gap: 6 }}><button className="primary" onClick={applyTarget}><Check size={16} />Übernehmen</button><button className="ghost" onClick={() => setTuning(false)}>Abbrechen</button></div>
         </div>}
-        <p className="muted small" style={{ margin: '6px 0 0' }}>Die Wochenstunden bleiben fix: Wenn du eine Einheit verlängerst oder streichst, wird die Differenz auf lockere Einheiten derselben Woche verteilt. Verschieben ändert die Summe nicht.</p>
+        {target == null && <div className="row" style={{ marginTop: 8 }}><button className="secondary wide" onClick={setTarget}>Aktuelle Summe als Wochenziel festlegen ({(Math.round(plannedNow * 10) / 10).toString().replace('.', ',')} h)</button></div>}
+        {target != null && diffH !== 0 && <div className="notice" style={{ marginTop: 8 }}>
+          Geplant {(Math.round(plannedNow * 10) / 10).toString().replace('.', ',')} h, Wochenziel {String(target).replace('.', ',')} h: {diffH > 0 ? `${String(diffH).replace('.', ',')} h mehr` : `${String(-diffH).replace('.', ',')} h weniger`}.
+          <div className="row" style={{ gap: 6, marginTop: 6 }}><button className="secondary" onClick={distribute}>Stunden automatisch verteilen</button><button className="ghost" onClick={setTarget}>Ziel anpassen</button></div>
+        </div>}
+        {target != null && diffH === 0 && <p className="muted small" style={{ margin: '6px 0 0' }}>Geplant entspricht dem Wochenziel von {String(target).replace('.', ',')} h.</p>}
         {adjacentHard.length > 0 && <div className="notice" style={{ marginTop: 8 }}>Harte Einheiten an zwei Tagen hintereinander ({adjacentHard.length}×). Ein lockerer Tag dazwischen erholt besser.</div>}
       </div>
       {days.map((d) => {
