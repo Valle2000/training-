@@ -269,7 +269,7 @@ function Recovery({ activities, plan, wellness, range, t, acts }) {
       {dec.length > 0 && <div className="card">
         <h3 style={{ marginTop: 0 }}>Aerobe Entkopplung (Einheiten ≥ 1 h)</h3>
         <table className="t"><tbody>{dec.map((a) => <tr key={a.id}><td>{fmtDate(a.date)}</td><td>{sportLabel(a.sport)}</td><td>{fmtDuration(a.durationS)} h</td><td style={{ color: a.decoupling > 5 ? 'var(--bad)' : 'var(--good)' }}>{fmtNum(a.decoupling, 1)} %</td></tr>)}</tbody></table>
-        <p className="muted small">Unter 5 % (grün): Puls bleibt im Verhältnis zur Leistung stabil – gute Grundlagenausdauer für diese Dauer. Ab 5 % (rot) steigt der Puls in der 2. Hälfte spürbar an: Ermüdung, Hitze, Flüssigkeitsmangel oder zu wenig Grundlage. Faustregel, keine harte Grenze. Mehr dazu im Lexikon unter „Kennzahlen“.</p>
+        <p className="muted small">Unter 5 %: Puls bleibt im Verhältnis zur Leistung stabil – gute Grundlagenausdauer für diese Dauer.</p>
       </div>}
     </>
   );
