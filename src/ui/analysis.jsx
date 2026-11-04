@@ -249,6 +249,7 @@ function Recovery({ activities, plan, wellness, range, t, acts }) {
         <h3 style={{ marginTop: 0 }}>HRV und Form</h3>
         {hrv.some(Boolean) ? <LineChart labels={labels} xFormat={(d) => fmtDate(d, { day: 'numeric', month: 'numeric' })} series={[
           { label: 'HRV 7-Tage-Schnitt (ms)', values: rolling(hrv, 7), color: 'var(--z2)' },
+          { label: 'Ruhepuls (bpm)', values: labels.map((d) => byDay[d]?.restHr ?? null), color: 'var(--fat)', dashed: true },
           { label: 'Form', values: shown.map((d) => d.form), color: 'var(--form)', signed: true },
         ]} /> : <p className="muted small">Noch keine HRV-Werte. Polar verbinden: Nightly Recharge liefert HRV und Ruhepuls jeder Nacht.</p>}
         {hrv.some(Boolean) && <p className="muted small">Fällt der 7-Tage-Schnitt der HRV deutlich unter deinen Normalbereich, während die Form tief ist, ist mehr Erholung sinnvoll (Plews et al. 2013).</p>}

@@ -102,6 +102,7 @@ export function Today({ go, openActivity, openAdd }) {
             <h3 style={{ marginTop: 0 }}>HRV, Schlaf und Form (60 Tage)</h3>
             <LineChart labels={w.map((x) => x.date)} xFormat={(d) => `${+d.slice(8)}.${+d.slice(5, 7)}.`} series={[
               { label: 'HRV 7-Tage-Schnitt (ms)', values: rolling(w.map((x) => x.hrv ?? null), 7), color: 'var(--z2)' },
+              { label: 'Ruhepuls (bpm)', values: w.map((x) => x.restHr ?? null), color: 'var(--fat)', dashed: true },
               { label: 'Form', values: w.map((x) => fByDay[x.date] ?? null), color: 'var(--form)', signed: true },
             ]} />
             {w.some((x) => x.sleepH) && <LineChart height={140} labels={w.map((x) => x.date)} xFormat={(d) => `${+d.slice(8)}.${+d.slice(5, 7)}.`} series={[{ label: 'Schlaf (h)', values: w.map((x) => x.sleepH ?? null), color: 'var(--fit)', dots: true }]} />}
