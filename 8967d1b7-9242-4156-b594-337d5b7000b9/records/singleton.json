@@ -2,11 +2,11 @@
  {
   "id": "settings",
   "deleted": false,
-  "updated_at": "2026-11-03T09:44:32.530774+00:00",
+  "updated_at": "2026-11-04T06:43:33.975124+00:00",
   "data": {
    "ai": {
     "coach": {
-     "model": "claude-opus-5-5",
+     "model": "claude-sonnet-5-5",
      "effort": "high"
     }
    },
@@ -14,54 +14,34 @@
    "ftp": "384",
    "sex": "m",
    "lthr": "170",
-   "aiLog": [
-    {
-     "usd": 0.3881,
-     "date": "2026-11-02",
-     "kind": "coach",
-     "model": "claude-opus-5-5"
-    },
-    {
-     "usd": 0.4401,
-     "date": "2026-11-02",
-     "kind": "coach",
-     "model": "claude-opus-5-5"
-    }
-   ],
    "hrMax": "193",
    "hrRest": "38",
    "season": {
-    "focus": [
-     {
-      "id": "mvw36pa5rfqde",
-      "to": "2026-09-30",
-      "from": "2026-05-01",
-      "label": "Sommer Laufen (Mai–Sep)",
-      "sport": "run"
-     }
-    ],
+    "focus": [],
     "wizard": {
      "end": "2027-03-21",
      "keys": [
-      "dt_pm",
       "hit_hill",
       "race_pace",
       "speed",
       "long",
       "dtam_3x20",
+      "dt_pm",
       "dtpm_8x4",
       "hit_6x4",
       "hit_5x5",
+      "hit_6x3",
+      "hit_pyr",
       "race_tt"
      ],
      "start": "2026-11-02",
      "dtDays": 1,
-     "minGap": 1,
-     "horizon": 0,
+     "horizon": 8,
      "longDay": 7,
      "profile": {
       "goal": "allround",
       "weak": [
+       "threshold",
        "vo2",
        "sprint",
        "strength"
@@ -70,14 +50,13 @@
        "bike",
        "run",
        "rollerski",
-       "hike",
-       "skierg"
+       "skierg",
+       "hike"
       ],
       "style": "steady",
       "strong": [
        "endurance",
-       "skate",
-       "threshold"
+       "skate"
       ],
       "dislikes": [],
       "seriousness": "performance"
@@ -91,7 +70,7 @@
      "restDays": [
       1
      ],
-     "dtAmSport": "auto",
+     "dtAmSport": "skierg",
      "noSkiDays": [
       4
      ],
@@ -107,16 +86,21 @@
      "strengthPerWeek": 2
     },
     "baseHours": "17",
-    "mainSport": "rollerski",
     "peakHours": "19",
-    "winterRunHours": "5"
+    "winterRunHours": "3"
    },
-   "lastSync": "2026-11-03T09:44:27.891Z",
-   "strategy": "Aktuell ca. 15 h Ausdauer pro Woche plus 2 Krafteinheiten (zusammen ca. 2 h). Bald möchte ich Double-Threshold-Tage einbauen und später auch etwas mehr Intensität.\n",
+   "lastSync": "2026-11-04T06:43:29.246Z",
    "weightKg": "80",
    "ftpSkierg": "224",
    "titleRules": {
     "20:00, 2×20:00/2:00r, 2×20:00": "3x20min"
+   },
+   "weekAdjust": {
+    "2026-11-02": {
+     "at": "2026-11-04T06:32:31.812Z",
+     "hours": 18.5,
+     "reason": "gut"
+    }
    },
    "sportByTempo": {
     "über 17 km/h|Winter": "xc_skate"
@@ -124,13 +108,7 @@
    "polarSportMap": {
     "83": "strength"
    },
-   "thresholdPace": "3:40",
    "metricsVersion": 12,
-   "hiddenTemplates": [
-    "A",
-    "B",
-    "JOE"
-   ],
    "titleRulesSeeded": true,
    "thresholdDismissed": {
     "ftp": 338,
