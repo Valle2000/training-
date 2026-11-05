@@ -1,0 +1,30 @@
+[
+ {
+  "id": "c_mw38l0k5qkm3w",
+  "deleted": false,
+  "updated_at": "2026-11-05T07:41:06.011163+00:00",
+  "data": {
+   "id": "c_mw38l0k5qkm3w",
+   "cat": "specific",
+   "why": "Eigene Übung",
+   "cues": "",
+   "name": "Rudern",
+   "type": "weight",
+   "muscles": ""
+  }
+ },
+ {
+  "id": "c_mw38lca6koovi",
+  "deleted": false,
+  "updated_at": "2026-11-05T07:41:20.776749+00:00",
+  "data": {
+   "id": "c_mw38lca6koovi",
+   "cat": "specific",
+   "why": "Eigene Übung",
+   "cues": "",
+   "name": "Rudern Kabelzug",
+   "type": "weight",
+   "muscles": ""
+  }
+ }
+]

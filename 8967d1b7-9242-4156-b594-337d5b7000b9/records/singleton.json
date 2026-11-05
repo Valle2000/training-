@@ -2,7 +2,7 @@
  {
   "id": "settings",
   "deleted": false,
-  "updated_at": "2026-11-04T06:43:33.975124+00:00",
+  "updated_at": "2026-11-05T10:41:04.210509+00:00",
   "data": {
    "ai": {
     "coach": {
@@ -86,10 +86,11 @@
      "strengthPerWeek": 2
     },
     "baseHours": "17",
+    "mainSport": "rollerski",
     "peakHours": "19",
     "winterRunHours": "3"
    },
-   "lastSync": "2026-11-04T06:43:29.246Z",
+   "lastSync": "2026-11-05T10:40:24.941Z",
    "weightKg": "80",
    "ftpSkierg": "224",
    "titleRules": {
@@ -109,6 +110,9 @@
     "83": "strength"
    },
    "metricsVersion": 12,
+   "hiddenTemplates": [
+    "JOE"
+   ],
    "titleRulesSeeded": true,
    "thresholdDismissed": {
     "ftp": 338,
