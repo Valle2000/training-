@@ -2,7 +2,7 @@
  {
   "id": "settings",
   "deleted": false,
-  "updated_at": "2026-11-05T10:41:04.210509+00:00",
+  "updated_at": "2026-11-05T21:01:21.252684+00:00",
   "data": {
    "ai": {
     "coach": {
@@ -90,7 +90,7 @@
     "peakHours": "19",
     "winterRunHours": "3"
    },
-   "lastSync": "2026-11-05T10:40:24.941Z",
+   "lastSync": "2026-11-05T21:01:16.111Z",
    "weightKg": "80",
    "ftpSkierg": "224",
    "titleRules": {
