@@ -2,7 +2,9 @@
 // (Burke et al.; Thomas, Erdman & Burke 2016): Kohlenhydrate nach Umfang und Intensität periodisieren,
 // Eiweiß 1,6–2,0 g/kg über den Tag verteilt, im Training über 90 min 60–90 g KH pro Stunde.
 // minutes: Trainingszeit des Tages, longestMinutes: längste Ausdauereinheit (für KH während des Trainings).
-export function dayTargets({ weightKg, minutes = 0, hardMinutes = 0, strength = false, longestMinutes = minutes }) {
+// deficitKcal: gewünschtes Defizit pro Tag (nur beim Abnehmen). Es wird zuerst bei den Kohlenhydraten gekürzt,
+// nie unter 3 g/kg; Eiweiß und Fett bleiben. Das Defizit ist eine Praxisregel (≈ 0,3–0,5 kg pro Woche), keine Studienzahl.
+export function dayTargets({ weightKg, minutes = 0, hardMinutes = 0, strength = false, longestMinutes = minutes, deficitKcal = 0 }) {
   if (!weightKg) return null;
   let carbs; // g/kg
   if (minutes < 30) carbs = 3.5;
@@ -14,6 +16,11 @@ export function dayTargets({ weightKg, minutes = 0, hardMinutes = 0, strength = 
   const protein = strength || minutes >= 120 ? 2.0 : 1.7;
   const fat = 1.1;
   const g = { carbs: Math.round(carbs * weightKg), protein: Math.round(protein * weightKg), fat: Math.round(fat * weightKg) };
+  if (deficitKcal > 0) {
+    const cut = Math.min(deficitKcal / 4, Math.max(0, g.carbs - 3 * weightKg));
+    g.carbs = Math.round(g.carbs - cut);
+    carbs = g.carbs / weightKg;
+  }
   const kcal = g.carbs * 4 + g.protein * 4 + g.fat * 9;
   const duringPerHour = longestMinutes >= 150 ? 90 : longestMinutes >= 90 ? 60 : longestMinutes >= 60 ? 30 : 0;
   const level = minutes >= 150 || hardMinutes >= 30 ? 'hoch' : minutes >= 60 ? 'mittel' : 'niedrig';

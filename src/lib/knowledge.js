@@ -283,6 +283,28 @@ export const TOPICS = [
     practice: 'Form zwischen etwa −10 und −30 ist in Aufbauphasen normal; für Wettkämpfe sollte sie positiv sein. Werte sind Modelle – das Körpergefühl zählt mit.',
     sources: [],
   },
+  {
+    id: 'weight_sport', cat: 'Ernährung', title: 'Körpergewicht im Langlauf', evidence: 'mittel',
+    facts: [
+      'Das Gewicht wirkt vor allem an Steigungen: Bergauf entscheidet die Leistung pro Kilo (W/kg). Auf flacher Strecke spielen Kraft, Technik und Ökonomie eine größere Rolle als das Gewicht.',
+      'Ein Teil der Tagesschwankung ist Wasser, weil Glykogen beim Speichern Wasser bindet. 1–2 kg Unterschied von Tag zu Tag sind normal und sagen wenig über Fettmasse aus.',
+      'Das Gewicht darf nicht isoliert optimiert werden. Zu wenig Energie bei hohem Trainingsumsatz schwächt Leistung, Immunsystem und Knochen (Energiemangel, REDs).',
+    ],
+    practice: 'Ziel ist die Leistung bei gesundem Gewicht, nicht eine Zahl. Verfolge den Trend über Wochen und vergleiche ihn mit Key Sessions, EF und Form.',
+    sources: [S.mountjoy23, S.lea24],
+  },
+  {
+    id: 'weight_loss', cat: 'Ernährung', title: 'Gewicht reduzieren, ohne Leistung zu verlieren', evidence: 'gering',
+    facts: [
+      'Ein moderates Defizit von etwa 250–500 kcal pro Tag führt meist zu 0,2–0,5 kg Verlust pro Woche. Das ist eine Praxisregel; größere Defizite führen eher zu Muskelverlust und Leistungseinbruch.',
+      'Eiweiß hoch halten: Etwa 1,6–2,0 g pro kg am Tag schützen die Muskulatur im Defizit (Metaanalyse Morton et al. 2018, vor allem mit Krafttraining). Die Kohlenhydrate sind die Stellschraube; an harten Tagen sollten sie reichen.',
+      'Die IOC-Empfehlung nennt eine Energieverfügbarkeit von mindestens 45 kcal pro kg fettfreie Masse am Tag; darunter drohen Energiemangel-Folgen (Mountjoy et al. 2023).',
+      'Abnehmen passt am ehesten in Grundlagen- und Aufbauphasen, nicht in den Wochen vor einem Rennen oder in Phasen mit vielen harten Einheiten.',
+      'Warnzeichen für zu wenig Energie: sinkende Leistung trotz Training, häufige Infekte, schlechter Schlaf, anhaltende Müdigkeit, bei Frauen Zyklusstörungen. Dann das Defizit sofort beenden.',
+    ],
+    practice: 'Defizit moderat halten (Ernährungsplan → Ziel: Gewicht abnehmen), Gewicht über Wochen beobachten und Leistungswerte mitschreiben. Stimmt die Leistung nicht mehr, lieber eine Pause vom Defizit einlegen.',
+    sources: [S.morton18, S.mountjoy23, S.lea24],
+  },
   // ——— Einzelerklärungen zu allen Werten, die die App zeigt ———
   {
     id: 'k_belastung', cat: 'Kennzahlen', title: 'Belastung (ähnlich TSS)', evidence: 'stark',
@@ -660,6 +682,10 @@ export const FAQ = [
   { q: 'Wie wärme ich mich vor einem Sprint auf?', a: 'Ca. 20–30 min locker, dann einige Steigerungen und 1–2 kurze Belastungen im Renntempo, danach warm halten und nicht länger als ca. 15 min bis zum Start warten.', refs: ['warmup'] },
   { q: 'Wie vertrage ich Gels im Rennen besser?', a: 'Den Darm trainieren: in langen Einheiten regelmäßig die Renn-Verpflegung üben (gleiche Produkte, 60–90 g Kohlenhydrate pro Stunde, Glukose + Fruktose). Die Verträglichkeit steigt nach einigen Wochen deutlich.', refs: ['gut', 'carbs'] },
   { q: 'Kraft am selben Tag wie Intervalle?', a: 'Besser nicht direkt davor. Kraft an lockere Tage legen oder mit 6 h+ Abstand – sonst leidet die Qualität der harten Einheit und der Kraftzuwachs etwas.', refs: ['concurrent'] },
+  { q: 'Soll ich im Langlauf Gewicht verlieren?', a: 'Nur, wenn es deine Leistung wirklich verbessert. Bergauf hilft mehr Leistung pro Kilo, flach zählen eher Kraft und Technik. Ein moderates Defizit kann sinnvoll sein, aber nie in harten Phasen und nicht, wenn Energie fehlt. Das Ziel ist die Leistung bei gesundem Gewicht, nicht eine Zahl.', refs: ['weight_sport', 'weight_loss'] },
+  { q: 'Wie viel darf ich pro Woche abnehmen?', a: 'Praktisch etwa 0,2–0,5 kg pro Woche, also ein Defizit von 250–500 kcal am Tag. Schneller bedeutet meist Muskelverlust und Leistungseinbruch. Im Ernährungsplan kannst du das Defizit wählen.', refs: ['weight_loss'] },
+  { q: 'Warum schwankt mein Gewicht von Tag zu Tag?', a: 'Vor allem durch Wasser: Glykogen bindet beim Speichern Wasser, dazu kommen Salz, Essen, Verdauung und Training. 1–2 kg Schwankung sind normal. Entscheidend ist der Trend über ein bis zwei Wochen.', refs: ['weight_sport'] },
+  { q: 'Wie nehme ich ab, ohne Leistung zu verlieren?', a: 'Moderates Defizit, Eiweiß hoch lassen, die Kohlenhydrate zuerst an lockeren Tagen kürzen und harte Einheiten gut versorgen. Abnehmen besser in Aufbauphasen als in der Woche vor einem Rennen. Sinkt die Leistung trotz Training, das Defizit beenden.', refs: ['weight_loss', 'energy'] },
 ];
 
 export const EVIDENCE_LABEL = { stark: 'starke Evidenz', mittel: 'mittlere Evidenz', gering: 'begrenzte Evidenz' };

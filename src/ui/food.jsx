@@ -30,7 +30,7 @@ export function Food() {
   const dayList = Array.from({ length: 3 }, (_, i) => addDays(t, i)).map((date) => {
     const tr = trainingOf(date, data);
     const end = tr.filter((x) => x.sport !== 'strength');
-    return { date, training: tr, targets: dayTargets({ weightKg: weight, minutes: end.reduce((a, x) => a + x.minutes, 0), hardMinutes: tr.reduce((a, x) => a + x.hard, 0), strength: tr.some((x) => x.sport === 'strength'), longestMinutes: Math.max(0, ...end.map((x) => x.minutes)) }) };
+    return { date, training: tr, targets: dayTargets({ weightKg: weight, minutes: end.reduce((a, x) => a + x.minutes, 0), hardMinutes: tr.reduce((a, x) => a + x.hard, 0), strength: tr.some((x) => x.sport === 'strength'), longestMinutes: Math.max(0, ...end.map((x) => x.minutes)), deficitKcal: prefs.goal === 'abnehmen' ? Number(prefs.deficit) || 400 : 0 }) };
   });
 
   const fav = (r) => {
@@ -81,7 +81,7 @@ function DaySuggestion({ data, t, prefs, weight, open }) {
   const days = Array.from({ length: 7 }, (_, i) => addDays(t, i));
   const today = trainingOf(date, data), tomorrow = trainingOf(addDays(date, 1), data);
   const end = today.filter((x) => x.sport !== 'strength');
-  const targets = dayTargets({ weightKg: weight, minutes: end.reduce((a, x) => a + x.minutes, 0), hardMinutes: today.reduce((a, x) => a + x.hard, 0), strength: today.some((x) => x.sport === 'strength'), longestMinutes: Math.max(0, ...end.map((x) => x.minutes)) });
+  const targets = dayTargets({ weightKg: weight, minutes: end.reduce((a, x) => a + x.minutes, 0), hardMinutes: today.reduce((a, x) => a + x.hard, 0), strength: today.some((x) => x.sport === 'strength'), longestMinutes: Math.max(0, ...end.map((x) => x.minutes)), deficitKcal: prefs.goal === 'abnehmen' ? Number(prefs.deficit) || 400 : 0 });
   const plan = planDay({ today, tomorrow, targets, weightKg: weight, diet: prefs.diet || 'alles', heat: prefs.heatDate === date, seed, trainLow: prefs.trainLow !== false, offsets });
   const pick = (d) => { setDate(d); setOffsets({}); };
   const Bar = ({ label, got, goal, unit }) => {
@@ -196,7 +196,7 @@ function AiPlan({ data, t, prefs, setPref, weight, open }) {
     try {
       const tage = Array.from({ length: days }, (_, i) => addDays(t, i)).map((date) => {
         const tr = trainingOf(date, data), end = tr.filter((x) => x.sport !== 'strength');
-        const z = dayTargets({ weightKg: weight, minutes: end.reduce((a, x) => a + x.minutes, 0), hardMinutes: tr.reduce((a, x) => a + x.hard, 0), strength: tr.some((x) => x.sport === 'strength'), longestMinutes: Math.max(0, ...end.map((x) => x.minutes)) });
+        const z = dayTargets({ weightKg: weight, minutes: end.reduce((a, x) => a + x.minutes, 0), hardMinutes: tr.reduce((a, x) => a + x.hard, 0), strength: tr.some((x) => x.sport === 'strength'), longestMinutes: Math.max(0, ...end.map((x) => x.minutes)), deficitKcal: prefs.goal === 'abnehmen' ? Number(prefs.deficit) || 400 : 0 });
         return { datum: date, training: tr.map((x) => ({ sport: x.race ? 'Rennen' : sportLabel(x.sport), minuten: x.minutes, davonHartMin: x.hard, titel: x.title, uhrzeit: x.time || undefined })), hitze: prefs.heatDate === date || undefined, ziele: z && { kcal: z.kcal, khG: z.carbs, eiweissG: z.protein, fettG: z.fat, khProStundeImTraining: z.duringPerHour } };
       });
       const vorlieben = { ernaehrungsform: prefs.diet || 'alles', unvertraeglichkeiten: prefs.avoid || '', mag: prefs.likes || '', kochzeitMinMax: Number(prefs.cookTime) || 30, mahlzeitenProTag: Number(prefs.meals) || 5, portionenFuer: Number(prefs.people) || 1, budget: prefs.budget || 'normal', gewichtKg: weight || undefined, geschlecht: settings.sex === 'f' ? 'weiblich' : 'männlich', schweissrate: prefs.sweat ? { literProStunde: prefs.sweat.perHour, natriumMgProLiter: prefs.sweat.sodiumPerL } : undefined, trainLowErlaubt: prefs.trainLow !== false, lieblingsrezepte: recipes.slice(-10).map((r) => r.name) };
@@ -224,7 +224,10 @@ function AiPlan({ data, t, prefs, setPref, weight, open }) {
           <div><label>Portionen für Personen</label><input type="number" value={prefs.people || 1} onChange={(e) => setPref('people', e.target.value)} /></div>
           <div><label>Übliche Trainingszeit</label><input value={prefs.trainingTime || ''} onChange={(e) => setPref('trainingTime', e.target.value)} placeholder="z. B. 7:00 und 17:00" /></div>
           <div><label>Budget</label><select value={prefs.budget || 'normal'} onChange={(e) => setPref('budget', e.target.value)}>{['günstig', 'normal', 'egal'].map((o) => <option key={o}>{o}</option>)}</select></div>
+          <div><label>Ziel</label><select value={prefs.goal || 'halten'} onChange={(e) => setPref('goal', e.target.value)}><option value="halten">Gewicht halten</option><option value="abnehmen">Gewicht abnehmen</option></select></div>
+          {prefs.goal === 'abnehmen' && <div><label>Defizit pro Tag</label><select value={prefs.deficit || 400} onChange={(e) => setPref('deficit', Number(e.target.value))}>{[250, 400, 500].map((o) => <option key={o} value={o}>{o} kcal (ca. {String((o * 7) / 7700).replace('.', ',').slice(0, 3)} kg/Woche)</option>)}</select></div>}
         </div>
+        {prefs.goal === 'abnehmen' && <p className="muted small" style={{ margin: '6px 0' }}>Eiweiß bleibt hoch, Kohlenhydrate werden gekürzt (nie unter 3 g/kg). Vor harten Einheiten und in Rennwochen besser halten. Bei Warnzeichen wie Infekten, sinkender Leistung oder Zyklusstörungen sofort auf „halten“ stellen.</p>}
         <label>Unverträglichkeiten / mag ich nicht</label><input value={prefs.avoid || ''} onChange={(e) => setPref('avoid', e.target.value)} />
         <label>Mag ich besonders</label><input value={prefs.likes || ''} onChange={(e) => setPref('likes', e.target.value)} />
         <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontWeight: 400, marginTop: 10 }}><input type="checkbox" checked={prefs.trainLow !== false} onChange={(e) => setPref('trainLow', e.target.checked)} style={{ width: 18, height: 18 }} />Train-Low-Vorschläge an lockeren Tagen</label>
