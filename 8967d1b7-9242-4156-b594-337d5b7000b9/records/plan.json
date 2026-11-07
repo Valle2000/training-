@@ -1880,15 +1880,15 @@
  {
   "id": "mvz20oaja1q9o",
   "deleted": false,
-  "updated_at": "2026-11-04T06:34:24.801014+00:00",
+  "updated_at": "2026-11-06T14:36:47.645227+00:00",
   "data": {
    "id": "mvz20oaja1q9o",
-   "date": "2026-11-07",
+   "date": "2026-11-06",
    "done": false,
    "load": 100,
    "zone": "I1",
    "phase": "build",
-   "sport": "rollerski_classic",
+   "sport": "rollerski_skate",
    "title": "Locker + Sprints",
    "source": "wizard",
    "minutes": 120,
@@ -2498,10 +2498,10 @@
  {
   "id": "mvz20oajwa1u7",
   "deleted": false,
-  "updated_at": "2026-11-04T06:34:17.877461+00:00",
+  "updated_at": "2026-11-06T14:36:41.861093+00:00",
   "data": {
    "id": "mvz20oajwa1u7",
-   "date": "2026-11-07",
+   "date": "2026-11-06",
    "done": false,
    "load": 50,
    "zone": "I1",
@@ -4854,10 +4854,10 @@
  {
   "id": "mw1qkzmbky01l",
   "deleted": false,
-  "updated_at": "2026-11-04T06:34:04.733871+00:00",
+  "updated_at": "2026-11-06T14:36:41.864027+00:00",
   "data": {
    "id": "mw1qkzmbky01l",
-   "date": "2026-11-06",
+   "date": "2026-11-07",
    "done": false,
    "load": 150,
    "zone": "I3",
@@ -4871,10 +4871,10 @@
  {
   "id": "mw1qoaaw0wkh0",
   "deleted": false,
-  "updated_at": "2026-11-04T06:34:10.573145+00:00",
+  "updated_at": "2026-11-06T14:36:41.872209+00:00",
   "data": {
    "id": "mw1qoaaw0wkh0",
-   "date": "2026-11-06",
+   "date": "2026-11-07",
    "done": false,
    "load": 135,
    "zone": "I3",
