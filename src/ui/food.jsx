@@ -62,7 +62,7 @@ export function Food() {
       ))}
 
       <div style={{ marginTop: 14 }}><Seg value={view} onChange={setView} options={[['heute', 'Tagesplan'], ['katalog', `Rezepte (${CATALOG.length})`], ['wissen', 'Wissen'], ['ki', 'KI-Plan'], ['fav', `Favoriten (${recipes.length})`]]} /></div>
-      {view === 'heute' && <DaySuggestion data={data} t={t} prefs={prefs} weight={weight} open={setRecipe} />}
+      {view === 'heute' && <DaySuggestion data={data} t={t} prefs={prefs} setPref={setPref} weight={weight} open={setRecipe} />}
       {view === 'katalog' && <Catalog prefs={prefs} weight={weight} open={setRecipe} sex={settings.sex} />}
       {view === 'wissen' && <Knowledge prefs={prefs} setPref={setPref} />}
       {view === 'ki' && <AiPlan data={data} t={t} prefs={prefs} setPref={setPref} weight={weight} open={setRecipe} />}
@@ -74,7 +74,7 @@ export function Food() {
 }
 
 // Tagesplan aus dem Katalog: Bedarf je nach Einheiten auf die Mahlzeiten verteilt, Portionen darauf berechnet.
-function DaySuggestion({ data, t, prefs, weight, open }) {
+function DaySuggestion({ data, t, prefs, setPref, weight, open }) {
   const [date, setDate] = useState(t);
   const [seed, setSeed] = useState(() => Number(t.replaceAll('-', '')) % 97);
   const [offsets, setOffsets] = useState({});
@@ -97,6 +97,12 @@ function DaySuggestion({ data, t, prefs, weight, open }) {
   return (
     <>
       <div className="chips" style={{ marginTop: 10 }}>{days.map((d) => <button key={d} className={`chip${d === date ? ' on' : ''}`} onClick={() => pick(d)}>{d === t ? 'Heute' : fmtDate(d, { weekday: 'short', day: 'numeric' })}</button>)}</div>
+      <div className="row" style={{ gap: 6, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+        <span className="small muted">Ziel:</span>
+        {[['halten', 'Gewicht halten'], ['abnehmen', 'Gewicht abnehmen']].map(([v, l]) => <button key={v} className={`chip${(prefs.goal || 'halten') === v ? ' on' : ''}`} onClick={() => setPref('goal', v)}>{l}</button>)}
+        {prefs.goal === 'abnehmen' && [250, 400, 500].map((o) => <button key={o} className={`chip${(Number(prefs.deficit) || 400) === o ? ' on' : ''}`} onClick={() => setPref('deficit', o)}>−{o} kcal</button>)}
+      </div>
+      {prefs.goal === 'abnehmen' && <p className="muted small" style={{ margin: '6px 0 0' }}>Eiweiß bleibt hoch, Kohlenhydrate werden gekürzt (nie unter 3 g/kg). Vor harten Einheiten und in Rennwochen besser halten.</p>}
       <p className="muted small">{today.length ? today.map((x) => `${x.time ? x.time + ' ' : ''}${x.minutes}′ ${x.race ? 'Rennen' : sportLabel(x.sport)}${x.hard ? ` (${x.hard}′ hart)` : ''}`).join(' · ') : 'Kein Training'}{tomorrow.length ? ` · morgen: ${tomorrow.map((x) => `${x.minutes}′ ${x.race ? 'Rennen' : sportLabel(x.sport)}`).join(', ')}` : ''}. Uhrzeiten aus den Einheiten, dem Alltag (Kalender → Alltag) oder „Übliche Trainingszeit“ (KI-Plan → Vorlieben); Essenszeiten richten sich danach.</p>
       {plan.totals && <div className="card">
         <b className="small">Tag gesamt (Portionen unten eingerechnet)</b>
@@ -224,10 +230,7 @@ function AiPlan({ data, t, prefs, setPref, weight, open }) {
           <div><label>Portionen für Personen</label><input type="number" value={prefs.people || 1} onChange={(e) => setPref('people', e.target.value)} /></div>
           <div><label>Übliche Trainingszeit</label><input value={prefs.trainingTime || ''} onChange={(e) => setPref('trainingTime', e.target.value)} placeholder="z. B. 7:00 und 17:00" /></div>
           <div><label>Budget</label><select value={prefs.budget || 'normal'} onChange={(e) => setPref('budget', e.target.value)}>{['günstig', 'normal', 'egal'].map((o) => <option key={o}>{o}</option>)}</select></div>
-          <div><label>Ziel</label><select value={prefs.goal || 'halten'} onChange={(e) => setPref('goal', e.target.value)}><option value="halten">Gewicht halten</option><option value="abnehmen">Gewicht abnehmen</option></select></div>
-          {prefs.goal === 'abnehmen' && <div><label>Defizit pro Tag</label><select value={prefs.deficit || 400} onChange={(e) => setPref('deficit', Number(e.target.value))}>{[250, 400, 500].map((o) => <option key={o} value={o}>{o} kcal (ca. {String((o * 7) / 7700).replace('.', ',').slice(0, 3)} kg/Woche)</option>)}</select></div>}
         </div>
-        {prefs.goal === 'abnehmen' && <p className="muted small" style={{ margin: '6px 0' }}>Eiweiß bleibt hoch, Kohlenhydrate werden gekürzt (nie unter 3 g/kg). Vor harten Einheiten und in Rennwochen besser halten. Bei Warnzeichen wie Infekten, sinkender Leistung oder Zyklusstörungen sofort auf „halten“ stellen.</p>}
         <label>Unverträglichkeiten / mag ich nicht</label><input value={prefs.avoid || ''} onChange={(e) => setPref('avoid', e.target.value)} />
         <label>Mag ich besonders</label><input value={prefs.likes || ''} onChange={(e) => setPref('likes', e.target.value)} />
         <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontWeight: 400, marginTop: 10 }}><input type="checkbox" checked={prefs.trainLow !== false} onChange={(e) => setPref('trainLow', e.target.checked)} style={{ width: 18, height: 18 }} />Train-Low-Vorschläge an lockeren Tagen</label>
