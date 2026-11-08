@@ -2,7 +2,7 @@
  {
   "id": "settings",
   "deleted": false,
-  "updated_at": "2026-11-07T07:16:45.408534+00:00",
+  "updated_at": "2026-11-07T19:49:40.230184+00:00",
   "data": {
    "ai": {
     "coach": {
@@ -13,7 +13,20 @@
    "age": "26",
    "ftp": "384",
    "sex": "m",
+   "food": {
+    "diet": "wenig Fleisch",
+    "goal": "abnehmen",
+    "deficit": 500
+   },
    "lthr": "170",
+   "aiLog": [
+    {
+     "usd": 0.271,
+     "date": "2026-11-07",
+     "kind": "coach",
+     "model": "claude-sonnet-5-5"
+    }
+   ],
    "hrMax": "193",
    "hrRest": "38",
    "season": {
@@ -90,7 +103,8 @@
     "peakHours": "19",
     "winterRunHours": "3"
    },
-   "lastSync": "2026-11-07T07:16:39.795Z",
+   "lastSync": "2026-11-07T19:46:16.388Z",
+   "strategy": "Aktuell ca. 15 h Ausdauer pro Woche plus 2 Krafteinheiten (zusammen ca. 2 h). Bald möchte ich Double-Threshold-Tage einbauen und später auch etwas mehr Intensität.",
    "weightKg": "80",
    "ftpSkierg": "224",
    "titleRules": {

@@ -358,5 +358,187 @@
    },
    "question": "Ich habe jetzt Daten nachgetragen und. Krankheit dieses Jahr usw also letzte Saison nicht sehr representativ Klassik ist nicht mein Fokus ich will hauptsächlich gut Skaten aber trotzdem auch Klassikerinnen mitnehmen wenn sinnvoll und es passt und da auch ganz gut sein und Schub auch für 1/1 sehr gut im Skating der Ausreißer kam von Alkohol in der hrv"
   }
+ },
+ {
+  "id": "mw6thodwoijmx",
+  "deleted": false,
+  "updated_at": "2026-11-07T19:49:40.208474+00:00",
+  "data": {
+   "id": "mw6thodwoijmx",
+   "key": "21mgm4",
+   "date": "2026-11-07",
+   "result": {
+    "model": "claude-sonnet-5-5",
+    "usage": {
+     "input": 4,
+     "output": 18287,
+     "cacheRead": 0,
+     "cacheWrite": 35239
+    },
+    "analyse": [
+     {
+      "text": "Die Woche ab 02.11. hat 16,1 h und 776 Belastung, das Wochenziel der Saisonplanung lag bei 12 h. Mit dem Sonntag landest du bei ca. 18–19 h und rund 860 Punkten. Deine besten vier Wochen liegen bei 680 pro Woche, der Jahresschnitt bei 445. Die letzten 7 Tage kommen auf 857, also Faktor 1,9. Die Steigerung kam steil nach Krankheit: 10.–18.10. Pause, 7,1 h, 11,9 h, dann 16,1 h. Große Belastungsschwankungen gehen bei Langläufern mit mehr Infekten einher (Svendsen et al. 2016). Fitness 76 und Form −16,9 sind für sich unkritisch, die Ermüdung (108,7) liegt aber weit über der Fitness.",
+      "titel": "Umfang und Belastungssprung",
+      "bewertung": "achtung"
+     },
+     {
+      "text": "Diese Woche steckten etwa 1,7 h in I3–I5, 2,3 h in I2 und rund 11 h in I1 (von ca. 15 h Ausdauer). Das sind etwa 74 % locker, also unter den rund 90 % der Weltklasse, aber im Aufbau noch vertretbar. Harte Tage hattest du am 31.10., 03.11. und 07.11., Abstand 3–4 Tage, das passt zur Struktur der Weltklasse. Am 03. und 07.11. hast du Schwelle auf dem SkiErg mit einem Lauf direkt danach kombiniert. Der Lauf lag mit 13 bzw. 19 min in I4 klar über kontrollierter Schwelle. Der Doppeltag war damit nicht kontrolliert. Ein Teil der I2-Zeit entsteht dadurch, dass der Puls auf dem SkiErg niedriger liegt als im Lauf. Das ist kein echtes Grauzonen-Problem.",
+      "titel": "Intensität und Verteilung",
+      "bewertung": "achtung"
+     },
+     {
+      "text": "Verlauf: 217 W/151 bpm (26.09.), 228/155 (10.10., vor der Krankheit), dann 213/158 (31.10.), 210/155 (03.11.) und heute 227/153. Heute bringst du also rund 8 % mehr Watt als am 03.11. bei niedrigerem Puls und liegst wieder auf Vor-Krankheits-Niveau. Das ist ein guter Fortschrittsbeweis, trotz der Müdigkeit. Zwei Einschränkungen: 227 W liegen über deiner SkiErg-FTP von 224 W, für 20-min-Intervalle ist das eher an der oberen Grenze. Der Puls (150–158) liegt deutlich unter deinem Laktatschwellenpuls von 170, der vermutlich aus einer anderen Sportart stammt. Ohne Laktatwerte auf dem SkiErg kann ich nicht sagen, ob du kontrolliert bei 2–3,5 mmol/l warst.",
+      "titel": "Key Session SkiErg 3x20 min",
+      "bewertung": "gut"
+     },
+     {
+      "text": "HRV liegt seit dem 02.11. bei 152–183 (heute 183), der Ruhepuls bei 38–44, deutlich über dem Niveau des Einbruchs am 01.11. Dort standen HRV 57, Ruhepuls 61, Recharge 1 und Gefühl 2 am Morgen nach der SkiErg-Einheit vom 31.10. Das war ein einzelner Ausreißer, den ich nicht erklären kann (Infektbeginn, Schlaf, Alkohol?). Er erholte sich innerhalb eines Tages. Wiederholt er sich, gilt: Intensität streichen, bei Symptomen unterhalb des Halses pausieren, bei anhaltend auffälligen Werten ärztlich abklären. Der aktuelle HRV-Trend spricht dafür, dass du die Last bisher gut verträgst. Die hohen Werte sind aber ein Modell, kein Freibrief.",
+      "titel": "Erholungswerte",
+      "bewertung": "gut"
+     },
+     {
+      "text": "In den letzten 7 Nächten lagst du bei 6,4–7,1 h (Schnitt ca. 6,7 h), Schlafscores 54–80, schwach am 04.11. (60) und 05.11. (54). Unter ca. 7 h über längere Zeit gilt bei Ausdauersportlern als zu wenig. Das ist bei 15–19 h Training und Doppeltagen der wahrscheinlichste Engpass. Auch die Zähigkeit heute Mittag passt dazu.",
+      "titel": "Schlaf",
+      "bewertung": "achtung"
+     },
+     {
+      "text": "Strategie: 2 Einheiten pro Woche. Tatsächlich waren es zuletzt 1 (11-02-Woche), 0, 0, 0 (Krankheit/Reduktion) und davor 1–2. Diese Woche gab es eine Einheit (58 min, 05.11.). Die geplante Woche enthält nur eine Kraft-A-Einheit pro Woche. Für Doppelstock-Ökonomie und Verletzungsprophylaxe bei so viel Laufen und Rollski wären zwei Einheiten sinnvoll, mit Oberkörper und Rumpf. Einzelheiten zu den Einheiten der letzten 4 Wochen liegen nicht vor.",
+      "titel": "Krafttraining",
+      "bewertung": "achtung"
+     },
+     {
+      "text": "Der Einstieg mit einem Doppeltag pro Woche passt zur Praxis, die Evidenz stammt aber überwiegend aus Praxisberichten und kleinen Studien. Wichtig sind Deckel und Pause: Laktat 2–3,5 mmol/l, zwischen den Einheiten mindestens 4–6 h mit Kohlenhydraten. Im Plan für die nächsten Tage stören mich drei Dinge: (1) Fr–Sa–So hat mit je ca. 3,5–4 h fast 11–12 h in drei Tagen, wobei der Samstag sowohl I4 als auch 160 min Umfang enthält. Das widerspricht der Regel, dass Tage entweder lang oder intensiv sind. (2) Ein zusätzlicher I4-Tag direkt nach dem Doppeltag ist im Aufbau verzichtbar, das erste B-Rennen ist erst am 19.12. (3) Der Laufumfang (fünf Läufe in Folge bis heute) ist nach der Pause schnell gestiegen, Sehnen und Knochen brauchen länger als das Herz-Kreislauf-System.",
+      "titel": "Double Threshold: Strategie und App-Plan",
+      "bewertung": "achtung"
+     },
+     {
+      "text": "Du bist im Aufbau, Gastein Classics (B) ist am 19.12., Engadiner (A) am 14.03. Bis Anfang Dezember zählen Kontinuität, lockeres Volumen und ein bis zwei kontrollierte Schwellentage. I4/I5 darf später und kleiner dazukommen, vor allem in den Wochen vor den B-Rennen im Januar. Dein Wochenziel für die kommende Woche (17,5 h) ist nach 18–19 h keine Pflicht. Lieber danach wieder stufenweise Richtung 17–18 h gehen.",
+      "titel": "Saison und Ausblick",
+      "bewertung": "info"
+     },
+     {
+      "text": "Es fehlen Laktatwerte aus den Schwelleneinheiten, Details zu den Krafteinheiten und Ernährungsdaten. Der Laktatschwellenpuls (170) und die FTP-Werte (SkiErg 224 W) gelten vermutlich nicht gleich für alle Sportarten. Nutze für das SkiErg die Wattangaben und miss im Intervall mindestens einmal Laktat.",
+      "titel": "Datenlücken",
+      "bewertung": "info"
+     }
+    ],
+    "costUsd": 0.271,
+    "quellen": [
+     "Walther et al. 2023, Front Physiol – Intensitätsverteilung und Umfangsentwicklung bei Weltklasse-Langläufern",
+     "Walther, Kocbach & Sandbakk 2025, Eur J Sport Sci – Wochenstruktur und harte Tage",
+     "Sandbakk et al. 2025, Sports Med Open – Best Practice norwegischer Trainer",
+     "Casado et al. 2023 – Das norwegische Modell (Review); Evidenz überwiegend beschreibend",
+     "Svendsen et al. 2016, Br J Sports Med – Belastungsschwankungen und Infekte bei Elite-Langläufern",
+     "Plews et al. 2013; Granero-Gallegos et al. 2020 – HRV-gesteuertes Training",
+     "Rønnestad & Mujika 2014; Losnegard et al. 2011 – Krafttraining im Ausdauersport",
+     "Wilson et al. 2012, J Strength Cond Res – Kraft und Ausdauer kombinieren (Interferenz)",
+     "Elliott et al. 2020; Schwellnus et al. 2016 – Wiedereinstieg nach Krankheit",
+     "Mountjoy et al. 2023, Br J Sports Med – IOC-Konsens REDs",
+     "Walsh et al. 2021, Br J Sports Med – Schlaf und Athleten"
+    ],
+    "warnungen": [
+     "Belastungssprung 1,9 (letzte 7 Tage 857 gegenüber Jahresschnitt 445 und bester 4-Wochen-Schnitt 680) bei gleichzeitig kürzlich überstandener Erkältung (bis 25.10.): Infekt- und Verletzungsrisiko beachten, bei Halskratzen oder Müdigkeit auf I1 gehen, bei Fieber oder Symptomen unterhalb des Halses kein Training.",
+     "Der Morgen vom 01.11. (HRV 57, Ruhepuls 61, Recharge 1) war ein klarer Ausreißer. Wiederholt er sich oder kommen Symptome dazu: Intensität streichen und bei anhaltenden Auffälligkeiten ärztlich abklären. Bei Brustschmerz, Herzrasen oder Schwindel sofort abbrechen.",
+     "Schlaf unter 7 h an 5 von 7 Nächten: Ziel mindestens 7–8 h, besonders vor und nach Schwellentagen.",
+     "Zwei Einheiten am selben Tag brauchen 4–6 h Pause mit Essen dazwischen. Die kurze Pause heute ist die wahrscheinlichste Ursache für das zähe Gefühl am Nachmittag.",
+     "Bei 15–19 h Training genug essen, vor allem Kohlenhydrate, an Doppeltagen 60–90 g/h üben. Anhaltende Müdigkeit, Infekte oder Leistungsabfall sind Warnzeichen für Energiemangel.",
+     "Laufumfang nach der Pause nicht weiter erhöhen. Bei Schmerzen in Achillessehne, Schienbein oder Leiste ab 3/10 oder morgens schlimmer reduzieren und ärztlich abklären lassen."
+    ],
+    "wochenplan": [
+     {
+      "zone": "I1",
+      "datum": "2026-11-08",
+      "sport": "rollerski_skate",
+      "titel": "Lange Grundlage (gekürzt)",
+      "minuten": 150,
+      "belastung": 85,
+      "beschreibung": "Gleichmäßig locker, Puls unter 139 (I1), Doppelstock in Maßen. 60 g Kohlenhydrate pro Stunde üben. Gegenüber dem App-Plan (179 min) bewusst gekürzt wegen des Belastungssprungs. Wenn du dich frisch fühlst, höchstens bis 165 min."
+     },
+     {
+      "zone": "Ruhe",
+      "datum": "2026-11-09",
+      "sport": "rest",
+      "titel": "Ruhetag",
+      "minuten": 0,
+      "belastung": 0,
+      "beschreibung": "Ganz frei, höchstens 15 min Mobility. Gut essen und früh schlafen (Ziel 7,5 h oder mehr)."
+     },
+     {
+      "zone": "I1",
+      "datum": "2026-11-10",
+      "sport": "rollerski_skate",
+      "titel": "Rollski locker",
+      "minuten": 120,
+      "belastung": 65,
+      "beschreibung": "Locker, Puls unter 139, am Tag vor dem Schwellentag. Statt Lauf, um die Stoßbelastung zu senken."
+     },
+     {
+      "zone": "I3",
+      "datum": "2026-11-11",
+      "sport": "skierg",
+      "titel": "Double Threshold morgens: SkiErg 3×20 min",
+      "minuten": 100,
+      "belastung": 105,
+      "beschreibung": "15 min einfahren, 3×20 min bei ca. 205–215 W (unter deiner SkiErg-FTP von 224 W), 2–3 min locker dazwischen, 10 min ausfahren. Pulsdeckel ca. 155. Wenn möglich Laktat in den Pausen messen (Ziel 2–3,5 mmol/l). Nicht auf Anschlag."
+     },
+     {
+      "zone": "I3",
+      "datum": "2026-11-11",
+      "sport": "run",
+      "titel": "Double Threshold abends: Lauf 8×4 min",
+      "minuten": 65,
+      "belastung": 65,
+      "beschreibung": "Mindestens 5 h nach der ersten Einheit, dazwischen essen. 15 min einlaufen, 8×4 min bei Puls 158–166 (unter Schwellenpuls 170, nicht in I4), 1,5 min locker traben, 10 min auslaufen. Laktat höchstens 3,5 mmol/l."
+     },
+     {
+      "zone": "Kraft",
+      "datum": "2026-11-12",
+      "sport": "strength",
+      "titel": "Kraft A: Beine schwer + Zug",
+      "minuten": 60,
+      "belastung": 45,
+      "beschreibung": "Kniebeuge 4×4 (schwer, ca. 85–88 % 1RM, explosiv hoch), Rumänisches Kreuzheben 3×5, Bulgarische Kniebeuge 3×5 je Seite, Klimmzüge 4×5 (ggf. mit Zusatzgewicht), Rudern am Kabel 3×6 schwer, Wadenheben 3×8 langsam, Rumpf 3×10. Sauber, 2–3 Wiederholungen Reserve."
+     },
+     {
+      "zone": "I1",
+      "datum": "2026-11-12",
+      "sport": "bike",
+      "titel": "Rad locker (beinschonend)",
+      "minuten": 60,
+      "belastung": 35,
+      "beschreibung": "Lockeres Kurbeln, Puls unter 130, hohe Trittfrequenz, entlastet die Beine nach den schweren Kniebeugen."
+     },
+     {
+      "zone": "I1",
+      "datum": "2026-11-13",
+      "sport": "rollerski_skate",
+      "titel": "Locker + Sprints",
+      "minuten": 150,
+      "belastung": 85,
+      "beschreibung": "150 min locker, Puls unter 139, dazu 6 Antritte à 10–15 s mit voller Erholung. Die letzte lockere Einheit vor Kraft B, kein I2-Schleichen."
+     },
+     {
+      "zone": "Kraft",
+      "datum": "2026-11-14",
+      "sport": "strength",
+      "titel": "Kraft B: Oberkörper, Rumpf, Schnellkraft",
+      "minuten": 45,
+      "belastung": 35,
+      "beschreibung": "Klimmzüge 4×5, Einarmiges Rudern 3×6 schwer, Dips oder Bankdrücken 3×5, Doppelstock am Kabelzug explosiv 4×6, Medizinballwürfe 3×6, Nordic Hamstring 2×5, Plank 3×40 s. Keine Muskelermüdung bis zum Versagen."
+     },
+     {
+      "zone": "I1",
+      "datum": "2026-11-14",
+      "sport": "hike",
+      "titel": "Skigang locker mit Stöcken",
+      "minuten": 120,
+      "belastung": 65,
+      "beschreibung": "Bergauf mit Stöcken, Puls unter 139, spezifisch für Doppelstock und Skigang. Die I4-Bergintervalle (6×5 min) verschiebe ich auf die Folgewoche (höchstens 4–5 Wiederholungen, falls Schlaf und HRV stabil bleiben)."
+     }
+    ],
+    "zusammenfassung": "Die Woche ist stark: Die SkiErg-Key-Session ist mit 227 W bei Puls 153 wieder auf Vor-Krankheits-Niveau, und HRV (183) und Ruhepuls (41) sind unauffällig. Die Belastung ist aber ein Sprung. 16,1 h und 776 Punkte sind deine höchste Woche im Datensatz, und der Belastungssprung liegt bei 1,9 (Warnschwelle ca. 1,5), zwei Wochen nach dem Schnupfen. Du hast schon zweimal einen Doppeltag mit SkiErg-Schwelle und Lauf mit I3/I4 gemacht, also ist dein Double-Threshold-Einstieg faktisch erfolgt und mehr Intensität jetzt nicht nötig. Ich würde die nächsten 7 Tage bei etwa 14,5 h halten, mit einem sauberen Schwellentag, zwei Krafteinheiten und ohne I4-Intervalle."
+   },
+   "question": "Wie bewertest du die Woxve bisher? Heute Morgen war super heute Mittag wegen kurzer Pause etwas zäh aber allgemein fühle ich mich gut mit dem Umfang "
+  }
  }
 ]

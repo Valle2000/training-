@@ -9,7 +9,20 @@
   "age": "26",
   "ftp": "384",
   "sex": "m",
+  "food": {
+   "diet": "wenig Fleisch",
+   "goal": "abnehmen",
+   "deficit": 500
+  },
   "lthr": "170",
+  "aiLog": [
+   {
+    "usd": 0.271,
+    "date": "2026-11-07",
+    "kind": "coach",
+    "model": "claude-sonnet-5-5"
+   }
+  ],
   "hrMax": "193",
   "hrRest": "38",
   "season": {
@@ -86,7 +99,8 @@
    "peakHours": "19",
    "winterRunHours": "3"
   },
-  "lastSync": "2026-11-07T07:16:39.795Z",
+  "lastSync": "2026-11-07T19:46:16.388Z",
+  "strategy": "Aktuell ca. 15 h Ausdauer pro Woche plus 2 Krafteinheiten (zusammen ca. 2 h). Bald möchte ich Double-Threshold-Tage einbauen und später auch etwas mehr Intensität.",
   "weightKg": "80",
   "ftpSkierg": "224",
   "titleRules": {
@@ -954545,6 +954559,847 @@
    "strengthId": null,
    "externalLoad": null,
    "deviceAutoLaps": null
+  },
+  {
+   "ef": 1.45,
+   "id": "mw6b79lzrs4k",
+   "kj": 1109,
+   "np": 201,
+   "vi": 1.09,
+   "rpe": null,
+   "spm": 44,
+   "date": "2026-11-07",
+   "laps": [
+    {
+     "n": 1,
+     "spm": 39,
+     "pace": 137.67783386874714,
+     "avgHr": 114,
+     "endHr": 114,
+     "maxHr": 122,
+     "restS": null,
+     "startS": 0,
+     "avgPower": 134,
+     "calories": 257,
+     "distanceM": 4358,
+     "durationS": 1200,
+     "restDistanceM": null
+    },
+    {
+     "n": 2,
+     "spm": 48,
+     "pace": 116.7996885341639,
+     "avgHr": 146,
+     "endHr": 153,
+     "maxHr": 154,
+     "restS": 120,
+     "startS": 1200,
+     "avgPower": 220,
+     "calories": 351,
+     "distanceM": 5137,
+     "durationS": 1200,
+     "restDistanceM": 76
+    },
+    {
+     "n": 3,
+     "spm": 47,
+     "pace": 115.8524811739718,
+     "avgHr": 153,
+     "endHr": 157,
+     "maxHr": 160,
+     "restS": 120,
+     "startS": 2520,
+     "avgPower": 225,
+     "calories": 358,
+     "distanceM": 5179,
+     "durationS": 1200,
+     "restDistanceM": 86
+    },
+    {
+     "n": 4,
+     "spm": 49,
+     "pace": 113.89521640091115,
+     "avgHr": 160,
+     "endHr": 166,
+     "maxHr": 166,
+     "restS": null,
+     "startS": 3840,
+     "avgPower": 237,
+     "calories": 371,
+     "distanceM": 5268,
+     "durationS": 1200,
+     "restDistanceM": null
+    },
+    {
+     "n": 5,
+     "spm": 40,
+     "pace": 151.24779430299975,
+     "avgHr": 121,
+     "endHr": 121,
+     "maxHr": 132,
+     "restS": null,
+     "startS": 5040,
+     "avgPower": 101,
+     "calories": 220,
+     "distanceM": 3967,
+     "durationS": 1200,
+     "restDistanceM": null
+    }
+   ],
+   "load": 134.6,
+   "pace": 125.48625925461162,
+   "zone": null,
+   "avgHr": 142,
+   "maxHr": 166,
+   "notes": "",
+   "sport": "skierg",
+   "start": "2026-11-07T10:48:00.000Z",
+   "title": "3x20min",
+   "trimp": 157,
+   "workS": 6000,
+   "zones": {
+    "I1": 2533,
+    "I2": 2456,
+    "I3": 1015,
+    "I4": 0,
+    "I5": 0
+   },
+   "hrHist": {
+    "65": 1,
+    "70": 2,
+    "75": 2,
+    "85": 5,
+    "90": 8,
+    "95": 15,
+    "100": 26,
+    "105": 69,
+    "110": 489,
+    "115": 743,
+    "120": 928,
+    "125": 153,
+    "130": 49,
+    "135": 58,
+    "140": 231,
+    "145": 654,
+    "150": 853,
+    "155": 804,
+    "160": 766,
+    "165": 148
+   },
+   "source": "concept2",
+   "timerS": null,
+   "ascentM": null,
+   "hrCurve": {
+    "5": 166,
+    "10": 166,
+    "15": 166,
+    "30": 165,
+    "60": 165,
+    "120": 165,
+    "180": 165,
+    "240": 165,
+    "300": 165,
+    "360": 164,
+    "480": 164,
+    "600": 163,
+    "720": 163,
+    "900": 163,
+    "1200": 161,
+    "1800": 158,
+    "2700": 156,
+    "3600": 153,
+    "5400": 142
+   },
+   "lactate": "",
+   "powerHr": [
+    [
+     80,
+     123,
+     45
+    ],
+    [
+     90,
+     122.1,
+     63
+    ],
+    [
+     100,
+     121.9,
+     113
+    ],
+    [
+     110,
+     120.8,
+     308
+    ],
+    [
+     120,
+     120.5,
+     282
+    ],
+    [
+     130,
+     120.4,
+     333
+    ],
+    [
+     140,
+     114.4,
+     398
+    ],
+    [
+     150,
+     117.1,
+     229
+    ],
+    [
+     160,
+     131.3,
+     36
+    ],
+    [
+     210,
+     141.2,
+     177
+    ],
+    [
+     220,
+     151.4,
+     2068
+    ],
+    [
+     230,
+     159.8,
+     647
+    ],
+    [
+     240,
+     163.2,
+     549
+    ]
+   ],
+   "autoLaps": null,
+   "avgPower": 177,
+   "calories": 1557,
+   "elapsedS": 6240,
+   "distanceM": 23907,
+   "durationS": 6004,
+   "hasSeries": true,
+   "intensity": 0.9,
+   "intervals": [
+    {
+     "hr": 153,
+     "avg": 223,
+     "endS": 4844,
+     "watts": true,
+     "startS": 1213,
+     "durationS": 3632
+    }
+   ],
+   "lapGrades": null,
+   "powerHist": {
+    "30": 10,
+    "40": 18,
+    "50": 27,
+    "60": 44,
+    "70": 22,
+    "80": 41,
+    "90": 74,
+    "100": 185,
+    "110": 271,
+    "120": 412,
+    "130": 380,
+    "140": 831,
+    "150": 63,
+    "160": 6,
+    "180": 1,
+    "190": 2,
+    "200": 78,
+    "210": 1046,
+    "220": 1312,
+    "230": 987,
+    "240": 161,
+    "250": 6,
+    "260": 3
+   },
+   "decoupling": 8.6,
+   "externalId": "122581354",
+   "loadSource": "power",
+   "powerCurve": {
+    "5": 261,
+    "10": 252,
+    "15": 246,
+    "30": 240,
+    "60": 237,
+    "120": 237,
+    "180": 236,
+    "240": 236,
+    "300": 236,
+    "360": 236,
+    "480": 236,
+    "600": 236,
+    "720": 236,
+    "900": 235,
+    "1200": 234,
+    "1800": 228,
+    "2700": 224,
+    "3600": 222,
+    "5400": 192
+   },
+   "powerZones": {
+    "P1": 834,
+    "P2": 1550,
+    "P3": 4,
+    "P4": 3084,
+    "P5": 508,
+    "P6": 0,
+    "P7": 0
+   },
+   "strengthId": null,
+   "externalLoad": null,
+   "keySessionId": "mvprnztswdrxd",
+   "deviceAutoLaps": null
+  },
+  {
+   "ef": 2.57,
+   "id": "mw6nq5be5vwv",
+   "kj": 1685,
+   "np": 361,
+   "vi": 1.16,
+   "rpe": null,
+   "spm": null,
+   "date": "2026-11-07",
+   "laps": [
+    {
+     "n": 1,
+     "spm": 82,
+     "pace": 371.0062505029911,
+     "avgHr": 129,
+     "maxHr": 152,
+     "startS": 0,
+     "avgPower": 299,
+     "distanceM": 3727.7,
+     "durationS": 1383
+    },
+    {
+     "n": 2,
+     "spm": 78,
+     "pace": 471.60542346236986,
+     "avgHr": 163,
+     "maxHr": 170,
+     "startS": 1687,
+     "avgPower": 422,
+     "distanceM": 508.9,
+     "durationS": 240
+    },
+    {
+     "n": 3,
+     "spm": 82,
+     "pace": 453.34340763128074,
+     "avgHr": 123,
+     "maxHr": 166,
+     "startS": 1927,
+     "avgPower": 185,
+     "distanceM": 264.7,
+     "durationS": 120
+    },
+    {
+     "n": 4,
+     "spm": 79,
+     "pace": 401.60642570281124,
+     "avgHr": 164,
+     "maxHr": 170,
+     "startS": 2047,
+     "avgPower": 427,
+     "distanceM": 597.6,
+     "durationS": 240
+    },
+    {
+     "n": 5,
+     "spm": 80,
+     "pace": 597.3120955699353,
+     "avgHr": 113,
+     "maxHr": 164,
+     "startS": 2287,
+     "avgPower": 139,
+     "distanceM": 200.9,
+     "durationS": 120
+    },
+    {
+     "n": 6,
+     "spm": 78,
+     "pace": 455.84045584045583,
+     "avgHr": 163,
+     "maxHr": 170,
+     "startS": 2407,
+     "avgPower": 420,
+     "distanceM": 526.5,
+     "durationS": 240
+    },
+    {
+     "n": 7,
+     "spm": 76,
+     "pace": 626.6318537859008,
+     "avgHr": 122,
+     "maxHr": 167,
+     "startS": 2647,
+     "avgPower": 141,
+     "distanceM": 191.5,
+     "durationS": 120
+    },
+    {
+     "n": 8,
+     "spm": 80,
+     "pace": 429.7224709042077,
+     "avgHr": 166,
+     "maxHr": 172,
+     "startS": 2767,
+     "avgPower": 448,
+     "distanceM": 558.5,
+     "durationS": 240
+    },
+    {
+     "n": 9,
+     "spm": 82,
+     "pace": 583.6575875486382,
+     "avgHr": 116,
+     "maxHr": 170,
+     "startS": 3007,
+     "avgPower": 138,
+     "distanceM": 205.6,
+     "durationS": 120
+    },
+    {
+     "n": 10,
+     "spm": 77,
+     "pace": 512.9301132720667,
+     "avgHr": 165,
+     "maxHr": 171,
+     "startS": 3127,
+     "avgPower": 419,
+     "distanceM": 467.9,
+     "durationS": 240
+    },
+    {
+     "n": 11,
+     "spm": 66,
+     "pace": 618.5567010309279,
+     "avgHr": 112,
+     "maxHr": 168,
+     "startS": 3367,
+     "avgPower": 121,
+     "distanceM": 194,
+     "durationS": 120
+    },
+    {
+     "n": 12,
+     "spm": 78,
+     "pace": 424.02826855123675,
+     "avgHr": 163,
+     "maxHr": 170,
+     "startS": 3507,
+     "avgPower": 390,
+     "distanceM": 566,
+     "durationS": 240
+    },
+    {
+     "n": 13,
+     "spm": 78,
+     "pace": 700.9345794392524,
+     "avgHr": 118,
+     "maxHr": 168,
+     "startS": 3747,
+     "avgPower": 155,
+     "distanceM": 171.2,
+     "durationS": 120
+    },
+    {
+     "n": 14,
+     "spm": 81,
+     "pace": 392.0287487749101,
+     "avgHr": 168,
+     "maxHr": 174,
+     "startS": 3907,
+     "avgPower": 435,
+     "distanceM": 612.2,
+     "durationS": 240
+    },
+    {
+     "n": 15,
+     "spm": 73,
+     "pace": 688.8633754305397,
+     "avgHr": 115,
+     "maxHr": 169,
+     "startS": 4147,
+     "avgPower": 134,
+     "distanceM": 174.2,
+     "durationS": 120
+    },
+    {
+     "n": 16,
+     "spm": 80,
+     "pace": 416.08876560332874,
+     "avgHr": 171,
+     "maxHr": 178,
+     "startS": 4274,
+     "avgPower": 456,
+     "distanceM": 576.8,
+     "durationS": 240
+    },
+    {
+     "n": 17,
+     "spm": 81,
+     "pace": 297.2184024510868,
+     "avgHr": 132,
+     "maxHr": 146,
+     "startS": 4559,
+     "avgPower": 266,
+     "distanceM": 4145.1,
+     "durationS": 1232
+    }
+   ],
+   "load": 89.6,
+   "pace": null,
+   "zone": null,
+   "avgHr": 141,
+   "maxHr": 178,
+   "notes": "",
+   "sport": "run",
+   "start": "2026-11-07T15:21:23.000Z",
+   "title": "",
+   "trimp": 150,
+   "workS": null,
+   "zones": {
+    "I1": 3200,
+    "I2": 411,
+    "I3": 676,
+    "I4": 1140,
+    "I5": 6
+   },
+   "hrHist": {
+    "55": 2,
+    "60": 4,
+    "65": 25,
+    "70": 4,
+    "75": 6,
+    "80": 8,
+    "85": 3,
+    "90": 17,
+    "95": 24,
+    "100": 100,
+    "105": 275,
+    "110": 221,
+    "115": 191,
+    "120": 345,
+    "125": 529,
+    "130": 959,
+    "135": 559,
+    "140": 183,
+    "145": 74,
+    "150": 43,
+    "155": 63,
+    "160": 263,
+    "165": 930,
+    "170": 470,
+    "175": 135
+   },
+   "source": "polar",
+   "timerS": 5376,
+   "ascentM": 701,
+   "hrCurve": {
+    "5": 178,
+    "10": 178,
+    "15": 177,
+    "30": 177,
+    "60": 177,
+    "120": 176,
+    "180": 176,
+    "240": 171,
+    "300": 160,
+    "360": 154,
+    "480": 156,
+    "600": 159,
+    "720": 152,
+    "900": 155,
+    "1200": 151,
+    "1800": 150,
+    "2700": 150,
+    "3600": 146,
+    "5400": 141
+   },
+   "lactate": "",
+   "powerHr": null,
+   "autoLaps": [
+    {
+     "n": 1,
+     "spm": null,
+     "pace": 413,
+     "avgHr": 126.26150121065375,
+     "maxHr": 146,
+     "restS": null,
+     "startS": 0,
+     "avgPower": 319,
+     "distanceM": 1000,
+     "durationS": 413
+    },
+    {
+     "n": 2,
+     "spm": null,
+     "pace": 389,
+     "avgHr": 133.58868894601542,
+     "maxHr": 142,
+     "restS": null,
+     "startS": 413,
+     "avgPower": 320.3907455012853,
+     "distanceM": 1000,
+     "durationS": 389
+    },
+    {
+     "n": 3,
+     "spm": null,
+     "pace": 348,
+     "avgHr": 126.96551724137932,
+     "maxHr": 138,
+     "restS": null,
+     "startS": 802,
+     "avgPower": 282.1264367816092,
+     "distanceM": 1000,
+     "durationS": 348
+    },
+    {
+     "n": 4,
+     "spm": null,
+     "pace": 348,
+     "avgHr": 135.04022988505747,
+     "maxHr": 169,
+     "restS": null,
+     "startS": 1150,
+     "avgPower": 308.41954022988506,
+     "distanceM": 1000,
+     "durationS": 348
+    },
+    {
+     "n": 5,
+     "spm": null,
+     "pace": 420,
+     "avgHr": 152.14761904761906,
+     "maxHr": 170,
+     "restS": null,
+     "startS": 1498,
+     "avgPower": 356.7142857142857,
+     "distanceM": 1000,
+     "durationS": 420
+    },
+    {
+     "n": 6,
+     "spm": null,
+     "pace": 489,
+     "avgHr": 148.67075664621677,
+     "maxHr": 170,
+     "restS": null,
+     "startS": 1918,
+     "avgPower": 327.83231083844584,
+     "distanceM": 1000,
+     "durationS": 489
+    },
+    {
+     "n": 7,
+     "spm": null,
+     "pace": 479,
+     "avgHr": 143.80584551148226,
+     "maxHr": 172,
+     "restS": null,
+     "startS": 2407,
+     "avgPower": 312.78914405010437,
+     "distanceM": 1000,
+     "durationS": 479
+    },
+    {
+     "n": 8,
+     "spm": null,
+     "pace": 522,
+     "avgHr": 152.2816091954023,
+     "maxHr": 171,
+     "restS": null,
+     "startS": 2886,
+     "avgPower": 337.6168582375479,
+     "distanceM": 1000,
+     "durationS": 522
+    },
+    {
+     "n": 9,
+     "spm": null,
+     "pace": 428,
+     "avgHr": 153.31542056074767,
+     "maxHr": 174,
+     "restS": null,
+     "startS": 3408,
+     "avgPower": 335.3785046728972,
+     "distanceM": 1000,
+     "durationS": 428
+    },
+    {
+     "n": 10,
+     "spm": null,
+     "pace": 489,
+     "avgHr": 142.50102249488754,
+     "maxHr": 178,
+     "restS": null,
+     "startS": 3836,
+     "avgPower": 310.4476386036961,
+     "distanceM": 1000,
+     "durationS": 489
+    },
+    {
+     "n": 11,
+     "spm": null,
+     "pace": 274,
+     "avgHr": 132.5985401459854,
+     "maxHr": 145,
+     "restS": null,
+     "startS": 4325,
+     "avgPower": 248.5839416058394,
+     "distanceM": 1000,
+     "durationS": 274
+    },
+    {
+     "n": 12,
+     "spm": null,
+     "pace": 291,
+     "avgHr": 135.49484536082474,
+     "maxHr": 142,
+     "restS": null,
+     "startS": 4599,
+     "avgPower": 299.0515463917526,
+     "distanceM": 1000,
+     "durationS": 291
+    },
+    {
+     "n": 13,
+     "spm": null,
+     "pace": 282,
+     "avgHr": 131.854609929078,
+     "maxHr": 138,
+     "restS": null,
+     "startS": 4890,
+     "avgPower": 281.87943262411346,
+     "distanceM": 1000,
+     "durationS": 282
+    },
+    {
+     "n": 14,
+     "spm": null,
+     "pace": 275.8985200845666,
+     "avgHr": 131.43295019157088,
+     "maxHr": 136,
+     "restS": null,
+     "startS": 5172,
+     "avgPower": 249.01149425287358,
+     "distanceM": 946,
+     "durationS": 261
+    }
+   ],
+   "avgPower": 313,
+   "calories": 1396,
+   "elapsedS": 5841,
+   "distanceM": 13689.3,
+   "durationS": 5376,
+   "hasSeries": true,
+   "intensity": null,
+   "intervals": [
+    {
+     "hr": 165,
+     "avg": 439,
+     "endS": 1643,
+     "watts": true,
+     "startS": 1411,
+     "durationS": 233
+    },
+    {
+     "hr": 166,
+     "avg": 446,
+     "endS": 1995,
+     "watts": true,
+     "startS": 1771,
+     "durationS": 225
+    },
+    {
+     "hr": 165,
+     "avg": 437,
+     "endS": 2360,
+     "watts": true,
+     "startS": 2132,
+     "durationS": 229
+    },
+    {
+     "hr": 168,
+     "avg": 463,
+     "endS": 2718,
+     "watts": true,
+     "startS": 2488,
+     "durationS": 231
+    },
+    {
+     "hr": 168,
+     "avg": 442,
+     "endS": 3074,
+     "watts": true,
+     "startS": 2855,
+     "durationS": 220
+    },
+    {
+     "hr": 167,
+     "avg": 433,
+     "endS": 3421,
+     "watts": true,
+     "startS": 3236,
+     "durationS": 186
+    },
+    {
+     "hr": 170,
+     "avg": 443,
+     "endS": 3810,
+     "watts": true,
+     "startS": 3585,
+     "durationS": 226
+    },
+    {
+     "hr": 172,
+     "avg": 474,
+     "endS": 4169,
+     "watts": true,
+     "startS": 3947,
+     "durationS": 223
+    }
+   ],
+   "lapGrades": [
+    19.6,
+    4.5,
+    5.9,
+    7.4,
+    6.5,
+    7.7,
+    5.7,
+    7.6,
+    7.7,
+    5,
+    1.9,
+    9.6,
+    4.7,
+    12,
+    4.8,
+    -7,
+    -5.9
+   ],
+   "powerHist": null,
+   "decoupling": 9.7,
+   "externalId": "y1D3nvlB",
+   "loadSource": "hr",
+   "powerCurve": null,
+   "powerZones": null,
+   "strengthId": null,
+   "externalLoad": null,
+   "deviceAutoLaps": null
   }
  ],
  "strength": [],
@@ -957393,6 +958248,183 @@
     "zusammenfassung": "Vor dem Infekt (12.–25.10.) lief es sehr gut: stabile 15,6–18,5 h pro Woche mit einer pyramidalen Verteilung von rund 90 % I1–I2, 5 % I3 und 5 % I4–I5. Die Key Session 3×20 min auf dem SkiErg stieg von 197 W bei Puls 162 (26.08.) auf 224 W bei Puls 155 (10.10.). Nach der Krankheit (31.10.: 209 W bei Puls 158) und mit Form +9,4 bist du bereit für den Wiedereinstieg und einen ersten, bewusst kontrollierten Double-Threshold-Tag. Die größten Baustellen sind das seit 4 Wochen fehlende Krafttraining und der geplante Sprung von 12 auf 17,5 h ab 09.11."
    },
    "question": "Ich habe jetzt Daten nachgetragen und. Krankheit dieses Jahr usw also letzte Saison nicht sehr representativ Klassik ist nicht mein Fokus ich will hauptsächlich gut Skaten aber trotzdem auch Klassikerinnen mitnehmen wenn sinnvoll und es passt und da auch ganz gut sein und Schub auch für 1/1 sehr gut im Skating der Ausreißer kam von Alkohol in der hrv"
+  },
+  {
+   "id": "mw6thodwoijmx",
+   "key": "21mgm4",
+   "date": "2026-11-07",
+   "result": {
+    "model": "claude-sonnet-5-5",
+    "usage": {
+     "input": 4,
+     "output": 18287,
+     "cacheRead": 0,
+     "cacheWrite": 35239
+    },
+    "analyse": [
+     {
+      "text": "Die Woche ab 02.11. hat 16,1 h und 776 Belastung, das Wochenziel der Saisonplanung lag bei 12 h. Mit dem Sonntag landest du bei ca. 18–19 h und rund 860 Punkten. Deine besten vier Wochen liegen bei 680 pro Woche, der Jahresschnitt bei 445. Die letzten 7 Tage kommen auf 857, also Faktor 1,9. Die Steigerung kam steil nach Krankheit: 10.–18.10. Pause, 7,1 h, 11,9 h, dann 16,1 h. Große Belastungsschwankungen gehen bei Langläufern mit mehr Infekten einher (Svendsen et al. 2016). Fitness 76 und Form −16,9 sind für sich unkritisch, die Ermüdung (108,7) liegt aber weit über der Fitness.",
+      "titel": "Umfang und Belastungssprung",
+      "bewertung": "achtung"
+     },
+     {
+      "text": "Diese Woche steckten etwa 1,7 h in I3–I5, 2,3 h in I2 und rund 11 h in I1 (von ca. 15 h Ausdauer). Das sind etwa 74 % locker, also unter den rund 90 % der Weltklasse, aber im Aufbau noch vertretbar. Harte Tage hattest du am 31.10., 03.11. und 07.11., Abstand 3–4 Tage, das passt zur Struktur der Weltklasse. Am 03. und 07.11. hast du Schwelle auf dem SkiErg mit einem Lauf direkt danach kombiniert. Der Lauf lag mit 13 bzw. 19 min in I4 klar über kontrollierter Schwelle. Der Doppeltag war damit nicht kontrolliert. Ein Teil der I2-Zeit entsteht dadurch, dass der Puls auf dem SkiErg niedriger liegt als im Lauf. Das ist kein echtes Grauzonen-Problem.",
+      "titel": "Intensität und Verteilung",
+      "bewertung": "achtung"
+     },
+     {
+      "text": "Verlauf: 217 W/151 bpm (26.09.), 228/155 (10.10., vor der Krankheit), dann 213/158 (31.10.), 210/155 (03.11.) und heute 227/153. Heute bringst du also rund 8 % mehr Watt als am 03.11. bei niedrigerem Puls und liegst wieder auf Vor-Krankheits-Niveau. Das ist ein guter Fortschrittsbeweis, trotz der Müdigkeit. Zwei Einschränkungen: 227 W liegen über deiner SkiErg-FTP von 224 W, für 20-min-Intervalle ist das eher an der oberen Grenze. Der Puls (150–158) liegt deutlich unter deinem Laktatschwellenpuls von 170, der vermutlich aus einer anderen Sportart stammt. Ohne Laktatwerte auf dem SkiErg kann ich nicht sagen, ob du kontrolliert bei 2–3,5 mmol/l warst.",
+      "titel": "Key Session SkiErg 3x20 min",
+      "bewertung": "gut"
+     },
+     {
+      "text": "HRV liegt seit dem 02.11. bei 152–183 (heute 183), der Ruhepuls bei 38–44, deutlich über dem Niveau des Einbruchs am 01.11. Dort standen HRV 57, Ruhepuls 61, Recharge 1 und Gefühl 2 am Morgen nach der SkiErg-Einheit vom 31.10. Das war ein einzelner Ausreißer, den ich nicht erklären kann (Infektbeginn, Schlaf, Alkohol?). Er erholte sich innerhalb eines Tages. Wiederholt er sich, gilt: Intensität streichen, bei Symptomen unterhalb des Halses pausieren, bei anhaltend auffälligen Werten ärztlich abklären. Der aktuelle HRV-Trend spricht dafür, dass du die Last bisher gut verträgst. Die hohen Werte sind aber ein Modell, kein Freibrief.",
+      "titel": "Erholungswerte",
+      "bewertung": "gut"
+     },
+     {
+      "text": "In den letzten 7 Nächten lagst du bei 6,4–7,1 h (Schnitt ca. 6,7 h), Schlafscores 54–80, schwach am 04.11. (60) und 05.11. (54). Unter ca. 7 h über längere Zeit gilt bei Ausdauersportlern als zu wenig. Das ist bei 15–19 h Training und Doppeltagen der wahrscheinlichste Engpass. Auch die Zähigkeit heute Mittag passt dazu.",
+      "titel": "Schlaf",
+      "bewertung": "achtung"
+     },
+     {
+      "text": "Strategie: 2 Einheiten pro Woche. Tatsächlich waren es zuletzt 1 (11-02-Woche), 0, 0, 0 (Krankheit/Reduktion) und davor 1–2. Diese Woche gab es eine Einheit (58 min, 05.11.). Die geplante Woche enthält nur eine Kraft-A-Einheit pro Woche. Für Doppelstock-Ökonomie und Verletzungsprophylaxe bei so viel Laufen und Rollski wären zwei Einheiten sinnvoll, mit Oberkörper und Rumpf. Einzelheiten zu den Einheiten der letzten 4 Wochen liegen nicht vor.",
+      "titel": "Krafttraining",
+      "bewertung": "achtung"
+     },
+     {
+      "text": "Der Einstieg mit einem Doppeltag pro Woche passt zur Praxis, die Evidenz stammt aber überwiegend aus Praxisberichten und kleinen Studien. Wichtig sind Deckel und Pause: Laktat 2–3,5 mmol/l, zwischen den Einheiten mindestens 4–6 h mit Kohlenhydraten. Im Plan für die nächsten Tage stören mich drei Dinge: (1) Fr–Sa–So hat mit je ca. 3,5–4 h fast 11–12 h in drei Tagen, wobei der Samstag sowohl I4 als auch 160 min Umfang enthält. Das widerspricht der Regel, dass Tage entweder lang oder intensiv sind. (2) Ein zusätzlicher I4-Tag direkt nach dem Doppeltag ist im Aufbau verzichtbar, das erste B-Rennen ist erst am 19.12. (3) Der Laufumfang (fünf Läufe in Folge bis heute) ist nach der Pause schnell gestiegen, Sehnen und Knochen brauchen länger als das Herz-Kreislauf-System.",
+      "titel": "Double Threshold: Strategie und App-Plan",
+      "bewertung": "achtung"
+     },
+     {
+      "text": "Du bist im Aufbau, Gastein Classics (B) ist am 19.12., Engadiner (A) am 14.03. Bis Anfang Dezember zählen Kontinuität, lockeres Volumen und ein bis zwei kontrollierte Schwellentage. I4/I5 darf später und kleiner dazukommen, vor allem in den Wochen vor den B-Rennen im Januar. Dein Wochenziel für die kommende Woche (17,5 h) ist nach 18–19 h keine Pflicht. Lieber danach wieder stufenweise Richtung 17–18 h gehen.",
+      "titel": "Saison und Ausblick",
+      "bewertung": "info"
+     },
+     {
+      "text": "Es fehlen Laktatwerte aus den Schwelleneinheiten, Details zu den Krafteinheiten und Ernährungsdaten. Der Laktatschwellenpuls (170) und die FTP-Werte (SkiErg 224 W) gelten vermutlich nicht gleich für alle Sportarten. Nutze für das SkiErg die Wattangaben und miss im Intervall mindestens einmal Laktat.",
+      "titel": "Datenlücken",
+      "bewertung": "info"
+     }
+    ],
+    "costUsd": 0.271,
+    "quellen": [
+     "Walther et al. 2023, Front Physiol – Intensitätsverteilung und Umfangsentwicklung bei Weltklasse-Langläufern",
+     "Walther, Kocbach & Sandbakk 2025, Eur J Sport Sci – Wochenstruktur und harte Tage",
+     "Sandbakk et al. 2025, Sports Med Open – Best Practice norwegischer Trainer",
+     "Casado et al. 2023 – Das norwegische Modell (Review); Evidenz überwiegend beschreibend",
+     "Svendsen et al. 2016, Br J Sports Med – Belastungsschwankungen und Infekte bei Elite-Langläufern",
+     "Plews et al. 2013; Granero-Gallegos et al. 2020 – HRV-gesteuertes Training",
+     "Rønnestad & Mujika 2014; Losnegard et al. 2011 – Krafttraining im Ausdauersport",
+     "Wilson et al. 2012, J Strength Cond Res – Kraft und Ausdauer kombinieren (Interferenz)",
+     "Elliott et al. 2020; Schwellnus et al. 2016 – Wiedereinstieg nach Krankheit",
+     "Mountjoy et al. 2023, Br J Sports Med – IOC-Konsens REDs",
+     "Walsh et al. 2021, Br J Sports Med – Schlaf und Athleten"
+    ],
+    "warnungen": [
+     "Belastungssprung 1,9 (letzte 7 Tage 857 gegenüber Jahresschnitt 445 und bester 4-Wochen-Schnitt 680) bei gleichzeitig kürzlich überstandener Erkältung (bis 25.10.): Infekt- und Verletzungsrisiko beachten, bei Halskratzen oder Müdigkeit auf I1 gehen, bei Fieber oder Symptomen unterhalb des Halses kein Training.",
+     "Der Morgen vom 01.11. (HRV 57, Ruhepuls 61, Recharge 1) war ein klarer Ausreißer. Wiederholt er sich oder kommen Symptome dazu: Intensität streichen und bei anhaltenden Auffälligkeiten ärztlich abklären. Bei Brustschmerz, Herzrasen oder Schwindel sofort abbrechen.",
+     "Schlaf unter 7 h an 5 von 7 Nächten: Ziel mindestens 7–8 h, besonders vor und nach Schwellentagen.",
+     "Zwei Einheiten am selben Tag brauchen 4–6 h Pause mit Essen dazwischen. Die kurze Pause heute ist die wahrscheinlichste Ursache für das zähe Gefühl am Nachmittag.",
+     "Bei 15–19 h Training genug essen, vor allem Kohlenhydrate, an Doppeltagen 60–90 g/h üben. Anhaltende Müdigkeit, Infekte oder Leistungsabfall sind Warnzeichen für Energiemangel.",
+     "Laufumfang nach der Pause nicht weiter erhöhen. Bei Schmerzen in Achillessehne, Schienbein oder Leiste ab 3/10 oder morgens schlimmer reduzieren und ärztlich abklären lassen."
+    ],
+    "wochenplan": [
+     {
+      "zone": "I1",
+      "datum": "2026-11-08",
+      "sport": "rollerski_skate",
+      "titel": "Lange Grundlage (gekürzt)",
+      "minuten": 150,
+      "belastung": 85,
+      "beschreibung": "Gleichmäßig locker, Puls unter 139 (I1), Doppelstock in Maßen. 60 g Kohlenhydrate pro Stunde üben. Gegenüber dem App-Plan (179 min) bewusst gekürzt wegen des Belastungssprungs. Wenn du dich frisch fühlst, höchstens bis 165 min."
+     },
+     {
+      "zone": "Ruhe",
+      "datum": "2026-11-09",
+      "sport": "rest",
+      "titel": "Ruhetag",
+      "minuten": 0,
+      "belastung": 0,
+      "beschreibung": "Ganz frei, höchstens 15 min Mobility. Gut essen und früh schlafen (Ziel 7,5 h oder mehr)."
+     },
+     {
+      "zone": "I1",
+      "datum": "2026-11-10",
+      "sport": "rollerski_skate",
+      "titel": "Rollski locker",
+      "minuten": 120,
+      "belastung": 65,
+      "beschreibung": "Locker, Puls unter 139, am Tag vor dem Schwellentag. Statt Lauf, um die Stoßbelastung zu senken."
+     },
+     {
+      "zone": "I3",
+      "datum": "2026-11-11",
+      "sport": "skierg",
+      "titel": "Double Threshold morgens: SkiErg 3×20 min",
+      "minuten": 100,
+      "belastung": 105,
+      "beschreibung": "15 min einfahren, 3×20 min bei ca. 205–215 W (unter deiner SkiErg-FTP von 224 W), 2–3 min locker dazwischen, 10 min ausfahren. Pulsdeckel ca. 155. Wenn möglich Laktat in den Pausen messen (Ziel 2–3,5 mmol/l). Nicht auf Anschlag."
+     },
+     {
+      "zone": "I3",
+      "datum": "2026-11-11",
+      "sport": "run",
+      "titel": "Double Threshold abends: Lauf 8×4 min",
+      "minuten": 65,
+      "belastung": 65,
+      "beschreibung": "Mindestens 5 h nach der ersten Einheit, dazwischen essen. 15 min einlaufen, 8×4 min bei Puls 158–166 (unter Schwellenpuls 170, nicht in I4), 1,5 min locker traben, 10 min auslaufen. Laktat höchstens 3,5 mmol/l."
+     },
+     {
+      "zone": "Kraft",
+      "datum": "2026-11-12",
+      "sport": "strength",
+      "titel": "Kraft A: Beine schwer + Zug",
+      "minuten": 60,
+      "belastung": 45,
+      "beschreibung": "Kniebeuge 4×4 (schwer, ca. 85–88 % 1RM, explosiv hoch), Rumänisches Kreuzheben 3×5, Bulgarische Kniebeuge 3×5 je Seite, Klimmzüge 4×5 (ggf. mit Zusatzgewicht), Rudern am Kabel 3×6 schwer, Wadenheben 3×8 langsam, Rumpf 3×10. Sauber, 2–3 Wiederholungen Reserve."
+     },
+     {
+      "zone": "I1",
+      "datum": "2026-11-12",
+      "sport": "bike",
+      "titel": "Rad locker (beinschonend)",
+      "minuten": 60,
+      "belastung": 35,
+      "beschreibung": "Lockeres Kurbeln, Puls unter 130, hohe Trittfrequenz, entlastet die Beine nach den schweren Kniebeugen."
+     },
+     {
+      "zone": "I1",
+      "datum": "2026-11-13",
+      "sport": "rollerski_skate",
+      "titel": "Locker + Sprints",
+      "minuten": 150,
+      "belastung": 85,
+      "beschreibung": "150 min locker, Puls unter 139, dazu 6 Antritte à 10–15 s mit voller Erholung. Die letzte lockere Einheit vor Kraft B, kein I2-Schleichen."
+     },
+     {
+      "zone": "Kraft",
+      "datum": "2026-11-14",
+      "sport": "strength",
+      "titel": "Kraft B: Oberkörper, Rumpf, Schnellkraft",
+      "minuten": 45,
+      "belastung": 35,
+      "beschreibung": "Klimmzüge 4×5, Einarmiges Rudern 3×6 schwer, Dips oder Bankdrücken 3×5, Doppelstock am Kabelzug explosiv 4×6, Medizinballwürfe 3×6, Nordic Hamstring 2×5, Plank 3×40 s. Keine Muskelermüdung bis zum Versagen."
+     },
+     {
+      "zone": "I1",
+      "datum": "2026-11-14",
+      "sport": "hike",
+      "titel": "Skigang locker mit Stöcken",
+      "minuten": 120,
+      "belastung": 65,
+      "beschreibung": "Bergauf mit Stöcken, Puls unter 139, spezifisch für Doppelstock und Skigang. Die I4-Bergintervalle (6×5 min) verschiebe ich auf die Folgewoche (höchstens 4–5 Wiederholungen, falls Schlaf und HRV stabil bleiben)."
+     }
+    ],
+    "zusammenfassung": "Die Woche ist stark: Die SkiErg-Key-Session ist mit 227 W bei Puls 153 wieder auf Vor-Krankheits-Niveau, und HRV (183) und Ruhepuls (41) sind unauffällig. Die Belastung ist aber ein Sprung. 16,1 h und 776 Punkte sind deine höchste Woche im Datensatz, und der Belastungssprung liegt bei 1,9 (Warnschwelle ca. 1,5), zwei Wochen nach dem Schnupfen. Du hast schon zweimal einen Doppeltag mit SkiErg-Schwelle und Lauf mit I3/I4 gemacht, also ist dein Double-Threshold-Einstieg faktisch erfolgt und mehr Intensität jetzt nicht nötig. Ich würde die nächsten 7 Tage bei etwa 14,5 h halten, mit einem sauberen Schwellentag, zwei Krafteinheiten und ohne I4-Intervalle."
+   },
+   "question": "Wie bewertest du die Woxve bisher? Heute Morgen war super heute Mittag wegen kurzer Pause etwas zäh aber allgemein fühle ich mich gut mit dem Umfang "
   }
  ],
  "wellness": [
@@ -957772,6 +958804,16 @@
    "recharge": 5,
    "ansCharge": 4.3,
    "sleepScore": 77
+  },
+  {
+   "hrv": 183,
+   "date": "2026-11-07",
+   "restHr": 41,
+   "sleepH": 6.4,
+   "source": "polar",
+   "recharge": 5,
+   "ansCharge": 3.4,
+   "sleepScore": 69
   }
  ],
  "customExercises": [
