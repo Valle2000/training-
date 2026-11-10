@@ -2,7 +2,7 @@
  "settings": {
   "ai": {
    "coach": {
-    "model": "claude-opus-5-5",
+    "model": "claude-sonnet-5-5",
     "effort": "high"
    }
   },
@@ -27,6 +27,12 @@
     "date": "2026-11-09",
     "kind": "coach",
     "model": "claude-opus-5-5"
+   },
+   {
+    "usd": 0.2117,
+    "date": "2026-11-09",
+    "kind": "coach",
+    "model": "claude-sonnet-5-5"
    }
   ],
   "hrMax": "193",
@@ -105,7 +111,7 @@
    "peakHours": "19",
    "winterRunHours": "3"
   },
-  "lastSync": "2026-11-09T10:13:08.835Z",
+  "lastSync": "2026-11-10T11:14:28.137Z",
   "strategy": "Aktuell ca. 15 h Ausdauer pro Woche plus 2 Krafteinheiten (zusammen ca. 2 h). Bald möchte ich Double-Threshold-Tage einbauen und später auch etwas mehr Intensität.",
   "weightKg": "80",
   "ftpSkierg": "224",
@@ -956121,6 +956127,95 @@
    "externalLoad": null,
    "rollPowerLaps": null,
    "deviceAutoLaps": null
+  },
+  {
+   "ef": null,
+   "id": "mw9cgjaktgsm",
+   "kj": null,
+   "np": null,
+   "vi": null,
+   "rpe": null,
+   "spm": null,
+   "date": "2026-11-08",
+   "laps": null,
+   "load": 8.6,
+   "pace": null,
+   "zone": null,
+   "avgHr": 84,
+   "maxHr": 128,
+   "notes": "",
+   "sport": "strength",
+   "start": "2026-11-08T16:26:10.000Z",
+   "title": "",
+   "trimp": 14,
+   "workS": null,
+   "zones": {
+    "I1": 2290,
+    "I2": 0,
+    "I3": 0,
+    "I4": 0,
+    "I5": 0
+   },
+   "hrHist": {
+    "50": 104,
+    "55": 197,
+    "60": 122,
+    "65": 185,
+    "70": 138,
+    "75": 127,
+    "80": 158,
+    "85": 204,
+    "90": 309,
+    "95": 224,
+    "100": 227,
+    "105": 112,
+    "110": 99,
+    "115": 70,
+    "120": 8,
+    "125": 6
+   },
+   "source": "polar",
+   "timerS": 2289,
+   "ascentM": null,
+   "hrCurve": {
+    "5": 127,
+    "10": 125,
+    "15": 123,
+    "30": 121,
+    "60": 117,
+    "120": 113,
+    "180": 109,
+    "240": 110,
+    "300": 109,
+    "360": 106,
+    "480": 104,
+    "600": 101,
+    "720": 98,
+    "900": 93,
+    "1200": 88,
+    "1800": 87
+   },
+   "lactate": "",
+   "powerHr": null,
+   "autoLaps": null,
+   "avgPower": null,
+   "calories": 232,
+   "elapsedS": 2532,
+   "distanceM": null,
+   "durationS": 2289,
+   "hasSeries": true,
+   "intensity": null,
+   "intervals": null,
+   "lapGrades": null,
+   "powerHist": null,
+   "decoupling": null,
+   "externalId": "PWEn4wJo",
+   "loadSource": "hr",
+   "powerCurve": null,
+   "powerZones": null,
+   "strengthId": null,
+   "externalLoad": null,
+   "deviceAutoLaps": null
   }
  ],
  "strength": [],
@@ -956176,45 +956271,6 @@
    "source": "wizard",
    "minutes": 225,
    "description": "Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)"
-  },
-  {
-   "id": "mvz20oaj1fce0",
-   "date": "2026-11-13",
-   "done": false,
-   "load": 133,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "rollerski_skate",
-   "title": "Locker + Sprints",
-   "source": "wizard",
-   "minutes": 160,
-   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
-  },
-  {
-   "id": "mvz20oaj1fnjc",
-   "date": "2026-11-12",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  },
-  {
-   "id": "mvz20oaj1fvaj",
-   "date": "2026-11-11",
-   "done": false,
-   "load": 150,
-   "zone": "I3",
-   "phase": "build",
-   "sport": "rollerski_classic",
-   "title": "Double Threshold morgens: 3×20 min",
-   "source": "wizard",
-   "minutes": 100,
-   "description": "20 min ein, 3× 20 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 2 min Pause, 15 min aus – eher untere Schwelle"
   },
   {
    "id": "mvz20oaj1xhqy",
@@ -956412,19 +956468,6 @@
    "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
   },
   {
-   "id": "mvz20oaj95x3o",
-   "date": "2026-11-14",
-   "done": false,
-   "load": 147,
-   "zone": "I4",
-   "phase": "build",
-   "sport": "hike",
-   "title": "Bergintervalle Skigang (I4): 6×5 min",
-   "source": "wizard",
-   "minutes": 80,
-   "description": "20 min ein, 6× 5 min hart (I4), 3 min Pause, 15 min aus – Skigang mit Stöcken bergauf, locker zurück"
-  },
-  {
    "id": "mvz20oaj964x5",
    "date": "2026-11-26",
    "done": false,
@@ -956527,32 +956570,6 @@
    "source": "wizard",
    "minutes": 90,
    "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
-  },
-  {
-   "id": "mvz20oajf0dvn",
-   "date": "2026-11-12",
-   "done": false,
-   "load": 45,
-   "zone": "Kraft",
-   "phase": "build",
-   "sport": "strength",
-   "title": "Kraft A – Beine schwer + Zug",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Vorlage im Tab „Kraft“"
-  },
-  {
-   "id": "mvz20oajfuzu9",
-   "date": "2026-11-13",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
   },
   {
    "id": "mvz20oajgx4yk",
@@ -956683,19 +956700,6 @@
    "source": "wizard",
    "minutes": 65,
    "description": "15 min ein, 10× 3 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 1 min Pause, 10 min aus"
-  },
-  {
-   "id": "mvz20oajmo7jc",
-   "date": "2026-11-10",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
   },
   {
    "id": "mvz20oajn35hw",
@@ -956877,19 +956881,6 @@
    "title": "Locker + Sprints",
    "source": "wizard",
    "minutes": 170,
-   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
-  },
-  {
-   "id": "mvz20oajw0kad",
-   "date": "2026-11-14",
-   "done": false,
-   "load": 133,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "rollerski_classic",
-   "title": "Locker + Sprints",
-   "source": "wizard",
-   "minutes": 160,
    "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
   },
   {
@@ -958616,6 +958607,105 @@
    "source": "manual",
    "minutes": 90,
    "description": ""
+  },
+  {
+   "id": "mw9ckesu162cl",
+   "date": "2026-11-12",
+   "load": 35,
+   "zone": "Kraft",
+   "sport": "strength",
+   "title": "Kraft A: Beine + Zug (moderat vor dem Rennen)",
+   "source": "coach",
+   "minutes": 60,
+   "description": "10 min Aufwärmen. Kniebeuge 3×4 bei ca. 80 % 1RM, explosiv hoch. Rumänisches Kreuzheben 3×5, schwer und kontrolliert. Klimmzüge mit Zusatzgewicht 4×4. Doppelstockzug am Kabel 3×5, explosiv. Countermovement-Sprünge 3×5. Wadenheben langsam 3×8. Copenhagen Plank 2×20 s pro Seite. Kein Satz bis zum Versagen, etwa 2 Wiederholungen Reserve, weil Samstag das Rennen ist."
+  },
+  {
+   "id": "mw9ckesu3nbqd",
+   "date": "2026-11-14",
+   "load": 40,
+   "zone": "I1",
+   "sport": "skierg",
+   "title": "SkiErg locker (statt Schwelle)",
+   "source": "coach",
+   "minutes": 60,
+   "description": "Gegen 8:30–9:00 Uhr, mindestens 5 h vor dem Start. Ganz locker, Puls unter 130, ruhige Doppelstocktechnik. Danach gut frühstücken, 2–3 h vor dem Start eine kohlenhydratreiche Mahlzeit."
+  },
+  {
+   "id": "mw9ckesu70kdc",
+   "date": "2026-11-13",
+   "load": 30,
+   "zone": "I1",
+   "sport": "run",
+   "title": "Laufen locker",
+   "source": "coach",
+   "minutes": 45,
+   "description": "Morgens ganz locker, Puls unter 135."
+  },
+  {
+   "id": "mw9ckesua3rs6",
+   "date": "2026-11-10",
+   "load": 55,
+   "zone": "I1",
+   "sport": "rollerski_classic",
+   "title": "Rollski klassisch locker",
+   "source": "coach",
+   "minutes": 100,
+   "description": "Ergänzt den Plan der Trainerin, um den Umfang zu halten. Ganz locker, Puls unter 135, etwa 50 % Doppelstock als Technikschwerpunkt für Gastein. Bei müden Beinen auf 60 min kürzen."
+  },
+  {
+   "id": "mw9ckesub39mk",
+   "date": "2026-11-11",
+   "load": 110,
+   "zone": "I3",
+   "sport": "skierg",
+   "title": "Double Threshold morgens: SkiErg 3×20 min",
+   "source": "coach",
+   "minutes": 100,
+   "description": "20 min einfahren. 3×20 min bei 200–212 W (ca. 90–95 % deiner SkiErg-FTP), Puls bis ca. 150, RPE 6/10, 2 min Pause. Es muss sich so anfühlen, als ginge noch ein viertes Intervall. Laktat 2–3,5 mmol/l, falls du messen kannst. Watt pro Puls notieren, als Vergleich zur Key Session. 15 min ausfahren. Nicht wieder auf 227 W gehen."
+  },
+  {
+   "id": "mw9ckesub6m6d",
+   "date": "2026-11-10",
+   "load": 40,
+   "zone": "I1",
+   "sport": "run",
+   "title": "Laufen locker",
+   "source": "coach",
+   "minutes": 60,
+   "description": "Flach und locker, Puls unter 139 (72 % HFmax). Am Ende 4×15 s Steigerungen."
+  },
+  {
+   "id": "mw9ckesuf56pb",
+   "date": "2026-11-13",
+   "load": 80,
+   "zone": "I1",
+   "sport": "rollerski_skate",
+   "title": "Rollski Skating locker + Sprints",
+   "source": "coach",
+   "minutes": 150,
+   "description": "Langer lockerer Tag vor dem Rennen, nach der Logik deiner Trainerin, aber etwas kürzer als geplant. Puls unter 135. In der zweiten Hälfte 6×10 s Sprint mit 2–3 min locker dazwischen. 60 g Kohlenhydrate pro Stunde."
+  },
+  {
+   "id": "mw9ckesupn9uk",
+   "date": "2026-11-12",
+   "load": 40,
+   "zone": "I1",
+   "sport": "run",
+   "title": "Laufen locker",
+   "source": "coach",
+   "minutes": 60,
+   "description": "Vor oder mindestens 3 h nach der Kraft. Puls unter 139, flach."
+  },
+  {
+   "id": "mw9ckesutmczn",
+   "date": "2026-11-14",
+   "load": 115,
+   "zone": "I4",
+   "sport": "run",
+   "title": "Rennen: Berglauf 5 km",
+   "source": "coach",
+   "minutes": 95,
+   "description": "Ersetzt die Bergintervalle 6×5 min. 25 min einlaufen, dazu 4×15 s Steigerungen und 1×1 min im Renntempo, bis zum Start warm halten. Den ersten Kilometer kontrolliert laufen, dann steigern. Danach 30–40 min locker auslaufen oder wandern. So hältst du den Umfang. Mit Krankheitssymptomen nicht starten."
   }
  ],
  "recipes": [],
@@ -959350,6 +959440,188 @@
     "zusammenfassung": "Die Woche ab 02.11. war mit 19,6 h und einer Belastung von 874 die stärkste des Blocks. HRV (7-Tage-Schnitt ca. 165) und Ruhepuls (38–41) bestätigen, dass du sie gut verträgst, und die Key Session vom 07.11. (227 W bei 153 bpm) ist dein bester Wert. Allerdings kam die Woche als Sprung kurz nach dem Schnupfen (232 → 478 → 874), und die Form steht mit −30,5 an der Warngrenze. Diese Woche sollte das Rennen am Samstag deshalb die Bergintervalle ersetzen, nicht zusätzlich zu einer Schwelleneinheit kommen. Der Umfang wird mit lockeren Kilometern gehalten."
    },
    "question": "Wochenanalyse und Plan für dieses Woche Samstag ist 5km Berglauf Wettkampf den aber möglichst is Training raus und Umfang halten evt davor sogar Schwelle SkiErg weil ich der Wettkampf erst um 14:00 ist  ich habe mich die Woche sehr gut gefühlt und den Umfang gut vertragen geht denke ich auch aus hrv und Ruhepuls hervor der hohe Umfang war weil es meine Trainierin so gesagt hat lass uns zusammen immer hinterfragen was ich mache aber auch lernen wie sie das angeht "
+  },
+  {
+   "id": "mw9e7lf6oj1do",
+   "key": "snekvk",
+   "date": "2026-11-09",
+   "result": {
+    "model": "claude-sonnet-5-5",
+    "usage": {
+     "input": 4,
+     "output": 20459,
+     "cacheRead": 35351,
+     "cacheWrite": 0
+    },
+    "analyse": [
+     {
+      "text": "Es fehlen Klassik-Langdistanzergebnisse, ein Laktat-/VO2max-Test und Wattdaten im Rollski. Die Gewichtung der Hinweise: Seebach Roller 2. Platz mit 1,6 % Rückstand zeigt Tempo, sagt über 50+ km Klassik aber wenig. Weltklasse-Langdistanzläufer kommen auf ca. 860 h/Jahr, davon 50–60 % im Doppelstock (Torvik et al. 2021). Top 30–50 im Elitefeld liegt darunter. Meine Schätzung, kein Studienwert: etwa 650–800 h/Jahr und viel Doppelstock/Klassik-Spezifität. Deine Saisons: 23/24 611 h, 24/25 500 h, 25/26 332 h, 26/27 bisher 355 h (maximale Woche 21,1 h). Mit 26 Jahren ist die Entwicklung offen. Der beste Realitätscheck sind deine Klassik-Rennen dieses Winter (Gastein Classics 19.12., La Diagonela): Vergleiche dort deinen Rückstand in % zu den Ski-Classics-Elitezeiten.",
+      "titel": "Potenzial für Ski Classics (Top 30–50): ehrliche Einschätzung",
+      "bewertung": "info"
+     },
+     {
+      "text": "Rad-FTP 384 W (4,8 W/kg) gegenüber SkiErg-FTP 224 W (2,8 W/kg): Die SkiErg-Leistung liegt bei nur etwa 58 % der Rad-FTP. Beide Werte sind App-Schätzungen aus unterschiedlichen Sportarten, die Richtung ist aber klar. Die Ausdauerbasis ist bereits stark. Der größte Hebel für Ski Classics ist daher spezifische Doppelstock-Kapazität, nicht noch mehr Laufen oder Rad. Dazu gehören Rollski klassisch, SkiErg, später Schnee und schwere Zugkraft. Laufen und Rad sind gut für das Herz-Kreislauf-System, übertragen sich aber kaum auf die Muskulatur im Doppelstock (Tanaka 1994).",
+      "titel": "Dein Engpass: Doppelstock/Oberkörper statt Motor",
+      "bewertung": "achtung"
+     },
+     {
+      "text": "Es gibt keine belastbaren Richtwerte, welche SkiErg-3×20-Werte welcher Platzierung entsprechen. Das ist daher keine Vorhersage, sondern Prozessziele. Dein Verlauf: 26.9. 217 W/151 bpm, 10.10. 228 W/155 bpm, 31.10. (nach Krankheit) 213 W/158 bpm, 7.11. 227 W/153 bpm. Du bist nach der Pause zurück auf dem Stand von Anfang Oktober, aber noch nicht darüber. Als Ziel für 12 Monate halte ich +5–10 % für realistisch (Schätzung), also ca. 240–250 W bei höchstens 155 bpm. Ergänze einen 60-min-Doppelstocktest (SkiErg oder Rollski mit Powermeter) alle 8–12 Wochen als Ausdauerindikator und miss Laktat in den Pausen.",
+      "titel": "Was in der Key Session 3×20 min realistisch ist",
+      "bewertung": "info"
+     },
+     {
+      "text": "Die Wochenstunden waren 7,1 h (ab 19.10.), 10,9 h, dann 20,2 h (882 Belastung, Schnitt der besten 4 Wochen: 691). Der Belastungssprung liegt bei 2,0 (Warnschwelle 1,5), Ermüdung 91,5 gegen Fitness 74,1, Form −30,9. Nach Schnupfen (12.–25.10.) ist das ein typisches Infekt- und Verletzungsrisikomuster (Svendsen et al. 2016). Die Stundenziele der App (17,5/18,1/18,7 h) sind langfristig vernünftig, aber nur mit stabiler Erholung.",
+      "titel": "Aktuelle Belastung: zu steiler Anstieg nach Krankheit",
+      "bewertung": "kritisch"
+     },
+     {
+      "text": "Woche ab 2.11.: ca. 80 % I1, 12 % I2, 6 % I3, 2 % I4. Das ist mehr Mittelzone und Schwelle als bei Weltklasse (ca. 92/4/4). Die Pulszonen unterschätzen die SkiErg-Arbeit, weil der Arm-Puls niedrig bleibt (142–158 bpm gegenüber einem Laktatschwellenpuls von 170). 3×20 min bei 94–101 % der SkiErg-FTP sind wahrscheinlich eher Schwelle bis knapp darüber als kontrolliert bei 2–3,5 mmol/l. Du machst bereits Doppeltage (3.11. und 7.11.: SkiErg plus Lauf mit 13–19 min in I4), nur ohne Laktatdeckel. Die Evidenz für Double Threshold ist überwiegend beschreibend. Die Methode lohnt sich nur mit Laktat-Deckel, Einstieg mit einem Doppeltag pro Woche.",
+      "titel": "Intensitätsverteilung und Double Threshold",
+      "bewertung": "achtung"
+     },
+     {
+      "text": "HRV 144–183, Ruhepuls 38–44: insgesamt unauffällig. Der Ausreißer am 1.11. (HRV 57, Ruhepuls 61, Schlaf-Score 57) war nach einem Tag wieder weg. Trotzdem hast du an diesem Tag noch 132 min trainiert. Ursache unbekannt. Beobachte bei Wiederholung Symptome und Infekt. Schlaf: 7-Tage-Schnitt ca. 6,8 h, also unter 7 h bei 16–20 h Training (Walsh et al. 2021). Heute HRV 144 (leicht unter deinem Trend) bei Ruhepuls 40: ok, aber schlafen ist aktuell der wirksamste Hebel.",
+      "titel": "Erholungsdaten",
+      "bewertung": "achtung"
+     },
+     {
+      "text": "2 Einheiten pro Woche passen zur Aufbauphase. Es liegen aber keine Übungsdetails vor (kraftLetzte4Wochen leer), sodass ich Last und Wiederholungen nicht beurteilen kann. Die Einheiten vom 5.11. (58 min) und 8.11. (38 min) hatten sehr niedrige Belastung. Für Doppelstock-Ökonomie sind schwere Sätze (3–5 Wdh.) plus explosive Zug-/Wurfübungen wichtig. Kraft nicht direkt vor Schwellen-/Intervalltagen legen (Rønnestad & Mujika 2014).",
+      "titel": "Krafttraining",
+      "bewertung": "info"
+     },
+     {
+      "text": "In der Woche ab 2.11. standen 11,3 h Ski/Rollski und 7,3 h anderer Ausdauer (v. a. Laufen) im Plan. Nur eine lange Einheit war Rollski klassisch (8.11., 207 min, I1, ein guter Start). Für Ski Classics sollte der Laufanteil mit der Zeit sinken und Doppelstock-/Klassik-Zeit steigen. Neue Belastungen langsam einführen, vor allem Doppelstock-Anteil und Rücken/Schulter (Soligard et al. 2016). Auch wenn du diesen Winter Skating fokussierst: Gastein Classics, Diagonela und KLL Klassik stehen im Kalender, Klassik ist also schon jetzt relevant.",
+      "titel": "Spezifität Klassik/Doppelstock",
+      "bewertung": "info"
+     }
+    ],
+    "costUsd": 0.2117,
+    "quellen": [
+     "Torvik, Solli & Sandbakk 2021 – Training von Weltklasse-Langdistanzläufern (ca. 861 h/Jahr, 50–60 % Doppelstock)",
+     "Walther et al. 2023, Front Physiol – Junioren zu Senioren, 17 Weltklasse-Langläufer",
+     "Staff et al. 2025, Sports Med Open – Weltklasse-Langläuferinnen über drei Jahrzehnte",
+     "Walther, Kocbach & Sandbakk 2025, Eur J Sport Sci – Wochenstruktur und harte Tage",
+     "Sandbakk et al. 2025, Sports Med Open – Best Practice norwegischer Weltklasse-Trainer",
+     "Casado et al. 2023 – Das norwegische Modell / Double Threshold (Review, überwiegend beschreibende Evidenz)",
+     "Rønnestad & Mujika 2014, Scand J Med Sci Sports – Krafttraining für Ausdauerleistung",
+     "Svendsen et al. 2016, Br J Sports Med – Belastungsschwankungen und Infekte bei Elite-Langläufern",
+     "Plews et al. 2013 und Granero-Gallegos et al. 2020 – HRV-Trend und Trainingssteuerung",
+     "Walsh et al. 2021, Br J Sports Med – Schlaf und Athleten",
+     "Mountjoy et al. 2023, Br J Sports Med – IOC-Konsens REDs",
+     "Tanaka 1994, Sports Med – Übertragbarkeit von Cross-Training"
+    ],
+    "warnungen": [
+     "Belastungssprung 2,0, Form −30,9 und die Krankheit vom 12.–25.10. zusammen sind ein Infektrisiko: Steigere die Wochenstunden höchstens ~10 % pro Woche, Wochenumfang diese Woche bewusst unter 20 h halten.",
+     "Bei Husten, Fieber, Gliederschmerzen oder Ruhepuls mehr als 5 Schläge über deinem Normalwert (38–41): Intensität streichen oder Pause. Bei Brustschmerz, Herzstolpern oder auffälliger Atemnot sofort aufhören und ärztlich abklären.",
+     "Double Threshold ist nur beschrieben, nicht kontrolliert belegt. Ohne Laktatmessung ist die Gefahr hoch, zu hart zu werden (I4-Läufe bis ca. 177 bpm liegen über deinem Laktatschwellenpuls von 170). Zielwert 2–3,5 mmol/l, bei darüber Tempo/Watt um ca. 5 % senken.",
+     "Schlaf unter 7 h im 7-Tage-Schnitt plus 16–20 h Training: Schlafzeit priorisieren, sonst Umfang oder Intensität kürzen. Bei 15–20 h Training ausreichend essen (Kohlenhydrate), Gewicht schwankt aktuell 81,6–83 kg bei angegebenen 80 kg (REDs-Risiko, Mountjoy et al. 2023).",
+     "Im App-Plan liegt Kraft A (Beine schwer) am Tag nach dem Double-Threshold-Tag (19.11. und 26.11.). Besser auf einen leichten Tag ohne harte Einheit am Folgetag legen. Die vorgesehene Doppeleinheit aus 3×20 min und 10×3 min am 18.11. ist als Einstieg sehr umfangreich.",
+     "Keine Laktat-, VO2max- und Rollski-Wattdaten vorhanden. Alle Aussagen zum Potenzial sind deshalb unsicher und als Orientierung zu verstehen."
+    ],
+    "wochenplan": [
+     {
+      "zone": "Kraft",
+      "datum": "2026-11-09",
+      "sport": "strength",
+      "titel": "Kraft A: schwer + Zug",
+      "minuten": 55,
+      "belastung": 25,
+      "beschreibung": "Aufwärmen 10 min. Trap-Bar-Kreuzheben oder Kniebeuge 3×4 @ ca. 85 % 1RM (2 Wdh. in Reserve, explosiv hoch). Klimmzüge mit Zusatzgewicht 4×4–5. Kabelzug Doppelstock-Imitation 4×6 schwer-explosiv. Wadenheben langsam schwer 3×8. Pallof-Press 3×10 pro Seite. Leichter Tag ohne Ausdauer, genug essen und früh schlafen."
+     },
+     {
+      "zone": "I1",
+      "datum": "2026-11-10",
+      "sport": "rollerski_classic",
+      "titel": "Rollski klassisch, locker",
+      "minuten": 120,
+      "belastung": 55,
+      "beschreibung": "Gleichmäßig locker, Puls unter ca. 139 bpm (72 % HFmax). Viel Doppelstock und Diagonal, saubere Technik. Pro Stunde 60 g Kohlenhydrate üben."
+     },
+     {
+      "zone": "I1",
+      "datum": "2026-11-10",
+      "sport": "run",
+      "titel": "Laufen locker",
+      "minuten": 45,
+      "belastung": 25,
+      "beschreibung": "Abends, ruhig, flaches Gelände, Puls unter ca. 139 bpm. Laufumfang nicht steigern."
+     },
+     {
+      "zone": "I3",
+      "datum": "2026-11-11",
+      "sport": "skierg",
+      "titel": "Double Threshold morgens: SkiErg 3×15 min",
+      "minuten": 75,
+      "belastung": 80,
+      "beschreibung": "15 min einlaufen. 3×15 min bei ca. 200–212 W (ca. 90–95 % SkiErg-FTP), 2 min Pause, 10 min locker. Wenn möglich Laktat in der Pause messen, Ziel 2–3,5 mmol/l. Bei mehr als 3,5 mmol/l Watt um ca. 5 % senken. Gleichmäßig durchziehen."
+     },
+     {
+      "zone": "I3",
+      "datum": "2026-11-11",
+      "sport": "run",
+      "titel": "Double Threshold abends: Lauf 8×4 min",
+      "minuten": 65,
+      "belastung": 65,
+      "beschreibung": "15 min einlaufen. 8×4 min bei 160–167 bpm (bewusst unter Laktatschwellenpuls 170), 1 min Trabpause, 10 min auslaufen. Nur machen, wenn Morgen-HRV/Ruhepuls normal sind. Sonst nur locker laufen."
+     },
+     {
+      "zone": "I1",
+      "datum": "2026-11-12",
+      "sport": "bike",
+      "titel": "Rad locker",
+      "minuten": 90,
+      "belastung": 45,
+      "beschreibung": "Entspannt, Trittfrequenz hoch, Puls unter ca. 139 bpm. Regeneration nach dem Doppeltag ohne Stoßbelastung."
+     },
+     {
+      "zone": "Kraft",
+      "datum": "2026-11-12",
+      "sport": "strength",
+      "titel": "Kraft B: Oberkörper/Rumpf + Schnellkraft",
+      "minuten": 50,
+      "belastung": 25,
+      "beschreibung": "Latzug oder Klimmzüge 4×5 schwer. Dips oder Liegestütz mit Zusatzgewicht 3×6. Trizeps-Pushdown schwer 3×6 (Doppelstock). Medizinballwürfe 4×6 explosiv. Face Pulls 3×12. Copenhagen 2×30 s pro Seite. Beine nur leicht (kein schweres Beintraining nach dem Doppeltag)."
+     },
+     {
+      "zone": "I1",
+      "datum": "2026-11-13",
+      "sport": "rollerski_classic",
+      "titel": "Rollski klassisch + Antritte",
+      "minuten": 90,
+      "belastung": 40,
+      "beschreibung": "Locker, am Ende 4×10 s Antritte mit langer Pause. Kein Schwellenreiz am Tag vor der Key Session."
+     },
+     {
+      "zone": "I1",
+      "datum": "2026-11-13",
+      "sport": "bike",
+      "titel": "Rad locker",
+      "minuten": 60,
+      "belastung": 30,
+      "beschreibung": "Kurz und entspannt, Umfang ohne Belastung der Gelenke."
+     },
+     {
+      "zone": "I3",
+      "datum": "2026-11-14",
+      "sport": "skierg",
+      "titel": "Key Session SkiErg 3×20 min",
+      "minuten": 100,
+      "belastung": 120,
+      "beschreibung": "15 min einlaufen. 3×20 min bei 215–225 W, 2 min Pause, 15 min auslaufen. Ziel: mindestens 227 W bei höchstens 155 bpm (Vergleich 7.11.). Laktat in den Pausen messen, falls möglich. Wenn HRV/Schlaf schlecht sind, auf 3×15 min kürzen. Kein Lauf danach, damit es bei einer harten Einheit pro Tag bleibt."
+     },
+     {
+      "zone": "I1",
+      "datum": "2026-11-15",
+      "sport": "rollerski_classic",
+      "titel": "Lange Grundlage Rollski klassisch",
+      "minuten": 210,
+      "belastung": 95,
+      "beschreibung": "Gleichmäßig locker (Puls unter ca. 139 bpm), viel Doppelstock. 60–90 g Kohlenhydrate pro Stunde üben. Aerobe Entkopplung möglichst unter 5 %. Der Tag ist lang, nicht intensiv."
+     }
+    ],
+    "zusammenfassung": "Ob du bei Ski Classics in die Top 30–50 kommst, lässt sich aus deinen Daten nicht sicher vorhersagen. Plausibel ist es aber: Dein Motor ist stark (Rad-FTP 384 W ≈ 4,8 W/kg), der Engpass ist die Doppelstock-Leistung (SkiErg-FTP 224 W ≈ 2,8 W/kg). Für ein Jahr gezielter Arbeit brauchst du eher 650–800 h mit viel Klassik-/Doppelstockanteil statt der bisherigen 330–500 h (Schätzung, kein Studienwert). Aktuell steht Konsolidierung an: Die Vorwoche (20,2 h, Belastungssprung 2,0, Form −31) war nach der Krankheit zu steil, deshalb ist diese Woche mit ca. 16 h und einem Double-Threshold-Tag bewusst etwas leichter."
+   },
+   "question": "Könnte ich gut bei Ski classics performen mit noch einem Jahr mit diesem Traibing also nächste Saison dieses Saison mache ich eher skating und will das auch als Fokus behalten aber hätte ich das Potenzial dazu zumindest mal so 30-50 zu landen also konkurrenzfähig zu sein und was müsste ich dafür bei der Session leisten was wäre realistisch "
   }
  ],
  "wellness": [
@@ -959749,6 +960021,16 @@
    "recharge": 5,
    "ansCharge": 0.6,
    "sleepScore": 75
+  },
+  {
+   "hrv": 144,
+   "date": "2026-11-09",
+   "restHr": 40,
+   "sleepH": 6.9,
+   "source": "polar",
+   "recharge": 5,
+   "ansCharge": -1.4,
+   "sleepScore": 78
   }
  ],
  "customExercises": [
