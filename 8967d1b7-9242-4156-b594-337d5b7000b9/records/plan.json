@@ -2252,18 +2252,18 @@
  {
   "id": "mvz20oajrretn",
   "deleted": false,
-  "updated_at": "2026-11-02T09:26:16.373358+00:00",
+  "updated_at": "2026-11-10T11:19:09.016701+00:00",
   "data": {
    "id": "mvz20oajrretn",
    "date": "2026-11-15",
    "done": false,
-   "load": 188,
+   "load": 175,
    "zone": "I1",
    "phase": "build",
    "sport": "rollerski_classic",
    "title": "Lange Grundlage",
    "source": "wizard",
-   "minutes": 225,
+   "minutes": 210,
    "description": "Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)"
   }
  },
@@ -4808,7 +4808,7 @@
  {
   "id": "mw9ckesu3nbqd",
   "deleted": false,
-  "updated_at": "2026-11-09T14:19:12.969111+00:00",
+  "updated_at": "2026-11-10T11:18:41.305944+00:00",
   "data": {
    "id": "mw9ckesu3nbqd",
    "date": "2026-11-14",
@@ -4817,8 +4817,8 @@
    "sport": "skierg",
    "title": "SkiErg locker (statt Schwelle)",
    "source": "coach",
-   "minutes": 60,
-   "description": "Gegen 8:30–9:00 Uhr, mindestens 5 h vor dem Start. Ganz locker, Puls unter 130, ruhige Doppelstocktechnik. Danach gut frühstücken, 2–3 h vor dem Start eine kohlenhydratreiche Mahlzeit."
+   "minutes": 105,
+   "description": "Gegen 7:00 Uhr, mindestens 5 h vor dem Start. 3x20min"
   }
  },
  {
@@ -4830,34 +4830,24 @@
  {
   "id": "mw9ckesu70kdc",
   "deleted": false,
-  "updated_at": "2026-11-09T14:19:12.968893+00:00",
+  "updated_at": "2026-11-10T11:17:50.951243+00:00",
   "data": {
    "id": "mw9ckesu70kdc",
    "date": "2026-11-13",
-   "load": 30,
+   "load": 50,
    "zone": "I1",
    "sport": "run",
    "title": "Laufen locker",
    "source": "coach",
-   "minutes": 45,
+   "minutes": 60,
    "description": "Morgens ganz locker, Puls unter 135."
   }
  },
  {
   "id": "mw9ckesua3rs6",
-  "deleted": false,
-  "updated_at": "2026-11-09T14:19:12.968291+00:00",
-  "data": {
-   "id": "mw9ckesua3rs6",
-   "date": "2026-11-10",
-   "load": 55,
-   "zone": "I1",
-   "sport": "rollerski_classic",
-   "title": "Rollski klassisch locker",
-   "source": "coach",
-   "minutes": 100,
-   "description": "Ergänzt den Plan der Trainerin, um den Umfang zu halten. Ganz locker, Puls unter 135, etwa 50 % Doppelstock als Technikschwerpunkt für Gastein. Bei müden Beinen auf 60 min kürzen."
-  }
+  "deleted": true,
+  "updated_at": "2026-11-10T11:17:04.346825+00:00",
+  "data": null
  },
  {
   "id": "mw9ckesub39mk",
@@ -4878,7 +4868,7 @@
  {
   "id": "mw9ckesub6m6d",
   "deleted": false,
-  "updated_at": "2026-11-09T14:19:12.96424+00:00",
+  "updated_at": "2026-11-10T11:17:13.209866+00:00",
   "data": {
    "id": "mw9ckesub6m6d",
    "date": "2026-11-10",
@@ -4887,7 +4877,7 @@
    "sport": "run",
    "title": "Laufen locker",
    "source": "coach",
-   "minutes": 60,
+   "minutes": 150,
    "description": "Flach und locker, Puls unter 139 (72 % HFmax). Am Ende 4×15 s Steigerungen."
   }
  },
@@ -4915,19 +4905,9 @@
  },
  {
   "id": "mw9ckesupn9uk",
-  "deleted": false,
-  "updated_at": "2026-11-09T14:19:12.968764+00:00",
-  "data": {
-   "id": "mw9ckesupn9uk",
-   "date": "2026-11-12",
-   "load": 40,
-   "zone": "I1",
-   "sport": "run",
-   "title": "Laufen locker",
-   "source": "coach",
-   "minutes": 60,
-   "description": "Vor oder mindestens 3 h nach der Kraft. Puls unter 139, flach."
-  }
+  "deleted": true,
+  "updated_at": "2026-11-10T11:17:50.951967+00:00",
+  "data": null
  },
  {
   "id": "mw9ckesutmczn",
@@ -4943,6 +4923,40 @@
    "source": "coach",
    "minutes": 95,
    "description": "Ersetzt die Bergintervalle 6×5 min. 25 min einlaufen, dazu 4×15 s Steigerungen und 1×1 min im Renntempo, bis zum Start warm halten. Den ersten Kilometer kontrolliert laufen, dann steigern. Danach 30–40 min locker auslaufen oder wandern. So hältst du den Umfang. Mit Krankheitssymptomen nicht starten."
+  }
+ },
+ {
+  "id": "mwalit2luvmr7",
+  "deleted": false,
+  "updated_at": "2026-11-10T11:17:40.744845+00:00",
+  "data": {
+   "id": "mwalit2luvmr7",
+   "date": "2026-11-12",
+   "done": false,
+   "load": 100,
+   "zone": "I1",
+   "sport": "rollerski_classic",
+   "title": "",
+   "source": "manual",
+   "minutes": 120,
+   "description": ""
+  }
+ },
+ {
+  "id": "mwall3ubkm71x",
+  "deleted": false,
+  "updated_at": "2026-11-10T11:19:27.963196+00:00",
+  "data": {
+   "id": "mwall3ubkm71x",
+   "date": "2026-11-15",
+   "done": false,
+   "load": 50,
+   "zone": "I1",
+   "sport": "strength",
+   "title": "",
+   "source": "manual",
+   "minutes": 60,
+   "description": ""
   }
  }
 ]
