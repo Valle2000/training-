@@ -2,7 +2,7 @@
  {
   "id": "settings",
   "deleted": false,
-  "updated_at": "2026-11-11T09:54:23.637513+00:00",
+  "updated_at": "2026-11-11T20:39:15.58238+00:00",
   "data": {
    "ai": {
     "coach": {
@@ -115,7 +115,7 @@
     "peakHours": "19",
     "winterRunHours": "3"
    },
-   "lastSync": "2026-11-11T09:54:18.902Z",
+   "lastSync": "2026-11-11T20:39:10.920Z",
    "strategy": "Aktuell ca. 15 h Ausdauer pro Woche plus 2 Krafteinheiten (zusammen ca. 2 h). Bald möchte ich Double-Threshold-Tage einbauen und später auch etwas mehr Intensität.",
    "weightKg": "80",
    "ftpSkierg": "224",
