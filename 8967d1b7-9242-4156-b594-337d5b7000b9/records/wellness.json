@@ -610,5 +610,35 @@
    "ansCharge": -8.2,
    "sleepScore": 61
   }
+ },
+ {
+  "id": "2026-11-12",
+  "deleted": false,
+  "updated_at": "2026-11-12T17:52:27.737765+00:00",
+  "data": {
+   "hrv": 132,
+   "date": "2026-11-12",
+   "restHr": 41,
+   "sleepH": 6.4,
+   "source": "polar",
+   "recharge": 3,
+   "ansCharge": -5.4,
+   "sleepScore": 64
+  }
+ },
+ {
+  "id": "2026-11-13",
+  "deleted": false,
+  "updated_at": "2026-11-13T10:18:01.018052+00:00",
+  "data": {
+   "hrv": 145,
+   "date": "2026-11-13",
+   "restHr": 42,
+   "sleepH": 7,
+   "source": "polar",
+   "recharge": 4,
+   "ansCharge": -2.1,
+   "sleepScore": 74
+  }
  }
 ]
