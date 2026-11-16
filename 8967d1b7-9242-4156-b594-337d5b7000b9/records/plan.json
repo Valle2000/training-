@@ -1423,39 +1423,15 @@
  },
  {
   "id": "mvz20oaj0c9ki",
-  "deleted": false,
-  "updated_at": "2026-11-02T09:26:16.375718+00:00",
-  "data": {
-   "id": "mvz20oaj0c9ki",
-   "date": "2026-11-21",
-   "done": false,
-   "load": 147,
-   "zone": "I4",
-   "phase": "build",
-   "sport": "hike",
-   "title": "Bergintervalle Skigang (I4): 6×5 min",
-   "source": "wizard",
-   "minutes": 80,
-   "description": "20 min ein, 6× 5 min hart (I4), 3 min Pause, 15 min aus – Skigang mit Stöcken bergauf, locker zurück"
-  }
+  "deleted": true,
+  "updated_at": "2026-11-16T07:36:20.689154+00:00",
+  "data": null
  },
  {
   "id": "mvz20oaj0szob",
-  "deleted": false,
-  "updated_at": "2026-11-02T09:26:16.373632+00:00",
-  "data": {
-   "id": "mvz20oaj0szob",
-   "date": "2026-11-19",
-   "done": false,
-   "load": 45,
-   "zone": "Kraft",
-   "phase": "build",
-   "sport": "strength",
-   "title": "Kraft A – Beine schwer + Zug",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Vorlage im Tab „Kraft“"
-  }
+  "deleted": true,
+  "updated_at": "2026-11-16T07:36:20.686386+00:00",
+  "data": null
  },
  {
   "id": "mvz20oaj0vrsp",
@@ -1567,21 +1543,9 @@
  },
  {
   "id": "mvz20oaj4mlu8",
-  "deleted": false,
-  "updated_at": "2026-11-02T09:26:16.377529+00:00",
-  "data": {
-   "id": "mvz20oaj4mlu8",
-   "date": "2026-11-21",
-   "done": false,
-   "load": 142,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "rollerski_classic",
-   "title": "Locker + Sprints",
-   "source": "wizard",
-   "minutes": 170,
-   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
-  }
+  "deleted": true,
+  "updated_at": "2026-11-16T07:36:20.689407+00:00",
+  "data": null
  },
  {
   "id": "mvz20oaj5ti0t",
@@ -1621,21 +1585,9 @@
  },
  {
   "id": "mvz20oaj68g99",
-  "deleted": false,
-  "updated_at": "2026-11-02T09:26:16.377611+00:00",
-  "data": {
-   "id": "mvz20oaj68g99",
-   "date": "2026-11-22",
-   "done": false,
-   "load": 200,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "rollerski_classic",
-   "title": "Lange Grundlage",
-   "source": "wizard",
-   "minutes": 240,
-   "description": "Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)"
-  }
+  "deleted": true,
+  "updated_at": "2026-11-16T07:36:20.689624+00:00",
+  "data": null
  },
  {
   "id": "mvz20oaj68nf0",
@@ -1903,21 +1855,9 @@
  },
  {
   "id": "mvz20oajdx8s8",
-  "deleted": false,
-  "updated_at": "2026-11-02T09:26:16.375494+00:00",
-  "data": {
-   "id": "mvz20oajdx8s8",
-   "date": "2026-11-19",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  }
+  "deleted": true,
+  "updated_at": "2026-11-16T07:36:20.686748+00:00",
+  "data": null
  },
  {
   "id": "mvz20oaje052i",
@@ -2101,39 +2041,15 @@
  },
  {
   "id": "mvz20oajkj57f",
-  "deleted": false,
-  "updated_at": "2026-11-02T09:26:16.373515+00:00",
-  "data": {
-   "id": "mvz20oajkj57f",
-   "date": "2026-11-18",
-   "done": false,
-   "load": 150,
-   "zone": "I3",
-   "phase": "build",
-   "sport": "rollerski_skate",
-   "title": "Double Threshold morgens: 3×20 min",
-   "source": "wizard",
-   "minutes": 100,
-   "description": "20 min ein, 3× 20 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 2 min Pause, 15 min aus – eher untere Schwelle"
-  }
+  "deleted": true,
+  "updated_at": "2026-11-16T07:36:20.681144+00:00",
+  "data": null
  },
  {
   "id": "mvz20oajlqzz5",
-  "deleted": false,
-  "updated_at": "2026-11-02T09:26:16.373579+00:00",
-  "data": {
-   "id": "mvz20oajlqzz5",
-   "date": "2026-11-18",
-   "done": false,
-   "load": 98,
-   "zone": "I3",
-   "phase": "build",
-   "sport": "run",
-   "title": "Double Threshold abends: 10×3 min",
-   "source": "wizard",
-   "minutes": 65,
-   "description": "15 min ein, 10× 3 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 1 min Pause, 10 min aus"
-  }
+  "deleted": true,
+  "updated_at": "2026-11-16T07:36:20.681402+00:00",
+  "data": null
  },
  {
   "id": "mvz20oajmo7jc",
@@ -2269,21 +2185,9 @@
  },
  {
   "id": "mvz20oajruo8z",
-  "deleted": false,
-  "updated_at": "2026-11-02T09:26:16.373456+00:00",
-  "data": {
-   "id": "mvz20oajruo8z",
-   "date": "2026-11-17",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  }
+  "deleted": true,
+  "updated_at": "2026-11-16T07:36:20.679542+00:00",
+  "data": null
  },
  {
   "id": "mvz20oajrzqvt",
@@ -2377,21 +2281,9 @@
  },
  {
   "id": "mvz20oajv42lu",
-  "deleted": false,
-  "updated_at": "2026-11-02T09:26:16.375656+00:00",
-  "data": {
-   "id": "mvz20oajv42lu",
-   "date": "2026-11-20",
-   "done": false,
-   "load": 142,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "rollerski_skate",
-   "title": "Locker + Sprints",
-   "source": "wizard",
-   "minutes": 170,
-   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
-  }
+  "deleted": true,
+  "updated_at": "2026-11-16T07:36:20.687275+00:00",
+  "data": null
  },
  {
   "id": "mvz20oajw0kad",
@@ -2473,21 +2365,9 @@
  },
  {
   "id": "mvz20oajzdmxx",
-  "deleted": false,
-  "updated_at": "2026-11-02T09:26:16.375597+00:00",
-  "data": {
-   "id": "mvz20oajzdmxx",
-   "date": "2026-11-20",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  }
+  "deleted": true,
+  "updated_at": "2026-11-16T07:36:20.687019+00:00",
+  "data": null
  },
  {
   "id": "mvz20oak09fbz",
@@ -4957,6 +4837,226 @@
    "source": "manual",
    "minutes": 60,
    "description": ""
+  }
+ },
+ {
+  "id": "mwiy5tju9gy1j",
+  "deleted": true,
+  "updated_at": "2026-11-16T07:36:20.697531+00:00",
+  "data": null
+ },
+ {
+  "id": "mwiy5tjubrvgd",
+  "deleted": true,
+  "updated_at": "2026-11-16T07:36:20.69705+00:00",
+  "data": null
+ },
+ {
+  "id": "mwiy5tjujpyo0",
+  "deleted": true,
+  "updated_at": "2026-11-16T07:36:20.692295+00:00",
+  "data": null
+ },
+ {
+  "id": "mwiy5tjupd14b",
+  "deleted": true,
+  "updated_at": "2026-11-16T07:36:20.697294+00:00",
+  "data": null
+ },
+ {
+  "id": "mwiy5tjusztoa",
+  "deleted": true,
+  "updated_at": "2026-11-16T07:36:20.691963+00:00",
+  "data": null
+ },
+ {
+  "id": "mwiy5tjut8xpn",
+  "deleted": true,
+  "updated_at": "2026-11-16T07:36:20.68987+00:00",
+  "data": null
+ },
+ {
+  "id": "mwiy5tjuthhhy",
+  "deleted": true,
+  "updated_at": "2026-11-16T07:36:20.698209+00:00",
+  "data": null
+ },
+ {
+  "id": "mwiy5tjuv3gcp",
+  "deleted": true,
+  "updated_at": "2026-11-16T07:36:20.697961+00:00",
+  "data": null
+ },
+ {
+  "id": "mwiy5tjuwu9pt",
+  "deleted": true,
+  "updated_at": "2026-11-16T07:36:20.690123+00:00",
+  "data": null
+ },
+ {
+  "id": "mwiy5tjuyrjlm",
+  "deleted": true,
+  "updated_at": "2026-11-16T07:36:20.697748+00:00",
+  "data": null
+ },
+ {
+  "id": "mwiy99f32sa8x",
+  "deleted": false,
+  "updated_at": "2026-11-16T07:36:20.67443+00:00",
+  "data": {
+   "id": "mwiy99f32sa8x",
+   "date": "2026-11-21",
+   "load": 90,
+   "zone": "I4",
+   "sport": "run",
+   "title": "Skigang mit Stöcken bergauf 5×5 min",
+   "source": "coach",
+   "minutes": 80,
+   "description": "Nur wenn die HRV im Normalbereich liegt (≥~150) und der Ruhepuls ≤40 ist. Andernfalls 4×6 min bei Puls 160–167 (I3) oder ganz streichen. 20 min einlaufen, dann 5×5 min Skigang/Sprunglauf bergauf bei Puls 170–177 mit Gehpause bergab (~3 min). Die letzte Wiederholung soll so schnell sein wie die erste, nicht auf Anschlag."
+  }
+ },
+ {
+  "id": "mwiy99f356f1h",
+  "deleted": false,
+  "updated_at": "2026-11-16T07:40:18.475624+00:00",
+  "data": {
+   "id": "mwiy99f356f1h",
+   "date": "2026-11-17",
+   "load": 96,
+   "zone": "I1",
+   "sport": "rollerski_classic",
+   "title": "Rollski klassisch locker (einzige Einheit)",
+   "source": "coach",
+   "minutes": 115,
+   "description": "Puls unter 139 (I1). Etwa 40 % Doppelstock in ruhigem Tempo, als Technikfokus für Gastein. Flaches bis welliges Gelände."
+  }
+ },
+ {
+  "id": "mwiy99f35ajtz",
+  "deleted": false,
+  "updated_at": "2026-11-16T07:40:09.543202+00:00",
+  "data": {
+   "id": "mwiy99f35ajtz",
+   "date": "2026-11-18",
+   "load": 120,
+   "zone": "I3",
+   "sport": "run",
+   "title": "Double Threshold abends: Lauf 10×3 min",
+   "source": "coach",
+   "minutes": 80,
+   "description": "Mindestens 6 h nach der Morgeneinheit. 15 min einlaufen, dann 10×3 min mit 1 min Trabpause bei Puls 160–167, nie über 170. Flach statt bergauf. 10 min auslaufen. Fühlen sich die Beine schwer an, nach 8 Wiederholungen aufhören."
+  }
+ },
+ {
+  "id": "mwiy99f3avfwe",
+  "deleted": false,
+  "updated_at": "2026-11-16T07:36:20.673884+00:00",
+  "data": {
+   "id": "mwiy99f3avfwe",
+   "date": "2026-11-18",
+   "load": 105,
+   "zone": "I3",
+   "sport": "skierg",
+   "title": "Double Threshold morgens: SkiErg 3×20 min (Key Session, gedeckelt)",
+   "source": "coach",
+   "minutes": 100,
+   "description": "20 min einfahren, dann 3×20 min mit 2 min Pause bei 205–212 W und Puls max. 157, RPE ~6. Mit Laktatmessung Ziel 2–3 mmol/l. Bewusst nicht 220 W+, in der letzten Wiederholung nicht steigern. 10–15 min ausfahren."
+  }
+ },
+ {
+  "id": "mwiy99f3bwfqr",
+  "deleted": false,
+  "updated_at": "2026-11-16T07:36:20.674348+00:00",
+  "data": {
+   "id": "mwiy99f3bwfqr",
+   "date": "2026-11-20",
+   "load": 80,
+   "zone": "I1",
+   "sport": "rollerski_skate",
+   "title": "Rollski Skating lang locker (einzige Einheit)",
+   "source": "coach",
+   "minutes": 150,
+   "description": "Puls unter 139. Am Ende 6×10 s Steigerungen mit voller Erholung. Das ist der umfangreiche Tag vor dem Intervalltag, daher keine zweite Einheit."
+  }
+ },
+ {
+  "id": "mwiy99f3cbba3",
+  "deleted": false,
+  "updated_at": "2026-11-16T07:40:04.747923+00:00",
+  "data": {
+   "id": "mwiy99f3cbba3",
+   "date": "2026-11-21",
+   "load": 100,
+   "zone": "I1",
+   "sport": "bike",
+   "title": "Rad locker ausfahren",
+   "source": "coach",
+   "minutes": 120,
+   "description": "Nachmittags, Puls unter 130. Ganz entspannt, keine Steigungen."
+  }
+ },
+ {
+  "id": "mwiy99f3pkctp",
+  "deleted": false,
+  "updated_at": "2026-11-16T07:40:09.546916+00:00",
+  "data": {
+   "id": "mwiy99f3pkctp",
+   "date": "2026-11-19",
+   "load": 50,
+   "zone": "I1",
+   "sport": "bike",
+   "title": "Rad locker",
+   "source": "coach",
+   "minutes": 60,
+   "description": "Puls unter 139, entlastet die Beine vom Laufen. Vormittags fahren, Kraft folgt mit Abstand."
+  }
+ },
+ {
+  "id": "mwiy99f3rxls6",
+  "deleted": false,
+  "updated_at": "2026-11-16T07:40:28.505673+00:00",
+  "data": {
+   "id": "mwiy99f3rxls6",
+   "date": "2026-11-22",
+   "load": 175,
+   "zone": "I1",
+   "sport": "rollerski_classic",
+   "title": "Lange Grundlage Rollski klassisch",
+   "source": "coach",
+   "minutes": 210,
+   "description": "Puls unter 139, viel Doppelstock in wechselnden Abschnitten. 60–90 g Kohlenhydrate pro Stunde üben (Renn-Verpflegung für Gastein/KLL). Bei Müdigkeit auf 180 min kürzen."
+  }
+ },
+ {
+  "id": "mwiy99f3ryrmw",
+  "deleted": false,
+  "updated_at": "2026-11-16T07:36:20.674265+00:00",
+  "data": {
+   "id": "mwiy99f3ryrmw",
+   "date": "2026-11-19",
+   "load": 40,
+   "zone": "Kraft",
+   "sport": "strength",
+   "title": "Kraft A – Beine schwer + Zug",
+   "source": "coach",
+   "minutes": 60,
+   "description": "Aufwärmen 10 min. Kniebeuge 4×4 bei ~80–85 % 1RM, 2 Wdh. in Reserve, explosiv hoch (bei schweren Beinen 3×4). Rumänisches Kreuzheben 3×5 schwer. Klimmzüge mit Zusatzgewicht 4×4. Kabelzug Doppelstock kniend 3×6, explosiv. Box Jumps 3×5. Copenhagen Plank 2×20 s je Seite. Pausen 2–3 min."
+  }
+ },
+ {
+  "id": "mwiy99f3vnis2",
+  "deleted": false,
+  "updated_at": "2026-11-16T07:39:52.67445+00:00",
+  "data": {
+   "id": "mwiy99f3vnis2",
+   "date": "2026-11-22",
+   "load": 41,
+   "zone": "Kraft",
+   "sport": "strength",
+   "title": "Kraft B – Oberkörper/Rumpf (kurz)",
+   "source": "coach",
+   "minutes": 55,
+   "description": "Mindestens 4 h nach der langen Einheit, optional bei guter Tagesform. Kabelzug Doppelstock stehend 4×5, explosiv. Dips oder enges Bankdrücken 3×6 schwer. Klimmzüge 3×5. Face Pulls 2×12. Pallof Press 2×10 je Seite. Langsames schweres Wadenheben 3×8."
   }
  }
 ]
