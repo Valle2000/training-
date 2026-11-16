@@ -107,9 +107,11 @@ function CoachAi() {
   const adopt = (plan) => {
     const items = plan.filter((p) => p.sport !== 'rest' && p.zone !== 'Ruhe').map((p) => ({ id: uid(), date: p.datum, title: p.titel, sport: p.sport, minutes: p.minuten, zone: p.zone, description: p.beschreibung, load: p.belastung, source: 'coach' }));
     const dates = new Set(items.map((i) => i.date));
-    // Offene Coach-Einheiten an denselben Tagen ersetzen, eigene Planungen behalten.
-    update((d) => ({ ...d, plan: [...d.plan.filter((p) => !(p.source === 'coach' && !p.done && dates.has(p.date))), ...items] }));
-    toast(`${items.length} Einheiten in den Kalender übernommen`);
+    // Der neue Plan ersetzt die noch offenen Einheiten an denselben Tagen (auch frühere KI- oder Wizard-Einheiten).
+    // Erledigte Einheiten und Polar-Einträge bleiben erhalten.
+    const replaced = getData().plan.filter((p) => !p.done && p.source !== 'polar' && dates.has(p.date)).length;
+    update((d) => ({ ...d, plan: [...d.plan.filter((p) => !(!p.done && p.source !== 'polar' && dates.has(p.date))), ...items] }));
+    toast(`${items.length} Einheiten übernommen${replaced ? `, ${replaced} vorherige ersetzt` : ''}`);
   };
 
   return (
