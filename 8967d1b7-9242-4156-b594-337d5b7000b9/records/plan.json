@@ -4917,35 +4917,15 @@
  },
  {
   "id": "mwiy99f356f1h",
-  "deleted": false,
-  "updated_at": "2026-11-16T07:40:18.475624+00:00",
-  "data": {
-   "id": "mwiy99f356f1h",
-   "date": "2026-11-17",
-   "load": 96,
-   "zone": "I1",
-   "sport": "rollerski_classic",
-   "title": "Rollski klassisch locker (einzige Einheit)",
-   "source": "coach",
-   "minutes": 115,
-   "description": "Puls unter 139 (I1). Etwa 40 % Doppelstock in ruhigem Tempo, als Technikfokus für Gastein. Flaches bis welliges Gelände."
-  }
+  "deleted": true,
+  "updated_at": "2026-11-18T16:45:17.756108+00:00",
+  "data": null
  },
  {
   "id": "mwiy99f35ajtz",
-  "deleted": false,
-  "updated_at": "2026-11-16T07:40:09.543202+00:00",
-  "data": {
-   "id": "mwiy99f35ajtz",
-   "date": "2026-11-18",
-   "load": 120,
-   "zone": "I3",
-   "sport": "run",
-   "title": "Double Threshold abends: Lauf 10×3 min",
-   "source": "coach",
-   "minutes": 80,
-   "description": "Mindestens 6 h nach der Morgeneinheit. 15 min einlaufen, dann 10×3 min mit 1 min Trabpause bei Puls 160–167, nie über 170. Flach statt bergauf. 10 min auslaufen. Fühlen sich die Beine schwer an, nach 8 Wiederholungen aufhören."
-  }
+  "deleted": true,
+  "updated_at": "2026-11-18T16:45:24.617583+00:00",
+  "data": null
  },
  {
   "id": "mwiy99f3avfwe",

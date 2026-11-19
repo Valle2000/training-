@@ -129,7 +129,7 @@
    "peakHours": "19",
    "winterRunHours": "3"
   },
-  "lastSync": "2026-11-18T10:35:14.894Z",
+  "lastSync": "2026-11-18T16:44:22.940Z",
   "strategy": "Aktuell ca. 15 h Ausdauer pro Woche plus 2 Krafteinheiten (zusammen ca. 2 h). Bald möchte ich Double-Threshold-Tage einbauen und später auch etwas mehr Intensität.",
   "weightKg": "80",
   "ftpSkierg": "224",
@@ -965222,28 +965222,6 @@
    "source": "coach",
    "minutes": 80,
    "description": "Nur wenn die HRV im Normalbereich liegt (≥~150) und der Ruhepuls ≤40 ist. Andernfalls 4×6 min bei Puls 160–167 (I3) oder ganz streichen. 20 min einlaufen, dann 5×5 min Skigang/Sprunglauf bergauf bei Puls 170–177 mit Gehpause bergab (~3 min). Die letzte Wiederholung soll so schnell sein wie die erste, nicht auf Anschlag."
-  },
-  {
-   "id": "mwiy99f356f1h",
-   "date": "2026-11-17",
-   "load": 96,
-   "zone": "I1",
-   "sport": "rollerski_classic",
-   "title": "Rollski klassisch locker (einzige Einheit)",
-   "source": "coach",
-   "minutes": 115,
-   "description": "Puls unter 139 (I1). Etwa 40 % Doppelstock in ruhigem Tempo, als Technikfokus für Gastein. Flaches bis welliges Gelände."
-  },
-  {
-   "id": "mwiy99f35ajtz",
-   "date": "2026-11-18",
-   "load": 120,
-   "zone": "I3",
-   "sport": "run",
-   "title": "Double Threshold abends: Lauf 10×3 min",
-   "source": "coach",
-   "minutes": 80,
-   "description": "Mindestens 6 h nach der Morgeneinheit. 15 min einlaufen, dann 10×3 min mit 1 min Trabpause bei Puls 160–167, nie über 170. Flach statt bergauf. 10 min auslaufen. Fühlen sich die Beine schwer an, nach 8 Wiederholungen aufhören."
   },
   {
    "id": "mwiy99f3avfwe",
