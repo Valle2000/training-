@@ -715,5 +715,20 @@
    "ansCharge": -0.4,
    "sleepScore": 68
   }
+ },
+ {
+  "id": "2026-11-19",
+  "deleted": false,
+  "updated_at": "2026-11-19T21:23:02.531092+00:00",
+  "data": {
+   "hrv": 143,
+   "date": "2026-11-19",
+   "restHr": 42,
+   "sleepH": 6.9,
+   "source": "polar",
+   "recharge": 3,
+   "ansCharge": -2,
+   "sleepScore": 63
+  }
  }
 ]
