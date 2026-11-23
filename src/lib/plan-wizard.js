@@ -61,6 +61,27 @@ export const APPROACHES = [
     phases: { base: [], build: [], specific: [], taper: [], race: ['opener'], recovery: [], transition: [] },
     days: { hard: [] }, sources: ['seiler10'], defaults: ['speed', 'long'],
   },
+  {
+    id: 'run_marathon', name: 'Marathon (Laufen)', evidence: 'Praxis, gestützt auf Studien zur Intensitätsverteilung', runOnly: true,
+    short: 'Ein langer Lauf pro Woche, Marathontempo-Blöcke und ein bis zwei Schwelleneinheiten. Taper über 2–3 Wochen.',
+    detail: 'Der Marathon braucht vor allem Ausdauer und ein gleichmäßiges Tempo über lange Zeit. Harte Einheiten sind wenige, aber gezielt: Schwelle für die Grundlage, Marathontempo für die Renngewöhnung. Das Tempo leitet sich aus deiner Schwellenpace ab (Einstellungen), die Blöcke bewusst nicht schneller laufen als geplant.',
+    phases: { base: ['threshold'], build: ['threshold', 'race'], specific: ['race', 'threshold'], taper: ['race'], race: ['opener'], recovery: [], transition: ['threshold'] },
+    days: { hard: [2, 4] }, sources: ['stoggl14', 'oliveira24', 'raysmith16'], defaults: ['run_tempo4x8', 'run_tempo3x12', 'run_mp3x15', 'run_dauer25', 'speed', 'long'],
+  },
+  {
+    id: 'run_hm', name: 'Halbmarathon (Laufen)', evidence: 'Praxis, gestützt auf Studien zur Intensitätsverteilung', runOnly: true,
+    short: 'Schwelle als Grundlage, Halbmarathontempo kurz vor dem Rennen. Ein langer Lauf pro Woche, Taper über etwa eine Woche.',
+    detail: 'Der Halbmarathon liegt knapp unter der Schwelle. Das Training kombiniert Schwellenblöcke für die Basis mit Tempoblöcken im Renntempo. Das Tempo leitet sich aus deiner Schwellenpace ab.',
+    phases: { base: ['threshold'], build: ['threshold', 'race'], specific: ['race', 'threshold'], taper: ['race'], race: ['opener'], recovery: [], transition: ['threshold'] },
+    days: { hard: [2, 4] }, sources: ['stoggl14', 'oliveira24', 'raysmith16'], defaults: ['run_tempo3x12', 'run_dauer25', 'run_hm3x10', 'run_10k5x4', 'speed', 'long'],
+  },
+  {
+    id: 'run_10k', name: '10-km-Laufen', evidence: 'Praxis, gestützt auf Studien zur Intensitätsverteilung', runOnly: true,
+    short: 'Intervalle nahe der VO2max-Grenze plus Schwellenläufe. Kurzer Taper von etwa einer Woche.',
+    detail: 'Die 10 km werden stark über Intensität entschieden: Intervalle um 4 min im 10-km-Tempo bauen die Laufleistung auf, Schwelle hält die Grundlage. Das Tempo leitet sich aus deiner Schwellenpace ab.',
+    phases: { base: ['threshold'], build: ['hit', 'threshold'], specific: ['hit', 'race'], taper: ['hit', 'opener'], race: ['opener'], recovery: [], transition: ['threshold'] },
+    days: { hard: [2, 5] }, sources: ['stoggl14', 'oliveira24', 'raysmith16'], defaults: ['run_10k5x4', 'run_tempo4x8', 'hit_hill8x4', 'speed', 'long'],
+  },
 ];
 
 // Schlüsseleinheiten aus Wiederholungen, Belastung und Pause (auch für eigene Einheiten im Assistenten).
@@ -359,7 +380,7 @@ export function generatePlan(opts, races = []) {
     const dtOff = (opts.dtRhythm === 'biweekly' && wi % 2 === 1) || (opts.dtRhythm === '3:1' && wi % 4 === 3);
     if (dtOff && Array.isArray(hardSlots)) hardSlots = hardSlots.map((x) => (x === 'dt' ? 'threshold' : x));
     const focus = opts.focusFor ? opts.focusFor(w.from) : null;
-    const fSport = focus === 'run' || focus === 'bike' ? focus : null;
+    const fSport = focus === 'run' || focus === 'bike' ? focus : (ap.runOnly ? 'run' : null);
     // Triathlon: harte Einheiten wechseln zwischen Lauf und Rad (sonst Rollski wie im Standardplan).
     let triFlip = 0;
     const sess = (o, date, i, when) => session(o, date, i, when, focus === 'tri' ? (triFlip++ % 2 ? 'bike' : 'run') : fSport);
@@ -530,7 +551,7 @@ export function generatePlan(opts, races = []) {
       if (min < 30) { if (room(d) < 30) continue; break; }
       const specific = (i / Math.max(1, n)) < share;
       const easySport = focus === 'tri' ? (i % 2 ? 'bike' : 'run') : fSport || focus;
-      const s = { title: focus ? `Locker (${focus === 'tri' ? (i % 2 ? 'Rad' : 'Laufen') : focus === 'run' ? 'Laufen' : 'Rad'})` : 'Locker', sport: specific && !focus ? specificSport(d.date, i + (pr.weak?.includes('classic') ? 1 : 0)) : easySport || (specific ? specificSport(d.date, i) : generalSport(pr, i + rot)), minutes: min, zone: 'I1', description: 'Grundlage I1, wirklich locker', kind: 'easy' };
+      const s = { title: (focus || fSport) ? `Locker (${focus === 'tri' ? (i % 2 ? 'Rad' : 'Laufen') : (focus || fSport) === 'run' ? 'Laufen' : 'Rad'})` : 'Locker', sport: specific && !focus && !fSport ? specificSport(d.date, i + (pr.weak?.includes('classic') ? 1 : 0)) : easySport || (specific ? specificSport(d.date, i) : generalSport(pr, i + rot)), minutes: min, zone: 'I1', description: 'Grundlage I1, wirklich locker', kind: 'easy' };
       // Triathlon-Block: die erste lockere Einheit der Woche als Koppeltraining Rad → Lauf (gewöhnt die Beine an den Wechsel).
       if (focus === 'tri' && i === 0 && ['build', 'specific'].includes(w.phase) && room(d) >= 80) { s.title = 'Koppeln: Rad → Lauf'; s.sport = 'bike'; s.minutes = 80; s.description = 'Rad 60 min locker, direkt danach Lauf 20 min locker. Der Wechsel Rad → Lauf ist im Triathlon der Knackpunkt.'; }
       if (specific && techLeft > 0) { s.title = 'Locker + Technik'; s.description = `Grundlage I1 mit Technikübungen (${pr.weak?.includes('classic') ? 'Klassisch: Abstoß, Gleiten auf einem Ski' : 'Skating: Gewichtsverlagerung, Eins-zu-eins, ohne Stöcke'}), gern Video`; techLeft--; }
