@@ -119,6 +119,10 @@ export const KEY_OPTIONS = [
   K('run_tempo4x8', 'threshold', 4, 8, 2, { sport: 'run', warm: 15, cool: 10, name: 'Laufen Tempo: 4×8 min', note: 'gleichmäßig im Schwellentempo, Puls nicht über die Schwelle' }),
   K('run_tempo3x12', 'threshold', 3, 12, 2, { sport: 'run', warm: 15, cool: 10, name: 'Laufen Tempo: 3×12 min', note: 'untere Schwelle, am Ende noch kontrolliert' }),
   K('run_dauer25', 'threshold', 1, 25, 0, { sport: 'run', warm: 15, cool: 10, name: 'Laufen Dauertempo: 25 min', note: 'gleichmäßig an der Schwelle' }),
+  // Laufen: renn-spezifische Tempoblöcke (Marathon, Halbmarathon, 10 km)
+  K('run_mp3x15', 'race', 3, 15, 3, { sport: 'run', warm: 15, cool: 10, name: 'Marathontempo: 3×15 min', note: 'genau im geplanten Marathontempo, nicht schneller' }),
+  K('run_hm3x10', 'race', 3, 10, 2, { sport: 'run', warm: 15, cool: 10, name: 'Halbmarathontempo: 3×10 min', note: 'Renntempo Halbmarathon, lockere Pause' }),
+  K('run_10k5x4', 'hit', 5, 4, 2, { sport: 'run', zone: 'I4', warm: 15, cool: 10, name: '10-km-Tempo: 5×4 min', note: 'etwas schneller als Halbmarathontempo, volle Pause halten' }),
   // Rad: Schwelle und Sweet Spot (Watt halten, nicht dem Puls hinterherlaufen)
   K('bike_2x20', 'threshold', 2, 20, 5, { sport: 'bike', warm: 20, cool: 15, name: 'Rad Schwelle: 2×20 min', note: 'Watt gleichmäßig halten, untere FTP-Grenze' }),
   K('bike_3x12', 'threshold', 3, 12, 4, { sport: 'bike', warm: 20, cool: 15, name: 'Rad Schwelle: 3×12 min', note: 'etwas über der Schwelle möglich, aber nicht steigern' }),
@@ -182,6 +186,9 @@ const WHY = {
   run_tempo4x8: 'Laufen an der Schwelle: 4×8 min mit kurzer Pause, gut über Wochen vergleichbar (Pace und Puls).',
   run_tempo3x12: 'Längere Schwellenblöcke im Laufen mit etwas mehr Umfang pro Block, wenn die Atmung ruhig bleibt.',
   run_dauer25: 'Ein durchgehender Schwellenblock von 25 min, ideal für gleichmäßiges Tempo ohne Pausen.',
+  run_mp3x15: 'Marathontempo üben: Blöcke, bei denen du das Tempo am Renntag halten kannst, ohne dass der Körper zerfällt.',
+  run_hm3x10: 'Halbmarathontempo als Wettkampfvorbereitung: kurze Blöcke im Renntempo, gut zur Tempokontrolle.',
+  run_10k5x4: '10-km-Tempo: 4-min-Intervalle nahe der VO2max-Grenze der Laufleistung, gut für die Kurzstrecke.',
   bike_2x20: 'Radschwelle mit zwei langen Blöcken: Watt halten, Wirkung auf die aerobe Schwelle ohne hohe Stoßbelastung.',
   bike_3x12: 'Kürzere Radschwellenblöcke, gut dosierbar und nach längeren Pausen als Einstieg.',
   bike_sweet2x15: 'Sweet Spot knapp unter der Schwelle: viel Wirkung bei überschaubarer Erholung.',
