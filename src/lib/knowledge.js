@@ -3,6 +3,10 @@
 // evidence: 'stark' = Metaanalysen/Konsens, 'mittel' = mehrere Studien, 'gering' = beschreibend/Fallstudien/Praxis.
 
 const S = {
+  filipas16: { text: 'Filipas et al. – 16 Wochen, 60 gut trainierte Läufer: pyramidal vs. polarisiert (RCT)', url: 'https://pubmed.ncbi.nlm.nih.gov/34792817/' },
+  rosenblat21: { text: 'Rosenblat et al. 2021, Sports Med – Intervalltraining für Zeitfahrleistung (Systematische Übersicht und Metaanalyse)', url: 'https://pubmed.ncbi.nlm.nih.gov/33826121/' },
+  norte: { text: 'Norte, Steele & Wright – Intervalltraining bei ausdauertrainierten Radfahrern (explorative Übersicht und Metaanalyse)', url: 'https://researchonline.ljmu.ac.uk/24748/' },
+  millet02: { text: 'Millet et al. 2002 – Übertragung von Trainingseffekten bei Elite-Triathleten (40 Wochen, 4 Athleten)', url: 'https://pubmed.ncbi.nlm.nih.gov/11774068/' },
   walther23: { text: 'Walther et al. 2023, Front Physiol – Junioren → Senioren, 17 Weltklasse-Langläufer', url: 'https://pubmed.ncbi.nlm.nih.gov/38054044/' },
   walther25: { text: 'Walther, Kocbach & Sandbakk 2025, Eur J Sport Sci – Day-to-day Periodisierung', url: 'https://pubmed.ncbi.nlm.nih.gov/40400090/' },
   torvik21: { text: 'Torvik, Solli & Sandbakk 2021, Front Physiol – Weltklasse-Langdistanzläufer', url: 'https://www.researchgate.net/publication/349595177_The_Training_Characteristics_of_World-Class_Male_Long-Distance_Cross-Country_Skiers' },
@@ -304,6 +308,36 @@ export const TOPICS = [
     ],
     practice: 'Defizit moderat halten (Ernährungsplan → Ziel: Gewicht abnehmen), Gewicht über Wochen beobachten und Leistungswerte mitschreiben. Stimmt die Leistung nicht mehr, lieber eine Pause vom Defizit einlegen.',
     sources: [S.morton18, S.mountjoy23, S.lea24],
+  },
+  {
+    id: 'run_intensity', cat: 'Laufen', title: 'Laufen: Intensitätsverteilung bei gut trainierten Läufern', evidence: 'mittel',
+    facts: [
+      'In einer Studie mit 60 gut trainierten Läufern über 16 Wochen verbesserten sowohl eine pyramidale als auch eine polarisierte Verteilung die Ausdauerwerte. Umfang und Belastung waren dabei vergleichbar.',
+      'Eine Metaanalyse von 2024 (Oliveira et al.) fand: Polarisiertes Training steigert die maximale Sauerstoffaufnahme (VO2peak) stärker. Bei anderen Leistungsmaßen gab es keinen klaren Unterschied zu anderen Verteilungen.',
+      'Beide Wege funktionieren also. Entscheidend sind Gesamtumfang, Kontinuität und Erholung, weniger das Etikett.',
+    ],
+    practice: 'Bei Laufen als Fokus: ein bis zwei Qualitätseinheiten pro Woche (Schwelle oder kurze Intervalle), der Rest locker. Tempo und Puls gemeinsam nutzen, besonders auf flachen Strecken.',
+    sources: [S.filipas16, S.oliveira24],
+  },
+  {
+    id: 'bike_intervals_2', cat: 'Radsport', title: 'Radfahren: Intervalle und Zeitfahrleistung', evidence: 'mittel',
+    facts: [
+      'Eine Metaanalyse (Rosenblat et al. 2021) zeigt: Mehr Intervallvolumen über die wirksame Mindestmenge hinaus bringt im Zeitfahren nicht automatisch mehr.',
+      'Bei ausdauertrainierten Radfahrern (Norte et al.) gibt es keinen klaren Vorteil einer bestimmten Intervallform, wenn man die Dauer der Belastungsblöcke direkt vergleicht.',
+      'Zu Sweet-Spot-Training (knapp unter der Schwelle) habe ich in dieser Recherche keine passende Metaanalyse gefunden. Hier stützt sich die Praxis eher auf Erfahrung.',
+    ],
+    practice: 'Qualität vor Menge: Zwei gezielte Radeinheiten pro Woche reichen oft. Die Watt konstant halten und den Puls nur als Kontrolle nutzen.',
+    sources: [S.rosenblat21, S.norte],
+  },
+  {
+    id: 'tri_transfer', cat: 'Triathlon', title: 'Triathlon: Wie sich die Disziplinen gegenseitig beeinflussen', evidence: 'gering',
+    facts: [
+      'In einer Studie mit vier Elite-Triathleten über 40 Wochen (Millet et al. 2002) übertrug sich Radtraining auf das Laufen und umgekehrt. Das Schwimmen blieb davon weitgehend getrennt.',
+      'Die Laufbelastung hatte den größten Einfluss auf die Wettkampfleistung. Die Stichprobe ist sehr klein, die Aussage also vorsichtig zu lesen.',
+      'Übersichten betonen, dass Rad-Lauf-Koppeln im Renntempo geübt werden sollte, weil das Laufen nach dem Radfahren oft schwerer fällt.',
+    ],
+    practice: 'Bei Triathlon als Fokus: Laufen ist meist der wichtigste Hebel, Schwimmen eigenständig trainieren, Koppeln Rad → Lauf etwa einmal pro Woche im Renntempo.',
+    sources: [S.millet02],
   },
   // ——— Einzelerklärungen zu allen Werten, die die App zeigt ———
   {
