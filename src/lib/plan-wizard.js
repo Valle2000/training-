@@ -342,9 +342,10 @@ export function generatePlan(opts, races = []) {
   // Wiedereinstieg: höchstens +10 % pro Woche, alle 4 Wochen leichter.
   if (ap.id === 'base') weeks.forEach((w, i) => { w.targetHours = Math.round(Math.min(Number(opts.peakHours) || 14, (Number(opts.startHours) || 8) * 1.1 ** i) * (i % 4 === 3 ? 0.75 : 1) * 10) / 10; });
   const options = allOptions(opts.customKeys);
-  const pickByType = (type, k) => { const list = options.filter((o) => o.type === type && keys.has(o.id)); return list.length ? list[k % list.length] : null; };
+  // Schwerpunkt Laufen/Rad: passende Lauf- bzw. Rad-Einheiten bevorzugen, unabhängig von der Auswahl der Schlüsseleinheiten.
+  const pickByType = (type, k, sport = null) => { const sp = sport ? options.filter((o) => o.type === type && o.sport === sport) : []; const list = sp.length ? sp : options.filter((o) => o.type === type && keys.has(o.id)); return list.length ? list[k % list.length] : null; };
   let rot = 0, buildIdx = 0, rotIdx = 0, prevHours = null;
-  const pickHit = (zone, k) => { const list = options.filter((o) => o.type === 'hit' && o.zone === zone && keys.has(o.id)); return list.length ? list[k % list.length] : null; };
+  const pickHit = (zone, k, sport = null) => { const sp = sport ? options.filter((o) => o.type === 'hit' && o.zone === zone && o.sport === sport) : []; const list = sp.length ? sp : options.filter((o) => o.type === 'hit' && o.zone === zone && keys.has(o.id)); return list.length ? list[k % list.length] : null; };
   return weeks.map((w, wi) => {
     let hardSlots = phasesFor(ap, opts.dtDays)[w.phase] ?? [];
     // Rhythmus Double Threshold: jede Woche, jede zweite Woche oder 3:1 (drei mit, eine ohne).
@@ -431,13 +432,13 @@ export function generatePlan(opts, races = []) {
       hardUsed.add(dow);
       const day = days[dow - 1];
       if (slot === 'dt') {
-        const am = pickByType('dt_am', rot) || pickByType('threshold', rot), pm = pickByType('dt_pm', rot) || pickByType('threshold', rot + 1);
+        const am = pickByType('dt_am', rot, fSport) || pickByType('threshold', rot, fSport), pm = pickByType('dt_pm', rot, fSport) || pickByType('threshold', rot + 1, fSport);
         // Zweimal am Tag: immer, nie, oder nur an Tagen ohne Termin (Uni, Arbeit) – auto.
         const busy = opts.busyFor ? opts.busyFor(day.date) : false;
         const twice = opts.dtDouble === 'always' || (opts.dtDouble !== 'never' && !busy);
         if (!twice && am) {
           // Eine Schwelleneinheit statt zwei: der Tag bleibt frei, die Schwelle bleibt drin.
-          const single = pickByType('threshold', rot) || optionById('thr_6x10');
+          const single = pickByType('threshold', rot, fSport) || optionById('thr_6x10');
           put(day, sess(single, day.date, rot++, ''));
         } else if (am) {
           const x = sess(am, day.date, rot++, 'vormittags');
@@ -460,10 +461,10 @@ export function generatePlan(opts, races = []) {
         const d = race ? days.find((x) => x.date === addDays(race.date, -1)) || day : day;
         put(d, sess(optionById('opener'), d.date, rot++));
       } else if (slot === 'i4' || slot === 'i5') {
-        const o = pickHit(slot.toUpperCase(), rot) || pickHit(slot === 'i5' ? 'I4' : 'I5', rot) || pickByType('hit', rot);
+        const o = pickHit(slot.toUpperCase(), rot, fSport) || pickHit(slot === 'i5' ? 'I4' : 'I5', rot, fSport) || pickByType('hit', rot, fSport);
         if (o) put(day, sess(o, day.date, rot++));
       } else {
-        const o = pickByType(slot, rot) || pickByType(slot === 'race' ? 'hit' : slot === 'hit' ? 'threshold' : 'hit', rot);
+        const o = pickByType(slot, rot, fSport) || pickByType(slot === 'race' ? 'hit' : slot === 'hit' ? 'threshold' : 'hit', rot, fSport);
         if (o) put(day, sess(o, day.date, rot++));
       }
     });

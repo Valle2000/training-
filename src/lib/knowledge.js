@@ -3,6 +3,9 @@
 // evidence: 'stark' = Metaanalysen/Konsens, 'mittel' = mehrere Studien, 'gering' = beschreibend/Fallstudien/Praxis.
 
 const S = {
+  stoggl14: { text: 'Stöggl & Sperlich 2014, Front Physiol – 48 gut trainierte Ausdauersportler, 9 Wochen, vier Verteilungen', url: 'https://pubmed.ncbi.nlm.nih.gov/24550842/' },
+  neal13: { text: 'Neal et al. 2013 – 12 gut trainierte Radfahrer, Crossover polarisiert vs. schwellenbetont', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Neal+2013+polarized+threshold+cyclists' },
+  run24hiit: { text: 'Randomisierte Studie 2024 (J Sports Sci) – HIIT und Krafttraining bei gut trainierten Läufern, 4 Wochen', url: 'https://www.tandfonline.com/doi/full/10.1080/02640414.2024.2364425' },
   filipas16: { text: 'Filipas et al. – 16 Wochen, 60 gut trainierte Läufer: pyramidal vs. polarisiert (RCT)', url: 'https://pubmed.ncbi.nlm.nih.gov/34792817/' },
   rosenblat21: { text: 'Rosenblat et al. 2021, Sports Med – Intervalltraining für Zeitfahrleistung (Systematische Übersicht und Metaanalyse)', url: 'https://pubmed.ncbi.nlm.nih.gov/33826121/' },
   norte: { text: 'Norte, Steele & Wright – Intervalltraining bei ausdauertrainierten Radfahrern (explorative Übersicht und Metaanalyse)', url: 'https://researchonline.ljmu.ac.uk/24748/' },
@@ -315,9 +318,10 @@ export const TOPICS = [
       'In einer Studie mit 60 gut trainierten Läufern über 16 Wochen verbesserten sowohl eine pyramidale als auch eine polarisierte Verteilung die Ausdauerwerte. Umfang und Belastung waren dabei vergleichbar.',
       'Eine Metaanalyse von 2024 (Oliveira et al.) fand: Polarisiertes Training steigert die maximale Sauerstoffaufnahme (VO2peak) stärker. Bei anderen Leistungsmaßen gab es keinen klaren Unterschied zu anderen Verteilungen.',
       'Beide Wege funktionieren also. Entscheidend sind Gesamtumfang, Kontinuität und Erholung, weniger das Etikett.',
+      'Eine randomisierte Studie von 2024 mit gut trainierten Läufern (4 Wochen) fand, dass HIIT die 1500-m-Zeit stärker verbesserte. Das ist kurz und ohne Schwellenvergleich, also eher ein Hinweis als ein Beweis.',
     ],
     practice: 'Bei Laufen als Fokus: ein bis zwei Qualitätseinheiten pro Woche (Schwelle oder kurze Intervalle), der Rest locker. Tempo und Puls gemeinsam nutzen, besonders auf flachen Strecken.',
-    sources: [S.filipas16, S.oliveira24],
+    sources: [S.filipas16, S.oliveira24, S.run24hiit],
   },
   {
     id: 'bike_intervals_2', cat: 'Radsport', title: 'Radfahren: Intervalle und Zeitfahrleistung', evidence: 'mittel',
@@ -325,9 +329,11 @@ export const TOPICS = [
       'Eine Metaanalyse (Rosenblat et al. 2021) zeigt: Mehr Intervallvolumen über die wirksame Mindestmenge hinaus bringt im Zeitfahren nicht automatisch mehr.',
       'Bei ausdauertrainierten Radfahrern (Norte et al.) gibt es keinen klaren Vorteil einer bestimmten Intervallform, wenn man die Dauer der Belastungsblöcke direkt vergleicht.',
       'Zu Sweet-Spot-Training (knapp unter der Schwelle) habe ich in dieser Recherche keine passende Metaanalyse gefunden. Hier stützt sich die Praxis eher auf Erfahrung.',
+      'Zwölf gut trainierte Radfahrer verbesserten in einem Crossover-Vergleich (Neal et al. 2013) ihre Spitzenleistung (+8 % vs. +3 %) und ihre Laktatschwelle (+9 % vs. +2 %) stärker mit einem polarisierten Block als mit einem schwellenbetonten, trotz geringerem Gesamtumfang.',
+      'Stöggl & Sperlich (2014) fanden bei 48 gut trainierten Ausdauersportlern in neun Wochen ebenfalls die größten Gewinne bei polarisiertem Training. Die Studie umfasst nicht nur Radfahrer.',
     ],
     practice: 'Qualität vor Menge: Zwei gezielte Radeinheiten pro Woche reichen oft. Die Watt konstant halten und den Puls nur als Kontrolle nutzen.',
-    sources: [S.rosenblat21, S.norte],
+    sources: [S.rosenblat21, S.norte, S.neal13, S.stoggl14],
   },
   {
     id: 'tri_transfer', cat: 'Triathlon', title: 'Triathlon: Wie sich die Disziplinen gegenseitig beeinflussen', evidence: 'gering',
