@@ -310,6 +310,26 @@ export function focusOn(date, list = [], snow = [], winterSub = 'run') {
   if (noSnowOn(date, snow) && (winterSub === 'run' || winterSub === 'bike')) return winterSub;
   return null;
 }
+// Vorschlag für einen Schwerpunkt-Zeitraum vor Lauf- oder Radrennen: je wichtiger das Rennen, desto länger davor.
+// Ski bleibt Hauptziel: der Zeitraum beginnt nach einem vorher liegenden Ski-A/B-Rennen. Überschneidungen mit
+// bestehenden Zeiträumen werden nicht vorgeschlagen.
+export const FOCUS_WEEKS = { A: 8, B: 4 };
+const SKI_TECH = ['Skating', 'Klassisch', 'Skiathlon', 'Rollski'];
+export function focusSuggestions(races = [], focus = []) {
+  const out = [];
+  for (const r of races) {
+    const sport = r.technique === 'Lauf' ? 'run' : r.technique === 'Rad' ? 'bike' : null;
+    const weeks = FOCUS_WEEKS[r.priority];
+    if (!sport || !weeks || !r.date) continue;
+    let from = addDays(r.date, -7 * weeks);
+    for (const s of races) if (SKI_TECH.includes(s.technique) && (s.priority === 'A' || s.priority === 'B') && s.date < r.date && s.date >= from) from = addDays(s.date, 1);
+    if (from > addDays(r.date, -14)) continue; // weniger als zwei Wochen Vorlauf: kein Vorschlag
+    if (focus.some((f) => f.from <= r.date && f.to >= from)) continue; // überschneidet sich mit einem bestehenden Zeitraum
+    out.push({ id: `sugg-${r.id}`, sport, label: `${sport === 'run' ? 'Laufen' : 'Rad'} vor ${r.name?.trim() || 'Rennen'}`, from, to: r.date, race: r.name?.trim() || '', priority: r.priority });
+  }
+  return out;
+}
+
 // Sportart einer Rennzeile im Kalender.
 export const raceSport = (technique, date) => (technique === 'Rad' ? 'bike' : technique === 'Lauf' || technique === 'Triathlon' ? 'run' : technique === 'Rollski' ? 'rollerski_skate' : winter(date) ? 'xc_skate' : 'rollerski_skate');
 

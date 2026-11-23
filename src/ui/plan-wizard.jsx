@@ -5,7 +5,7 @@ import { today, weeks as weekStats } from '../lib/activities.js';
 import { addDays } from '../lib/metrics.js';
 import { sportLabel, SPORTS } from '../lib/sports.js';
 import { PHASES, PRIORITY_INFO, raceAdvice } from '../lib/season.js';
-import { FOCUS_OPTIONS, focusOn, noSnowOn, APPROACHES, KEY_TYPES, allOptions, makeKey, PLAN_SOURCES, GOALS, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend, hardDayCount, suggestHardDays, checkHardDays } from '../lib/plan-wizard.js';
+import { focusSuggestions, FOCUS_OPTIONS, focusOn, noSnowOn, APPROACHES, KEY_TYPES, allOptions, makeKey, PLAN_SOURCES, GOALS, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend, hardDayCount, suggestHardDays, checkHardDays } from '../lib/plan-wizard.js';
 import { Sheet, fmtDate, fmtNum, toast } from './common.jsx';
 import { freeMinutes, hasSchedule, periodForWeek, busyOn } from '../lib/week-adapt.js';
 
@@ -292,7 +292,7 @@ function WizardRaces({ t }) {
         </div>
       ))}
       {!up.length && <p className="muted small">Noch keine Rennen eingetragen.</p>}
-      <FocusBlocks t={t} focus={settings.season?.focus || []} snow={settings.season?.snow || []} winterSub={settings.season?.winterSub || 'run'} settings={settings} />
+      <FocusBlocks t={t} focus={settings.season?.focus || []} suggestions={focusSuggestions(up, settings.season?.focus || [])} snow={settings.season?.snow || []} winterSub={settings.season?.winterSub || 'run'} settings={settings} />
       {advice.map((a) => <div key={a.text} className="notice" style={a.level === 'gelb' ? { background: 'var(--warnbg)', color: 'var(--warn)' } : undefined}>{a.text}</div>)}
       <div className="card">
         <b className="small">Rennen hinzufügen</b>
@@ -373,12 +373,13 @@ const FOCUS_WHY = {
   tri: 'Triathlon: Ausdauer aus Rad und Lauf, dazu Koppeltraining (Rad direkt gefolgt von Lauf) in der Vorbereitung. Im Wettkampf zählt der Wechsel Rad → Lauf.',
 };
 // Schwerpunkt-Zeiträume: Im Sommer Laufen, Rad oder Triathlon statt Rollski/Ski.
-function FocusBlocks({ t, focus, snow, winterSub, settings }) {
+function FocusBlocks({ t, focus, suggestions = [], snow, winterSub, settings }) {
   const year = t.slice(0, 4);
   const set = (list) => update((d) => ({ ...d, settings: { ...d.settings, season: { ...(d.settings.season || {}), focus: list } } }));
   const setSnow = (list) => update((d) => ({ ...d, settings: { ...d.settings, season: { ...(d.settings.season || {}), snow: list } } }));
   const setSub = (v) => update((d) => ({ ...d, settings: { ...d.settings, season: { ...(d.settings.season || {}), winterSub: v } } }));
   const mainSport = settings.season?.mainSport || 'rollerski';
+  const acceptSuggestion = (s) => set([...focus, { id: uid(), sport: s.sport, label: s.label, from: s.from, to: s.to }]);
   const setMain = (v) => update((d) => ({ ...d, settings: { ...d.settings, season: { ...(d.settings.season || {}), mainSport: v } } }));
   return (
     <div className="card">
@@ -389,6 +390,10 @@ function FocusBlocks({ t, focus, snow, winterSub, settings }) {
       <p className="muted small">Du machst mehrere Sportarten? Lege Zeiträume fest, in denen der Plan auf eine andere Sportart setzt – z. B. im Sommer Laufen oder Rad. Außerhalb davon bleibt es beim Rollski/Ski-Plan.</p>
       <div className="chips">{FOCUS_PRESETS.map((p) => <button key={p.label} className="chip" onClick={() => set([...focus, { id: uid(), sport: p.sport, label: p.label, from: `${year}-${p.from}`, to: `${year}-${p.to}` }])}><Plus size={13} /> {p.label}</button>)}</div>
       {focus.some((f, i) => focus.slice(i + 1).some((g) => f.from <= g.to && g.from <= f.to)) && <div className="notice" style={{ background: 'var(--warnbg)', color: 'var(--warn)' }}>Zwei Zeiträume überschneiden sich – im Plan gilt der oben stehende.</div>}
+      {suggestions.length > 0 && <div className="notice" style={{ marginTop: 8 }}><b>Vorschlag für Schwerpunkte</b>
+        <p className="small" style={{ margin: '4px 0' }}>Je wichtiger das Rennen, desto länger davor mehr Fokus. Ski bleibt Hauptziel, deshalb beginnt der Zeitraum nach einem vorherigen Ski-Rennen.</p>
+        {suggestions.map((x) => <div key={x.id} className="row" style={{ gap: 6, alignItems: 'center', flexWrap: 'wrap', marginTop: 4 }}><span className="small grow">{x.label}: {fmtDate(x.from)} – {fmtDate(x.to)} (Priorität {x.priority})</span><button className="secondary" onClick={() => acceptSuggestion(x)}><Plus size={14} /> Übernehmen</button></div>)}
+      </div>}
       <b className="small" style={{ display: 'block', marginTop: 12 }}>Schneelage</b>
       <label>Laufen im Winter: mindestens Stunden pro Woche (Dezember bis März)</label>
       <div className="row" style={{ flexWrap: 'nowrap', alignItems: 'center' }}>
