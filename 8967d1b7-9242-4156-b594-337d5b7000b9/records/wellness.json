@@ -730,5 +730,65 @@
    "ansCharge": -2,
    "sleepScore": 63
   }
+ },
+ {
+  "id": "2026-11-20",
+  "deleted": false,
+  "updated_at": "2026-11-22T17:07:16.672376+00:00",
+  "data": {
+   "hrv": 134,
+   "date": "2026-11-20",
+   "restHr": 38,
+   "sleepH": 7,
+   "source": "polar",
+   "recharge": 5,
+   "ansCharge": 1.4,
+   "sleepScore": 75
+  }
+ },
+ {
+  "id": "2026-11-21",
+  "deleted": false,
+  "updated_at": "2026-11-22T17:07:16.67598+00:00",
+  "data": {
+   "hrv": 144,
+   "date": "2026-11-21",
+   "restHr": 40,
+   "sleepH": 6.7,
+   "source": "polar",
+   "recharge": 3,
+   "ansCharge": -0.2,
+   "sleepScore": 66
+  }
+ },
+ {
+  "id": "2026-11-22",
+  "deleted": false,
+  "updated_at": "2026-11-22T17:07:16.676119+00:00",
+  "data": {
+   "hrv": 130,
+   "date": "2026-11-22",
+   "restHr": 37,
+   "sleepH": 6.8,
+   "source": "polar",
+   "recharge": 4,
+   "ansCharge": 4.4,
+   "sleepScore": 64
+  }
+ },
+ {
+  "id": "2026-11-23",
+  "deleted": false,
+  "updated_at": "2026-11-23T08:03:27.153032+00:00",
+  "data": {
+   "hrv": 152,
+   "date": "2026-11-23",
+   "restHr": 36,
+   "sleepH": 6,
+   "source": "polar",
+   "recharge": 5,
+   "ansCharge": 9,
+   "sleepScore": 68
+  }
  }
 ]

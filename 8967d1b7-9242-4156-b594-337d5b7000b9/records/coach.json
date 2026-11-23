@@ -1415,5 +1415,208 @@
    },
    "question": "Wie Schötz du meine Schwelle beim SkiErg und wie sollte ich pacen bzw welcher pulsbereich passh der Wert mit 224 Schwelle we eine Schätzung und nicht bestimmt schaue key Sessions an und sage dann wie ich die SkiErg Sessions in Zukunft am besten pace "
   }
+ },
+ {
+  "id": "mwszhlfof527o",
+  "deleted": false,
+  "updated_at": "2026-11-23T08:08:31.32063+00:00",
+  "data": {
+   "id": "mwszhlfof527o",
+   "key": "o8auy9",
+   "date": "2026-11-23",
+   "result": {
+    "model": "claude-opus-5-5",
+    "usage": {
+     "input": 4,
+     "output": 11865,
+     "cacheRead": 0,
+     "cacheWrite": 35757
+    },
+    "analyse": [
+     {
+      "text": "Rollski Skating 111 min mit Ø 142 (inklusive Ein- und Auslaufen), 41 min I4 (168–178 bpm) und 17 min I3. Für 1 h Renntempo ist das passend: Ein 1-h-Rennen liegt rund um die Laktatschwelle (bei dir ~170 bpm). 180+ bpm treten eher bei Belastungen von 5–15 min auf. Optische Messung am Handgelenk ist beim Rollski mit Stockeinsatz, Vibration und Kälte unzuverlässig und liefert eher zu niedrige oder verzögerte Werte. Fazit: Datenlage unsicher, kein klares Warnsignal. Dass die Beine hinten raus nicht 'tief gehen' konnten, kann an peripherer Ermüdung oder leeren Kohlenhydratspeichern liegen. Ein Puls, der trotz hoher Anstrengung niedrig bleibt, ist aber auch ein bekanntes Zeichen für Ermüdung. Das solltest du in den nächsten harten Einheiten mit Brustgurt beobachten.",
+      "titel": "Race Pace 22.11. und 'Puls geht nicht hoch'",
+      "bewertung": "info"
+     },
+     {
+      "text": "213 W bei 158 bpm (31.10.) → 227 W/153 (07.11.) → 213 W/149 (18.11.). Die Watt stagnieren seit dem 07.11., der Puls bei gleicher Leistung ist um ~9 Schläge gefallen. Das kann bessere Fitness bedeuten oder gedämpften Puls durch Ermüdung. Unterscheiden lässt es sich über die Anstrengung: Bei niedrigem Puls und normaler RPE ist es Fortschritt, bei niedrigem Puls und hoher RPE Ermüdung. Hinweis: Die Einheit am 18.11. war mit 86 min kürzer und ganz ohne I3-Zeit. Beim SkiErg liegt der Puls wegen des Oberkörper-Fokus generell niedriger, steuere hier nach Watt (FTP 224 W).",
+      "titel": "Key Session SkiErg 3×20 min",
+      "bewertung": "achtung"
+     },
+     {
+      "text": "Letzte 3 Wochen (51 h): 79 % I1, 12 % I2, 5,5 % I3, 3,7 % I4, 0 % I5. Locker zusammen ~91 %, also pyramidal und ziemlich genau Weltklasse-Muster (Walther et al. 2023). Lange lockere Einheiten liegen sauber in I1 (z. B. Rollski klassisch 207 min Ø 111).",
+      "titel": "Intensitätsverteilung",
+      "bewertung": "gut"
+     },
+     {
+      "text": "Am 03., 07., 11. und 14.11. hattest du jeweils SkiErg 3×20 plus einen zweiten Lauf mit 13–20 min I4. Das sind bereits Doppel-Schlüsseltage. Der Haken: Die Abendläufe gingen in I4 (über 168 bpm), also über die Schwelle hinaus. Echtes Double Threshold heißt beide Einheiten kontrolliert bei ~2–3,5 mmol/l, bei dir etwa 158–167 bpm. Evidenz: überwiegend Praxisberichte und kleine Studien, keine kontrollierten Langzeitstudien.",
+      "titel": "Double Threshold – machst du schon",
+      "bewertung": "achtung"
+     },
+     {
+      "text": "Schnupfen 12.–25.10., dann 7,1 → 10,9 → 20,2 h (Belastung 427 → 882, +106 %). Das ist ein großer Sprung. Solche Schwankungen gehen mit mehr Infekten einher (Svendsen et al. 2016). Danach 17,7 und 13,1 h. Aktuell liegen Fitness 80 und Ermüdung 87 bei Form −18,9: normal für einen Aufbau, aber nicht frisch. Belastbarkeitsverhältnis 1,3: noch ok.",
+      "titel": "Umfang nach Infekt / Belastungssprung",
+      "bewertung": "achtung"
+     },
+     {
+      "text": "Heute HRV 152 und Ruhepuls 36, beides im guten Bereich. Den HRV-Tiefpunkt (116) am 17.11. hast du aufgeholt. Schlaf liegt aber fast jede Nacht bei 6,0–7,0 h (Schnitt ~6,8 h, heute 6,0 h) bei Schlafscore 60–75. Bei 15–20 h Training ist das zu wenig und wahrscheinlich ein Hauptgrund, warum du hinten raus nicht 'tief' gehen kannst. Ziel: 7,5–8,5 h.",
+      "titel": "Erholung",
+      "bewertung": "achtung"
+     },
+     {
+      "text": "In den letzten 3 Wochen gab es nur 2 klassische Rollski-Einheiten (08. und 13.11.), seit dem 13.11. keine mehr. Dafür viel Laufen und Skating. Für ein klassisches Rennen in 4 Wochen brauchst du mehr Klassisch und Doppelstock, sobald Schnee da ist auch auf Ski.",
+      "titel": "Spezifität für Gastein (19.12., klassisch 30 km)",
+      "bewertung": "achtung"
+     },
+     {
+      "text": "Laut Strategie 2 Krafteinheiten pro Woche, tatsächlich in den letzten beiden Wochen nur je 1. Bis Gastein sind 2 sinnvoll, ab den Rennen 1 zum Erhalt. Unstimmigkeit im Saisonplan: Ziel für die Woche ab 30.11. sind 12,2 h, die geplanten Einheiten 01.–06.12. ergeben aber ~19 h. Bitte angleichen. Vorschlag: ~15–16 h, danach ab ~12.12. Umfang reduzieren für Gastein.",
+      "titel": "Kraft und Saisonplan",
+      "bewertung": "info"
+     }
+    ],
+    "costUsd": 0.4161,
+    "quellen": [
+     "Walther et al. 2023, Front Physiol – Intensitätsverteilung Junioren → Senioren",
+     "Seiler & Kjerland 2006; Sandbakk & Holmberg 2017 – Intensitätsverteilung im Langlauf",
+     "Walther, Kocbach & Sandbakk 2025, Eur J Sport Sci – Day-to-day-Periodisierung",
+     "Sandbakk et al. 2025, Sports Med Open – norwegische Weltklasse-Trainer",
+     "Casado et al. 2023 – Das norwegische Modell / Double Threshold (Review)",
+     "Rønnestad & Mujika 2014; Losnegard et al. 2011; Østerås et al. 2002 – Krafttraining und Ökonomie",
+     "Svendsen et al. 2016, Br J Sports Med – Belastungsschwankungen und Infekte",
+     "Plews et al. 2013; Granero-Gallegos et al. 2020 – HRV-gesteuertes Training",
+     "Meeusen et al. 2013 – Konsens Übertraining",
+     "Walsh et al. 2021, Br J Sports Med – Schlaf und Athleten",
+     "Mountjoy et al. 2023, IOC-Konsens REDs; Bushmanova et al. 2024",
+     "Bosquet et al. 2007 – Tapering-Metaanalyse"
+    ],
+    "warnungen": [
+     "Handgelenkspuls nicht zur Zonensteuerung von Intervallen nutzen, besonders nicht auf Rollski. Für die Schlüsseleinheiten den Brustgurt reparieren oder ersetzen.",
+     "Bekommst du in den nächsten beiden harten Einheiten trotz hoher Anstrengung den Puls wieder nicht über ~165 und fühlen sich die Beine schwer an? Dann eine Woche nur locker trainieren, mehr schlafen und mehr Kohlenhydrate essen. Bleibt es so, ärztlich abklären lassen (Blutbild, Ferritin).",
+     "Schlaf liegt dauerhaft unter 7 h. Das ist der größte offene Erholungshebel.",
+     "Bei 80 kg und 15–20 h pro Woche ist ein hoher Energiebedarf typisch. Rund um harte Tage und lange Einheiten genug Kohlenhydrate essen (lange Einheiten 60–90 g/h), Energiemangel (REDs) vermeiden."
+    ],
+    "wochenplan": [
+     {
+      "zone": "Ruhe",
+      "datum": "2026-11-23",
+      "sport": "rest",
+      "titel": "Ruhetag",
+      "minuten": 0,
+      "belastung": 0,
+      "beschreibung": "Ruhe nach dem Race-Pace-Sonntag. Optional 15–20 min Mobility. Früh schlafen, letzte Nacht waren es nur 6,0 h."
+     },
+     {
+      "zone": "I1",
+      "datum": "2026-11-24",
+      "sport": "run",
+      "titel": "Lauf locker",
+      "minuten": 60,
+      "belastung": 38,
+      "beschreibung": "Ganz locker unter 139 bpm (72 % HFmax), flach."
+     },
+     {
+      "zone": "I1",
+      "datum": "2026-11-24",
+      "sport": "rollerski_classic",
+      "titel": "Rollski klassisch Grundlage",
+      "minuten": 120,
+      "belastung": 65,
+      "beschreibung": "Spezifisch für Gastein: I1, rund 40 % Doppelstock, Rest Diagonal. Bei Schnee auf Ski. Langer Tag vor dem Double-Threshold-Tag."
+     },
+     {
+      "zone": "I3",
+      "datum": "2026-11-25",
+      "sport": "skierg",
+      "titel": "Double Threshold morgens: SkiErg 3×20 min (Key Session)",
+      "minuten": 100,
+      "belastung": 125,
+      "beschreibung": "20 min Einfahren, dann 3×20 min bei festen 210–215 W, 3 min Pause. Nicht auf Anschlag, RPE 6–7. Puls (Brustgurt) und RPE notieren: Niedriger Puls bei normaler RPE spricht für Fitness, bei hoher RPE für Ermüdung."
+     },
+     {
+      "zone": "I3",
+      "datum": "2026-11-25",
+      "sport": "run",
+      "titel": "Double Threshold abends: 8×4 min Lauf leicht bergauf",
+      "minuten": 65,
+      "belastung": 80,
+      "beschreibung": "Mindestens 6 h Abstand zum Morgen. 20 min Einlaufen, 8×4 min bei 158–167 bpm (I3, ~2–3 mmol/l), 1 min Trabpause. Ausdrücklich nicht in I4 laufen. Liegst du nach den ersten 2 Intervallen über 168 bpm, Tempo rausnehmen."
+     },
+     {
+      "zone": "I1",
+      "datum": "2026-11-26",
+      "sport": "run",
+      "titel": "Lauf locker",
+      "minuten": 60,
+      "belastung": 38,
+      "beschreibung": "Regenerativ unter 139 bpm, vor der Krafteinheit."
+     },
+     {
+      "zone": "Kraft",
+      "datum": "2026-11-26",
+      "sport": "strength",
+      "titel": "Kraft A – Beine schwer + Zug",
+      "minuten": 60,
+      "belastung": 40,
+      "beschreibung": "Aufwärmen 10 min. Kniebeuge 4×4 @ ~85 % 1RM, konzentrisch explosiv. Rumänisches Kreuzheben 3×5 @ ~80 %. Klimmzug mit Zusatzgewicht 4×4. Kabel-Doppelstockzug kniend 3×6, schwer und explosiv. Box Jumps 4×3. Copenhagen Plank 2×20 s je Seite. Pausen 2–3 min, keine Wiederholungen bis zum Versagen."
+     },
+     {
+      "zone": "I1",
+      "datum": "2026-11-27",
+      "sport": "rollerski_skate",
+      "titel": "Rollski Skating locker + Sprints",
+      "minuten": 120,
+      "belastung": 70,
+      "beschreibung": "I1 unter 139 bpm. In der zweiten Hälfte 6×15 s Sprint bei voller Geschwindigkeit, 2–3 min Pause, technisch sauber."
+     },
+     {
+      "zone": "I1",
+      "datum": "2026-11-27",
+      "sport": "run",
+      "titel": "Lauf locker",
+      "minuten": 45,
+      "belastung": 28,
+      "beschreibung": "Ganz locker."
+     },
+     {
+      "zone": "I4",
+      "datum": "2026-11-28",
+      "sport": "run",
+      "titel": "Bergintervalle Skigang 6×5 min",
+      "minuten": 80,
+      "belastung": 95,
+      "beschreibung": "Skigang/Sprunglauf mit Stöcken bergauf. 20 min Einlaufen, 6×5 min bei 168–176 bpm (I4, Brustgurt), 3 min locker bergab. Test: Kommt der Puls trotz voller Anstrengung nicht über ~165 und sind die Beine schwer, nach 4 Wiederholungen abbrechen und die Folgewoche nur locker trainieren."
+     },
+     {
+      "zone": "I1",
+      "datum": "2026-11-28",
+      "sport": "bike",
+      "titel": "Rad locker",
+      "minuten": 60,
+      "belastung": 35,
+      "beschreibung": "Ausfahren in I1 ohne Stoßbelastung."
+     },
+     {
+      "zone": "I1",
+      "datum": "2026-11-29",
+      "sport": "rollerski_classic",
+      "titel": "Lange Grundlage Rollski klassisch",
+      "minuten": 180,
+      "belastung": 95,
+      "beschreibung": "I1, wellige Strecke, viel Doppelstock. Renn-Verpflegung üben: 60–90 g Kohlenhydrate pro Stunde (Glukose-Fruktose). Bei Schnee auf Ski."
+     },
+     {
+      "zone": "Kraft",
+      "datum": "2026-11-29",
+      "sport": "strength",
+      "titel": "Kraft B – Oberkörper/Rumpf kurz",
+      "minuten": 40,
+      "belastung": 25,
+      "beschreibung": "Nach der langen Einheit, moderat. Bankziehen 3×5 schwer. Dips 3×5. Kabel-Doppelstockzug 3×6 explosiv. Pallof Press 3×8 je Seite. Wadenheben exzentrisch 3×10. Keine Übung bis zum Versagen."
+     }
+    ],
+    "zusammenfassung": "Die Race-Pace-Einheit am 22.11. war nach den Daten kein Misserfolg. Trotz Handgelenksmessung stehen 41 min in I4 und 17 min in I3, und bei 1 h Renntempo liegt der Puls ohnehin nur knapp über deiner Schwelle (170). Einen Puls nahe dem Maximum kannst du dabei nicht erwarten. Zwei Dinge sprechen trotzdem für etwas Restermüdung: die Form von −18,9 und dauerhaft knapper Schlaf unter 7 h. Der Pulssprung von 10,9 auf 20,2 h nach dem Infekt hat zusätzlich Spuren hinterlassen. Double Threshold machst du praktisch schon. Die Abendeinheit sollte aber kontrollierter sein, und für Gastein (19.12., klassisch) fehlt klassisches Training."
+   },
+   "question": "Diese Woche war wie geplant Ski weg bewusst etwas niedriger aber dann sollte ich 1h race pace machen mein Pulsgurt hat auch nicht funktioniert und ich habe nur mit hbadgemenksmessubg gemacht aber ich bin gefühlt nicht in die totale Ausbesserung gekommen ich konnte mein Puls nicht richtig hochtreiben also ähnliches Problem wie bei dem Berglauf die Woche war eigentlich etwas reduzierter aber ich war Sonntag dann von Gefühl schon einigermaßen fit und hat sich u h ok angefühlt aber gerade hintenraus konnte ich nicht richtig tief gehen "
+  }
  }
 ]
