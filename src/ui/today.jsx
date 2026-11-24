@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { RefreshCw, Plus, HeartPulse, Moon, Lightbulb } from 'lucide-react';
-import { useData } from '../lib/store.js';
+import { RefreshCw, Plus, Moon, Lightbulb } from 'lucide-react';
+import { useData, update } from '../lib/store.js';
+import { BIKE_SWAP, swapPlanItem } from '../lib/weather-swap.js';
 import { curve, today, weeks } from '../lib/activities.js';
 import { planTargets } from '../lib/targets.js';
 import { addDays } from '../lib/metrics.js';
@@ -15,6 +16,16 @@ import { ReadinessCard, MorningSheet, RecoveryCard } from './morning.jsx';
 import { RaceCountdown } from './season.jsx';
 import { HealthBanner } from './more.jsx';
 import { AdaptCard, ThresholdCard, WeekReviewCard } from './week.jsx';
+
+// Kleiner Verlauf ohne Achsen für das Cockpit.
+function Spark({ values, color = 'currentColor', width = 110, height = 28 }) {
+  const v = values.filter((x) => x != null && !isNaN(x));
+  if (v.length < 2) return null;
+  const lo = Math.min(...v), hi = Math.max(...v), span = hi - lo || 1;
+  const pts = values.map((x, i) => (x == null ? null : [(i / (values.length - 1)) * width, height - 2 - ((x - lo) / span) * (height - 4)])).filter(Boolean);
+  return <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ display: 'block' }}><polyline points={pts.map((p) => p.join(',')).join(' ')} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" /></svg>;
+}
+const avg = (a) => { const v = a.filter((x) => x != null); return v.length ? v.reduce((x, y) => x + y, 0) / v.length : null; };
 
 export function Today({ go, openActivity, openAdd }) {
   const data = useData();
@@ -37,6 +48,16 @@ export function Today({ go, openActivity, openAdd }) {
   const lastW = wellness.at(-1);
   const tip = useMemo(() => tipsFor(data, t)[0], [data, t]);
   const connected = Object.keys(data.connections).length > 0;
+  // Cockpit: HRV-Wochenschnitt gegen die Vorwoche, letzte Nacht, Form der letzten 4 Wochen.
+  const wIn = (from, to) => wellness.filter((x) => x.date > addDays(t, -from) && x.date <= addDays(t, -to));
+  const hrv7 = avg(wIn(7, 0).map((x) => x.hrv ?? null)), hrvPrev = avg(wIn(14, 7).map((x) => x.hrv ?? null));
+  const trend = hrv7 && hrvPrev ? (hrv7 > hrvPrev * 1.03 ? '↗' : hrv7 < hrvPrev * 0.97 ? '↘' : '→') : '';
+  const formSpark = days.filter((d) => d.day > addDays(t, -28) && d.day <= t).map((d) => d.form);
+  const [swapFor, setSwapFor] = useState(null);
+  const changePlan = (p, patch) => update((d) => ({ ...d, plan: d.plan.map((x) => (x.id === p.id ? { ...x, ...patch } : x)) }));
+  const markDone = (p) => { changePlan(p, { done: true }); toast('Als erledigt markiert'); };
+  const toTomorrow = (p) => { changePlan(p, { date: addDays(p.date, 1) }); toast('Auf morgen verschoben'); };
+  const swap = (p, to) => { const n = swapPlanItem(p, to); changePlan(p, n); setSwapFor(null); toast(`Getauscht: ${sportLabel(to)}, ${n.minutes} min`); };
 
   const sync = async () => {
     setBusy(true);
@@ -56,6 +77,12 @@ export function Today({ go, openActivity, openAdd }) {
           <div className="fat"><b>{fmtNum(now?.fatigue)}</b><span>Ermüdung</span></div>
           <div className="form"><b>{fmtNum(now?.form)}</b><span>Form</span></div>
         </div>
+        {(hrv7 || lastW?.sleepH || formSpark.length > 1) && <div className="row" style={{ gap: 14, alignItems: 'center', flexWrap: 'wrap', margin: '2px 0 8px', fontSize: 13 }}>
+          {hrv7 && <span style={{ flex: 'none' }}>HRV 7 T <b>{Math.round(hrv7)} ms</b> {trend}</span>}
+          {lastW?.restHr && <span style={{ flex: 'none' }}>Ruhepuls <b>{lastW.restHr}</b></span>}
+          {lastW?.sleepH && <span style={{ flex: 'none' }}><Moon size={13} /> <b>{fmtNum(lastW.sleepH, 1)} h</b></span>}
+          {formSpark.length > 1 && <span className="row" style={{ gap: 6, alignItems: 'center', flexWrap: 'nowrap', flex: 'none' }}><span className="small" style={{ flex: 'none' }}>Form 4 W</span><Spark values={formSpark} color="var(--form)" /></span>}
+        </div>}
         <ReadinessCard date={t} form={now?.form ?? null} onCheck={() => { setCheckDay(t); setChecking(true); }} />
         <details style={{ margin: '4px 0 8px' }}>
           <summary className="small" style={{ cursor: 'pointer' }}>Morgen-Check für einen anderen Tag</summary>
@@ -68,19 +95,19 @@ export function Today({ go, openActivity, openAdd }) {
       </div>
 
       <HealthBanner go={go} />
-      <RaceCountdown go={go} />
-      <AdaptCard />
-      <WeekReviewCard />
-      <div className="row">
-        {connected && <button className="secondary" onClick={sync} disabled={busy}><RefreshCw size={17} className={busy ? 'spin' : ''} />Abgleichen</button>}
-        <button className="primary" onClick={openAdd}><Plus size={18} />Einheit</button>
-      </div>
-
       {(planned.length > 0 || todays.length > 0) && <h2>Heute</h2>}
       {planned.map((p) => (
-        <div key={p.id} className="item" style={{ borderStyle: 'dashed' }}>
-          <div className="grow"><b>{p.title}</b><p>{sportLabel(p.sport)} · {p.minutes} min · {p.zone}</p>{planTargets(p, settings) && <p><b>Ziel:</b> {planTargets(p, settings)}</p>}{p.description && <p>{p.description}</p>}</div>
-          <span className="badge b-info">geplant</span>
+        <div key={p.id} className="item" style={{ borderStyle: 'dashed', flexDirection: 'column', alignItems: 'stretch' }}>
+          <div className="row" style={{ flexWrap: 'nowrap', alignItems: 'flex-start' }}>
+            <div className="grow"><b>{p.title}</b><p>{sportLabel(p.sport)} · {p.minutes} min · {p.zone}</p>{planTargets(p, settings) && <p><b>Ziel:</b> {planTargets(p, settings)}</p>}{p.description && <p>{p.description}</p>}</div>
+            <span className="badge b-info" style={{ flex: 'none' }}>geplant</span>
+          </div>
+          <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+            <button className="secondary" onClick={() => markDone(p)}>Erledigt</button>
+            <button className="ghost" onClick={() => toTomorrow(p)}>Morgen</button>
+            {p.sport === 'bike' && <button className="ghost" onClick={() => setSwapFor(swapFor === p.id ? null : p.id)}>Wetter: tauschen</button>}
+          </div>
+          {swapFor === p.id && <div className="chips" style={{ marginTop: 6 }}>{BIKE_SWAP.map(([to, label]) => <button key={to} className="chip" onClick={() => swap(p, to)}>{label}</button>)}</div>}
         </div>
       ))}
       {todays.map((a) => (
@@ -89,6 +116,14 @@ export function Today({ go, openActivity, openAdd }) {
           <span className="num">{fmtNum(a.load)}</span>
         </button>
       ))}
+
+      <RaceCountdown go={go} />
+      <AdaptCard />
+      <WeekReviewCard />
+      <div className="row">
+        {connected && <button className="secondary" onClick={sync} disabled={busy}><RefreshCw size={17} className={busy ? 'spin' : ''} />Abgleichen</button>}
+        <button className="primary" onClick={openAdd}><Plus size={18} />Einheit</button>
+      </div>
 
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Fitness, Ermüdung, Form</h3>
@@ -117,17 +152,8 @@ export function Today({ go, openActivity, openAdd }) {
         <div><b>{week.strengthSessions}/{week.thresholdSessions}</b><span>Kraft / Schwelle</span></div>
       </div>
 
-      {(lastW || food) && (
-        <div className="grid2">
-          {lastW && (
-            <div className="card">
-              <h3 style={{ marginTop: 0 }}><HeartPulse size={16} /> Erholung</h3>
-              <p className="muted small" style={{ margin: 0 }}>{new Date(lastW.date + 'T12:00:00').toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
-              {lastW.hrv && <p style={{ margin: '4px 0' }}>HRV <b>{lastW.hrv} ms</b></p>}
-              {lastW.restHr && <p style={{ margin: '4px 0' }}>Ruhepuls <b>{lastW.restHr}</b></p>}
-              {lastW.sleepH && <p style={{ margin: '4px 0' }}><Moon size={14} /> {fmtNum(lastW.sleepH, 1)} h{lastW.sleepScore ? ` · Score ${lastW.sleepScore}` : ''}</p>}
-            </div>
-          )}
+      {food && (
+        <div>
           {food && (
             <button className="card" style={{ textAlign: 'left' }} onClick={() => go('food')}>
               <h3 style={{ marginTop: 0 }}>Essen heute</h3>
