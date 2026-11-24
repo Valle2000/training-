@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Cloud, CloudOff, RefreshCw, LogOut } from 'lucide-react';
 import { cloudConfigured } from '../lib/supabase.js';
-import { useCloudStatus, syncNow, signIn, signUp, resetPassword, signOut, listCoaches, grantCoach, revokeCoach } from '../lib/cloud-sync.js';
+import { useCloudStatus, syncNow, signIn, signUp, resetPassword, signOut, listCoaches, grantCoach, revokeCoach, syncDiagnostics, pullMissing } from '../lib/cloud-sync.js';
 import { toast } from './common.jsx';
 
 const fmtTime = (iso) => (iso ? new Date(iso).toLocaleString('de-DE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '–');
@@ -40,6 +40,7 @@ export function AccountCard() {
         <button className="ghost" onClick={() => signOut()}><LogOut size={16} />Abmelden</button>
       </div>
     </div>
+    <SyncCheck />
     <CoachAccess />
     </>
   );
@@ -111,5 +112,43 @@ function CoachAccess() {
         <button className="primary" disabled={busy || !email.trim()} onClick={grant}>Freigeben</button>
       </div>
     </div>
+  );
+}
+
+// Abgleich prüfen: wie viele Einträge liegen auf diesem Gerät und wie viele in der Cloud? Fehlende nachholen.
+const SYNC_LABELS = { activities: 'Einheiten', plan: 'Plan', wellness: 'Morgen-Check, HRV, Schlaf', races: 'Rennen', strength: 'Kraft', coach: 'KI-Analysen', keySessions: 'Key Sessions', lactateTests: 'Laktattests', health: 'Gesundheit', gear: 'Material', recipes: 'Rezepte', customExercises: 'Eigene Übungen', workouts: 'Workouts', singleton: 'Einstellungen' };
+function SyncCheck() {
+  const [res, setRes] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState('');
+  const check = async () => { setBusy(true); setMsg(''); try { setRes(await syncDiagnostics()); } catch (e) { setMsg(e.message); } setBusy(false); };
+  const repair = async () => {
+    setBusy(true); setMsg('');
+    try { const n = await pullMissing(); setMsg(n ? `${n} fehlende Einträge aus der Cloud übernommen.` : 'Auf diesem Gerät fehlt nichts aus der Cloud.'); setRes(await syncDiagnostics()); } catch (e) { setMsg(e.message); }
+    setBusy(false);
+  };
+  const rows = res?.signedIn ? Object.keys(SYNC_LABELS).map((k) => ({ k, local: res.local[k] || 0, remote: res.remote[k] || 0 })).filter((r) => r.local || r.remote) : [];
+  const more = rows.some((r) => r.remote > r.local), less = rows.some((r) => r.local > r.remote);
+  return (
+    <details className="card">
+      <summary><b>Abgleich prüfen</b> <span className="muted small">Gerät und Cloud vergleichen</span></summary>
+      <p className="muted small">Fehlen auf einem Gerät Einheiten, die ein anderes hat? Hier siehst du, wie viele Einträge auf diesem Gerät und in der Cloud liegen.</p>
+      <button className="secondary" onClick={check} disabled={busy}><RefreshCw size={16} className={busy ? 'spin' : ''} />Prüfen</button>
+      {res?.signedIn && <>
+        <table className="t" style={{ marginTop: 8 }}><thead><tr><th>Bereich</th><th>Gerät</th><th>Cloud</th></tr></thead><tbody>
+          {rows.map((r) => <tr key={r.k}><td>{SYNC_LABELS[r.k]}</td><td>{r.local}</td><td style={{ color: r.remote !== r.local ? 'var(--warn)' : undefined, fontWeight: r.remote !== r.local ? 600 : undefined }}>{r.remote}</td></tr>)}
+        </tbody></table>
+        <p className="muted small">Zuletzt abgeglichen: {fmtTime(res.lastSync)}</p>
+        {more && <p className="small">In der Cloud liegen mehr Einträge als auf diesem Gerät. Mit „Fehlende holen“ übernimmt das Gerät sie, ohne deine Einträge hier zu ändern.</p>}
+        {less && <p className="small">Dieses Gerät hat Einträge, die noch nicht in der Cloud sind. „Jetzt abgleichen“ lädt sie hoch; bleibt die Zahl gleich, steht oben im Konto eine Fehlermeldung.</p>}
+        {!more && !less && <p className="small" style={{ color: 'var(--good)' }}>Gerät und Cloud stimmen überein.</p>}
+        <div className="row" style={{ gap: 6 }}>
+          <button className="secondary" onClick={repair} disabled={busy}>Fehlende holen</button>
+          <button className="ghost" onClick={async () => { await syncNow(); check(); }} disabled={busy}>Jetzt abgleichen</button>
+        </div>
+      </>}
+      {res && !res.signedIn && <p className="small">Nicht angemeldet.</p>}
+      {msg && <p className="small">{msg}</p>}
+    </details>
   );
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase, cloudConfigured } from './supabase.js';
 import { getData, update, subscribe, getLocalSeries, setSeriesFallback, kvGet, kvPut, isReadOnly, enterReadOnly, EMPTY } from './store.js';
-import { planSync, applyRows, fingerprint } from './cloud.js';
+import { planSync, applyRows, fingerprint, countLocal, missingRows, COLLECTIONS } from './cloud.js';
 
 const META_KEY = 'trainings-app-sync-meta';
 // Gedächtnis des Abgleichs (Fingerabdrücke, hochgeladene Verläufe). Liegt in IndexedDB: Bei großen Datenmengen ist
@@ -116,6 +116,43 @@ async function run() {
   saveMeta(meta);
   setStatus({ state: 'ok', last: meta.lastSync, detail: pending.length > todo.length ? `Puls-/Wattverläufe hochladen: noch ${pending.length - todo.length} Einheiten` : null });
   if (pending.length > todo.length) again = true;
+}
+
+// ——— Abgleich prüfen: Anzahl je Sammlung auf dem Gerät und in der Cloud, fehlende Einträge nachholen ———
+async function ownRows(userId) {
+  const rows = [];
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await supabase.from('training_records').select('collection,id,data,deleted,updated_at').eq('owner', userId).order('updated_at', { ascending: true }).range(from, from + 999);
+    if (error) throw error;
+    rows.push(...data);
+    if (data.length < 1000) return rows;
+  }
+}
+export async function syncDiagnostics() {
+  if (!cloudConfigured) return null;
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return { signedIn: false };
+  const remote = {};
+  for (const c of [...COLLECTIONS, 'singleton']) {
+    const { count, error } = await supabase.from('training_records').select('id', { count: 'exact', head: true }).eq('owner', session.user.id).eq('collection', c).eq('deleted', false);
+    if (error) throw error;
+    remote[c] = count || 0;
+  }
+  const meta = loadMeta();
+  return { signedIn: true, email: session.user.email, local: countLocal(getData()), remote, lastPulled: meta.lastPulled || null, lastSync: meta.lastSync || null };
+}
+export async function pullMissing() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('Nicht angemeldet');
+  const meta = loadMeta();
+  const missing = missingRows(getData(), meta.fp || {}, await ownRows(session.user.id));
+  if (missing.length) {
+    applying = true; update((d) => applyRows(d, missing)); applying = false;
+    meta.fp ||= {};
+    for (const r of missing) meta.fp[`${r.collection}:${r.id}`] = fingerprint(r.data);
+    saveMeta(meta);
+  }
+  return missing.length;
 }
 
 export async function syncNow() {

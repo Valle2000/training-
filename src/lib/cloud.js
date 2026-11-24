@@ -67,3 +67,17 @@ export function applyRows(data, rows) {
   if (rows.some((r) => r.collection === 'wellness')) next.wellness.sort((a, b) => a.date.localeCompare(b.date));
   return next;
 }
+
+// ——— Abgleich prüfen ———
+// Anzahl der Datensätze je Sammlung auf diesem Gerät (wie sie hochgeladen würden).
+export function countLocal(data) {
+  const out = {};
+  for (const r of Object.values(localRecords(data))) out[r.collection] = (out[r.collection] || 0) + 1;
+  return out;
+}
+// Server-Zeilen, die auf diesem Gerät fehlen: nicht gelöscht, lokal nicht vorhanden und nicht hier gelöscht
+// (sonst käme ein bewusst gelöschter Eintrag zurück, bevor die Löschung hochgeladen ist).
+export function missingRows(data, fp = {}, rows = []) {
+  const local = localRecords(data);
+  return rows.filter((r) => !r.deleted && !local[`${r.collection}:${r.id}`] && fp[`${r.collection}:${r.id}`] !== 'deleted');
+}

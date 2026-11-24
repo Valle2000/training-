@@ -50,3 +50,20 @@ test('Singletons und Wellness nach Datum', () => {
   assert.equal(next.settings.ftp, 310);
   assert.deepEqual(next.wellness.map((w) => w.date), ['2026-09-30', '2026-10-01']);
 });
+
+test('Abgleich prüfen: Zählen und fehlende Server-Einträge erkennen', async () => {
+  const { countLocal, missingRows } = await import('../src/lib/cloud.js');
+  const data = { activities: [{ id: 'a1' }, { id: 'a2' }], plan: [{ id: 'p1' }], settings: { hrMax: 190 } };
+  const c = countLocal(data);
+  assert.equal(c.activities, 2);
+  assert.equal(c.plan, 1);
+  assert.equal(c.singleton, 1);
+  const rows = [
+    { collection: 'activities', id: 'a1', data: { id: 'a1' }, deleted: false },
+    { collection: 'activities', id: 'a3', data: { id: 'a3' }, deleted: false },
+    { collection: 'activities', id: 'a4', data: null, deleted: true },
+    { collection: 'activities', id: 'a5', data: { id: 'a5' }, deleted: false },
+  ];
+  const miss = missingRows(data, { 'activities:a5': 'deleted' }, rows);
+  assert.deepEqual(miss.map((r) => r.id), ['a3']);
+});
