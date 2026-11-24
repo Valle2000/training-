@@ -407,7 +407,7 @@ export function focusSuggestions(races = [], focus = []) {
     if (!sport || !weeks || !r.date) continue;
     let from = addDays(r.date, -7 * weeks);
     for (const s of races) if (SKI_TECH.includes(s.technique) && (s.priority === 'A' || s.priority === 'B') && s.date < r.date && s.date >= from) from = addDays(s.date, 1);
-    if (from > addDays(r.date, -14)) continue; // weniger als zwei Wochen Vorlauf: kein Vorschlag
+    if (from > addDays(r.date, -10)) continue; // weniger als 10 Tage Vorlauf (z. B. direkt nach einem Ski-Rennen): kein Vorschlag
     if (focus.some((f) => f.sport === sport && f.from <= r.date && f.to >= from)) continue; // gleiche Sportart ist schon abgedeckt
     const kind = raceKind(r);
     out.push({ id: `sugg-${r.id}`, sport, kind, label: `${SPORT_NAME[sport]} vor ${r.name?.trim() || 'Rennen'}${kind ? ` (${RACE_KIND_LABEL[kind]})` : ''}`, from, to: r.date, race: r.name?.trim() || '', priority: r.priority });
@@ -599,7 +599,11 @@ export function generatePlan(opts, races = []) {
       } else if (slot === 'opener') {
         const race = weekRaces[0];
         const d = race ? days.find((x) => x.date === addDays(race.date, -1)) || day : day;
-        put(d, sess(optionById('opener'), d.date, rot++));
+        const x = sess(optionById('opener'), d.date, rot++);
+        // Vorbelastung in der Sportart des Rennens (Lauf, Rad, Schwimmen), sonst Ski/Rollski.
+        const rs = race && raceSport(race.technique, race.date);
+        if (['run', 'bike', 'swim'].includes(rs)) x.sport = rs;
+        put(d, x);
       } else if (slot === 'i4' || slot === 'i5') {
         // Schwerpunkt mit Rennart: erst nur deren Einheiten (auch eine andere Intensität), dann wie gewohnt.
         const other = slot === 'i5' ? 'I4' : 'I5';

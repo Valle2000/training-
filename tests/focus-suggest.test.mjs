@@ -79,3 +79,21 @@ test('Rennart bestimmt die Einheiten im Schwerpunkt (Marathon, 10 km, Bergzeitfa
   assert.ok(climb.some((t) => /Berg/.test(t)), climb.join(' | '));
   assert.ok(!climb.some((t) => /Marathontempo/.test(t)), climb.join(' | '));
 });
+
+test('Engadiner (A), DM eine Woche später, Halbmarathon (B) drei Wochen nach Engadiner', async () => {
+  const { focusOn, focusBlockOn, generatePlan } = await import('../src/lib/plan-wizard.js');
+  const races = [
+    { id: 'e', date: '2027-03-14', name: 'Engadiner', technique: 'Skating', priority: 'A', distanceKm: 45 },
+    { id: 'd', date: '2027-03-21', name: 'DM Oberstdorf', technique: 'Skating', priority: 'B', distanceKm: 15 },
+    { id: 'h', date: '2027-04-04', name: 'Freiburg HM', technique: 'Lauf', priority: 'B', distanceKm: 21.1 },
+  ];
+  const list = focusSuggestions(races, []);
+  assert.deepEqual(list.map((x) => [x.sport, x.kind, x.from, x.to]), [['run', 'run_hm', '2027-03-22', '2027-04-04']]);
+  const w = generatePlan({ startHours: 13, peakHours: 16, start: '2027-02-15', end: '2027-04-11', restDays: [1], longDay: 7, strengthPerWeek: 2, keys: [], approach: 'threshold', focusFor: (m) => focusOn(m, list), focusKindFor: (m) => focusBlockOn(m, list)?.kind || null }, races);
+  const before = w.filter((x) => x.from < '2027-03-15').flatMap((x) => x.days.flatMap((d) => d.sessions)).filter((s) => s.kind === 'hard');
+  assert.ok(before.length > 0 && before.every((s) => /^(xc_|rollerski|skierg)/.test(s.sport)), 'vor Engadiner nur Ski');
+  const after = w.filter((x) => x.from >= '2027-03-22' && x.from < '2027-04-05').flatMap((x) => x.days.flatMap((d) => d.sessions));
+  assert.ok(after.filter((s) => s.kind === 'hard').every((s) => s.sport === 'run'), 'nach der DM Laufen');
+  const opener = after.find((s) => /Vorbelastung/.test(s.title));
+  assert.equal(opener?.sport, 'run');
+});
