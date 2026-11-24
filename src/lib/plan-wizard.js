@@ -3,6 +3,7 @@
 import { addDays } from './metrics.js';
 import { mondayOf, estimatePlanLoad } from './activities.js';
 import { seasonPlan } from './season.js';
+import { swapPlanItem, bikeInSeason } from './weather-swap.js';
 
 export const PLAN_SOURCES = {
   anton07: { text: 'Antón et al. 2007 – Bergzeitfahren hängt von der Leistung pro kg ab, flaches Zeitfahren von der absoluten Leistung (Int J Sports Med)', url: 'https://doi.org/10.1055/s-2006-924356' },
@@ -708,6 +709,21 @@ export function generatePlan(opts, races = []) {
       const sw = nextSwim();
       put(d, { title: sw.title, sport: 'swim', minutes: Math.min(room(d), sw.minutes), zone: 'I1', description: sw.description, kind: 'easy' });
       swimLeft--;
+    }
+    // Rad nur in der Rad-Saison (z. B. April bis Oktober): außerhalb wird Rad zu Ski/Rollski, SkiErg oder Laufen.
+    if (opts.bikeFrom && opts.bikeTo) {
+      for (const d of days) {
+        if (bikeInSeason(d.date, opts.bikeFrom, opts.bikeTo)) continue;
+        d.sessions = d.sessions.map((x, j) => {
+          if (x.sport !== 'bike' || x.kind === 'race') return x;
+          const to = x.kind === 'hard' ? (winter(d.date) ? 'skierg' : 'run')
+            : x.kind === 'long' ? specificSport(d.date, 1)
+              : fSport === 'run' || focus === 'tri' ? 'run' : specificSport(d.date, j);
+          const y = swapPlanItem(x, to);
+          used -= (x.minutes || 0) - (y.minutes || 0);
+          return y;
+        });
+      }
     }
     for (const d of days) if (rest.has(d.dow) && !d.sessions.length) d.rest = true;
     return { ...w, approach: ap.id, days, plannedHours: Math.round((used / 60) * 10) / 10 };

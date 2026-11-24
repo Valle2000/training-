@@ -10,6 +10,7 @@ import { Sheet, fmtDate, fmtNum, toast } from './common.jsx';
 import { freeMinutes, hasSchedule, periodForWeek, busyOn } from '../lib/week-adapt.js';
 
 const DOW = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
 const MAIN_GOALS = [['rollerski', 'Ski / Rollski'], ['run', 'Laufen'], ['bike', 'Rad'], ['swim', 'Schwimmen'], ['tri', 'Triathlon']];
 // Gruppen im Katalog; Intervalle nach Zone getrennt.
 const GROUPS = [
@@ -51,7 +52,7 @@ export function PlanWizard({ onClose }) {
   const rec = recommend(pr, Number(o.startHours) || 10);
   // Hauptziel der Saison: gilt in allen Wochen ohne Schwerpunkt-Zeitraum (Ski/Rollski ist der Standard, dann null).
   const mainFocus = ['run', 'bike', 'swim', 'tri'].includes(settings.season?.mainSport) ? settings.season.mainSport : null;
-  const plan = useMemo(() => (step >= 5 ? generatePlan({ ...o, swimPace: parsePace(o.swimPaceTxt), swimGoal: parsePace(o.swimGoalTxt), keys, customKeys: custom, capFor: hasSchedule(settings.schedule) ? (d) => freeMinutes(d, settings.schedule) : null, periodFor: settings.schedule?.periods?.length ? (m) => periodForWeek(m, settings.schedule) : null, busyFor: hasSchedule(settings.schedule) ? (d) => busyOn(d, settings.schedule).length > 0 : null, focusFor: (m) => focusOn(m, settings.season?.focus, settings.season?.snow, settings.season?.winterSub) || mainFocus, focusKindFor: (m) => { const b = focusBlockOn(m, settings.season?.focus); return b ? b.kind || raceKind(races.find((r) => r.date === b.to) || {}) : null; }, winterRunHours: settings.season?.winterRunHours ?? 2.5 }, races) : []), [step, o, keys, races, custom, settings.schedule, settings.season?.focus, settings.season?.snow, settings.season?.winterSub, settings.season?.winterRunHours, settings.season?.mainSport]);
+  const plan = useMemo(() => (step >= 5 ? generatePlan({ ...o, swimPace: parsePace(o.swimPaceTxt), swimGoal: parsePace(o.swimGoalTxt), keys, customKeys: custom, capFor: hasSchedule(settings.schedule) ? (d) => freeMinutes(d, settings.schedule) : null, periodFor: settings.schedule?.periods?.length ? (m) => periodForWeek(m, settings.schedule) : null, busyFor: hasSchedule(settings.schedule) ? (d) => busyOn(d, settings.schedule).length > 0 : null, focusFor: (m) => focusOn(m, settings.season?.focus, settings.season?.snow, settings.season?.winterSub) || mainFocus, bikeFrom: settings.season?.bikeFrom || null, bikeTo: settings.season?.bikeTo || null, focusKindFor: (m) => { const b = focusBlockOn(m, settings.season?.focus); return b ? b.kind || raceKind(races.find((r) => r.date === b.to) || {}) : null; }, winterRunHours: settings.season?.winterRunHours ?? 2.5 }, races) : []), [step, o, keys, races, custom, settings.schedule, settings.season?.focus, settings.season?.snow, settings.season?.winterSub, settings.season?.winterRunHours, settings.season?.mainSport, settings.season?.bikeFrom, settings.season?.bikeTo]);
   const set = (k, v) => setO({ ...o, [k]: v });
   const toggleKey = (id) => set('keys', keys.includes(id) ? keys.filter((k) => k !== id) : [...keys, id]);
   const setPr = (k, v) => set('profile', { ...pr, [k]: v });
@@ -388,6 +389,7 @@ function FocusBlocks({ t, focus, suggestions = [], snow, winterSub, settings }) 
   const setSub = (v) => update((d) => ({ ...d, settings: { ...d.settings, season: { ...(d.settings.season || {}), winterSub: v } } }));
   const mainSport = settings.season?.mainSport || 'rollerski';
   const acceptSuggestion = (s) => set([...focus, { id: uid(), sport: s.sport, kind: s.kind || null, label: s.label, from: s.from, to: s.to }]);
+  const setSeason = (k, v) => update((d) => ({ ...d, settings: { ...d.settings, season: { ...(d.settings.season || {}), [k]: v } } }));
   const setMain = (v) => update((d) => ({ ...d, settings: { ...d.settings, season: { ...(d.settings.season || {}), mainSport: v } } }));
   return (
     <div className="card">
@@ -402,6 +404,12 @@ function FocusBlocks({ t, focus, suggestions = [], snow, winterSub, settings }) 
         <p className="small" style={{ margin: '4px 0' }}>Je wichtiger das Rennen, desto länger davor mehr Fokus. Ski bleibt Hauptziel, deshalb beginnt der Zeitraum nach einem vorherigen Ski-Rennen.</p>
         {suggestions.map((x) => <div key={x.id} className="row" style={{ gap: 6, alignItems: 'center', flexWrap: 'wrap', marginTop: 4 }}><span className="small grow">{x.label}: {fmtDate(x.from)} – {fmtDate(x.to)} (Priorität {x.priority})</span><button className="secondary" onClick={() => acceptSuggestion(x)}><Plus size={14} /> Übernehmen</button></div>)}
       </div>}
+      <b className="small" style={{ display: 'block', marginTop: 12 }}>Rad-Saison</b>
+      <p className="muted small" style={{ margin: '2px 0' }}>Rad nur bei gutem Wetter? Außerhalb dieser Monate plant die App statt Rad Ski bzw. Rollski, SkiErg oder Laufen. Einzelne Radeinheiten kannst du in der Wochenliste je nach Wetter tauschen.</p>
+      <div className="grid2">
+        <div><label>von</label><select value={settings.season?.bikeFrom || ''} onChange={(e) => setSeason('bikeFrom', Number(e.target.value) || null)}><option value="">ganzjährig</option>{MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}</select></div>
+        <div><label>bis</label><select value={settings.season?.bikeTo || ''} onChange={(e) => setSeason('bikeTo', Number(e.target.value) || null)}><option value="">ganzjährig</option>{MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}</select></div>
+      </div>
       <b className="small" style={{ display: 'block', marginTop: 12 }}>Schneelage</b>
       <label>Laufen im Winter: mindestens Stunden pro Woche (Dezember bis März)</label>
       <div className="row" style={{ flexWrap: 'nowrap', alignItems: 'center' }}>

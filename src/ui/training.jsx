@@ -19,6 +19,7 @@ import { LapsCard } from './laps.jsx';
 import { ActivityChart } from './activity-chart.jsx';
 import { fmtPace } from '../lib/laps.js';
 import { athleteOf } from '../lib/activities.js';
+import { BIKE_SWAP, swapPlanItem } from '../lib/weather-swap.js';
 
 export function Training({ openActivity, openAdd }) {
   const { activities, plan, settings } = useData();
@@ -246,6 +247,9 @@ function WeekList({ monday, onEdit }) {
     change(p, { date: to });
   };
   const remove = (p) => { if (confirm('Einheit streichen? Die Minuten gehen auf eine lockere Einheit dieser Woche über.')) adjust(p, 0, true); };
+  // Rad bei schlechtem Wetter tauschen (Laufen, Rollski, SkiErg, Rolle); lockere Laufeinheiten werden kürzer.
+  const [swapFor, setSwapFor] = useState(null);
+  const swap = (p, to) => { const n = swapPlanItem(p, to); change(p, n); setSwapFor(null); toast(`Getauscht: ${sportLabel(to)}, ${n.minutes} min`); };
   return (
     <>
       <div className="card">
@@ -306,8 +310,10 @@ function WeekList({ monday, onEdit }) {
                   <button className="ghost" onClick={() => moveDay(p, 1)} aria-label="Einen Tag später">Tag ▶</button>
                   <button className="ghost" onClick={() => shift(p, -15)}>−15</button>
                   <button className="ghost" onClick={() => shift(p, 15)}>+15</button>
+                  {p.sport === 'bike' && <button className="ghost" onClick={() => setSwapFor(swapFor === p.id ? null : p.id)}>Wetter: tauschen</button>}
                   <button className="ghost" onClick={() => remove(p)} aria-label="Löschen"><Trash2 size={15} /></button>
                 </div>}
+                {swapFor === p.id && <div className="chips" style={{ marginTop: 6 }}>{BIKE_SWAP.map(([to, label]) => <button key={to} className="chip" onClick={() => swap(p, to)}>{label}</button>)}</div>}
               </div>
             ))}
           </div>
