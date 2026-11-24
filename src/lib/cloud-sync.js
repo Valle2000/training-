@@ -1,7 +1,7 @@
 // Ablauf des Online-Abgleichs: holen, zusammenführen, hochladen. Läuft beim Start, nach der Anmeldung,
 // beim Zurückkehren in die App und kurz nach jeder lokalen Änderung.
 import { useEffect, useState } from 'react';
-import { supabase, cloudConfigured } from './supabase.js';
+import { sb, cloudConfigured } from './supabase.js';
 import { getData, update, subscribe, getLocalSeries, setSeriesFallback, kvGet, kvPut, isReadOnly, enterReadOnly, EMPTY } from './store.js';
 import { planSync, applyRows, fingerprint, countLocal, missingRows, COLLECTIONS } from './cloud.js';
 
@@ -43,7 +43,7 @@ let running = null, again = false, applying = false;
 async function pullAll(since) {
   const rows = [];
   for (let from = 0; ; from += 1000) {
-    let q = supabase.from('training_records').select('collection,id,data,deleted,updated_at').order('updated_at', { ascending: true }).range(from, from + 999);
+    let q = (await sb()).from('training_records').select('collection,id,data,deleted,updated_at').order('updated_at', { ascending: true }).range(from, from + 999);
     if (since) q = q.gt('updated_at', since);
     const { data, error } = await q;
     if (error) throw error;
@@ -56,15 +56,15 @@ async function pullAll(since) {
 async function loadAsCoach(session, athleteId) {
   const rows = [];
   for (let from = 0; ; from += 1000) {
-    const { data, error } = await supabase.from('training_records').select('collection,id,data,deleted,updated_at').eq('owner', athleteId).order('updated_at', { ascending: true }).range(from, from + 999);
+    const { data, error } = await (await sb()).from('training_records').select('collection,id,data,deleted,updated_at').eq('owner', athleteId).order('updated_at', { ascending: true }).range(from, from + 999);
     if (error) throw error;
     rows.push(...data);
     if (data.length < 1000) break;
   }
   const base = JSON.parse(JSON.stringify(EMPTY));
-  const { data: link } = await supabase.from('training_coaches').select('can_plan').eq('athlete', athleteId).eq('coach', session.user.id).maybeSingle();
+  const { data: link } = await (await sb()).from('training_coaches').select('can_plan').eq('athlete', athleteId).eq('coach', session.user.id).maybeSingle();
   const writePlan = async (changed) => {
-    const { error } = await supabase.from('training_records').upsert(changed.map((r) => ({ owner: athleteId, collection: 'plan', ...r })), { onConflict: 'owner,collection,id' });
+    const { error } = await (await sb()).from('training_records').upsert(changed.map((r) => ({ owner: athleteId, collection: 'plan', ...r })), { onConflict: 'owner,collection,id' });
     if (error) setStatus({ state: 'error', error: `Plan nicht gespeichert: ${error.message}` });
   };
   enterReadOnly(applyRows(base, rows), { athleteId, canPlan: !!link?.can_plan, writePlan });
@@ -73,12 +73,12 @@ async function loadAsCoach(session, athleteId) {
 
 async function run() {
   await metaReady;
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await (await sb()).auth.getSession();
   if (!session) { setStatus({ state: 'off', email: null }); return; }
   // Keine Betreiber-Freigabe, aber eine Trainer-Verknüpfung: nur lesen.
-  const { data: admin } = await supabase.from('training_admins').select('user_id').eq('user_id', session.user.id).maybeSingle();
+  const { data: admin } = await (await sb()).from('training_admins').select('user_id').eq('user_id', session.user.id).maybeSingle();
   if (!admin) {
-    const { data: links } = await supabase.from('training_coaches').select('athlete').eq('coach', session.user.id).limit(1);
+    const { data: links } = await (await sb()).from('training_coaches').select('athlete').eq('coach', session.user.id).limit(1);
     if (links?.length) return loadAsCoach(session, links[0].athlete);
   }
   setStatus({ state: 'syncing', email: session.user.email, error: null });
@@ -90,7 +90,7 @@ async function run() {
   for (let i = 0; i < push.length; i += 200) {
     if (push.length > 200) setStatus({ detail: `Einheiten hochladen: ${i} von ${push.length}` });
     const chunk = push.slice(i, i + 200).map((r) => ({ ...r, owner: session.user.id }));
-    const { error } = await supabase.from('training_records').upsert(chunk, { onConflict: 'owner,collection,id' });
+    const { error } = await (await sb()).from('training_records').upsert(chunk, { onConflict: 'owner,collection,id' });
     if (error) throw error;
     for (const r of chunk) nextFp[`${r.collection}:${r.id}`] = r.deleted ? 'deleted' : fingerprint(r.data);
   }
@@ -107,7 +107,7 @@ async function run() {
     for (const a of todo.slice(i, i + 20)) { const data = await getLocalSeries(a.id); if (data) rows.push({ owner: session.user.id, activity_id: a.id, data }); else meta.seriesPushed[a.id] = true; }
     doneCount += Math.min(20, todo.length - i);
     if (!rows.length) continue;
-    const { error } = await supabase.from('training_series').upsert(rows, { onConflict: 'owner,activity_id' });
+    const { error } = await (await sb()).from('training_series').upsert(rows, { onConflict: 'owner,activity_id' });
     if (error) throw error;
     for (const r of rows) meta.seriesPushed[r.activity_id] = true;
     saveMeta(meta);
@@ -122,7 +122,7 @@ async function run() {
 async function ownRows(userId) {
   const rows = [];
   for (let from = 0; ; from += 1000) {
-    const { data, error } = await supabase.from('training_records').select('collection,id,data,deleted,updated_at').eq('owner', userId).order('updated_at', { ascending: true }).range(from, from + 999);
+    const { data, error } = await (await sb()).from('training_records').select('collection,id,data,deleted,updated_at').eq('owner', userId).order('updated_at', { ascending: true }).range(from, from + 999);
     if (error) throw error;
     rows.push(...data);
     if (data.length < 1000) return rows;
@@ -130,11 +130,11 @@ async function ownRows(userId) {
 }
 export async function syncDiagnostics() {
   if (!cloudConfigured) return null;
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await (await sb()).auth.getSession();
   if (!session) return { signedIn: false };
   const remote = {};
   for (const c of [...COLLECTIONS, 'singleton']) {
-    const { count, error } = await supabase.from('training_records').select('id', { count: 'exact', head: true }).eq('owner', session.user.id).eq('collection', c).eq('deleted', false);
+    const { count, error } = await (await sb()).from('training_records').select('id', { count: 'exact', head: true }).eq('owner', session.user.id).eq('collection', c).eq('deleted', false);
     if (error) throw error;
     remote[c] = count || 0;
   }
@@ -142,7 +142,7 @@ export async function syncDiagnostics() {
   return { signedIn: true, email: session.user.email, local: countLocal(getData()), remote, lastPulled: meta.lastPulled || null, lastSync: meta.lastSync || null };
 }
 export async function pullMissing() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await (await sb()).auth.getSession();
   if (!session) throw new Error('Nicht angemeldet');
   const meta = loadMeta();
   const missing = missingRows(getData(), meta.fp || {}, await ownRows(session.user.id));
@@ -166,13 +166,13 @@ let timer = null;
 export function startCloudSync() {
   if (!cloudConfigured) return;
   setSeriesFallback(async (id) => {
-    const { data } = await supabase.from('training_series').select('data').eq('activity_id', id).maybeSingle();
+    const { data } = await (await sb()).from('training_series').select('data').eq('activity_id', id).maybeSingle();
     return data?.data || null;
   });
-  supabase.auth.onAuthStateChange((event, session) => {
+  sb().then((client) => client.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') { if (session) syncNow(); else setStatus({ state: 'off', email: null }); }
     if (event === 'SIGNED_OUT') setStatus({ state: 'off', email: null });
-  });
+  }));
   subscribe(() => { if (applying) return; clearTimeout(timer); timer = setTimeout(syncNow, 4000); });
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncNow(); });
 }
@@ -181,10 +181,10 @@ export function startCloudSync() {
 export async function deleteRemoteSeries(ids) {
   forgetSeriesPushed(ids);
   if (!cloudConfigured) return;
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await (await sb()).auth.getSession();
   if (!session) return;
   for (let i = 0; i < ids.length; i += 100) {
-    const { error } = await supabase.from('training_series').delete().in('activity_id', ids.slice(i, i + 100));
+    const { error } = await (await sb()).from('training_series').delete().in('activity_id', ids.slice(i, i + 100));
     if (error) throw error;
   }
 }
@@ -192,17 +192,17 @@ export async function deleteRemoteSeries(ids) {
 // Die Trainings-App ist nur für den Betreiber: Nach der Anmeldung wird geprüft, ob das Konto eingetragen ist.
 const ADMIN_ONLY = 'Die Trainings-App ist nur für den Betreiber freigegeben. Ein SkiWax-Konto funktioniert hier nicht.';
 async function requireAdmin() {
-  const { data: { user } } = await supabase.auth.getUser();
-  const { data } = await supabase.from('training_admins').select('user_id').eq('user_id', user?.id || '').maybeSingle();
+  const { data: { user } } = await (await sb()).auth.getUser();
+  const { data } = await (await sb()).from('training_admins').select('user_id').eq('user_id', user?.id || '').maybeSingle();
   if (data) return;
   // Trainerin mit Freigabe: Anmeldung erlaubt, Daten nur lesend.
-  const { data: links } = await supabase.from('training_coaches').select('athlete').eq('coach', user?.id || '').limit(1);
+  const { data: links } = await (await sb()).from('training_coaches').select('athlete').eq('coach', user?.id || '').limit(1);
   if (links?.length) return;
-  await supabase.auth.signOut();
+  await (await sb()).auth.signOut();
   throw new Error(ADMIN_ONLY);
 }
 export async function signIn(email, password) {
-  const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+  const { error } = await (await sb()).auth.signInWithPassword({ email: email.trim(), password });
   if (error) throw error;
   await requireAdmin();
 }
@@ -211,22 +211,22 @@ export async function signUp() {
   throw new Error('Konten werden hier nicht angelegt. Die Trainings-App ist nur für den Betreiber.');
 }
 export async function resetPassword(email) {
-  const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: location.origin });
+  const { error } = await (await sb()).auth.resetPasswordForEmail(email.trim(), { redirectTo: location.origin });
   if (error) throw error;
 }
-export async function signOut() { await supabase.auth.signOut(); setStatus({ state: 'off', email: null }); }
+export async function signOut() { await (await sb()).auth.signOut(); setStatus({ state: 'off', email: null }); }
 
 // Trainer-Freigaben (nur Betreiber): anzeigen, hinzufügen, entfernen.
 export async function listCoaches() {
-  const { data, error } = await supabase.from('training_coaches').select('coach,created_at');
+  const { data, error } = await (await sb()).from('training_coaches').select('coach,created_at');
   if (error) throw error;
   return data || [];
 }
 export async function grantCoach(email) {
-  const { error } = await supabase.rpc('training_grant_coach', { coach_email: email });
+  const { error } = await (await sb()).rpc('training_grant_coach', { coach_email: email });
   if (error) throw error;
 }
 export async function revokeCoach(coachId) {
-  const { error } = await supabase.rpc('training_revoke_coach', { coach_id: coachId });
+  const { error } = await (await sb()).rpc('training_revoke_coach', { coach_id: coachId });
   if (error) throw error;
 }

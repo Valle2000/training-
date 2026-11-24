@@ -3,8 +3,6 @@ import { createRoot } from 'react-dom/client';
 import { Activity, CalendarDays, Dumbbell, Utensils, BrainCircuit, BarChart3, Settings as Gear } from 'lucide-react';
 import './style.css';
 import { Today } from './ui/today.jsx';
-import { Training, ActivitySheet, AddSheet } from './ui/training.jsx';
-import { More } from './ui/more.jsx';
 import { Toast, toast } from './ui/common.jsx';
 import { handleConnectReturn, PROVIDERS, syncAll } from './lib/sync.js';
 import { migrateMetrics, migrateTitles } from './lib/recompute.js';
@@ -18,6 +16,11 @@ const Analysis = lazy(() => import('./ui/analysis.jsx').then((m) => ({ default: 
 const Strength = lazy(() => import('./ui/strength.jsx').then((m) => ({ default: m.Strength })));
 const Food = lazy(() => import('./ui/food.jsx').then((m) => ({ default: m.Food })));
 const Coach = lazy(() => import('./ui/coach.jsx').then((m) => ({ default: m.Coach })));
+// Kalender, Einheiten-Blätter und „Mehr“ ebenfalls bei Bedarf (Heute zeigt sich so am schnellsten).
+const Training = lazy(() => import('./ui/training.jsx').then((m) => ({ default: m.Training })));
+const ActivitySheet = lazy(() => import('./ui/training.jsx').then((m) => ({ default: m.ActivitySheet })));
+const AddSheet = lazy(() => import('./ui/training.jsx').then((m) => ({ default: m.AddSheet })));
+const More = lazy(() => import('./ui/more.jsx').then((m) => ({ default: m.More })));
 
 const TABS = [
   ['today', 'Heute', Activity], ['training', 'Kalender', CalendarDays], ['analysis', 'Analyse', BarChart3],
@@ -82,8 +85,10 @@ function App() {
       <nav>
         {TABS.map(([id, label, Icon]) => <button key={id} className={`nav${tab === id ? ' active' : ''}`} onClick={() => setTab(id)}><Icon size={21} />{label}</button>)}
       </nav>
-      {activity && <ActivitySheet activity={activity} onClose={() => setActivity(null)} />}
-      {adding && <AddSheet onClose={() => setAdding(false)} />}
+      <Suspense fallback={null}>
+        {activity && <ActivitySheet activity={activity} onClose={() => setActivity(null)} />}
+        {adding && <AddSheet onClose={() => setAdding(false)} />}
+      </Suspense>
       <Toast />
     </>
   );
