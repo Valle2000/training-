@@ -4,7 +4,7 @@ import { useData, update } from '../lib/store.js';
 import { BIKE_SWAP, swapPlanItem } from '../lib/weather-swap.js';
 import { curve, today, weeks } from '../lib/activities.js';
 import { planTargets } from '../lib/targets.js';
-import { addDays } from '../lib/metrics.js';
+import { addDays, rpeLoad } from '../lib/metrics.js';
 import { sportLabel } from '../lib/sports.js';
 import { syncAll } from '../lib/sync.js';
 import { dayTargets } from '../lib/nutrition.js';
@@ -57,6 +57,11 @@ export function Today({ go, openActivity, openAdd }) {
   const changePlan = (p, patch) => update((d) => ({ ...d, plan: d.plan.map((x) => (x.id === p.id ? { ...x, ...patch } : x)) }));
   const markDone = (p) => { changePlan(p, { done: true }); toast('Als erledigt markiert'); };
   const toTomorrow = (p) => { changePlan(p, { date: addDays(p.date, 1) }); toast('Auf morgen verschoben'); };
+  // Nach der Einheit: „Wie hart war es?“ (RPE 1–10) für Einheiten von heute und gestern ohne Angabe.
+  // Ohne Puls/Watt wird daraus die Belastung berechnet; der KI-Coach bekommt den Wert mit.
+  const toRate = activities.filter((a) => a.date >= addDays(t, -1) && a.date <= t && a.sport !== 'strength' && a.rpe == null && !a.rpeSkip).slice(-3);
+  const rate = (a, v) => { update((d) => ({ ...d, activities: d.activities.map((x) => (x.id === a.id ? { ...x, rpe: v, ...(x.load == null ? { load: rpeLoad(x.durationS, v), loadSource: 'rpe' } : {}) } : x)) })); toast(`Gespeichert: ${v}/10`); };
+  const skipRate = (a) => update((d) => ({ ...d, activities: d.activities.map((x) => (x.id === a.id ? { ...x, rpeSkip: true } : x)) }));
   const swap = (p, to) => { const n = swapPlanItem(p, to); changePlan(p, n); setSwapFor(null); toast(`Getauscht: ${sportLabel(to)}, ${n.minutes} min`); };
 
   const sync = async () => {
@@ -117,6 +122,13 @@ export function Today({ go, openActivity, openAdd }) {
         </button>
       ))}
 
+      {toRate.map((a) => (
+        <div key={a.id} className="card" style={{ padding: 14 }}>
+          <div className="row" style={{ flexWrap: 'nowrap' }}><b className="grow">Wie hart war es? <span className="muted small">{a.title || sportLabel(a.sport)} · {fmtDuration(a.durationS)} h{a.date !== t ? ' · gestern' : ''}</span></b><button className="ghost" style={{ flex: 'none' }} onClick={() => skipRate(a)}>Überspringen</button></div>
+          <div className="chips" style={{ flexWrap: 'nowrap', overflowX: 'auto' }}>{[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((v) => <button key={v} className="chip" style={{ flex: 'none', minWidth: 38 }} onClick={() => rate(a, v)}>{v}</button>)}</div>
+          <p className="muted small" style={{ margin: 0 }}>1 sehr leicht · 4 locker · 6 Schwelle · 8 hart · 10 maximal</p>
+        </div>
+      ))}
       <RaceCountdown go={go} />
       <AdaptCard />
       <WeekReviewCard />
