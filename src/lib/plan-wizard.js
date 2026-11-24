@@ -739,7 +739,7 @@ function session(o, date, i, when = '', focusSport = null) {
 export function toPlanItems(weeks, uid) {
   return weeks.flatMap((w) => w.days.flatMap((d) => d.sessions.map((s) => ({
     id: uid(), date: d.date, sport: s.sport, minutes: s.minutes, zone: s.zone, title: s.title, description: s.description,
-    load: estimatePlanLoad(s.minutes, s.zone), source: 'wizard', phase: w.phase, done: false,
+    load: estimatePlanLoad(s.minutes, s.zone), source: 'wizard', phase: w.phase, done: false, ...(s.keyId ? { keyId: s.keyId } : {}),
   }))));
 }
 

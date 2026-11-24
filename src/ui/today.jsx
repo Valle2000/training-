@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { RefreshCw, Plus, HeartPulse, Moon, Lightbulb } from 'lucide-react';
 import { useData } from '../lib/store.js';
 import { curve, today, weeks } from '../lib/activities.js';
+import { planTargets } from '../lib/targets.js';
 import { addDays } from '../lib/metrics.js';
 import { sportLabel } from '../lib/sports.js';
 import { syncAll } from '../lib/sync.js';
@@ -78,7 +79,7 @@ export function Today({ go, openActivity, openAdd }) {
       {(planned.length > 0 || todays.length > 0) && <h2>Heute</h2>}
       {planned.map((p) => (
         <div key={p.id} className="item" style={{ borderStyle: 'dashed' }}>
-          <div className="grow"><b>{p.title}</b><p>{sportLabel(p.sport)} · {p.minutes} min · {p.zone}</p>{p.description && <p>{p.description}</p>}</div>
+          <div className="grow"><b>{p.title}</b><p>{sportLabel(p.sport)} · {p.minutes} min · {p.zone}</p>{planTargets(p, settings) && <p><b>Ziel:</b> {planTargets(p, settings)}</p>}{p.description && <p>{p.description}</p>}</div>
           <span className="badge b-info">geplant</span>
         </div>
       ))}

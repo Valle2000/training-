@@ -20,6 +20,7 @@ import { ActivityChart } from './activity-chart.jsx';
 import { fmtPace } from '../lib/laps.js';
 import { athleteOf } from '../lib/activities.js';
 import { BIKE_SWAP, swapPlanItem } from '../lib/weather-swap.js';
+import { planTargets } from '../lib/targets.js';
 
 export function Training({ openActivity, openAdd }) {
   const { activities, plan, settings } = useData();
@@ -303,6 +304,7 @@ function WeekList({ monday, onEdit }) {
                   <button className="grow" style={{ textAlign: 'left', background: 'none', border: 0, padding: 0, color: 'inherit' }} onClick={() => onEdit(p)}>
                     <b>{p.title || sportLabel(p.sport)}</b>
                     <p className="small muted" style={{ margin: 0 }}>{sportLabel(p.sport)} · {p.minutes} min · {p.zone}{p.done ? ' · erledigt' : ''}</p>
+                    {!p.done && planTargets(p, settings) && <p className="small" style={{ margin: '2px 0 0' }}>Ziel: {planTargets(p, settings)}</p>}
                   </button>
                 </div>
                 {!p.done && <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
