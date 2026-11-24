@@ -28,24 +28,69 @@ export function Coach() {
 
 const EV_CLASS = { stark: 'b-gut', mittel: 'b-info', gering: 'b-achtung' };
 
-function Knowledge() {
-  const [q, setQ] = useState('');
-  const [cat, setCat] = useState('');
-  const cats = [...new Set(TOPICS.map((t) => t.cat))];
-  const list = TOPICS.filter((t) => (!cat || t.cat === cat) && (!q || JSON.stringify(t).toLowerCase().includes(q.toLowerCase())));
+// Kapitel des Wissensteils: Themen nach Kategorie, die Erklärungen aller Werte (k_…) gesammelt in Kapitel 1.
+const CHAPTERS = [
+  { id: 'basics', title: 'Werte und Kennzahlen verstehen', intro: 'Was die Zahlen in der App bedeuten und ab wann sie auffällig sind.', cats: ['Kennzahlen'] },
+  { id: 'training', title: 'Training gestalten', intro: 'Intensität, Schwelle, Umfang, Wochenaufbau und Kraft.', cats: ['Intensität', 'Schwelle', 'Umfang & Entwicklung', 'Periodisierung', 'Kraft'] },
+  { id: 'studies', title: 'Trainingsansätze und Studien', intro: 'Welche Ansätze es gibt und was die wichtigsten Studien dazu zeigen.', cats: ['Studien: Trainingsansätze'] },
+  { id: 'sports', title: 'Andere Sportarten', intro: 'Laufen, Rad, Schwimmen, Rudern, Triathlon und was sich auf den Langlauf überträgt.', cats: ['Laufen', 'Radsport', 'Schwimmen', 'Rudern', 'Triathlon', 'Sportübergreifend'] },
+  { id: 'recovery', title: 'Erholung und Gesundheit', intro: 'HRV, Schlaf, Überlastung, Infekte, Verletzungen, Hitze und Höhe.', cats: ['Erholung', 'Gesundheit', 'Umwelt', 'Höhe'] },
+  { id: 'nutrition', title: 'Ernährung und Körper', intro: 'Energie, Kohlenhydrate, Eiweiß, Gewicht.', cats: ['Ernährung', 'Körper'] },
+  { id: 'race', title: 'Wettkampf', intro: 'Tapering und Vorbereitung auf das Rennen.', cats: ['Wettkampf'] },
+];
+// Einzelne Themen gehören inhaltlich in ein anderes Kapitel als ihre Kategorie.
+const CHAPTER_OF = { approaches: 'studies' };
+const chapterOf = (t) => CHAPTER_OF[t.id] || (t.id.startsWith('k_') || t.cat === 'Kennzahlen' ? 'basics' : CHAPTERS.find((c) => c.cats.includes(t.cat))?.id || 'more');
+// Überschrift innerhalb eines Kapitels: in Kapitel 1 nach Bereich, sonst nach Kategorie.
+const groupOf = (t, chapter) => (chapter === 'basics' ? (t.cat === 'Kennzahlen' ? 'Training und Leistung' : t.cat === 'Körper' ? 'Körper' : 'Erholung') : chapter === 'studies' ? (['approaches', 'st_overview'].includes(t.id) ? 'Überblick' : 'Einzelstudien') : t.cat);
+
+function TopicBody({ t }) {
   return (
     <>
-      <p className="muted" style={{ marginTop: 12 }}>Kernaussagen aus der Trainingswissenschaft mit Fokus Langlauf, inklusive aktueller Studien (2023–2026) und übertragbarer Erkenntnisse aus Laufen, Radsport, Rudern und Triathlon. Jede Aussage hat eine Quelle und eine Einschätzung, wie belastbar sie ist.</p>
+      <ul style={{ paddingLeft: 18, lineHeight: 1.55, fontSize: 14 }}>{t.facts.map((x, i) => <li key={i}>{x}</li>)}</ul>
+      <p style={{ fontSize: 14 }}><b>Für dein Training:</b> {t.practice}</p>
+      {t.sources.length > 0 && <div className="small muted"><BookOpen size={13} /> Quellen:<ul style={{ paddingLeft: 18, margin: '4px 0' }}>{t.sources.map((src) => <li key={src.url}><a href={src.url} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>{src.text}</a></li>)}</ul></div>}
+    </>
+  );
+}
+
+function Topic({ t, card = false }) {
+  return (
+    <details id={'topic-' + t.id} className={card ? 'card' : undefined} style={card ? undefined : { borderTop: '1px solid var(--line)', padding: '8px 0' }}>
+      <summary><b>{t.title}</b> <span className={`badge ${EV_CLASS[t.evidence]}`}>{EVIDENCE_LABEL[t.evidence]}</span></summary>
+      <TopicBody t={t} />
+    </details>
+  );
+}
+
+function Knowledge() {
+  const [q, setQ] = useState('');
+  const query = q.trim().toLowerCase();
+  const hits = query ? TOPICS.filter((t) => JSON.stringify(t).toLowerCase().includes(query)) : [];
+  const chapters = [...CHAPTERS, { id: 'more', title: 'Weiteres', intro: '', cats: [] }]
+    .map((c) => ({ ...c, topics: TOPICS.filter((t) => chapterOf(t) === c.id) }))
+    .filter((c) => c.topics.length);
+  return (
+    <>
+      <p className="muted" style={{ marginTop: 12 }}>Kernaussagen aus der Trainingswissenschaft mit Fokus Langlauf, dazu übertragbare Erkenntnisse aus Laufen, Rad, Schwimmen und Triathlon. Jede Aussage hat eine Quelle und eine Einschätzung, wie belastbar sie ist.</p>
       <div className="row"><Search size={18} style={{ flex: 'none' }} /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Suchen, z. B. Schwelle, HRV, Eiweiß" /></div>
-      <div className="chips"><button className={`chip${!cat ? ' on' : ''}`} onClick={() => setCat('')}>Alle</button>{cats.map((c) => <button key={c} className={`chip${cat === c ? ' on' : ''}`} onClick={() => setCat(c)}>{c}</button>)}</div>
-      {list.map((t) => (
-        <details key={t.id} id={'topic-' + t.id} className="card">
-          <summary><b>{t.title}</b> <span className={`badge ${EV_CLASS[t.evidence]}`}>{EVIDENCE_LABEL[t.evidence]}</span></summary>
-          <ul style={{ paddingLeft: 18, lineHeight: 1.55, fontSize: 14 }}>{t.facts.map((f, i) => <li key={i}>{f}</li>)}</ul>
-          <p style={{ fontSize: 14 }}><b>Für dein Training:</b> {t.practice}</p>
-          {t.sources.length > 0 && <div className="small muted"><BookOpen size={13} /> Quellen:<ul style={{ paddingLeft: 18, margin: '4px 0' }}>{t.sources.map((s) => <li key={s.url}><a href={s.url} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>{s.text}</a></li>)}</ul></div>}
-        </details>
-      ))}
+      {query ? <>
+        <p className="muted small">{hits.length} Treffer</p>
+        {hits.map((t) => <div key={t.id}><p className="small muted" style={{ margin: '8px 0 2px' }}>{CHAPTERS.find((c) => c.id === chapterOf(t))?.title || 'Weiteres'}</p><Topic t={t} card /></div>)}
+      </> : chapters.map((c, i) => {
+        const groups = [...new Set(c.topics.map((t) => groupOf(t, c.id)))];
+        return (
+          <details key={c.id} id={'chapter-' + c.id} className="card">
+            <summary><b>{i + 1}. {c.title}</b> <span className="muted small">({c.topics.length})</span>{c.intro && <p className="muted small" style={{ margin: '2px 0 0' }}>{c.intro}</p>}</summary>
+            {groups.map((g) => (
+              <div key={g} style={{ marginTop: 10 }}>
+                {groups.length > 1 && <p className="small" style={{ margin: '0 0 2px', fontWeight: 600, color: 'var(--accent)' }}>{g}</p>}
+                {c.topics.filter((t) => groupOf(t, c.id) === g).map((t) => <Topic key={t.id} t={t} />)}
+              </div>
+            ))}
+          </details>
+        );
+      })}
       <p className="muted small">Studien beschreiben Durchschnitte und oft kleine Gruppen. Sie ersetzen kein Körpergefühl und keine ärztliche Abklärung.</p>
     </>
   );
@@ -58,7 +103,7 @@ function Faq({ onTopic }) {
         <details key={i} className="card">
           <summary><b>{f.q}</b></summary>
           <p style={{ fontSize: 14 }}>{f.a}</p>
-          <div className="chips">{f.refs.map((r) => { const t = TOPICS.find((x) => x.id === r); return t && <button key={r} className="chip" onClick={() => { onTopic(); setTimeout(() => { const el = document.getElementById('topic-' + r); if (el) { el.open = true; el.scrollIntoView({ behavior: 'smooth' }); } }, 50); }}>{t.title}</button>; })}</div>
+          <div className="chips">{f.refs.map((r) => { const t = TOPICS.find((x) => x.id === r); return t && <button key={r} className="chip" onClick={() => { onTopic(); setTimeout(() => { const el = document.getElementById('topic-' + r); if (el) { for (let p = el; p; p = p.parentElement?.closest('details')) p.open = true; el.scrollIntoView({ behavior: 'smooth' }); } }, 50); }}>{t.title}</button>; })}</div>
         </details>
       ))}
     </>
