@@ -375,14 +375,17 @@ export const FOCUS_OPTIONS = [['run', 'Laufen'], ['bike', 'Rad'], ['swim', 'Schw
 // Schneelage: Zeiträume ohne Schnee (snow: false) ersetzen Ski durch eine Ersatzsportart (winterSub).
 export const noSnowOn = (date, snow = []) => (snow || []).some((p) => !p.snow && date >= p.from && date <= p.to);
 export function focusOn(date, list = [], snow = [], winterSub = 'run') {
-  const f = (list || []).find((x) => date >= x.from && date <= x.to && x.sport !== 'rollerski');
+  // Überschneiden sich Zeiträume, gilt der kürzere: z. B. ein Rad-Schwerpunkt vor einem Bergzeitfahren innerhalb des
+  // Multisport-Sommers oder ein Lauf-Schwerpunkt vor einem Herbst-Marathon.
+  const span = (x) => Date.parse(x.to) - Date.parse(x.from);
+  const f = (list || []).filter((x) => date >= x.from && date <= x.to && x.sport !== 'rollerski').sort((a, b) => span(a) - span(b))[0];
   if (f) return f.sport;
   if (noSnowOn(date, snow) && (winterSub === 'run' || winterSub === 'bike')) return winterSub;
   return null;
 }
 // Vorschlag für einen Schwerpunkt-Zeitraum vor Lauf- oder Radrennen: je wichtiger das Rennen, desto länger davor.
-// Ski bleibt Hauptziel: der Zeitraum beginnt nach einem vorher liegenden Ski-A/B-Rennen. Überschneidungen mit
-// bestehenden Zeiträumen werden nicht vorgeschlagen.
+// Ski bleibt Hauptziel: der Zeitraum beginnt nach einem vorher liegenden Ski-A/B-Rennen. Innerhalb eines breiteren
+// Zeitraums (z. B. Multisport-Sommer) wird trotzdem vorgeschlagen, der kürzere gilt dann; nur dieselbe Sportart nicht doppelt.
 export const FOCUS_WEEKS = { A: 8, B: 4 };
 const SKI_TECH = ['Skating', 'Klassisch', 'Skiathlon', 'Rollski'];
 export function focusSuggestions(races = [], focus = []) {
@@ -394,7 +397,7 @@ export function focusSuggestions(races = [], focus = []) {
     let from = addDays(r.date, -7 * weeks);
     for (const s of races) if (SKI_TECH.includes(s.technique) && (s.priority === 'A' || s.priority === 'B') && s.date < r.date && s.date >= from) from = addDays(s.date, 1);
     if (from > addDays(r.date, -14)) continue; // weniger als zwei Wochen Vorlauf: kein Vorschlag
-    if (focus.some((f) => f.from <= r.date && f.to >= from)) continue; // überschneidet sich mit einem bestehenden Zeitraum
+    if (focus.some((f) => f.sport === sport && f.from <= r.date && f.to >= from)) continue; // gleiche Sportart ist schon abgedeckt
     out.push({ id: `sugg-${r.id}`, sport, label: `${SPORT_NAME[sport]} vor ${r.name?.trim() || 'Rennen'}`, from, to: r.date, race: r.name?.trim() || '', priority: r.priority });
   }
   return out;
