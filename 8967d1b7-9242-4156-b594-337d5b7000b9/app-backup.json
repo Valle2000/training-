@@ -63,6 +63,7 @@
   "hrRest": "38",
   "season": {
    "focus": [],
+   "bikeTo": 10,
    "wizard": {
     "end": "2027-03-21",
     "keys": [
@@ -79,7 +80,7 @@
      "hit_pyr",
      "race_tt"
     ],
-    "start": "2026-11-02",
+    "start": "2026-11-30",
     "dtDays": 1,
     "horizon": 8,
     "longDay": 7,
@@ -130,12 +131,13 @@
     ],
     "strengthPerWeek": 2
    },
+   "bikeFrom": 4,
    "baseHours": "17",
    "mainSport": "rollerski",
    "peakHours": "19",
-   "winterRunHours": "3"
+   "winterRunHours": "5"
   },
-  "lastSync": "2026-11-23T11:36:31.277Z",
+  "lastSync": "2026-11-24T12:11:18.073Z",
   "strategy": "Aktuell ca. 15 h Ausdauer pro Woche plus 2 Krafteinheiten (zusammen ca. 2 h). Bald möchte ich Double-Threshold-Tage einbauen und später auch etwas mehr Intensität.",
   "weightKg": "80",
   "ftpSkierg": "224",
@@ -155,7 +157,7 @@
   "polarSportMap": {
    "83": "strength"
   },
-  "metricsVersion": 10,
+  "metricsVersion": 12,
   "hiddenTemplates": [
    "JOE"
   ],
@@ -953312,89 +953314,65 @@
     {
      "hr": 132,
      "avg": 362,
-     "endS": 210,
+     "endS": 213,
      "watts": true,
-     "startS": 76,
-     "durationS": 135
+     "startS": 77,
+     "durationS": 137
     },
     {
      "hr": 133,
      "avg": 346,
-     "endS": 351,
+     "endS": 353,
      "watts": true,
-     "startS": 274,
+     "startS": 276,
      "durationS": 78
-    },
-    {
-     "hr": 129,
-     "avg": 338,
-     "endS": 484,
-     "watts": true,
-     "startS": 414,
-     "durationS": 71
     },
     {
      "hr": 133,
      "avg": 327,
-     "endS": 1273,
+     "endS": 1276,
      "watts": true,
-     "startS": 1172,
-     "durationS": 102
-    },
-    {
-     "hr": 128,
-     "avg": 321,
-     "endS": 1546,
-     "watts": true,
-     "startS": 1442,
-     "durationS": 105
-    },
-    {
-     "hr": 126,
-     "avg": 331,
-     "endS": 2085,
-     "watts": true,
-     "startS": 2025,
-     "durationS": 61
+     "startS": 1174,
+     "durationS": 103
     },
     {
      "hr": 129,
      "avg": 319,
-     "endS": 4908,
+     "endS": 4910,
      "watts": true,
      "startS": 4624,
-     "durationS": 285
+     "durationS": 287
     },
     {
      "hr": 136,
      "avg": 361,
-     "endS": 5438,
+     "endS": 5440,
      "watts": true,
-     "startS": 5068,
-     "durationS": 371
+     "startS": 5069,
+     "durationS": 372
     },
     {
      "hr": 136,
-     "avg": 348,
+     "avg": 351,
      "endS": 6174,
      "watts": true,
-     "startS": 6067,
-     "durationS": 108
+     "startS": 6070,
+     "durationS": 105
     }
    ],
    "lapGrades": [
-    39.7,
-    8.1,
-    4.9,
-    14.3,
+    39.8,
     8.3,
+    5,
+    14.3,
+    8.4,
     2.1,
     -0.5,
     -3.5,
     -1.9,
     3.7,
-    -2.6,
-    6.2,
+    -2.5,
+    6.3,
     -7.3,
     0.9,
     null
@@ -953998,58 +953976,66 @@
     {
      "hr": 118,
      "avg": 5,
-     "endS": 444,
+     "endS": 445,
      "watts": false,
-     "startS": 99,
-     "durationS": 346
+     "startS": 102,
+     "durationS": 344
     },
     {
      "hr": 115,
      "avg": 6,
-     "endS": 1504,
+     "endS": 1505,
      "watts": false,
-     "startS": 1024,
-     "durationS": 481
+     "startS": 1027,
+     "durationS": 479
     },
     {
-     "hr": 121,
+     "hr": 120,
      "avg": 5,
-     "endS": 1667,
+     "endS": 1668,
      "watts": false,
-     "startS": 1604,
-     "durationS": 64
+     "startS": 1606,
+     "durationS": 63
     },
     {
      "hr": 105,
      "avg": 6,
-     "endS": 5477,
+     "endS": 5478,
      "watts": false,
-     "startS": 4611,
-     "durationS": 867
+     "startS": 4613,
+     "durationS": 866
+    },
+    {
+     "hr": 103,
+     "avg": 5,
+     "endS": 6554,
+     "watts": false,
+     "startS": 6454,
+     "durationS": 101
     },
     {
      "hr": 108,
      "avg": 6,
-     "endS": 8142,
+     "endS": 8144,
      "watts": false,
-     "startS": 7553,
+     "startS": 7555,
      "durationS": 590
     },
     {
      "hr": 135,
      "avg": 6,
-     "endS": 8412,
+     "endS": 8414,
      "watts": false,
-     "startS": 8351,
-     "durationS": 62
+     "startS": 8352,
+     "durationS": 63
     },
     {
      "hr": 103,
      "avg": 5,
-     "endS": 8628,
+     "endS": 8631,
      "watts": false,
-     "startS": 8555,
-     "durationS": 74
+     "startS": 8556,
+     "durationS": 76
     }
    ],
    "lapGrades": [
@@ -954382,56 +954368,56 @@
    "intervals": [
     {
      "hr": 131,
-     "avg": 354,
-     "endS": 190,
+     "avg": 355,
+     "endS": 192,
      "watts": true,
-     "startS": 28,
+     "startS": 30,
      "durationS": 163
     },
     {
      "hr": 126,
-     "avg": 322,
-     "endS": 453,
+     "avg": 321,
+     "endS": 455,
      "watts": true,
-     "startS": 256,
+     "startS": 258,
      "durationS": 198
     },
     {
      "hr": 131,
      "avg": 314,
-     "endS": 1292,
+     "endS": 1294,
      "watts": true,
-     "startS": 1007,
-     "durationS": 286
+     "startS": 1010,
+     "durationS": 285
     },
     {
      "hr": 128,
      "avg": 313,
-     "endS": 2936,
+     "endS": 2938,
      "watts": true,
-     "startS": 2820,
-     "durationS": 117
+     "startS": 2823,
+     "durationS": 116
     },
     {
      "hr": 137,
      "avg": 336,
-     "endS": 3182,
+     "endS": 3184,
      "watts": true,
-     "startS": 3115,
+     "startS": 3117,
      "durationS": 68
     }
    ],
    "lapGrades": [
-    77.4,
-    -6.7,
+    78,
+    -6.8,
     7.9,
-    -3,
-    -7.5,
-    4,
+    -2.9,
+    -7.3,
+    3.6,
     2.2,
     1.2,
     -1.1,
-    4.7
+    3.7
    ],
    "powerHist": null,
    "decoupling": 3.2,
@@ -954676,10 +954662,10 @@
     {
      "hr": 153,
      "avg": 223,
-     "endS": 4844,
+     "endS": 4847,
      "watts": true,
-     "startS": 1213,
-     "durationS": 3632
+     "startS": 1217,
+     "durationS": 3631
     }
    ],
    "lapGrades": null,
@@ -955192,88 +955178,96 @@
    "intensity": null,
    "intervals": [
     {
+     "hr": 134,
+     "avg": 336,
+     "endS": 218,
+     "watts": true,
+     "startS": 95,
+     "durationS": 124
+    },
+    {
      "hr": 165,
      "avg": 439,
-     "endS": 1643,
+     "endS": 1645,
      "watts": true,
-     "startS": 1411,
+     "startS": 1413,
      "durationS": 233
     },
     {
      "hr": 166,
      "avg": 446,
-     "endS": 1995,
+     "endS": 1997,
      "watts": true,
-     "startS": 1771,
+     "startS": 1773,
      "durationS": 225
     },
     {
      "hr": 165,
-     "avg": 437,
-     "endS": 2360,
+     "avg": 436,
+     "endS": 2362,
      "watts": true,
-     "startS": 2132,
+     "startS": 2134,
      "durationS": 229
     },
     {
      "hr": 168,
      "avg": 463,
-     "endS": 2718,
+     "endS": 2719,
      "watts": true,
-     "startS": 2488,
-     "durationS": 231
+     "startS": 2491,
+     "durationS": 229
     },
     {
      "hr": 168,
-     "avg": 442,
-     "endS": 3074,
+     "avg": 441,
+     "endS": 3077,
      "watts": true,
-     "startS": 2855,
-     "durationS": 220
+     "startS": 2857,
+     "durationS": 221
     },
     {
      "hr": 167,
      "avg": 433,
-     "endS": 3421,
+     "endS": 3423,
      "watts": true,
-     "startS": 3236,
+     "startS": 3238,
      "durationS": 186
     },
     {
      "hr": 170,
-     "avg": 443,
-     "endS": 3810,
+     "avg": 444,
+     "endS": 3813,
      "watts": true,
-     "startS": 3585,
+     "startS": 3588,
      "durationS": 226
     },
     {
      "hr": 172,
-     "avg": 474,
-     "endS": 4169,
+     "avg": 475,
+     "endS": 4172,
      "watts": true,
-     "startS": 3947,
+     "startS": 3950,
      "durationS": 223
     }
    ],
    "lapGrades": [
     19.6,
-    4.5,
-    5.9,
-    7.4,
-    6.5,
+    4.3,
+    6.3,
+    7.3,
+    6.8,
     7.7,
-    5.7,
-    7.6,
-    7.7,
-    5,
-    1.9,
+    6.2,
+    7,
+    9.1,
+    4.6,
+    2.6,
     9.6,
-    4.7,
-    12,
-    4.8,
-    -7,
-    -5.9
+    5,
+    11.7,
+    5.9,
+    -6.7,
+    -5.8
    ],
    "powerHist": null,
    "decoupling": 9.7,
@@ -956050,91 +956044,91 @@
    "intensity": null,
    "intervals": [
     {
-     "hr": 99,
+     "hr": 98,
      "avg": 5,
-     "endS": 1361,
+     "endS": 1363,
      "watts": false,
-     "startS": 1071,
-     "durationS": 291
+     "startS": 988,
+     "durationS": 376
     },
     {
      "hr": 91,
      "avg": 6,
-     "endS": 4331,
+     "endS": 4333,
      "watts": false,
-     "startS": 2933,
+     "startS": 2935,
      "durationS": 1399
     },
     {
      "hr": 105,
      "avg": 6,
-     "endS": 4530,
+     "endS": 4531,
      "watts": false,
-     "startS": 4419,
+     "startS": 4420,
      "durationS": 112
     },
     {
      "hr": 104,
      "avg": 6,
-     "endS": 5045,
+     "endS": 5047,
      "watts": false,
-     "startS": 4604,
-     "durationS": 442
+     "startS": 4608,
+     "durationS": 440
     },
     {
      "hr": 86,
-     "avg": 7,
-     "endS": 5605,
+     "avg": 6,
+     "endS": 5607,
      "watts": false,
-     "startS": 5399,
-     "durationS": 207
+     "startS": 5400,
+     "durationS": 208
     },
     {
      "hr": 105,
      "avg": 6,
-     "endS": 6105,
+     "endS": 6109,
      "watts": false,
      "startS": 5838,
-     "durationS": 268
+     "durationS": 272
     },
     {
      "hr": 103,
      "avg": 6,
-     "endS": 7160,
+     "endS": 7161,
      "watts": false,
-     "startS": 6704,
-     "durationS": 457
+     "startS": 6706,
+     "durationS": 456
     },
     {
      "hr": 105,
      "avg": 6,
-     "endS": 8571,
+     "endS": 8573,
      "watts": false,
-     "startS": 8168,
+     "startS": 8170,
      "durationS": 404
     },
     {
      "hr": 109,
      "avg": 6,
-     "endS": 8997,
+     "endS": 8999,
      "watts": false,
-     "startS": 8639,
+     "startS": 8641,
      "durationS": 359
     },
     {
      "hr": 110,
      "avg": 5,
-     "endS": 9249,
+     "endS": 9251,
      "watts": false,
-     "startS": 9141,
-     "durationS": 109
+     "startS": 9146,
+     "durationS": 106
     },
     {
      "hr": 106,
      "avg": 6,
-     "endS": 9846,
+     "endS": 9848,
      "watts": false,
-     "startS": 9691,
+     "startS": 9693,
      "durationS": 156
     }
    ],
@@ -956507,44 +956501,44 @@
     {
      "hr": 124,
      "avg": 331,
-     "endS": 380,
+     "endS": 382,
      "watts": true,
-     "startS": 217,
-     "durationS": 164
+     "startS": 218,
+     "durationS": 165
     },
     {
      "hr": 126,
      "avg": 318,
-     "endS": 1098,
+     "endS": 1101,
      "watts": true,
-     "startS": 992,
-     "durationS": 107
+     "startS": 994,
+     "durationS": 108
     },
     {
      "hr": 123,
-     "avg": 331,
-     "endS": 1544,
+     "avg": 330,
+     "endS": 1546,
      "watts": true,
-     "startS": 1485,
-     "durationS": 60
+     "startS": 1486,
+     "durationS": 61
     },
     {
      "hr": 134,
      "avg": 333,
-     "endS": 3067,
+     "endS": 3069,
      "watts": true,
-     "startS": 3008,
-     "durationS": 60
+     "startS": 3009,
+     "durationS": 61
     }
    ],
    "lapGrades": [
-    35.3,
+    35.4,
     2.5,
     0.9,
     2.4,
     2.2,
-    6.1,
-    -0.6,
+    6.2,
+    -0.7,
     6.9
    ],
    "powerHist": null,
@@ -956873,26 +956867,26 @@
    "intervals": [
     {
      "hr": 141,
-     "avg": 347,
-     "endS": 980,
+     "avg": 348,
+     "endS": 981,
      "watts": true,
-     "startS": 621,
-     "durationS": 360
+     "startS": 623,
+     "durationS": 359
     },
     {
-     "hr": 113,
-     "avg": 332,
-     "endS": 3320,
+     "hr": 112,
+     "avg": 331,
+     "endS": 3324,
      "watts": true,
-     "startS": 3012,
-     "durationS": 309
+     "startS": 3009,
+     "durationS": 316
     }
    ],
    "lapGrades": [
-    52,
-    -22.7,
+    53.1,
+    -23,
     0.4,
-    -0.6,
+    -0.5,
     0.7,
     1.7,
     null,
@@ -957171,11 +957165,11 @@
    "intervals": [
     {
      "hr": 156,
-     "avg": 220,
-     "endS": 4895,
+     "avg": 221,
+     "endS": 4899,
      "watts": true,
-     "startS": 1210,
-     "durationS": 3686
+     "startS": 1212,
+     "durationS": 3688
     }
    ],
    "lapGrades": null,
@@ -957733,103 +957727,103 @@
    "intervals": [
     {
      "hr": 126,
-     "avg": 309,
-     "endS": 508,
+     "avg": 306,
+     "endS": 510,
      "watts": true,
-     "startS": 442,
+     "startS": 444,
      "durationS": 67
     },
     {
-     "hr": 134,
-     "avg": 322,
-     "endS": 674,
+     "hr": 135,
+     "avg": 321,
+     "endS": 676,
      "watts": true,
-     "startS": 587,
+     "startS": 589,
      "durationS": 88
     },
     {
      "hr": 152,
-     "avg": 431,
-     "endS": 1097,
+     "avg": 430,
+     "endS": 1099,
      "watts": true,
-     "startS": 762,
-     "durationS": 336
+     "startS": 763,
+     "durationS": 337
     },
     {
      "hr": 166,
      "avg": 453,
-     "endS": 1456,
+     "endS": 1458,
      "watts": true,
-     "startS": 1222,
+     "startS": 1224,
      "durationS": 235
     },
     {
      "hr": 167,
      "avg": 455,
-     "endS": 1816,
+     "endS": 1818,
      "watts": true,
-     "startS": 1585,
+     "startS": 1587,
      "durationS": 232
     },
     {
      "hr": 166,
      "avg": 436,
-     "endS": 2173,
+     "endS": 2175,
      "watts": true,
-     "startS": 1949,
+     "startS": 1951,
      "durationS": 225
     },
     {
      "hr": 169,
-     "avg": 450,
-     "endS": 2534,
+     "avg": 449,
+     "endS": 2537,
      "watts": true,
-     "startS": 2310,
-     "durationS": 225
-    },
-    {
-     "hr": 167,
-     "avg": 434,
-     "endS": 2897,
-     "watts": true,
-     "startS": 2667,
-     "durationS": 231
-    },
-    {
-     "hr": 170,
-     "avg": 444,
-     "endS": 3251,
-     "watts": true,
-     "startS": 3026,
+     "startS": 2312,
      "durationS": 226
     },
     {
      "hr": 167,
-     "avg": 427,
-     "endS": 3610,
+     "avg": 435,
+     "endS": 2898,
      "watts": true,
-     "startS": 3383,
+     "startS": 2670,
+     "durationS": 229
+    },
+    {
+     "hr": 170,
+     "avg": 444,
+     "endS": 3252,
+     "watts": true,
+     "startS": 3028,
+     "durationS": 225
+    },
+    {
+     "hr": 167,
+     "avg": 427,
+     "endS": 3612,
+     "watts": true,
+     "startS": 3385,
      "durationS": 228
     }
    ],
    "lapGrades": [
     12.2,
-    1.9,
-    11.3,
-    -0.2,
-    11.6,
-    0.7,
-    11.7,
-    1.3,
-    10.4,
-    1.2,
-    9.6,
-    1.3,
-    5.5,
+    1.7,
+    10.9,
+    0,
+    11.5,
     0.9,
+    11.4,
+    1.5,
+    10.1,
+    1.2,
+    9.9,
+    0.8,
+    6.3,
+    0.7,
     6.8,
-    -4.9,
-    -4.4,
+    -4.7,
+    -4.1,
     -10,
     -1.6
    ],
@@ -958643,26 +958637,26 @@
     {
      "hr": 111,
      "avg": 5,
-     "endS": 3502,
+     "endS": 3505,
      "watts": false,
-     "startS": 3273,
-     "durationS": 230
+     "startS": 3275,
+     "durationS": 231
     },
     {
      "hr": 112,
      "avg": 5,
-     "endS": 5650,
+     "endS": 5653,
      "watts": false,
-     "startS": 5481,
-     "durationS": 170
+     "startS": 5483,
+     "durationS": 171
     },
     {
      "hr": 115,
      "avg": 5,
-     "endS": 8160,
+     "endS": 8161,
      "watts": false,
-     "startS": 6147,
-     "durationS": 2014
+     "startS": 6149,
+     "durationS": 2013
     }
    ],
    "lapGrades": [
@@ -958674,10 +958668,10 @@
     -0.4,
     -0.8,
     -1.5,
-    -4.2,
-    -3.6,
-    -1.7,
-    -2,
+    -3.3,
+    -4.5,
+    -1.3,
+    -3,
     -1.5,
     -1.4,
     0,
@@ -958986,53 +958980,53 @@
    "intervals": [
     {
      "hr": 118,
-     "avg": 314,
-     "endS": 228,
+     "avg": 315,
+     "endS": 230,
      "watts": true,
-     "startS": 39,
-     "durationS": 190
+     "startS": 40,
+     "durationS": 191
     },
     {
      "hr": 127,
-     "avg": 298,
-     "endS": 594,
+     "avg": 299,
+     "endS": 596,
      "watts": true,
-     "startS": 462,
+     "startS": 464,
      "durationS": 133
     },
     {
      "hr": 133,
-     "avg": 314,
-     "endS": 1003,
+     "avg": 313,
+     "endS": 1005,
      "watts": true,
-     "startS": 924,
+     "startS": 926,
      "durationS": 80
     },
     {
      "hr": 130,
      "avg": 307,
-     "endS": 1353,
+     "endS": 1356,
      "watts": true,
-     "startS": 1223,
-     "durationS": 131
+     "startS": 1225,
+     "durationS": 132
     },
     {
      "hr": 136,
-     "avg": 327,
-     "endS": 1771,
+     "avg": 328,
+     "endS": 1774,
      "watts": true,
-     "startS": 1669,
-     "durationS": 103
+     "startS": 1671,
+     "durationS": 104
     }
    ],
    "lapGrades": [
-    31,
-    7.5,
-    2,
+    31.1,
+    7.6,
     2.1,
+    2,
     -3.1,
     -3,
-    -9.6,
+    -11.2,
     null
    ],
    "powerHist": null,
@@ -959643,42 +959637,42 @@
     {
      "hr": 95,
      "avg": 6,
-     "endS": 5148,
+     "endS": 5150,
      "watts": false,
-     "startS": 4295,
+     "startS": 4297,
      "durationS": 854
     },
     {
      "hr": 99,
      "avg": 5,
-     "endS": 6229,
+     "endS": 6233,
      "watts": false,
-     "startS": 6066,
-     "durationS": 164
+     "startS": 6069,
+     "durationS": 165
     },
     {
      "hr": 109,
      "avg": 6,
-     "endS": 6709,
+     "endS": 6711,
      "watts": false,
-     "startS": 6344,
+     "startS": 6346,
      "durationS": 366
     },
     {
      "hr": 110,
      "avg": 5,
-     "endS": 7445,
+     "endS": 7447,
      "watts": false,
-     "startS": 6776,
+     "startS": 6778,
      "durationS": 670
     },
     {
      "hr": 111,
      "avg": 6,
-     "endS": 8708,
+     "endS": 8710,
      "watts": false,
-     "startS": 7510,
-     "durationS": 1199
+     "startS": 7513,
+     "durationS": 1198
     }
    ],
    "lapGrades": [
@@ -959912,10 +959906,10 @@
     {
      "hr": 153,
      "avg": 215,
-     "endS": 4806,
+     "endS": 4807,
      "watts": true,
-     "startS": 1175,
-     "durationS": 3632
+     "startS": 1177,
+     "durationS": 3631
     }
    ],
    "lapGrades": null,
@@ -960167,11 +960161,11 @@
    "intensity": null,
    "intervals": [],
    "lapGrades": [
-    52.2,
-    4.6,
-    4.3,
-    4.9,
-    5.7
+    53.3,
+    4.7,
+    4.2,
+    5,
+    5.9
    ],
    "powerHist": null,
    "decoupling": null,
@@ -960372,14 +960366,14 @@
     {
      "hr": 121,
      "avg": 239,
-     "endS": 1077,
+     "endS": 1080,
      "watts": true,
-     "startS": 1005,
-     "durationS": 73
+     "startS": 1007,
+     "durationS": 74
     }
    ],
    "lapGrades": [
-    64.8,
+    65.6,
     -4.4,
     -3.9,
     -5.3,
@@ -960548,16 +960542,16 @@
    "intensity": null,
    "intervals": [
     {
-     "hr": 147,
-     "avg": 416,
-     "endS": 978,
+     "hr": 148,
+     "avg": 421,
+     "endS": 980,
      "watts": true,
-     "startS": 888,
-     "durationS": 91
+     "startS": 892,
+     "durationS": 89
     }
    ],
    "lapGrades": [
-    43.6,
+    43.5,
     1.8,
     null
    ],
@@ -960975,105 +960969,105 @@
     {
      "hr": 113,
      "avg": 4,
-     "endS": 501,
+     "endS": 500,
      "watts": false,
-     "startS": 24,
-     "durationS": 478
+     "startS": 26,
+     "durationS": 475
     },
     {
      "hr": 106,
      "avg": 4,
-     "endS": 1114,
+     "endS": 1115,
      "watts": false,
-     "startS": 970,
-     "durationS": 145
+     "startS": 972,
+     "durationS": 144
     },
     {
      "hr": 108,
      "avg": 4,
-     "endS": 1401,
+     "endS": 1403,
      "watts": false,
-     "startS": 1194,
+     "startS": 1196,
      "durationS": 208
     },
     {
      "hr": 119,
      "avg": 5,
-     "endS": 1929,
+     "endS": 1931,
      "watts": false,
-     "startS": 1870,
+     "startS": 1872,
      "durationS": 60
     },
     {
      "hr": 116,
      "avg": 5,
-     "endS": 2673,
+     "endS": 2676,
      "watts": false,
-     "startS": 2156,
-     "durationS": 518
+     "startS": 2158,
+     "durationS": 519
     },
     {
      "hr": 115,
      "avg": 4,
-     "endS": 3096,
+     "endS": 3098,
      "watts": false,
-     "startS": 2906,
-     "durationS": 191
+     "startS": 2909,
+     "durationS": 190
     },
     {
      "hr": 103,
      "avg": 5,
-     "endS": 5769,
+     "endS": 5770,
      "watts": false,
-     "startS": 5358,
-     "durationS": 412
+     "startS": 5360,
+     "durationS": 411
     },
     {
      "hr": 85,
      "avg": 5,
-     "endS": 6021,
+     "endS": 6023,
      "watts": false,
-     "startS": 5900,
+     "startS": 5902,
      "durationS": 122
     },
     {
      "hr": 102,
      "avg": 4,
-     "endS": 6284,
+     "endS": 6285,
      "watts": false,
-     "startS": 6108,
-     "durationS": 177
+     "startS": 6110,
+     "durationS": 176
     },
     {
      "hr": 103,
      "avg": 4,
-     "endS": 6543,
+     "endS": 6545,
      "watts": false,
-     "startS": 6364,
-     "durationS": 180
+     "startS": 6365,
+     "durationS": 181
     },
     {
      "hr": 100,
      "avg": 4,
-     "endS": 6801,
+     "endS": 6803,
      "watts": false,
-     "startS": 6622,
+     "startS": 6624,
      "durationS": 180
     },
     {
      "hr": 101,
      "avg": 4,
-     "endS": 7032,
+     "endS": 7035,
      "watts": false,
-     "startS": 6887,
-     "durationS": 146
+     "startS": 6889,
+     "durationS": 147
     },
     {
      "hr": 99,
      "avg": 4,
-     "endS": 7427,
+     "endS": 7429,
      "watts": false,
-     "startS": 7178,
+     "startS": 7180,
      "durationS": 250
     }
    ],
@@ -961366,37 +961360,37 @@
     {
      "hr": 122,
      "avg": 344,
-     "endS": 363,
+     "endS": 365,
      "watts": true,
-     "startS": 135,
+     "startS": 137,
      "durationS": 229
     },
     {
      "hr": 124,
      "avg": 328,
-     "endS": 607,
+     "endS": 609,
      "watts": true,
-     "startS": 462,
+     "startS": 464,
      "durationS": 146
     },
     {
      "hr": 123,
      "avg": 319,
-     "endS": 911,
+     "endS": 913,
      "watts": true,
-     "startS": 721,
-     "durationS": 191
+     "startS": 725,
+     "durationS": 189
     }
    ],
    "lapGrades": [
-    67.7,
+    68.4,
     -1.7,
     -1.6,
     -3.5,
-    -6.1,
+    -6.3,
     -4.3,
-    -4.9,
-    -4.7,
+    -4.8,
+    -4.8,
     -2.4
    ],
    "powerHist": null,
@@ -961842,100 +961836,100 @@
    "intervals": [
     {
      "hr": 123,
-     "avg": 354,
-     "endS": 133,
+     "avg": 365,
+     "endS": 135,
      "watts": true,
-     "startS": 46,
-     "durationS": 88
+     "startS": 69,
+     "durationS": 67
     },
     {
      "hr": 122,
      "avg": 328,
-     "endS": 665,
+     "endS": 667,
      "watts": true,
-     "startS": 344,
+     "startS": 346,
      "durationS": 322
     },
     {
      "hr": 129,
-     "avg": 336,
-     "endS": 1997,
+     "avg": 351,
+     "endS": 1904,
      "watts": true,
-     "startS": 1812,
-     "durationS": 186
+     "startS": 1815,
+     "durationS": 90
     },
     {
      "hr": 131,
      "avg": 347,
-     "endS": 2231,
+     "endS": 2232,
      "watts": true,
-     "startS": 2121,
-     "durationS": 111
+     "startS": 2124,
+     "durationS": 109
     },
     {
      "hr": 136,
      "avg": 341,
-     "endS": 3096,
+     "endS": 3098,
      "watts": true,
-     "startS": 2693,
-     "durationS": 404
+     "startS": 2696,
+     "durationS": 403
     },
     {
      "hr": 144,
-     "avg": 371,
-     "endS": 3825,
+     "avg": 370,
+     "endS": 3827,
      "watts": true,
-     "startS": 3233,
+     "startS": 3235,
      "durationS": 593
     },
     {
      "hr": 135,
-     "avg": 359,
-     "endS": 4242,
+     "avg": 360,
+     "endS": 4244,
      "watts": true,
-     "startS": 4125,
+     "startS": 4127,
      "durationS": 118
     },
     {
      "hr": 140,
      "avg": 366,
-     "endS": 4511,
+     "endS": 4512,
      "watts": true,
-     "startS": 4414,
-     "durationS": 98
+     "startS": 4416,
+     "durationS": 97
     },
     {
      "hr": 139,
      "avg": 350,
-     "endS": 5043,
+     "endS": 5045,
      "watts": true,
-     "startS": 4878,
-     "durationS": 166
+     "startS": 4881,
+     "durationS": 165
     },
     {
      "hr": 136,
      "avg": 349,
-     "endS": 5236,
+     "endS": 5238,
      "watts": true,
-     "startS": 5154,
+     "startS": 5156,
      "durationS": 83
     }
    ],
    "lapGrades": [
-    34.6,
+    34.7,
     -2.3,
-    3.4,
-    1.2,
-    4.4,
+    3.3,
+    1.1,
+    4.5,
     7.2,
     8.3,
-    6.5,
+    6.6,
     -7.7,
     -2.9,
     -10.1,
     -3.7,
     -6.3,
-    -6.2,
+    -6.1,
     null
    ],
    "powerHist": null,
@@ -962162,64 +962156,80 @@
      "avg": 210,
      "endS": 1424,
      "watts": true,
-     "startS": 1358,
-     "durationS": 67
+     "startS": 1246,
+     "durationS": 179
+    },
+    {
+     "hr": 141,
+     "avg": 211,
+     "endS": 1584,
+     "watts": true,
+     "startS": 1503,
+     "durationS": 82
     },
     {
      "hr": 144,
      "avg": 210,
-     "endS": 1787,
+     "endS": 1797,
      "watts": true,
-     "startS": 1667,
-     "durationS": 121
+     "startS": 1668,
+     "durationS": 130
     },
     {
      "hr": 147,
-     "avg": 211,
-     "endS": 1960,
+     "avg": 210,
+     "endS": 2109,
      "watts": true,
-     "startS": 1876,
-     "durationS": 85
+     "startS": 1878,
+     "durationS": 232
     },
     {
-     "hr": 147,
-     "avg": 213,
-     "endS": 3023,
+     "hr": 149,
+     "avg": 214,
+     "endS": 3080,
      "watts": true,
-     "startS": 2373,
-     "durationS": 651
+     "startS": 2428,
+     "durationS": 653
     },
     {
      "hr": 152,
-     "avg": 212,
-     "endS": 3330,
+     "avg": 214,
+     "endS": 3321,
      "watts": true,
-     "startS": 3110,
-     "durationS": 221
+     "startS": 3177,
+     "durationS": 145
+    },
+    {
+     "hr": 154,
+     "avg": 210,
+     "endS": 3576,
+     "watts": true,
+     "startS": 3488,
+     "durationS": 89
     },
     {
      "hr": 151,
-     "avg": 211,
-     "endS": 3828,
+     "avg": 210,
+     "endS": 4047,
      "watts": true,
-     "startS": 3723,
-     "durationS": 106
-    },
-    {
-     "hr": 153,
-     "avg": 211,
-     "endS": 4045,
-     "watts": true,
-     "startS": 3939,
-     "durationS": 107
+     "startS": 3647,
+     "durationS": 401
     },
     {
      "hr": 155,
      "avg": 211,
-     "endS": 4519,
+     "endS": 4348,
      "watts": true,
-     "startS": 4252,
-     "durationS": 268
+     "startS": 4148,
+     "durationS": 201
+    },
+    {
+     "hr": 156,
+     "avg": 211,
+     "endS": 4746,
+     "watts": true,
+     "startS": 4457,
+     "durationS": 290
     }
    ],
    "lapGrades": null,
@@ -962589,15 +962599,24 @@
    "durationS": 3423,
    "hasSeries": true,
    "intensity": null,
-   "intervals": [],
+   "intervals": [
+    {
+     "hr": 113,
+     "avg": 315,
+     "endS": 2143,
+     "watts": true,
+     "startS": 2015,
+     "durationS": 129
+    }
+   ],
    "lapGrades": [
-    25.3,
-    -1,
+    25.5,
+    -1.1,
     -0.7,
     -0.9,
     0,
-    2.6,
-    0,
+    2.5,
+    -0.1,
     0.8,
     -0.4,
     -0.2
@@ -963110,7 +963129,7 @@
    "intensity": null,
    "intervals": [],
    "lapGrades": [
-    24.7,
+    24.9,
     -0.3,
     -0.5,
     0.2,
@@ -963118,7 +963137,7 @@
     0.6,
     0.5,
     -0.3,
-    -0.6,
+    -0.5,
     0.4,
     0.3,
     0.7,
@@ -963625,50 +963644,50 @@
     {
      "hr": 101,
      "avg": 5,
-     "endS": 3482,
+     "endS": 3484,
      "watts": false,
-     "startS": 3261,
+     "startS": 3263,
      "durationS": 222
     },
     {
      "hr": 107,
      "avg": 5,
-     "endS": 4666,
+     "endS": 4668,
      "watts": false,
-     "startS": 4375,
-     "durationS": 292
+     "startS": 4376,
+     "durationS": 293
     },
     {
      "hr": 111,
      "avg": 5,
-     "endS": 6474,
+     "endS": 6479,
      "watts": false,
-     "startS": 6026,
-     "durationS": 449
+     "startS": 6028,
+     "durationS": 452
     },
     {
      "hr": 106,
      "avg": 5,
-     "endS": 6735,
+     "endS": 6738,
      "watts": false,
-     "startS": 6666,
-     "durationS": 70
+     "startS": 6667,
+     "durationS": 72
     },
     {
      "hr": 113,
      "avg": 5,
-     "endS": 6962,
+     "endS": 6965,
      "watts": false,
-     "startS": 6880,
-     "durationS": 83
+     "startS": 6881,
+     "durationS": 85
     },
     {
      "hr": 120,
      "avg": 5,
-     "endS": 8099,
+     "endS": 8100,
      "watts": false,
-     "startS": 7118,
-     "durationS": 982
+     "startS": 7120,
+     "durationS": 981
     }
    ],
    "lapGrades": null,
@@ -964172,23 +964191,23 @@
     {
      "hr": 166,
      "avg": 6,
-     "endS": 4273,
+     "endS": 4277,
      "watts": false,
-     "startS": 1858,
-     "durationS": 2416
+     "startS": 1860,
+     "durationS": 2418
     },
     {
-     "hr": 91,
+     "hr": 90,
      "avg": 6,
-     "endS": 6467,
+     "endS": 6469,
      "watts": false,
-     "startS": 6321,
+     "startS": 6323,
      "durationS": 147
     }
    ],
    "lapGrades": [
     4.6,
-    2,
+    1.9,
     0.2
    ],
    "powerHist": null,
@@ -964897,97 +964916,97 @@
     {
      "hr": 93,
      "avg": 5,
-     "endS": 404,
+     "endS": 406,
      "watts": false,
-     "startS": 97,
-     "durationS": 308
+     "startS": 100,
+     "durationS": 307
+    },
+    {
+     "hr": 89,
+     "avg": 5,
+     "endS": 1194,
+     "watts": false,
+     "startS": 1002,
+     "durationS": 193
     },
     {
      "hr": 88,
      "avg": 5,
-     "endS": 1193,
+     "endS": 2232,
      "watts": false,
-     "startS": 1000,
-     "durationS": 194
-    },
-    {
-     "hr": 88,
-     "avg": 5,
-     "endS": 2230,
-     "watts": false,
-     "startS": 1734,
-     "durationS": 497
+     "startS": 1737,
+     "durationS": 496
     },
     {
      "hr": 93,
      "avg": 5,
-     "endS": 2388,
+     "endS": 2390,
      "watts": false,
-     "startS": 2295,
-     "durationS": 94
+     "startS": 2296,
+     "durationS": 95
     },
     {
      "hr": 138,
      "avg": 5,
-     "endS": 3590,
+     "endS": 3592,
      "watts": false,
-     "startS": 2714,
+     "startS": 2716,
      "durationS": 877
     },
     {
      "hr": 101,
      "avg": 5,
-     "endS": 4544,
+     "endS": 4547,
      "watts": false,
-     "startS": 4318,
-     "durationS": 227
+     "startS": 4320,
+     "durationS": 228
     },
     {
      "hr": 101,
      "avg": 5,
-     "endS": 5834,
+     "endS": 5838,
      "watts": false,
-     "startS": 5652,
-     "durationS": 183
+     "startS": 5654,
+     "durationS": 185
     },
     {
      "hr": 107,
      "avg": 5,
-     "endS": 6307,
+     "endS": 6309,
      "watts": false,
-     "startS": 5966,
+     "startS": 5968,
      "durationS": 342
     },
     {
      "hr": 104,
      "avg": 5,
-     "endS": 6821,
+     "endS": 6823,
      "watts": false,
-     "startS": 6712,
+     "startS": 6714,
      "durationS": 110
     }
    ],
    "lapGrades": [
     2.6,
-    1.1,
-    2.5,
+    1.7,
+    1.7,
     0,
     1.6,
-    2.3,
+    1.7,
     2.5,
-    1.7,
-    1.7,
-    2.6,
-    0,
+    2.3,
+    0.8,
+    2.5,
+    0.9,
     0.8,
     0.6,
-    1.6,
-    4.5,
-    2.2,
+    1.5,
+    4.8,
+    2.3,
     2.9,
     2.6,
-    -3.8,
-    3.4,
+    -4,
+    3.3,
     0
    ],
    "powerHist": null,
@@ -965315,62 +965334,62 @@
     {
      "hr": 134,
      "avg": 352,
-     "endS": 194,
+     "endS": 197,
      "watts": true,
-     "startS": 23,
-     "durationS": 172
+     "startS": 25,
+     "durationS": 173
     },
     {
      "hr": 137,
      "avg": 311,
-     "endS": 643,
+     "endS": 646,
      "watts": true,
-     "startS": 263,
-     "durationS": 381
+     "startS": 265,
+     "durationS": 382
     },
     {
      "hr": 157,
      "avg": 295,
-     "endS": 1015,
+     "endS": 1017,
      "watts": true,
-     "startS": 871,
-     "durationS": 145
+     "startS": 874,
+     "durationS": 144
     },
     {
      "hr": 157,
      "avg": 303,
-     "endS": 1393,
+     "endS": 1396,
      "watts": true,
-     "startS": 1306,
-     "durationS": 88
+     "startS": 1308,
+     "durationS": 89
     },
     {
      "hr": 150,
-     "avg": 306,
-     "endS": 2751,
+     "avg": 305,
+     "endS": 2752,
      "watts": true,
-     "startS": 2147,
-     "durationS": 605
+     "startS": 2150,
+     "durationS": 603
     },
     {
      "hr": 134,
-     "avg": 324,
-     "endS": 2958,
+     "avg": 323,
+     "endS": 2960,
      "watts": true,
-     "startS": 2880,
+     "startS": 2882,
      "durationS": 79
     }
    ],
    "lapGrades": [
-    79,
-    -5.4,
-    -1.2,
+    79.5,
+    -5.3,
+    -1.3,
     -7.7,
-    -1,
+    -0.9,
     8.9,
     7.5,
-    -8,
-    -1
+    -7.9,
+    -1.5
    ],
    "powerHist": null,
    "decoupling": 0.7,
@@ -965399,162 +965418,6 @@
    "description": "15 min ein, 8× 4 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 1 min Pause, 10 min aus"
   },
   {
-   "id": "mvz20oaj11h5i",
-   "date": "2026-12-06",
-   "done": false,
-   "load": 188,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "rollerski_classic",
-   "title": "Lange Grundlage",
-   "source": "wizard",
-   "minutes": 225,
-   "description": "Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)"
-  },
-  {
-   "id": "mvz20oaj1xhqy",
-   "date": "2026-12-03",
-   "done": false,
-   "load": 45,
-   "zone": "Kraft",
-   "phase": "build",
-   "sport": "strength",
-   "title": "Kraft A – Beine schwer + Zug",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Vorlage im Tab „Kraft“"
-  },
-  {
-   "id": "mvz20oaj3rp9b",
-   "date": "2026-12-11",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  },
-  {
-   "id": "mvz20oaj48qbf",
-   "date": "2026-12-03",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  },
-  {
-   "id": "mvz20oaj5ti0t",
-   "date": "2026-12-13",
-   "done": false,
-   "load": 200,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "xc_classic",
-   "title": "Lange Grundlage",
-   "source": "wizard",
-   "minutes": 240,
-   "description": "Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)"
-  },
-  {
-   "id": "mvz20oaj5trwg",
-   "date": "2026-12-05",
-   "done": false,
-   "load": 147,
-   "zone": "I4",
-   "phase": "build",
-   "sport": "hike",
-   "title": "Bergintervalle Skigang (I4): 6×5 min",
-   "source": "wizard",
-   "minutes": 80,
-   "description": "20 min ein, 6× 5 min hart (I4), 3 min Pause, 15 min aus – Skigang mit Stöcken bergauf, locker zurück"
-  },
-  {
-   "id": "mvz20oaj68nf0",
-   "date": "2026-12-17",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  },
-  {
-   "id": "mvz20oaj7z74a",
-   "date": "2026-12-12",
-   "done": false,
-   "load": 150,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "xc_classic",
-   "title": "Locker + Sprints",
-   "source": "wizard",
-   "minutes": 180,
-   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
-  },
-  {
-   "id": "mvz20oaj87wwy",
-   "date": "2026-12-01",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  },
-  {
-   "id": "mvz20oaj8ypty",
-   "date": "2026-12-05",
-   "done": false,
-   "load": 142,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "xc_classic",
-   "title": "Locker + Sprints",
-   "source": "wizard",
-   "minutes": 170,
-   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
-  },
-  {
-   "id": "mvz20oaj8z1cn",
-   "date": "2026-12-04",
-   "done": false,
-   "load": 142,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "xc_skate",
-   "title": "Locker + Sprints",
-   "source": "wizard",
-   "minutes": 170,
-   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
-  },
-  {
-   "id": "mvz20oaj96v6u",
-   "date": "2026-12-09",
-   "done": false,
-   "load": 150,
-   "zone": "I3",
-   "phase": "build",
-   "sport": "skierg",
-   "title": "Double Threshold morgens: 3×20 min",
-   "source": "wizard",
-   "minutes": 100,
-   "description": "20 min ein, 3× 20 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 2 min Pause, 15 min aus – eher untere Schwelle"
-  },
-  {
    "id": "mvz20oaja1q9o",
    "date": "2026-11-06",
    "done": false,
@@ -965578,19 +965441,6 @@
    "title": "Locker + Sprints",
    "source": "wizard",
    "minutes": 120,
-   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
-  },
-  {
-   "id": "mvz20oajbk9n2",
-   "date": "2026-12-11",
-   "done": false,
-   "load": 146,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "xc_skate",
-   "title": "Locker + Sprints",
-   "source": "wizard",
-   "minutes": 175,
    "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
   },
   {
@@ -965633,71 +965483,6 @@
    "description": "Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)"
   },
   {
-   "id": "mvz20oaji33c0",
-   "date": "2026-12-12",
-   "done": false,
-   "load": 147,
-   "zone": "I4",
-   "phase": "build",
-   "sport": "hike",
-   "title": "Bergintervalle Skigang (I4): 6×5 min",
-   "source": "wizard",
-   "minutes": 80,
-   "description": "20 min ein, 6× 5 min hart (I4), 3 min Pause, 15 min aus – Skigang mit Stöcken bergauf, locker zurück"
-  },
-  {
-   "id": "mvz20oajidtur",
-   "date": "2026-12-10",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  },
-  {
-   "id": "mvz20oajn35hw",
-   "date": "2026-12-16",
-   "done": false,
-   "load": 150,
-   "zone": "I3",
-   "phase": "build",
-   "sport": "skierg",
-   "title": "Double Threshold morgens: 3×20 min",
-   "source": "wizard",
-   "minutes": 100,
-   "description": "20 min ein, 3× 20 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 2 min Pause, 15 min aus – eher untere Schwelle"
-  },
-  {
-   "id": "mvz20oajoo8ep",
-   "date": "2026-12-02",
-   "done": false,
-   "load": 98,
-   "zone": "I3",
-   "phase": "build",
-   "sport": "run",
-   "title": "Double Threshold abends: 10×3 min",
-   "source": "wizard",
-   "minutes": 65,
-   "description": "15 min ein, 10× 3 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 1 min Pause, 10 min aus"
-  },
-  {
-   "id": "mvz20oajoyug6",
-   "date": "2026-12-08",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  },
-  {
    "id": "mvz20oajp5rnx",
    "date": "2026-11-05",
    "done": false,
@@ -965709,32 +965494,6 @@
    "source": "wizard",
    "minutes": 60,
    "description": "Vorlage im Tab „Kraft“"
-  },
-  {
-   "id": "mvz20oajqdkd6",
-   "date": "2026-12-04",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  },
-  {
-   "id": "mvz20oajr9wn4",
-   "date": "2026-12-17",
-   "done": false,
-   "load": 113,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Locker + Sprints",
-   "source": "wizard",
-   "minutes": 135,
-   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
   },
   {
    "id": "mvz20oajrretn",
@@ -965750,19 +965509,6 @@
    "description": "Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)"
   },
   {
-   "id": "mvz20oajsgbfk",
-   "date": "2026-12-10",
-   "done": false,
-   "load": 45,
-   "zone": "Kraft",
-   "phase": "build",
-   "sport": "strength",
-   "title": "Kraft A – Beine schwer + Zug",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Vorlage im Tab „Kraft“"
-  },
-  {
    "id": "mvz20oaju6171",
    "date": "2026-11-05",
    "done": false,
@@ -965773,32 +965519,6 @@
    "title": "Laufen (vor der Haustür)",
    "source": "wizard",
    "minutes": 120,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  },
-  {
-   "id": "mvz20oaju63ce",
-   "date": "2026-12-02",
-   "done": false,
-   "load": 150,
-   "zone": "I3",
-   "phase": "build",
-   "sport": "skierg",
-   "title": "Double Threshold morgens: 3×20 min",
-   "source": "wizard",
-   "minutes": 100,
-   "description": "20 min ein, 3× 20 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 2 min Pause, 15 min aus – eher untere Schwelle"
-  },
-  {
-   "id": "mvz20oajuzds0",
-   "date": "2026-12-15",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
    "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
   },
   {
@@ -965813,58 +965533,6 @@
    "source": "wizard",
    "minutes": 60,
    "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  },
-  {
-   "id": "mvz20oajx14v3",
-   "date": "2026-12-16",
-   "done": false,
-   "load": 98,
-   "zone": "I3",
-   "phase": "build",
-   "sport": "run",
-   "title": "Double Threshold abends: 10×3 min",
-   "source": "wizard",
-   "minutes": 65,
-   "description": "15 min ein, 10× 3 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 1 min Pause, 10 min aus"
-  },
-  {
-   "id": "mvz20oajy8lkz",
-   "date": "2026-12-18",
-   "done": false,
-   "load": 49,
-   "zone": "I2",
-   "phase": "build",
-   "sport": "xc_skate",
-   "title": "Vorbelastung: 30 min + 4×1 min + Sprints",
-   "source": "wizard",
-   "minutes": 45,
-   "description": "30 min locker, 4×1 min zügig, 3 kurze Sprints – 1–2 Tage vor dem Rennen"
-  },
-  {
-   "id": "mvz20oajyype8",
-   "date": "2026-12-09",
-   "done": false,
-   "load": 98,
-   "zone": "I3",
-   "phase": "build",
-   "sport": "xc_skate",
-   "title": "Double Threshold abends: 8×4 min",
-   "source": "wizard",
-   "minutes": 65,
-   "description": "15 min ein, 8× 4 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 1 min Pause, 10 min aus"
-  },
-  {
-   "id": "mvz20oak09fbz",
-   "date": "2027-01-06",
-   "done": false,
-   "load": 98,
-   "zone": "I3",
-   "phase": "build",
-   "sport": "xc_skate",
-   "title": "Double Threshold abends: 8×4 min",
-   "source": "wizard",
-   "minutes": 65,
-   "description": "15 min ein, 8× 4 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 1 min Pause, 10 min aus"
   },
   {
    "id": "mvz20oak0l85z",
@@ -965893,32 +965561,6 @@
    "description": "30 min locker, 4×1 min zügig, 3 kurze Sprints – 1–2 Tage vor dem Rennen"
   },
   {
-   "id": "mvz20oak0qpgq",
-   "date": "2027-01-09",
-   "done": false,
-   "load": 49,
-   "zone": "I2",
-   "phase": "build",
-   "sport": "xc_classic",
-   "title": "Vorbelastung: 30 min + 4×1 min + Sprints",
-   "source": "wizard",
-   "minutes": 45,
-   "description": "30 min locker, 4×1 min zügig, 3 kurze Sprints – 1–2 Tage vor dem Rennen"
-  },
-  {
-   "id": "mvz20oak1dw02",
-   "date": "2026-12-22",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  },
-  {
    "id": "mvz20oak1qc3c",
    "date": "2027-02-19",
    "done": false,
@@ -965932,19 +965574,6 @@
    "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
   },
   {
-   "id": "mvz20oak1u5o4",
-   "date": "2026-12-26",
-   "done": false,
-   "load": 147,
-   "zone": "I4",
-   "phase": "build",
-   "sport": "hike",
-   "title": "Bergintervalle Skigang (I4): 6×5 min",
-   "source": "wizard",
-   "minutes": 80,
-   "description": "20 min ein, 6× 5 min hart (I4), 3 min Pause, 15 min aus – Skigang mit Stöcken bergauf, locker zurück"
-  },
-  {
    "id": "mvz20oak1v7nz",
    "date": "2027-03-19",
    "done": false,
@@ -965956,45 +965585,6 @@
    "source": "wizard",
    "minutes": 60,
    "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  },
-  {
-   "id": "mvz20oak22kja",
-   "date": "2027-01-10",
-   "done": false,
-   "load": 220,
-   "zone": "I4",
-   "phase": "build",
-   "sport": "xc_skate",
-   "title": "Rennen: Planoiras",
-   "source": "wizard",
-   "minutes": 120,
-   "description": "Inkl. Ein- und Auslaufen"
-  },
-  {
-   "id": "mvz20oak2lk98",
-   "date": "2026-12-26",
-   "done": false,
-   "load": 88,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "xc_classic",
-   "title": "Locker + Sprints",
-   "source": "wizard",
-   "minutes": 105,
-   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
-  },
-  {
-   "id": "mvz20oak2mf5m",
-   "date": "2027-01-22",
-   "done": false,
-   "load": 138,
-   "zone": "I1",
-   "phase": "specific",
-   "sport": "xc_skate",
-   "title": "Locker + Sprints",
-   "source": "wizard",
-   "minutes": 165,
-   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
   },
   {
    "id": "mvz20oak2o8ol",
@@ -966021,58 +965611,6 @@
    "source": "wizard",
    "minutes": 174,
    "description": "Inkl. Ein- und Auslaufen"
-  },
-  {
-   "id": "mvz20oak37edp",
-   "date": "2027-01-22",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "specific",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  },
-  {
-   "id": "mvz20oak3d4j5",
-   "date": "2027-01-15",
-   "done": false,
-   "load": 67,
-   "zone": "I1",
-   "phase": "specific",
-   "sport": "xc_classic",
-   "title": "Locker + Sprints",
-   "source": "wizard",
-   "minutes": 80,
-   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
-  },
-  {
-   "id": "mvz20oak3gnuj",
-   "date": "2026-12-18",
-   "done": false,
-   "load": 113,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Locker + Sprints",
-   "source": "wizard",
-   "minutes": 135,
-   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
-  },
-  {
-   "id": "mvz20oak3xytt",
-   "date": "2026-12-27",
-   "done": false,
-   "load": 163,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "xc_classic",
-   "title": "Lange Grundlage",
-   "source": "wizard",
-   "minutes": 195,
-   "description": "Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)"
   },
   {
    "id": "mvz20oak4fgib",
@@ -966140,19 +965678,6 @@
    "description": "Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)"
   },
   {
-   "id": "mvz20oak6xyth",
-   "date": "2027-01-02",
-   "done": false,
-   "load": 154,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "xc_classic",
-   "title": "Locker + Sprints",
-   "source": "wizard",
-   "minutes": 185,
-   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
-  },
-  {
    "id": "mvz20oak6yayk",
    "date": "2027-02-19",
    "done": false,
@@ -966177,32 +965702,6 @@
    "source": "wizard",
    "minutes": 70,
    "description": "20 min ein, 4× 6 min im Renntempo, 3 min Pause, 15 min aus"
-  },
-  {
-   "id": "mvz20oak82p6v",
-   "date": "2026-12-30",
-   "done": false,
-   "load": 150,
-   "zone": "I3",
-   "phase": "build",
-   "sport": "skierg",
-   "title": "Double Threshold morgens: 3×20 min",
-   "source": "wizard",
-   "minutes": 100,
-   "description": "20 min ein, 3× 20 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 2 min Pause, 15 min aus – eher untere Schwelle"
-  },
-  {
-   "id": "mvz20oak8okid",
-   "date": "2027-01-08",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
   },
   {
    "id": "mvz20oak8pykc",
@@ -966309,19 +965808,6 @@
    "description": "20 min ein, 4× 6 min im Renntempo, 3 min Pause, 15 min aus"
   },
   {
-   "id": "mvz20oakbanyb",
-   "date": "2027-01-05",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  },
-  {
    "id": "mvz20oakc553a",
    "date": "2027-03-19",
    "done": false,
@@ -966371,19 +965857,6 @@
    "title": "Locker + Sprints",
    "source": "wizard",
    "minutes": 115,
-   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
-  },
-  {
-   "id": "mvz20oakdr9mo",
-   "date": "2027-01-14",
-   "done": false,
-   "load": 63,
-   "zone": "I1",
-   "phase": "specific",
-   "sport": "run",
-   "title": "Locker + Sprints",
-   "source": "wizard",
-   "minutes": 75,
    "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
   },
   {
@@ -966439,32 +965912,6 @@
    "description": "Grundlage I1, wirklich locker"
   },
   {
-   "id": "mvz20oakgi13w",
-   "date": "2027-01-02",
-   "done": false,
-   "load": 147,
-   "zone": "I4",
-   "phase": "build",
-   "sport": "hike",
-   "title": "Bergintervalle Skigang (I4): 6×5 min",
-   "source": "wizard",
-   "minutes": 80,
-   "description": "20 min ein, 6× 5 min hart (I4), 3 min Pause, 15 min aus – Skigang mit Stöcken bergauf, locker zurück"
-  },
-  {
-   "id": "mvz20oakgitu3",
-   "date": "2027-01-09",
-   "done": false,
-   "load": 163,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Locker + Sprints",
-   "source": "wizard",
-   "minutes": 195,
-   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
-  },
-  {
    "id": "mvz20oakgllz3",
    "date": "2027-02-25",
    "done": false,
@@ -966476,19 +965923,6 @@
    "source": "wizard",
    "minutes": 60,
    "description": "Vorlage im Tab „Kraft“"
-  },
-  {
-   "id": "mvz20oakh4ofo",
-   "date": "2027-01-19",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "specific",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
   },
   {
    "id": "mvz20oakh7rqy",
@@ -966506,45 +965940,6 @@
   {
    "id": "mvz20oakh82rr",
    "date": "2027-01-26",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "specific",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  },
-  {
-   "id": "mvz20oakhaxhc",
-   "date": "2027-01-16",
-   "done": false,
-   "load": 391,
-   "zone": "I4",
-   "phase": "specific",
-   "sport": "run",
-   "title": "Rennen: La Diagonela",
-   "source": "wizard",
-   "minutes": 213,
-   "description": "Inkl. Ein- und Auslaufen"
-  },
-  {
-   "id": "mvz20oakhps1y",
-   "date": "2026-12-19",
-   "done": false,
-   "load": 249,
-   "zone": "I4",
-   "phase": "build",
-   "sport": "xc_skate",
-   "title": "Rennen: Gastein Classics ",
-   "source": "wizard",
-   "minutes": 136,
-   "description": "Inkl. Ein- und Auslaufen"
-  },
-  {
-   "id": "mvz20oakhpybs",
-   "date": "2027-01-12",
    "done": false,
    "load": 50,
    "zone": "I1",
@@ -966673,19 +966068,6 @@
    "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
   },
   {
-   "id": "mvz20oakkqjw0",
-   "date": "2026-12-23",
-   "done": false,
-   "load": 150,
-   "zone": "I3",
-   "phase": "build",
-   "sport": "skierg",
-   "title": "Double Threshold morgens: 3×20 min",
-   "source": "wizard",
-   "minutes": 100,
-   "description": "20 min ein, 3× 20 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 2 min Pause, 15 min aus – eher untere Schwelle"
-  },
-  {
    "id": "mvz20oakksnk8",
    "date": "2027-02-13",
    "done": false,
@@ -966697,32 +966079,6 @@
    "source": "wizard",
    "minutes": 70,
    "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
-  },
-  {
-   "id": "mvz20oakktgj2",
-   "date": "2027-01-01",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  },
-  {
-   "id": "mvz20oakky7df",
-   "date": "2026-12-31",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
   },
   {
    "id": "mvz20oakl1i6m",
@@ -966775,19 +966131,6 @@
    "source": "wizard",
    "minutes": 60,
    "description": "Vorlage im Tab „Kraft“"
-  },
-  {
-   "id": "mvz20oakmbbvk",
-   "date": "2027-01-20",
-   "done": false,
-   "load": 98,
-   "zone": "I3",
-   "phase": "specific",
-   "sport": "xc_skate",
-   "title": "Double Threshold abends: 8×4 min",
-   "source": "wizard",
-   "minutes": 65,
-   "description": "15 min ein, 8× 4 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 1 min Pause, 10 min aus"
   },
   {
    "id": "mvz20oakmtehr",
@@ -966868,19 +966211,6 @@
    "description": "Inkl. Ein- und Auslaufen"
   },
   {
-   "id": "mvz20oakol1n5",
-   "date": "2027-01-03",
-   "done": false,
-   "load": 200,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "xc_classic",
-   "title": "Lange Grundlage",
-   "source": "wizard",
-   "minutes": 240,
-   "description": "Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)"
-  },
-  {
    "id": "mvz20oakouohr",
    "date": "2027-03-13",
    "done": false,
@@ -966905,19 +966235,6 @@
    "source": "wizard",
    "minutes": 60,
    "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  },
-  {
-   "id": "mvz20oakpro35",
-   "date": "2026-12-20",
-   "done": false,
-   "load": 175,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "xc_classic",
-   "title": "Lange Grundlage",
-   "source": "wizard",
-   "minutes": 210,
-   "description": "Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)"
   },
   {
    "id": "mvz20oakpx3t9",
@@ -966959,71 +966276,6 @@
    "description": "20 min ein, 3× 20 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 2 min Pause, 15 min aus – eher untere Schwelle"
   },
   {
-   "id": "mvz20oakrybsv",
-   "date": "2026-12-24",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  },
-  {
-   "id": "mvz20oaks5mo6",
-   "date": "2026-12-23",
-   "done": false,
-   "load": 98,
-   "zone": "I3",
-   "phase": "build",
-   "sport": "xc_skate",
-   "title": "Double Threshold abends: 8×4 min",
-   "source": "wizard",
-   "minutes": 65,
-   "description": "15 min ein, 8× 4 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 1 min Pause, 10 min aus"
-  },
-  {
-   "id": "mvz20oaksc6xh",
-   "date": "2027-01-20",
-   "done": false,
-   "load": 150,
-   "zone": "I3",
-   "phase": "specific",
-   "sport": "skierg",
-   "title": "Double Threshold morgens: 3×20 min",
-   "source": "wizard",
-   "minutes": 100,
-   "description": "20 min ein, 3× 20 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 2 min Pause, 15 min aus – eher untere Schwelle"
-  },
-  {
-   "id": "mvz20oakt2ot1",
-   "date": "2027-01-07",
-   "done": false,
-   "load": 45,
-   "zone": "Kraft",
-   "phase": "build",
-   "sport": "strength",
-   "title": "Kraft A – Beine schwer + Zug",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Vorlage im Tab „Kraft“"
-  },
-  {
-   "id": "mvz20oakt4cp8",
-   "date": "2027-01-07",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  },
-  {
    "id": "mvz20oakttvsr",
    "date": "2027-02-03",
    "done": false,
@@ -967035,19 +966287,6 @@
    "source": "wizard",
    "minutes": 60,
    "description": "Vorlage im Tab „Kraft“"
-  },
-  {
-   "id": "mvz20oakttyzx",
-   "date": "2027-01-06",
-   "done": false,
-   "load": 150,
-   "zone": "I3",
-   "phase": "build",
-   "sport": "skierg",
-   "title": "Double Threshold morgens: 3×20 min",
-   "source": "wizard",
-   "minutes": 100,
-   "description": "20 min ein, 3× 20 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 2 min Pause, 15 min aus – eher untere Schwelle"
   },
   {
    "id": "mvz20oaktxhzs",
@@ -967069,19 +966308,6 @@
    "load": 50,
    "zone": "I1",
    "phase": "recovery",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  },
-  {
-   "id": "mvz20oaktzyzi",
-   "date": "2026-12-29",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "build",
    "sport": "run",
    "title": "Laufen (vor der Haustür)",
    "source": "wizard",
@@ -967115,19 +966341,6 @@
    "description": "Grundlage I1, wirklich locker"
   },
   {
-   "id": "mvz20oakup6o0",
-   "date": "2027-01-08",
-   "done": false,
-   "load": 163,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "xc_skate",
-   "title": "Locker + Sprints",
-   "source": "wizard",
-   "minutes": 195,
-   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
-  },
-  {
    "id": "mvz20oakuxacl",
    "date": "2027-02-11",
    "done": false,
@@ -967154,32 +966367,6 @@
    "description": "15 min ein, 10× 3 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 1 min Pause, 10 min aus"
   },
   {
-   "id": "mvz20oakvn4k1",
-   "date": "2027-01-23",
-   "done": false,
-   "load": 142,
-   "zone": "I1",
-   "phase": "specific",
-   "sport": "run",
-   "title": "Locker + Sprints",
-   "source": "wizard",
-   "minutes": 170,
-   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
-  },
-  {
-   "id": "mvz20oakvogvl",
-   "date": "2027-01-16",
-   "done": false,
-   "load": 49,
-   "zone": "I2",
-   "phase": "specific",
-   "sport": "xc_skate",
-   "title": "Vorbelastung: 30 min + 4×1 min + Sprints",
-   "source": "wizard",
-   "minutes": 45,
-   "description": "30 min locker, 4×1 min zügig, 3 kurze Sprints – 1–2 Tage vor dem Rennen"
-  },
-  {
    "id": "mvz20oakvq7a8",
    "date": "2027-01-27",
    "done": false,
@@ -967193,58 +966380,6 @@
    "description": "20 min ein, 3× 20 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 2 min Pause, 15 min aus – eher untere Schwelle"
   },
   {
-   "id": "mvz20oakwipz9",
-   "date": "2027-01-21",
-   "done": false,
-   "load": 45,
-   "zone": "Kraft",
-   "phase": "specific",
-   "sport": "strength",
-   "title": "Kraft A – Beine schwer + Zug",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Vorlage im Tab „Kraft“"
-  },
-  {
-   "id": "mvz20oakwlcmx",
-   "date": "2026-12-25",
-   "done": false,
-   "load": 88,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "xc_skate",
-   "title": "Locker + Sprints",
-   "source": "wizard",
-   "minutes": 105,
-   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
-  },
-  {
-   "id": "mvz20oakwvg4w",
-   "date": "2027-01-21",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "specific",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  },
-  {
-   "id": "mvz20oakwxgep",
-   "date": "2026-12-30",
-   "done": false,
-   "load": 98,
-   "zone": "I3",
-   "phase": "build",
-   "sport": "run",
-   "title": "Double Threshold abends: 10×3 min",
-   "source": "wizard",
-   "minutes": 65,
-   "description": "15 min ein, 10× 3 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 1 min Pause, 10 min aus"
-  },
-  {
    "id": "mvz20oakwy9qu",
    "date": "2027-03-20",
    "done": false,
@@ -967256,58 +966391,6 @@
    "source": "wizard",
    "minutes": 70,
    "description": "Grundlage I1, wirklich locker"
-  },
-  {
-   "id": "mvz20oakx06e4",
-   "date": "2027-01-24",
-   "done": false,
-   "load": 188,
-   "zone": "I1",
-   "phase": "specific",
-   "sport": "xc_classic",
-   "title": "Lange Grundlage",
-   "source": "wizard",
-   "minutes": 225,
-   "description": "Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)"
-  },
-  {
-   "id": "mvz20oakx2mw0",
-   "date": "2027-01-01",
-   "done": false,
-   "load": 150,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "xc_skate",
-   "title": "Locker + Sprints",
-   "source": "wizard",
-   "minutes": 180,
-   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
-  },
-  {
-   "id": "mvz20oakxe9d3",
-   "date": "2027-01-13",
-   "done": false,
-   "load": 25,
-   "zone": "I1",
-   "phase": "specific",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 30,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  },
-  {
-   "id": "mvz20oakxjf9o",
-   "date": "2027-01-17",
-   "done": false,
-   "load": 209,
-   "zone": "I4",
-   "phase": "specific",
-   "sport": "xc_skate",
-   "title": "Rennen: La Sfida",
-   "source": "wizard",
-   "minutes": 114,
-   "description": "Inkl. Ein- und Auslaufen"
   },
   {
    "id": "mvz20oakxjth0",
@@ -967336,32 +966419,6 @@
    "description": "Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)"
   },
   {
-   "id": "mvz20oakxua0l",
-   "date": "2027-01-23",
-   "done": false,
-   "load": 110,
-   "zone": "I4",
-   "phase": "specific",
-   "sport": "xc_classic",
-   "title": "Testrennen: 25 min",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "20 min ein, 1× 25 min im Renntempo, ohne Pause, 15 min aus – Zeitfahren auf bekannter Runde – gut zum Vergleichen"
-  },
-  {
-   "id": "mvz20oaky2p7q",
-   "date": "2026-12-25",
-   "done": false,
-   "load": 50,
-   "zone": "I1",
-   "phase": "build",
-   "sport": "run",
-   "title": "Laufen (vor der Haustür)",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  },
-  {
    "id": "mvz20oaky7w8q",
    "date": "2027-03-16",
    "done": false,
@@ -967375,19 +966432,6 @@
    "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
   },
   {
-   "id": "mvz20oakya4af",
-   "date": "2026-12-24",
-   "done": false,
-   "load": 45,
-   "zone": "Kraft",
-   "phase": "build",
-   "sport": "strength",
-   "title": "Kraft A – Beine schwer + Zug",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Vorlage im Tab „Kraft“"
-  },
-  {
    "id": "mvz20oakyc0wm",
    "date": "2027-02-04",
    "done": false,
@@ -967399,32 +966443,6 @@
    "source": "wizard",
    "minutes": 60,
    "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
-  },
-  {
-   "id": "mvz20oakydmu7",
-   "date": "2027-01-13",
-   "done": false,
-   "load": 45,
-   "zone": "Kraft",
-   "phase": "specific",
-   "sport": "strength",
-   "title": "Kraft A – Beine schwer + Zug",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Vorlage im Tab „Kraft“"
-  },
-  {
-   "id": "mvz20oakyf2ck",
-   "date": "2026-12-31",
-   "done": false,
-   "load": 45,
-   "zone": "Kraft",
-   "phase": "build",
-   "sport": "strength",
-   "title": "Kraft A – Beine schwer + Zug",
-   "source": "wizard",
-   "minutes": 60,
-   "description": "Vorlage im Tab „Kraft“"
   },
   {
    "id": "mvz20oakyvjdw",
@@ -967833,6 +966851,1007 @@
    "source": "coach",
    "minutes": 60,
    "description": "Ausfahren in I1 ohne Stoßbelastung."
+  },
+  {
+   "id": "mwuo1ysl02l57",
+   "date": "2026-12-29",
+   "done": false,
+   "load": 50,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "run",
+   "title": "Laufen (vor der Haustür)",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
+  },
+  {
+   "id": "mwuo1ysl02utm",
+   "date": "2026-12-04",
+   "done": false,
+   "load": 129,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "xc_skate",
+   "title": "Locker + Sprints",
+   "source": "wizard",
+   "minutes": 155,
+   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
+  },
+  {
+   "id": "mwuo1ysl0o213",
+   "date": "2027-01-12",
+   "done": false,
+   "load": 50,
+   "zone": "I1",
+   "phase": "specific",
+   "sport": "run",
+   "title": "Laufen (vor der Haustür)",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
+  },
+  {
+   "id": "mwuo1ysl1i1vx",
+   "date": "2027-01-14",
+   "done": false,
+   "load": 63,
+   "zone": "I1",
+   "phase": "specific",
+   "sport": "run",
+   "title": "Locker + Sprints",
+   "source": "wizard",
+   "minutes": 75,
+   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
+  },
+  {
+   "id": "mwuo1ysl1l5en",
+   "date": "2026-12-03",
+   "done": false,
+   "load": 45,
+   "zone": "Kraft",
+   "phase": "build",
+   "sport": "strength",
+   "title": "Kraft A – Beine schwer + Zug",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Vorlage im Tab „Kraft“"
+  },
+  {
+   "id": "mwuo1ysl2au3n",
+   "date": "2026-12-05",
+   "done": false,
+   "load": 129,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "run",
+   "title": "Locker + Sprints",
+   "source": "wizard",
+   "minutes": 155,
+   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
+  },
+  {
+   "id": "mwuo1ysl3g7na",
+   "date": "2027-01-13",
+   "done": false,
+   "load": 45,
+   "zone": "Kraft",
+   "phase": "specific",
+   "sport": "strength",
+   "title": "Kraft A – Beine schwer + Zug",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Vorlage im Tab „Kraft“"
+  },
+  {
+   "id": "mwuo1ysl3rdpg",
+   "date": "2026-12-23",
+   "done": false,
+   "load": 98,
+   "zone": "I3",
+   "phase": "build",
+   "sport": "xc_skate",
+   "title": "Double Threshold abends: 8×4 min",
+   "source": "wizard",
+   "minutes": 65,
+   "description": "15 min ein, 8× 4 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 1 min Pause, 10 min aus"
+  },
+  {
+   "id": "mwuo1ysl48rhy",
+   "date": "2027-01-06",
+   "done": false,
+   "load": 98,
+   "zone": "I3",
+   "phase": "build",
+   "sport": "xc_skate",
+   "title": "Double Threshold abends: 8×4 min",
+   "source": "wizard",
+   "minutes": 65,
+   "description": "15 min ein, 8× 4 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 1 min Pause, 10 min aus"
+  },
+  {
+   "id": "mwuo1ysl4n2ua",
+   "date": "2027-01-08",
+   "done": false,
+   "load": 50,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "run",
+   "title": "Laufen (vor der Haustür)",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
+  },
+  {
+   "id": "mwuo1ysl4o0iy",
+   "date": "2026-12-10",
+   "done": false,
+   "load": 45,
+   "zone": "Kraft",
+   "phase": "build",
+   "sport": "strength",
+   "title": "Kraft A – Beine schwer + Zug",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Vorlage im Tab „Kraft“"
+  },
+  {
+   "id": "mwuo1ysl5cba4",
+   "date": "2026-12-17",
+   "done": false,
+   "load": 50,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "run",
+   "title": "Laufen (vor der Haustür)",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
+  },
+  {
+   "id": "mwuo1ysl5t7gp",
+   "date": "2026-12-04",
+   "done": false,
+   "load": 50,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "run",
+   "title": "Laufen (vor der Haustür)",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
+  },
+  {
+   "id": "mwuo1ysl7ssqd",
+   "date": "2026-12-24",
+   "done": false,
+   "load": 50,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "run",
+   "title": "Laufen (vor der Haustür)",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
+  },
+  {
+   "id": "mwuo1ysl8k8p7",
+   "date": "2026-12-25",
+   "done": false,
+   "load": 50,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "run",
+   "title": "Laufen (vor der Haustür)",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
+  },
+  {
+   "id": "mwuo1ysl8wjr5",
+   "date": "2026-12-26",
+   "done": false,
+   "load": 88,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "run",
+   "title": "Locker + Sprints",
+   "source": "wizard",
+   "minutes": 105,
+   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
+  },
+  {
+   "id": "mwuo1ysl8yth8",
+   "date": "2027-01-09",
+   "done": false,
+   "load": 163,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "run",
+   "title": "Locker + Sprints",
+   "source": "wizard",
+   "minutes": 195,
+   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
+  },
+  {
+   "id": "mwuo1ysl940an",
+   "date": "2026-12-06",
+   "done": false,
+   "load": 188,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "rollerski_classic",
+   "title": "Lange Grundlage",
+   "source": "wizard",
+   "minutes": 225,
+   "description": "Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)"
+  },
+  {
+   "id": "mwuo1ysl9cdpv",
+   "date": "2026-12-12",
+   "done": false,
+   "load": 128,
+   "zone": "I4",
+   "phase": "build",
+   "sport": "xc_classic",
+   "title": "I4: 6×4 min",
+   "source": "wizard",
+   "minutes": 70,
+   "description": "20 min ein, 6× 4 min hart (I4), 2,5 min Pause, 15 min aus"
+  },
+  {
+   "id": "mwuo1ysla367s",
+   "date": "2026-12-10",
+   "done": false,
+   "load": 50,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "run",
+   "title": "Laufen (vor der Haustür)",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
+  },
+  {
+   "id": "mwuo1yslay4cw",
+   "date": "2027-01-17",
+   "done": false,
+   "load": 209,
+   "zone": "I4",
+   "phase": "specific",
+   "sport": "xc_skate",
+   "title": "Rennen: La Sfida",
+   "source": "wizard",
+   "minutes": 114,
+   "description": "Inkl. Ein- und Auslaufen"
+  },
+  {
+   "id": "mwuo1yslc3bq1",
+   "date": "2026-12-05",
+   "done": false,
+   "load": 119,
+   "zone": "I4",
+   "phase": "build",
+   "sport": "xc_skate",
+   "title": "I4: 6×3 min",
+   "source": "wizard",
+   "minutes": 65,
+   "description": "20 min ein, 6× 3 min hart (I4), 2 min Pause, 15 min aus"
+  },
+  {
+   "id": "mwuo1yslciv68",
+   "date": "2027-01-07",
+   "done": false,
+   "load": 45,
+   "zone": "Kraft",
+   "phase": "build",
+   "sport": "strength",
+   "title": "Kraft A – Beine schwer + Zug",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Vorlage im Tab „Kraft“"
+  },
+  {
+   "id": "mwuo1yslct5kf",
+   "date": "2027-01-19",
+   "done": false,
+   "load": 50,
+   "zone": "I1",
+   "phase": "specific",
+   "sport": "run",
+   "title": "Laufen (vor der Haustür)",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
+  },
+  {
+   "id": "mwuo1ysld3hi6",
+   "date": "2027-01-08",
+   "done": false,
+   "load": 163,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "xc_skate",
+   "title": "Locker + Sprints",
+   "source": "wizard",
+   "minutes": 195,
+   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
+  },
+  {
+   "id": "mwuo1yslds1bs",
+   "date": "2027-01-07",
+   "done": false,
+   "load": 50,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "run",
+   "title": "Laufen (vor der Haustür)",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
+  },
+  {
+   "id": "mwuo1ysldvay4",
+   "date": "2026-12-24",
+   "done": false,
+   "load": 45,
+   "zone": "Kraft",
+   "phase": "build",
+   "sport": "strength",
+   "title": "Kraft A – Beine schwer + Zug",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Vorlage im Tab „Kraft“"
+  },
+  {
+   "id": "mwuo1ysldwtxz",
+   "date": "2027-01-10",
+   "done": false,
+   "load": 220,
+   "zone": "I4",
+   "phase": "build",
+   "sport": "xc_skate",
+   "title": "Rennen: Planoiras",
+   "source": "wizard",
+   "minutes": 120,
+   "description": "Inkl. Ein- und Auslaufen"
+  },
+  {
+   "id": "mwuo1yslecrqa",
+   "date": "2027-01-03",
+   "done": false,
+   "load": 200,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "xc_classic",
+   "title": "Lange Grundlage",
+   "source": "wizard",
+   "minutes": 240,
+   "description": "Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)"
+  },
+  {
+   "id": "mwuo1yslf95v0",
+   "date": "2027-01-16",
+   "done": false,
+   "load": 391,
+   "zone": "I4",
+   "phase": "specific",
+   "sport": "run",
+   "title": "Rennen: La Diagonela",
+   "source": "wizard",
+   "minutes": 213,
+   "description": "Inkl. Ein- und Auslaufen"
+  },
+  {
+   "id": "mwuo1yslfpi58",
+   "date": "2026-12-12",
+   "done": false,
+   "load": 146,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "run",
+   "title": "Locker + Sprints",
+   "source": "wizard",
+   "minutes": 175,
+   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
+  },
+  {
+   "id": "mwuo1yslgcnrv",
+   "date": "2026-12-02",
+   "done": false,
+   "load": 98,
+   "zone": "I3",
+   "phase": "build",
+   "sport": "run",
+   "title": "Double Threshold abends: 10×3 min",
+   "source": "wizard",
+   "minutes": 65,
+   "description": "15 min ein, 10× 3 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 1 min Pause, 10 min aus"
+  },
+  {
+   "id": "mwuo1yslgj5o6",
+   "date": "2026-12-13",
+   "done": false,
+   "load": 188,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "xc_classic",
+   "title": "Lange Grundlage",
+   "source": "wizard",
+   "minutes": 225,
+   "description": "Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)"
+  },
+  {
+   "id": "mwuo1yslh8x77",
+   "date": "2027-01-21",
+   "done": false,
+   "load": 50,
+   "zone": "I1",
+   "phase": "specific",
+   "sport": "run",
+   "title": "Laufen (vor der Haustür)",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
+  },
+  {
+   "id": "mwuo1yslin9h5",
+   "date": "2027-01-23",
+   "done": false,
+   "load": 110,
+   "zone": "I4",
+   "phase": "specific",
+   "sport": "xc_classic",
+   "title": "Testrennen: 25 min",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "20 min ein, 1× 25 min im Renntempo, ohne Pause, 15 min aus – Zeitfahren auf bekannter Runde – gut zum Vergleichen"
+  },
+  {
+   "id": "mwuo1ysljhwy1",
+   "date": "2026-12-16",
+   "done": false,
+   "load": 150,
+   "zone": "I3",
+   "phase": "build",
+   "sport": "skierg",
+   "title": "Double Threshold morgens: 3×20 min",
+   "source": "wizard",
+   "minutes": 100,
+   "description": "20 min ein, 3× 20 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 2 min Pause, 15 min aus – eher untere Schwelle"
+  },
+  {
+   "id": "mwuo1ysljw5w0",
+   "date": "2027-01-01",
+   "done": false,
+   "load": 50,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "run",
+   "title": "Laufen (vor der Haustür)",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
+  },
+  {
+   "id": "mwuo1yslkdhs0",
+   "date": "2026-12-16",
+   "done": false,
+   "load": 98,
+   "zone": "I3",
+   "phase": "build",
+   "sport": "run",
+   "title": "Double Threshold abends: 10×3 min",
+   "source": "wizard",
+   "minutes": 65,
+   "description": "15 min ein, 10× 3 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 1 min Pause, 10 min aus"
+  },
+  {
+   "id": "mwuo1ysll5ayp",
+   "date": "2026-12-31",
+   "done": false,
+   "load": 45,
+   "zone": "Kraft",
+   "phase": "build",
+   "sport": "strength",
+   "title": "Kraft A – Beine schwer + Zug",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Vorlage im Tab „Kraft“"
+  },
+  {
+   "id": "mwuo1ysll9uet",
+   "date": "2027-01-09",
+   "done": false,
+   "load": 49,
+   "zone": "I2",
+   "phase": "build",
+   "sport": "xc_classic",
+   "title": "Vorbelastung: 30 min + 4×1 min + Sprints",
+   "source": "wizard",
+   "minutes": 45,
+   "description": "30 min locker, 4×1 min zügig, 3 kurze Sprints – 1–2 Tage vor dem Rennen"
+  },
+  {
+   "id": "mwuo1yslm5awc",
+   "date": "2027-01-16",
+   "done": false,
+   "load": 49,
+   "zone": "I2",
+   "phase": "specific",
+   "sport": "xc_skate",
+   "title": "Vorbelastung: 30 min + 4×1 min + Sprints",
+   "source": "wizard",
+   "minutes": 45,
+   "description": "30 min locker, 4×1 min zügig, 3 kurze Sprints – 1–2 Tage vor dem Rennen"
+  },
+  {
+   "id": "mwuo1yslmd6ju",
+   "date": "2026-12-23",
+   "done": false,
+   "load": 150,
+   "zone": "I3",
+   "phase": "build",
+   "sport": "skierg",
+   "title": "Double Threshold morgens: 3×20 min",
+   "source": "wizard",
+   "minutes": 100,
+   "description": "20 min ein, 3× 20 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 2 min Pause, 15 min aus – eher untere Schwelle"
+  },
+  {
+   "id": "mwuo1yslmilvr",
+   "date": "2026-12-26",
+   "done": false,
+   "load": 128,
+   "zone": "I4",
+   "phase": "build",
+   "sport": "xc_classic",
+   "title": "I4: 5×5 min",
+   "source": "wizard",
+   "minutes": 70,
+   "description": "20 min ein, 5× 5 min hart (I4), 2,5 min Pause, 15 min aus"
+  },
+  {
+   "id": "mwuo1yslmxgo3",
+   "date": "2026-12-18",
+   "done": false,
+   "load": 49,
+   "zone": "I2",
+   "phase": "build",
+   "sport": "xc_skate",
+   "title": "Vorbelastung: 30 min + 4×1 min + Sprints",
+   "source": "wizard",
+   "minutes": 45,
+   "description": "30 min locker, 4×1 min zügig, 3 kurze Sprints – 1–2 Tage vor dem Rennen"
+  },
+  {
+   "id": "mwuo1ysln4eb4",
+   "date": "2026-12-09",
+   "done": false,
+   "load": 150,
+   "zone": "I3",
+   "phase": "build",
+   "sport": "skierg",
+   "title": "Double Threshold morgens: 3×20 min",
+   "source": "wizard",
+   "minutes": 100,
+   "description": "20 min ein, 3× 20 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 2 min Pause, 15 min aus – eher untere Schwelle"
+  },
+  {
+   "id": "mwuo1yslnte6e",
+   "date": "2026-12-03",
+   "done": false,
+   "load": 50,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "run",
+   "title": "Laufen (vor der Haustür)",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
+  },
+  {
+   "id": "mwuo1yslog3gx",
+   "date": "2026-12-31",
+   "done": false,
+   "load": 50,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "run",
+   "title": "Laufen (vor der Haustür)",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
+  },
+  {
+   "id": "mwuo1yslojer4",
+   "date": "2027-01-24",
+   "done": false,
+   "load": 188,
+   "zone": "I1",
+   "phase": "specific",
+   "sport": "xc_classic",
+   "title": "Lange Grundlage",
+   "source": "wizard",
+   "minutes": 225,
+   "description": "Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)"
+  },
+  {
+   "id": "mwuo1yslopgh1",
+   "date": "2027-01-01",
+   "done": false,
+   "load": 154,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "xc_skate",
+   "title": "Locker + Sprints",
+   "source": "wizard",
+   "minutes": 185,
+   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
+  },
+  {
+   "id": "mwuo1yslp0cjb",
+   "date": "2026-12-30",
+   "done": false,
+   "load": 98,
+   "zone": "I3",
+   "phase": "build",
+   "sport": "run",
+   "title": "Double Threshold abends: 10×3 min",
+   "source": "wizard",
+   "minutes": 65,
+   "description": "15 min ein, 10× 3 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 1 min Pause, 10 min aus"
+  },
+  {
+   "id": "mwuo1yslp9ui1",
+   "date": "2027-01-22",
+   "done": false,
+   "load": 50,
+   "zone": "I1",
+   "phase": "specific",
+   "sport": "run",
+   "title": "Laufen (vor der Haustür)",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
+  },
+  {
+   "id": "mwuo1yslpc0sb",
+   "date": "2027-01-22",
+   "done": false,
+   "load": 138,
+   "zone": "I1",
+   "phase": "specific",
+   "sport": "xc_skate",
+   "title": "Locker + Sprints",
+   "source": "wizard",
+   "minutes": 165,
+   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
+  },
+  {
+   "id": "mwuo1yslq0w44",
+   "date": "2027-01-20",
+   "done": false,
+   "load": 98,
+   "zone": "I3",
+   "phase": "specific",
+   "sport": "xc_skate",
+   "title": "Double Threshold abends: 8×4 min",
+   "source": "wizard",
+   "minutes": 65,
+   "description": "15 min ein, 8× 4 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 1 min Pause, 10 min aus"
+  },
+  {
+   "id": "mwuo1yslqm9pd",
+   "date": "2026-12-11",
+   "done": false,
+   "load": 50,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "run",
+   "title": "Laufen (vor der Haustür)",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
+  },
+  {
+   "id": "mwuo1yslr5tle",
+   "date": "2027-01-13",
+   "done": false,
+   "load": 25,
+   "zone": "I1",
+   "phase": "specific",
+   "sport": "run",
+   "title": "Laufen (vor der Haustür)",
+   "source": "wizard",
+   "minutes": 30,
+   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
+  },
+  {
+   "id": "mwuo1yslro3da",
+   "date": "2027-01-05",
+   "done": false,
+   "load": 50,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "run",
+   "title": "Laufen (vor der Haustür)",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
+  },
+  {
+   "id": "mwuo1yslrsyld",
+   "date": "2026-12-19",
+   "done": false,
+   "load": 249,
+   "zone": "I4",
+   "phase": "build",
+   "sport": "xc_skate",
+   "title": "Rennen: Gastein Classics ",
+   "source": "wizard",
+   "minutes": 136,
+   "description": "Inkl. Ein- und Auslaufen"
+  },
+  {
+   "id": "mwuo1ysls3iue",
+   "date": "2027-01-15",
+   "done": false,
+   "load": 67,
+   "zone": "I1",
+   "phase": "specific",
+   "sport": "xc_classic",
+   "title": "Locker + Sprints",
+   "source": "wizard",
+   "minutes": 80,
+   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
+  },
+  {
+   "id": "mwuo1ysls8su2",
+   "date": "2026-12-02",
+   "done": false,
+   "load": 150,
+   "zone": "I3",
+   "phase": "build",
+   "sport": "skierg",
+   "title": "Double Threshold morgens: 3×20 min",
+   "source": "wizard",
+   "minutes": 100,
+   "description": "20 min ein, 3× 20 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 2 min Pause, 15 min aus – eher untere Schwelle"
+  },
+  {
+   "id": "mwuo1yslsfyyb",
+   "date": "2026-12-30",
+   "done": false,
+   "load": 150,
+   "zone": "I3",
+   "phase": "build",
+   "sport": "skierg",
+   "title": "Double Threshold morgens: 3×20 min",
+   "source": "wizard",
+   "minutes": 100,
+   "description": "20 min ein, 3× 20 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 2 min Pause, 15 min aus – eher untere Schwelle"
+  },
+  {
+   "id": "mwuo1yslsimm0",
+   "date": "2026-12-09",
+   "done": false,
+   "load": 98,
+   "zone": "I3",
+   "phase": "build",
+   "sport": "xc_skate",
+   "title": "Double Threshold abends: 8×4 min",
+   "source": "wizard",
+   "minutes": 65,
+   "description": "15 min ein, 8× 4 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 1 min Pause, 10 min aus"
+  },
+  {
+   "id": "mwuo1yslsxzyy",
+   "date": "2026-12-17",
+   "done": false,
+   "load": 104,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "run",
+   "title": "Locker + Sprints",
+   "source": "wizard",
+   "minutes": 125,
+   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
+  },
+  {
+   "id": "mwuo1yslt01g6",
+   "date": "2027-01-02",
+   "done": false,
+   "load": 158,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "run",
+   "title": "Locker + Sprints",
+   "source": "wizard",
+   "minutes": 190,
+   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
+  },
+  {
+   "id": "mwuo1ysltg338",
+   "date": "2026-12-27",
+   "done": false,
+   "load": 163,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "xc_classic",
+   "title": "Lange Grundlage",
+   "source": "wizard",
+   "minutes": 195,
+   "description": "Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)"
+  },
+  {
+   "id": "mwuo1ysltwd5x",
+   "date": "2027-01-20",
+   "done": false,
+   "load": 150,
+   "zone": "I3",
+   "phase": "specific",
+   "sport": "skierg",
+   "title": "Double Threshold morgens: 3×20 min",
+   "source": "wizard",
+   "minutes": 100,
+   "description": "20 min ein, 3× 20 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 2 min Pause, 15 min aus – eher untere Schwelle"
+  },
+  {
+   "id": "mwuo1yslu6iao",
+   "date": "2026-12-01",
+   "done": false,
+   "load": 50,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "run",
+   "title": "Laufen (vor der Haustür)",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
+  },
+  {
+   "id": "mwuo1ysludibi",
+   "date": "2026-12-11",
+   "done": false,
+   "load": 146,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "xc_skate",
+   "title": "Locker + Sprints",
+   "source": "wizard",
+   "minutes": 175,
+   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
+  },
+  {
+   "id": "mwuo1yslw80jl",
+   "date": "2026-12-18",
+   "done": false,
+   "load": 104,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "run",
+   "title": "Locker + Sprints",
+   "source": "wizard",
+   "minutes": 125,
+   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
+  },
+  {
+   "id": "mwuo1yslwc5iv",
+   "date": "2026-12-08",
+   "done": false,
+   "load": 50,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "run",
+   "title": "Laufen (vor der Haustür)",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
+  },
+  {
+   "id": "mwuo1yslwh8mk",
+   "date": "2026-12-25",
+   "done": false,
+   "load": 88,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "xc_skate",
+   "title": "Locker + Sprints",
+   "source": "wizard",
+   "minutes": 105,
+   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
+  },
+  {
+   "id": "mwuo1yslx3r2p",
+   "date": "2026-12-20",
+   "done": false,
+   "load": 175,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "xc_classic",
+   "title": "Lange Grundlage",
+   "source": "wizard",
+   "minutes": 210,
+   "description": "Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)"
+  },
+  {
+   "id": "mwuo1yslx6dnu",
+   "date": "2027-01-06",
+   "done": false,
+   "load": 150,
+   "zone": "I3",
+   "phase": "build",
+   "sport": "skierg",
+   "title": "Double Threshold morgens: 3×20 min",
+   "source": "wizard",
+   "minutes": 100,
+   "description": "20 min ein, 3× 20 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 2 min Pause, 15 min aus – eher untere Schwelle"
+  },
+  {
+   "id": "mwuo1yslx9gf2",
+   "date": "2027-01-23",
+   "done": false,
+   "load": 142,
+   "zone": "I1",
+   "phase": "specific",
+   "sport": "run",
+   "title": "Locker + Sprints",
+   "source": "wizard",
+   "minutes": 170,
+   "description": "Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause"
+  },
+  {
+   "id": "mwuo1yslxjzqc",
+   "date": "2026-12-15",
+   "done": false,
+   "load": 50,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "run",
+   "title": "Laufen (vor der Haustür)",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
+  },
+  {
+   "id": "mwuo1ysly34cr",
+   "date": "2027-01-21",
+   "done": false,
+   "load": 45,
+   "zone": "Kraft",
+   "phase": "specific",
+   "sport": "strength",
+   "title": "Kraft A – Beine schwer + Zug",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Vorlage im Tab „Kraft“"
+  },
+  {
+   "id": "mwuo1yslyecxn",
+   "date": "2027-01-02",
+   "done": false,
+   "load": 119,
+   "zone": "I4",
+   "phase": "build",
+   "sport": "xc_skate",
+   "title": "Pyramide (I4): 1-2-3-4-3-2-1 min",
+   "source": "wizard",
+   "minutes": 65,
+   "description": "20 min ein, 1-2-3-4-3-2-1 min hart (I4), Pause halb so lang wie die Belastung, 15 min aus"
+  },
+  {
+   "id": "mwuo1yslzmdcd",
+   "date": "2026-12-22",
+   "done": false,
+   "load": 50,
+   "zone": "I1",
+   "phase": "build",
+   "sport": "run",
+   "title": "Laufen (vor der Haustür)",
+   "source": "wizard",
+   "minutes": 60,
+   "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
   }
  ],
  "recipes": [],
@@ -969950,6 +969969,16 @@
    "recharge": 5,
    "ansCharge": 9,
    "sleepScore": 68
+  },
+  {
+   "hrv": 128,
+   "date": "2026-11-24",
+   "restHr": 37,
+   "sleepH": 7.2,
+   "source": "polar",
+   "recharge": 5,
+   "ansCharge": 3.2,
+   "sleepScore": 68
   }
  ],
  "customExercises": [
@@ -970103,8 +970132,8 @@
    },
    "result": {
     "timeS": 4514,
-    "gapPct": null,
-    "winnerS": null,
+    "gapPct": 15.7,
+    "winnerS": 3900,
     "activityId": "mvpxp50qku0d"
    },
    "priority": "C",
@@ -970394,6 +970423,58 @@
    "priority": "C",
    "technique": "Lauf",
    "distanceKm": 18.5
+  },
+  {
+   "id": "mwtfvgt3rth42",
+   "date": "2026-11-14",
+   "goal": "",
+   "name": "Rennen",
+   "notes": "",
+   "report": {
+    "notes": "Schwelle ok aber müde Beine von Kraft und allgemein müde nicht richtig tief gehen können",
+    "rating": 2
+   },
+   "result": {
+    "place": "2",
+    "timeS": 1192,
+    "gapPct": 10.4,
+    "winnerS": 1080,
+    "fieldSize": "25",
+    "activityId": "mwgkruk077s3"
+   },
+   "priority": "C",
+   "technique": "Lauf",
+   "distanceKm": 4.6
+  },
+  {
+   "id": "mwtfwrovtr4pm",
+   "date": "2027-04-04",
+   "goal": "Sub 1:15",
+   "name": "Freiburg Marathon",
+   "notes": "",
+   "result": {
+    "timeS": null,
+    "gapPct": null,
+    "winnerS": null
+   },
+   "priority": "B",
+   "technique": "Lauf",
+   "distanceKm": "21,1"
+  },
+  {
+   "id": "mwtfxnbgij5ql",
+   "date": "2027-03-20",
+   "goal": "Spaß haben",
+   "name": "DM",
+   "notes": "",
+   "result": {
+    "timeS": null,
+    "gapPct": null,
+    "winnerS": null
+   },
+   "priority": "C",
+   "technique": "Skating",
+   "distanceKm": "30"
   }
  ],
  "gear": [],

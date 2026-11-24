@@ -1001719,7 +1001719,7 @@
  {
   "id": "mw4163k4bexh",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.345069+00:00",
+  "updated_at": "2026-11-23T15:46:24.111501+00:00",
   "data": {
    "ef": 2.4,
    "id": "mw4163k4bexh",
@@ -1002153,89 +1002153,65 @@
     {
      "hr": 132,
      "avg": 362,
-     "endS": 210,
+     "endS": 213,
      "watts": true,
-     "startS": 76,
-     "durationS": 135
+     "startS": 77,
+     "durationS": 137
     },
     {
      "hr": 133,
      "avg": 346,
-     "endS": 351,
+     "endS": 353,
      "watts": true,
-     "startS": 274,
+     "startS": 276,
      "durationS": 78
-    },
-    {
-     "hr": 129,
-     "avg": 338,
-     "endS": 484,
-     "watts": true,
-     "startS": 414,
-     "durationS": 71
     },
     {
      "hr": 133,
      "avg": 327,
-     "endS": 1273,
+     "endS": 1276,
      "watts": true,
-     "startS": 1172,
-     "durationS": 102
-    },
-    {
-     "hr": 128,
-     "avg": 321,
-     "endS": 1546,
-     "watts": true,
-     "startS": 1442,
-     "durationS": 105
-    },
-    {
-     "hr": 126,
-     "avg": 331,
-     "endS": 2085,
-     "watts": true,
-     "startS": 2025,
-     "durationS": 61
+     "startS": 1174,
+     "durationS": 103
     },
     {
      "hr": 129,
      "avg": 319,
-     "endS": 4908,
+     "endS": 4910,
      "watts": true,
      "startS": 4624,
-     "durationS": 285
+     "durationS": 287
     },
     {
      "hr": 136,
      "avg": 361,
-     "endS": 5438,
+     "endS": 5440,
      "watts": true,
-     "startS": 5068,
-     "durationS": 371
+     "startS": 5069,
+     "durationS": 372
     },
     {
      "hr": 136,
-     "avg": 348,
+     "avg": 351,
      "endS": 6174,
      "watts": true,
-     "startS": 6067,
-     "durationS": 108
+     "startS": 6070,
+     "durationS": 105
     }
    ],
    "lapGrades": [
-    39.7,
-    8.1,
-    4.9,
-    14.3,
+    39.8,
     8.3,
+    5,
+    14.3,
+    8.4,
     2.1,
     -0.5,
     -3.5,
     -1.9,
     3.7,
-    -2.6,
-    6.2,
+    -2.5,
+    6.3,
     -7.3,
     0.9,
     null
@@ -1002254,7 +1002230,7 @@
  {
   "id": "mw4y81kpwvap",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.365537+00:00",
+  "updated_at": "2026-11-23T15:46:24.141261+00:00",
   "data": {
    "ef": null,
    "id": "mw4y81kpwvap",
@@ -1002844,58 +1002820,66 @@
     {
      "hr": 118,
      "avg": 5,
-     "endS": 444,
+     "endS": 445,
      "watts": false,
-     "startS": 99,
-     "durationS": 346
+     "startS": 102,
+     "durationS": 344
     },
     {
      "hr": 115,
      "avg": 6,
-     "endS": 1504,
+     "endS": 1505,
      "watts": false,
-     "startS": 1024,
-     "durationS": 481
+     "startS": 1027,
+     "durationS": 479
     },
     {
-     "hr": 121,
+     "hr": 120,
      "avg": 5,
-     "endS": 1667,
+     "endS": 1668,
      "watts": false,
-     "startS": 1604,
-     "durationS": 64
+     "startS": 1606,
+     "durationS": 63
     },
     {
      "hr": 105,
      "avg": 6,
-     "endS": 5477,
+     "endS": 5478,
      "watts": false,
-     "startS": 4611,
-     "durationS": 867
+     "startS": 4613,
+     "durationS": 866
+    },
+    {
+     "hr": 103,
+     "avg": 5,
+     "endS": 6554,
+     "watts": false,
+     "startS": 6454,
+     "durationS": 101
     },
     {
      "hr": 108,
      "avg": 6,
-     "endS": 8142,
+     "endS": 8144,
      "watts": false,
-     "startS": 7553,
+     "startS": 7555,
      "durationS": 590
     },
     {
      "hr": 135,
      "avg": 6,
-     "endS": 8412,
+     "endS": 8414,
      "watts": false,
-     "startS": 8351,
-     "durationS": 62
+     "startS": 8352,
+     "durationS": 63
     },
     {
      "hr": 103,
      "avg": 5,
-     "endS": 8628,
+     "endS": 8631,
      "watts": false,
-     "startS": 8555,
-     "durationS": 74
+     "startS": 8556,
+     "durationS": 76
     }
    ],
    "lapGrades": [
@@ -1002921,7 +1002905,7 @@
  {
   "id": "mw56tizr3ppa",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.377989+00:00",
+  "updated_at": "2026-11-23T15:46:24.145771+00:00",
   "data": {
    "ef": 2.34,
    "id": "mw56tizr3ppa",
@@ -1003233,56 +1003217,56 @@
    "intervals": [
     {
      "hr": 131,
-     "avg": 354,
-     "endS": 190,
+     "avg": 355,
+     "endS": 192,
      "watts": true,
-     "startS": 28,
+     "startS": 30,
      "durationS": 163
     },
     {
      "hr": 126,
-     "avg": 322,
-     "endS": 453,
+     "avg": 321,
+     "endS": 455,
      "watts": true,
-     "startS": 256,
+     "startS": 258,
      "durationS": 198
     },
     {
      "hr": 131,
      "avg": 314,
-     "endS": 1292,
+     "endS": 1294,
      "watts": true,
-     "startS": 1007,
-     "durationS": 286
+     "startS": 1010,
+     "durationS": 285
     },
     {
      "hr": 128,
      "avg": 313,
-     "endS": 2936,
+     "endS": 2938,
      "watts": true,
-     "startS": 2820,
-     "durationS": 117
+     "startS": 2823,
+     "durationS": 116
     },
     {
      "hr": 137,
      "avg": 336,
-     "endS": 3182,
+     "endS": 3184,
      "watts": true,
-     "startS": 3115,
+     "startS": 3117,
      "durationS": 68
     }
    ],
    "lapGrades": [
-    77.4,
-    -6.7,
+    78,
+    -6.8,
     7.9,
-    -3,
-    -7.5,
-    4,
+    -2.9,
+    -7.3,
+    3.6,
     2.2,
     1.2,
     -1.1,
-    4.7
+    3.7
    ],
    "powerHist": null,
    "decoupling": 3.2,
@@ -1003298,7 +1003282,7 @@
  {
   "id": "mw6b79lzrs4k",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.378567+00:00",
+  "updated_at": "2026-11-23T15:46:24.154909+00:00",
   "data": {
    "ef": 1.45,
    "id": "mw6b79lzrs4k",
@@ -1003532,10 +1003516,10 @@
     {
      "hr": 153,
      "avg": 223,
-     "endS": 4844,
+     "endS": 4847,
      "watts": true,
-     "startS": 1213,
-     "durationS": 3632
+     "startS": 1217,
+     "durationS": 3631
     }
    ],
    "lapGrades": null,
@@ -1003605,7 +1003589,7 @@
  {
   "id": "mw6nq5be5vwv",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.379965+00:00",
+  "updated_at": "2026-11-23T15:46:24.155484+00:00",
   "data": {
    "ef": 2.57,
    "id": "mw6nq5be5vwv",
@@ -1004053,88 +1004037,96 @@
    "intensity": null,
    "intervals": [
     {
+     "hr": 134,
+     "avg": 336,
+     "endS": 218,
+     "watts": true,
+     "startS": 95,
+     "durationS": 124
+    },
+    {
      "hr": 165,
      "avg": 439,
-     "endS": 1643,
+     "endS": 1645,
      "watts": true,
-     "startS": 1411,
+     "startS": 1413,
      "durationS": 233
     },
     {
      "hr": 166,
      "avg": 446,
-     "endS": 1995,
+     "endS": 1997,
      "watts": true,
-     "startS": 1771,
+     "startS": 1773,
      "durationS": 225
     },
     {
      "hr": 165,
-     "avg": 437,
-     "endS": 2360,
+     "avg": 436,
+     "endS": 2362,
      "watts": true,
-     "startS": 2132,
+     "startS": 2134,
      "durationS": 229
     },
     {
      "hr": 168,
      "avg": 463,
-     "endS": 2718,
+     "endS": 2719,
      "watts": true,
-     "startS": 2488,
-     "durationS": 231
+     "startS": 2491,
+     "durationS": 229
     },
     {
      "hr": 168,
-     "avg": 442,
-     "endS": 3074,
+     "avg": 441,
+     "endS": 3077,
      "watts": true,
-     "startS": 2855,
-     "durationS": 220
+     "startS": 2857,
+     "durationS": 221
     },
     {
      "hr": 167,
      "avg": 433,
-     "endS": 3421,
+     "endS": 3423,
      "watts": true,
-     "startS": 3236,
+     "startS": 3238,
      "durationS": 186
     },
     {
      "hr": 170,
-     "avg": 443,
-     "endS": 3810,
+     "avg": 444,
+     "endS": 3813,
      "watts": true,
-     "startS": 3585,
+     "startS": 3588,
      "durationS": 226
     },
     {
      "hr": 172,
-     "avg": 474,
-     "endS": 4169,
+     "avg": 475,
+     "endS": 4172,
      "watts": true,
-     "startS": 3947,
+     "startS": 3950,
      "durationS": 223
     }
    ],
    "lapGrades": [
     19.6,
-    4.5,
-    5.9,
-    7.4,
-    6.5,
+    4.3,
+    6.3,
+    7.3,
+    6.8,
     7.7,
-    5.7,
-    7.6,
-    7.7,
-    5,
-    1.9,
+    6.2,
+    7,
+    9.1,
+    4.6,
+    2.6,
     9.6,
-    4.7,
-    12,
-    4.8,
-    -7,
-    -5.9
+    5,
+    11.7,
+    5.9,
+    -6.7,
+    -5.8
    ],
    "powerHist": null,
    "decoupling": 9.7,
@@ -1004156,7 +1004148,7 @@
  {
   "id": "mw7w3bci3v7o",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.383936+00:00",
+  "updated_at": "2026-11-23T15:46:24.159561+00:00",
   "data": {
    "ef": null,
    "id": "mw7w3bci3v7o",
@@ -1004922,91 +1004914,91 @@
    "intensity": null,
    "intervals": [
     {
-     "hr": 99,
+     "hr": 98,
      "avg": 5,
-     "endS": 1361,
+     "endS": 1363,
      "watts": false,
-     "startS": 1071,
-     "durationS": 291
+     "startS": 988,
+     "durationS": 376
     },
     {
      "hr": 91,
      "avg": 6,
-     "endS": 4331,
+     "endS": 4333,
      "watts": false,
-     "startS": 2933,
+     "startS": 2935,
      "durationS": 1399
     },
     {
      "hr": 105,
      "avg": 6,
-     "endS": 4530,
+     "endS": 4531,
      "watts": false,
-     "startS": 4419,
+     "startS": 4420,
      "durationS": 112
     },
     {
      "hr": 104,
      "avg": 6,
-     "endS": 5045,
+     "endS": 5047,
      "watts": false,
-     "startS": 4604,
-     "durationS": 442
+     "startS": 4608,
+     "durationS": 440
     },
     {
      "hr": 86,
-     "avg": 7,
-     "endS": 5605,
+     "avg": 6,
+     "endS": 5607,
      "watts": false,
-     "startS": 5399,
-     "durationS": 207
+     "startS": 5400,
+     "durationS": 208
     },
     {
      "hr": 105,
      "avg": 6,
-     "endS": 6105,
+     "endS": 6109,
      "watts": false,
      "startS": 5838,
-     "durationS": 268
+     "durationS": 272
     },
     {
      "hr": 103,
      "avg": 6,
-     "endS": 7160,
+     "endS": 7161,
      "watts": false,
-     "startS": 6704,
-     "durationS": 457
+     "startS": 6706,
+     "durationS": 456
     },
     {
      "hr": 105,
      "avg": 6,
-     "endS": 8571,
+     "endS": 8573,
      "watts": false,
-     "startS": 8168,
+     "startS": 8170,
      "durationS": 404
     },
     {
      "hr": 109,
      "avg": 6,
-     "endS": 8997,
+     "endS": 8999,
      "watts": false,
-     "startS": 8639,
+     "startS": 8641,
      "durationS": 359
     },
     {
      "hr": 110,
      "avg": 5,
-     "endS": 9249,
+     "endS": 9251,
      "watts": false,
-     "startS": 9141,
-     "durationS": 109
+     "startS": 9146,
+     "durationS": 106
     },
     {
      "hr": 106,
      "avg": 6,
-     "endS": 9846,
+     "endS": 9848,
      "watts": false,
-     "startS": 9691,
+     "startS": 9693,
      "durationS": 156
     }
    ],
@@ -1005121,7 +1005113,7 @@
  {
   "id": "mwb5df730ai5",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.392085+00:00",
+  "updated_at": "2026-11-23T15:46:24.165737+00:00",
   "data": {
    "ef": 2.41,
    "id": "mwb5df730ai5",
@@ -1005389,44 +1005381,44 @@
     {
      "hr": 124,
      "avg": 331,
-     "endS": 380,
+     "endS": 382,
      "watts": true,
-     "startS": 217,
-     "durationS": 164
+     "startS": 218,
+     "durationS": 165
     },
     {
      "hr": 126,
      "avg": 318,
-     "endS": 1098,
+     "endS": 1101,
      "watts": true,
-     "startS": 992,
-     "durationS": 107
+     "startS": 994,
+     "durationS": 108
     },
     {
      "hr": 123,
-     "avg": 331,
-     "endS": 1544,
+     "avg": 330,
+     "endS": 1546,
      "watts": true,
-     "startS": 1485,
-     "durationS": 60
+     "startS": 1486,
+     "durationS": 61
     },
     {
      "hr": 134,
      "avg": 333,
-     "endS": 3067,
+     "endS": 3069,
      "watts": true,
-     "startS": 3008,
-     "durationS": 60
+     "startS": 3009,
+     "durationS": 61
     }
    ],
    "lapGrades": [
-    35.3,
+    35.4,
     2.5,
     0.9,
     2.4,
     2.2,
-    6.1,
-    -0.6,
+    6.2,
+    -0.7,
     6.9
    ],
    "powerHist": null,
@@ -1005443,7 +1005435,7 @@
  {
   "id": "mwb5dfp7r79x",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.399378+00:00",
+  "updated_at": "2026-11-23T15:46:24.167051+00:00",
   "data": {
    "ef": 2.36,
    "id": "mwb5dfp7r79x",
@@ -1005760,26 +1005752,26 @@
    "intervals": [
     {
      "hr": 141,
-     "avg": 347,
-     "endS": 980,
+     "avg": 348,
+     "endS": 981,
      "watts": true,
-     "startS": 621,
-     "durationS": 360
+     "startS": 623,
+     "durationS": 359
     },
     {
-     "hr": 113,
-     "avg": 332,
-     "endS": 3320,
+     "hr": 112,
+     "avg": 331,
+     "endS": 3324,
      "watts": true,
-     "startS": 3012,
-     "durationS": 309
+     "startS": 3009,
+     "durationS": 316
     }
    ],
    "lapGrades": [
-    52,
-    -22.7,
+    53.1,
+    -23,
     0.4,
-    -0.6,
+    -0.5,
     0.7,
     1.7,
     null,
@@ -1005861,7 +1005853,7 @@
  {
   "id": "mwbxzjq17xow",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.401417+00:00",
+  "updated_at": "2026-11-23T15:46:24.170541+00:00",
   "data": {
    "ef": 1.59,
    "id": "mwbxzjq17xow",
@@ -1006068,11 +1006060,11 @@
    "intervals": [
     {
      "hr": 156,
-     "avg": 220,
-     "endS": 4895,
+     "avg": 221,
+     "endS": 4899,
      "watts": true,
-     "startS": 1210,
-     "durationS": 3686
+     "startS": 1212,
+     "durationS": 3688
     }
    ],
    "lapGrades": null,
@@ -1006143,7 +1006135,7 @@
  {
   "id": "mwcl0t170m68",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.405829+00:00",
+  "updated_at": "2026-11-23T15:46:24.171868+00:00",
   "data": {
    "ef": 2.63,
    "id": "mwcl0t170m68",
@@ -1006635,103 +1006627,103 @@
    "intervals": [
     {
      "hr": 126,
-     "avg": 309,
-     "endS": 508,
+     "avg": 306,
+     "endS": 510,
      "watts": true,
-     "startS": 442,
+     "startS": 444,
      "durationS": 67
     },
     {
-     "hr": 134,
-     "avg": 322,
-     "endS": 674,
+     "hr": 135,
+     "avg": 321,
+     "endS": 676,
      "watts": true,
-     "startS": 587,
+     "startS": 589,
      "durationS": 88
     },
     {
      "hr": 152,
-     "avg": 431,
-     "endS": 1097,
+     "avg": 430,
+     "endS": 1099,
      "watts": true,
-     "startS": 762,
-     "durationS": 336
+     "startS": 763,
+     "durationS": 337
     },
     {
      "hr": 166,
      "avg": 453,
-     "endS": 1456,
+     "endS": 1458,
      "watts": true,
-     "startS": 1222,
+     "startS": 1224,
      "durationS": 235
     },
     {
      "hr": 167,
      "avg": 455,
-     "endS": 1816,
+     "endS": 1818,
      "watts": true,
-     "startS": 1585,
+     "startS": 1587,
      "durationS": 232
     },
     {
      "hr": 166,
      "avg": 436,
-     "endS": 2173,
+     "endS": 2175,
      "watts": true,
-     "startS": 1949,
+     "startS": 1951,
      "durationS": 225
     },
     {
      "hr": 169,
-     "avg": 450,
-     "endS": 2534,
+     "avg": 449,
+     "endS": 2537,
      "watts": true,
-     "startS": 2310,
-     "durationS": 225
-    },
-    {
-     "hr": 167,
-     "avg": 434,
-     "endS": 2897,
-     "watts": true,
-     "startS": 2667,
-     "durationS": 231
-    },
-    {
-     "hr": 170,
-     "avg": 444,
-     "endS": 3251,
-     "watts": true,
-     "startS": 3026,
+     "startS": 2312,
      "durationS": 226
     },
     {
      "hr": 167,
-     "avg": 427,
-     "endS": 3610,
+     "avg": 435,
+     "endS": 2898,
      "watts": true,
-     "startS": 3383,
+     "startS": 2670,
+     "durationS": 229
+    },
+    {
+     "hr": 170,
+     "avg": 444,
+     "endS": 3252,
+     "watts": true,
+     "startS": 3028,
+     "durationS": 225
+    },
+    {
+     "hr": 167,
+     "avg": 427,
+     "endS": 3612,
+     "watts": true,
+     "startS": 3385,
      "durationS": 228
     }
    ],
    "lapGrades": [
     12.2,
-    1.9,
-    11.3,
-    -0.2,
-    11.6,
-    0.7,
-    11.7,
-    1.3,
-    10.4,
-    1.2,
-    9.6,
-    1.3,
-    5.5,
+    1.7,
+    10.9,
+    0,
+    11.5,
     0.9,
+    11.4,
+    1.5,
+    10.1,
+    1.2,
+    9.9,
+    0.8,
+    6.3,
+    0.7,
     6.8,
-    -4.9,
-    -4.4,
+    -4.7,
+    -4.1,
     -10,
     -1.6
    ],
@@ -1006853,7 +1006845,7 @@
  {
   "id": "mwdui5n15ao9",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.410989+00:00",
+  "updated_at": "2026-11-23T15:46:24.175941+00:00",
   "data": {
    "ef": null,
    "id": "mwdui5n15ao9",
@@ -1007561,26 +1007553,26 @@
     {
      "hr": 111,
      "avg": 5,
-     "endS": 3502,
+     "endS": 3505,
      "watts": false,
-     "startS": 3273,
-     "durationS": 230
+     "startS": 3275,
+     "durationS": 231
     },
     {
      "hr": 112,
      "avg": 5,
-     "endS": 5650,
+     "endS": 5653,
      "watts": false,
-     "startS": 5481,
-     "durationS": 170
+     "startS": 5483,
+     "durationS": 171
     },
     {
      "hr": 115,
      "avg": 5,
-     "endS": 8160,
+     "endS": 8161,
      "watts": false,
-     "startS": 6147,
-     "durationS": 2014
+     "startS": 6149,
+     "durationS": 2013
     }
    ],
    "lapGrades": [
@@ -1007592,10 +1007584,10 @@
     -0.4,
     -0.8,
     -1.5,
-    -4.2,
-    -3.6,
-    -1.7,
-    -2,
+    -3.3,
+    -4.5,
+    -1.3,
+    -3,
     -1.5,
     -1.4,
     0,
@@ -1007640,7 +1007632,7 @@
  {
   "id": "mwetpld9larc",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.416601+00:00",
+  "updated_at": "2026-11-23T15:46:24.18031+00:00",
   "data": {
    "ef": 2.29,
    "id": "mwetpld9larc",
@@ -1007909,53 +1007901,53 @@
    "intervals": [
     {
      "hr": 118,
-     "avg": 314,
-     "endS": 228,
+     "avg": 315,
+     "endS": 230,
      "watts": true,
-     "startS": 39,
-     "durationS": 190
+     "startS": 40,
+     "durationS": 191
     },
     {
      "hr": 127,
-     "avg": 298,
-     "endS": 594,
+     "avg": 299,
+     "endS": 596,
      "watts": true,
-     "startS": 462,
+     "startS": 464,
      "durationS": 133
     },
     {
      "hr": 133,
-     "avg": 314,
-     "endS": 1003,
+     "avg": 313,
+     "endS": 1005,
      "watts": true,
-     "startS": 924,
+     "startS": 926,
      "durationS": 80
     },
     {
      "hr": 130,
      "avg": 307,
-     "endS": 1353,
+     "endS": 1356,
      "watts": true,
-     "startS": 1223,
-     "durationS": 131
+     "startS": 1225,
+     "durationS": 132
     },
     {
      "hr": 136,
-     "avg": 327,
-     "endS": 1771,
+     "avg": 328,
+     "endS": 1774,
      "watts": true,
-     "startS": 1669,
-     "durationS": 103
+     "startS": 1671,
+     "durationS": 104
     }
    ],
    "lapGrades": [
-    31,
-    7.5,
-    2,
+    31.1,
+    7.6,
     2.1,
+    2,
     -3.1,
     -3,
-    -9.6,
+    -11.2,
     null
    ],
    "powerHist": null,
@@ -1007972,7 +1007964,7 @@
  {
   "id": "mwfb7jmmnwtg",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.418775+00:00",
+  "updated_at": "2026-11-23T15:46:24.191806+00:00",
   "data": {
    "ef": null,
    "id": "mwfb7jmmnwtg",
@@ -1008571,42 +1008563,42 @@
     {
      "hr": 95,
      "avg": 6,
-     "endS": 5148,
+     "endS": 5150,
      "watts": false,
-     "startS": 4295,
+     "startS": 4297,
      "durationS": 854
     },
     {
      "hr": 99,
      "avg": 5,
-     "endS": 6229,
+     "endS": 6233,
      "watts": false,
-     "startS": 6066,
-     "durationS": 164
+     "startS": 6069,
+     "durationS": 165
     },
     {
      "hr": 109,
      "avg": 6,
-     "endS": 6709,
+     "endS": 6711,
      "watts": false,
-     "startS": 6344,
+     "startS": 6346,
      "durationS": 366
     },
     {
      "hr": 110,
      "avg": 5,
-     "endS": 7445,
+     "endS": 7447,
      "watts": false,
-     "startS": 6776,
+     "startS": 6778,
      "durationS": 670
     },
     {
      "hr": 111,
      "avg": 6,
-     "endS": 8708,
+     "endS": 8710,
      "watts": false,
-     "startS": 7510,
-     "durationS": 1199
+     "startS": 7513,
+     "durationS": 1198
     }
    ],
    "lapGrades": [
@@ -1008632,7 +1008624,7 @@
  {
   "id": "mwg4jg70rr4w",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.422826+00:00",
+  "updated_at": "2026-11-23T15:46:24.196078+00:00",
   "data": {
    "ef": 1.4,
    "id": "mwg4jg70rr4w",
@@ -1008845,10 +1008837,10 @@
     {
      "hr": 153,
      "avg": 215,
-     "endS": 4806,
+     "endS": 4807,
      "watts": true,
-     "startS": 1175,
-     "durationS": 3632
+     "startS": 1177,
+     "durationS": 3631
     }
    ],
    "lapGrades": null,
@@ -1008917,7 +1008909,7 @@
  {
   "id": "mwgkruk077s3",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.425011+00:00",
+  "updated_at": "2026-11-23T15:46:24.197689+00:00",
   "data": {
    "ef": 2.89,
    "id": "mwgkruk077s3",
@@ -1009105,11 +1009097,11 @@
    "intensity": null,
    "intervals": [],
    "lapGrades": [
-    52.2,
-    4.6,
-    4.3,
-    4.9,
-    5.7
+    53.3,
+    4.7,
+    4.2,
+    5,
+    5.9
    ],
    "powerHist": null,
    "decoupling": null,
@@ -1009125,7 +1009117,7 @@
  {
   "id": "mwgkrv4puevz",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.42701+00:00",
+  "updated_at": "2026-11-23T15:46:24.19924+00:00",
   "data": {
    "ef": 1.83,
    "id": "mwgkrv4puevz",
@@ -1009315,14 +1009307,14 @@
     {
      "hr": 121,
      "avg": 239,
-     "endS": 1077,
+     "endS": 1080,
      "watts": true,
-     "startS": 1005,
-     "durationS": 73
+     "startS": 1007,
+     "durationS": 74
     }
    ],
    "lapGrades": [
-    64.8,
+    65.6,
     -4.4,
     -3.9,
     -5.3,
@@ -1009342,7 +1009334,7 @@
  {
   "id": "mwgkrw0hduzy",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.430573+00:00",
+  "updated_at": "2026-11-23T15:46:24.20072+00:00",
   "data": {
    "ef": 2.49,
    "id": "mwgkrw0hduzy",
@@ -1009496,16 +1009488,16 @@
    "intensity": null,
    "intervals": [
     {
-     "hr": 147,
-     "avg": 416,
-     "endS": 978,
+     "hr": 148,
+     "avg": 421,
+     "endS": 980,
      "watts": true,
-     "startS": 888,
-     "durationS": 91
+     "startS": 892,
+     "durationS": 89
     }
    ],
    "lapGrades": [
-    43.6,
+    43.5,
     1.8,
     null
    ],
@@ -1009523,7 +1009515,7 @@
  {
   "id": "mwhxw44vxlkq",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.433319+00:00",
+  "updated_at": "2026-11-23T15:46:24.202162+00:00",
   "data": {
    "ef": null,
    "id": "mwhxw44vxlkq",
@@ -1009928,105 +1009920,105 @@
     {
      "hr": 113,
      "avg": 4,
-     "endS": 501,
+     "endS": 500,
      "watts": false,
-     "startS": 24,
-     "durationS": 478
+     "startS": 26,
+     "durationS": 475
     },
     {
      "hr": 106,
      "avg": 4,
-     "endS": 1114,
+     "endS": 1115,
      "watts": false,
-     "startS": 970,
-     "durationS": 145
+     "startS": 972,
+     "durationS": 144
     },
     {
      "hr": 108,
      "avg": 4,
-     "endS": 1401,
+     "endS": 1403,
      "watts": false,
-     "startS": 1194,
+     "startS": 1196,
      "durationS": 208
     },
     {
      "hr": 119,
      "avg": 5,
-     "endS": 1929,
+     "endS": 1931,
      "watts": false,
-     "startS": 1870,
+     "startS": 1872,
      "durationS": 60
     },
     {
      "hr": 116,
      "avg": 5,
-     "endS": 2673,
+     "endS": 2676,
      "watts": false,
-     "startS": 2156,
-     "durationS": 518
+     "startS": 2158,
+     "durationS": 519
     },
     {
      "hr": 115,
      "avg": 4,
-     "endS": 3096,
+     "endS": 3098,
      "watts": false,
-     "startS": 2906,
-     "durationS": 191
+     "startS": 2909,
+     "durationS": 190
     },
     {
      "hr": 103,
      "avg": 5,
-     "endS": 5769,
+     "endS": 5770,
      "watts": false,
-     "startS": 5358,
-     "durationS": 412
+     "startS": 5360,
+     "durationS": 411
     },
     {
      "hr": 85,
      "avg": 5,
-     "endS": 6021,
+     "endS": 6023,
      "watts": false,
-     "startS": 5900,
+     "startS": 5902,
      "durationS": 122
     },
     {
      "hr": 102,
      "avg": 4,
-     "endS": 6284,
+     "endS": 6285,
      "watts": false,
-     "startS": 6108,
-     "durationS": 177
+     "startS": 6110,
+     "durationS": 176
     },
     {
      "hr": 103,
      "avg": 4,
-     "endS": 6543,
+     "endS": 6545,
      "watts": false,
-     "startS": 6364,
-     "durationS": 180
+     "startS": 6365,
+     "durationS": 181
     },
     {
      "hr": 100,
      "avg": 4,
-     "endS": 6801,
+     "endS": 6803,
      "watts": false,
-     "startS": 6622,
+     "startS": 6624,
      "durationS": 180
     },
     {
      "hr": 101,
      "avg": 4,
-     "endS": 7032,
+     "endS": 7035,
      "watts": false,
-     "startS": 6887,
-     "durationS": 146
+     "startS": 6889,
+     "durationS": 147
     },
     {
      "hr": 99,
      "avg": 4,
-     "endS": 7427,
+     "endS": 7429,
      "watts": false,
-     "startS": 7178,
+     "startS": 7180,
      "durationS": 250
     }
    ],
@@ -1010047,7 +1010039,7 @@
  {
   "id": "mwhxw4o9ifxy",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.437407+00:00",
+  "updated_at": "2026-11-23T15:46:24.205191+00:00",
   "data": {
    "ef": 2.47,
    "id": "mwhxw4o9ifxy",
@@ -1010324,37 +1010316,37 @@
     {
      "hr": 122,
      "avg": 344,
-     "endS": 363,
+     "endS": 365,
      "watts": true,
-     "startS": 135,
+     "startS": 137,
      "durationS": 229
     },
     {
      "hr": 124,
      "avg": 328,
-     "endS": 607,
+     "endS": 609,
      "watts": true,
-     "startS": 462,
+     "startS": 464,
      "durationS": 146
     },
     {
      "hr": 123,
      "avg": 319,
-     "endS": 911,
+     "endS": 913,
      "watts": true,
-     "startS": 721,
-     "durationS": 191
+     "startS": 725,
+     "durationS": 189
     }
    ],
    "lapGrades": [
-    67.7,
+    68.4,
     -1.7,
     -1.6,
     -3.5,
-    -6.1,
+    -6.3,
     -4.3,
-    -4.9,
-    -4.7,
+    -4.8,
+    -4.8,
     -2.4
    ],
    "powerHist": null,
@@ -1010371,7 +1010363,7 @@
  {
   "id": "mwlzj25fd7dy",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.437789+00:00",
+  "updated_at": "2026-11-23T15:46:24.210438+00:00",
   "data": {
    "ef": 2.49,
    "id": "mwlzj25fd7dy",
@@ -1010805,100 +1010797,100 @@
    "intervals": [
     {
      "hr": 123,
-     "avg": 354,
-     "endS": 133,
+     "avg": 365,
+     "endS": 135,
      "watts": true,
-     "startS": 46,
-     "durationS": 88
+     "startS": 69,
+     "durationS": 67
     },
     {
      "hr": 122,
      "avg": 328,
-     "endS": 665,
+     "endS": 667,
      "watts": true,
-     "startS": 344,
+     "startS": 346,
      "durationS": 322
     },
     {
      "hr": 129,
-     "avg": 336,
-     "endS": 1997,
+     "avg": 351,
+     "endS": 1904,
      "watts": true,
-     "startS": 1812,
-     "durationS": 186
+     "startS": 1815,
+     "durationS": 90
     },
     {
      "hr": 131,
      "avg": 347,
-     "endS": 2231,
+     "endS": 2232,
      "watts": true,
-     "startS": 2121,
-     "durationS": 111
+     "startS": 2124,
+     "durationS": 109
     },
     {
      "hr": 136,
      "avg": 341,
-     "endS": 3096,
+     "endS": 3098,
      "watts": true,
-     "startS": 2693,
-     "durationS": 404
+     "startS": 2696,
+     "durationS": 403
     },
     {
      "hr": 144,
-     "avg": 371,
-     "endS": 3825,
+     "avg": 370,
+     "endS": 3827,
      "watts": true,
-     "startS": 3233,
+     "startS": 3235,
      "durationS": 593
     },
     {
      "hr": 135,
-     "avg": 359,
-     "endS": 4242,
+     "avg": 360,
+     "endS": 4244,
      "watts": true,
-     "startS": 4125,
+     "startS": 4127,
      "durationS": 118
     },
     {
      "hr": 140,
      "avg": 366,
-     "endS": 4511,
+     "endS": 4512,
      "watts": true,
-     "startS": 4414,
-     "durationS": 98
+     "startS": 4416,
+     "durationS": 97
     },
     {
      "hr": 139,
      "avg": 350,
-     "endS": 5043,
+     "endS": 5045,
      "watts": true,
-     "startS": 4878,
-     "durationS": 166
+     "startS": 4881,
+     "durationS": 165
     },
     {
      "hr": 136,
      "avg": 349,
-     "endS": 5236,
+     "endS": 5238,
      "watts": true,
-     "startS": 5154,
+     "startS": 5156,
      "durationS": 83
     }
    ],
    "lapGrades": [
-    34.6,
+    34.7,
     -2.3,
-    3.4,
-    1.2,
-    4.4,
+    3.3,
+    1.1,
+    4.5,
     7.2,
     8.3,
-    6.5,
+    6.6,
     -7.7,
     -2.9,
     -10.1,
     -3.7,
     -6.3,
-    -6.2,
+    -6.1,
     null
    ],
    "powerHist": null,
@@ -1010921,7 +1010913,7 @@
  {
   "id": "mwlzj5la4xir",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.443821+00:00",
+  "updated_at": "2026-11-23T15:46:24.215334+00:00",
   "data": {
    "ef": 1.43,
    "id": "mwlzj5la4xir",
@@ -1011136,64 +1011128,80 @@
      "avg": 210,
      "endS": 1424,
      "watts": true,
-     "startS": 1358,
-     "durationS": 67
+     "startS": 1246,
+     "durationS": 179
+    },
+    {
+     "hr": 141,
+     "avg": 211,
+     "endS": 1584,
+     "watts": true,
+     "startS": 1503,
+     "durationS": 82
     },
     {
      "hr": 144,
      "avg": 210,
-     "endS": 1787,
+     "endS": 1797,
      "watts": true,
-     "startS": 1667,
-     "durationS": 121
+     "startS": 1668,
+     "durationS": 130
     },
     {
      "hr": 147,
-     "avg": 211,
-     "endS": 1960,
+     "avg": 210,
+     "endS": 2109,
      "watts": true,
-     "startS": 1876,
-     "durationS": 85
+     "startS": 1878,
+     "durationS": 232
     },
     {
-     "hr": 147,
-     "avg": 213,
-     "endS": 3023,
+     "hr": 149,
+     "avg": 214,
+     "endS": 3080,
      "watts": true,
-     "startS": 2373,
-     "durationS": 651
+     "startS": 2428,
+     "durationS": 653
     },
     {
      "hr": 152,
-     "avg": 212,
-     "endS": 3330,
+     "avg": 214,
+     "endS": 3321,
      "watts": true,
-     "startS": 3110,
-     "durationS": 221
+     "startS": 3177,
+     "durationS": 145
+    },
+    {
+     "hr": 154,
+     "avg": 210,
+     "endS": 3576,
+     "watts": true,
+     "startS": 3488,
+     "durationS": 89
     },
     {
      "hr": 151,
-     "avg": 211,
-     "endS": 3828,
+     "avg": 210,
+     "endS": 4047,
      "watts": true,
-     "startS": 3723,
-     "durationS": 106
-    },
-    {
-     "hr": 153,
-     "avg": 211,
-     "endS": 4045,
-     "watts": true,
-     "startS": 3939,
-     "durationS": 107
+     "startS": 3647,
+     "durationS": 401
     },
     {
      "hr": 155,
      "avg": 211,
-     "endS": 4519,
+     "endS": 4348,
      "watts": true,
-     "startS": 4252,
-     "durationS": 268
+     "startS": 4148,
+     "durationS": 201
+    },
+    {
+     "hr": 156,
+     "avg": 211,
+     "endS": 4746,
+     "watts": true,
+     "startS": 4457,
+     "durationS": 290
     }
    ],
    "lapGrades": null,
@@ -1011260,7 +1011268,7 @@
  {
   "id": "mwo23womodbd",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.44825+00:00",
+  "updated_at": "2026-11-23T15:46:24.217646+00:00",
   "data": {
    "ef": 2.68,
    "id": "mwo23womodbd",
@@ -1011568,15 +1011576,24 @@
    "durationS": 3423,
    "hasSeries": true,
    "intensity": null,
-   "intervals": [],
+   "intervals": [
+    {
+     "hr": 113,
+     "avg": 315,
+     "endS": 2143,
+     "watts": true,
+     "startS": 2015,
+     "durationS": 129
+    }
+   ],
    "lapGrades": [
-    25.3,
-    -1,
+    25.5,
+    -1.1,
     -0.7,
     -0.9,
     0,
-    2.6,
-    0,
+    2.5,
+    -0.1,
     0.8,
     -0.4,
     -0.2
@@ -1011694,7 +1011711,7 @@
  {
   "id": "mwo23xr0zs7l",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.452729+00:00",
+  "updated_at": "2026-11-23T15:46:24.221745+00:00",
   "data": {
    "ef": 2.61,
    "id": "mwo23xr0zs7l",
@@ -1012099,7 +1012116,7 @@
    "intensity": null,
    "intervals": [],
    "lapGrades": [
-    24.7,
+    24.9,
     -0.3,
     -0.5,
     0.2,
@@ -1012107,7 +1012124,7 @@
     0.6,
     0.5,
     -0.3,
-    -0.6,
+    -0.5,
     0.4,
     0.3,
     0.7,
@@ -1012128,7 +1012145,7 @@
  {
   "id": "mws3agjt0hvr",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.456538+00:00",
+  "updated_at": "2026-11-23T15:46:24.223282+00:00",
   "data": {
    "ef": null,
    "id": "mws3agjt0hvr",
@@ -1012619,50 +1012636,50 @@
     {
      "hr": 101,
      "avg": 5,
-     "endS": 3482,
+     "endS": 3484,
      "watts": false,
-     "startS": 3261,
+     "startS": 3263,
      "durationS": 222
     },
     {
      "hr": 107,
      "avg": 5,
-     "endS": 4666,
+     "endS": 4668,
      "watts": false,
-     "startS": 4375,
-     "durationS": 292
+     "startS": 4376,
+     "durationS": 293
     },
     {
      "hr": 111,
      "avg": 5,
-     "endS": 6474,
+     "endS": 6479,
      "watts": false,
-     "startS": 6026,
-     "durationS": 449
+     "startS": 6028,
+     "durationS": 452
     },
     {
      "hr": 106,
      "avg": 5,
-     "endS": 6735,
+     "endS": 6738,
      "watts": false,
-     "startS": 6666,
-     "durationS": 70
+     "startS": 6667,
+     "durationS": 72
     },
     {
      "hr": 113,
      "avg": 5,
-     "endS": 6962,
+     "endS": 6965,
      "watts": false,
-     "startS": 6880,
-     "durationS": 83
+     "startS": 6881,
+     "durationS": 85
     },
     {
      "hr": 120,
      "avg": 5,
-     "endS": 8099,
+     "endS": 8100,
      "watts": false,
-     "startS": 7118,
-     "durationS": 982
+     "startS": 7120,
+     "durationS": 981
     }
    ],
    "lapGrades": null,
@@ -1012682,7 +1012699,7 @@
  {
   "id": "mws3ah9uu1q4",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.458727+00:00",
+  "updated_at": "2026-11-23T15:46:24.226042+00:00",
   "data": {
    "ef": null,
    "id": "mws3ah9uu1q4",
@@ -1013171,23 +1013188,23 @@
     {
      "hr": 166,
      "avg": 6,
-     "endS": 4273,
+     "endS": 4277,
      "watts": false,
-     "startS": 1858,
-     "durationS": 2416
+     "startS": 1860,
+     "durationS": 2418
     },
     {
-     "hr": 91,
+     "hr": 90,
      "avg": 6,
-     "endS": 6467,
+     "endS": 6469,
      "watts": false,
-     "startS": 6321,
+     "startS": 6323,
      "durationS": 147
     }
    ],
    "lapGrades": [
     4.6,
-    2,
+    1.9,
     0.2
    ],
    "powerHist": null,
@@ -1013210,7 +1013227,7 @@
  {
   "id": "mws3ai8azmgn",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.46392+00:00",
+  "updated_at": "2026-11-23T15:46:24.226556+00:00",
   "data": {
    "ef": null,
    "id": "mws3ai8azmgn",
@@ -1013901,97 +1013918,97 @@
     {
      "hr": 93,
      "avg": 5,
-     "endS": 404,
+     "endS": 406,
      "watts": false,
-     "startS": 97,
-     "durationS": 308
+     "startS": 100,
+     "durationS": 307
+    },
+    {
+     "hr": 89,
+     "avg": 5,
+     "endS": 1194,
+     "watts": false,
+     "startS": 1002,
+     "durationS": 193
     },
     {
      "hr": 88,
      "avg": 5,
-     "endS": 1193,
+     "endS": 2232,
      "watts": false,
-     "startS": 1000,
-     "durationS": 194
-    },
-    {
-     "hr": 88,
-     "avg": 5,
-     "endS": 2230,
-     "watts": false,
-     "startS": 1734,
-     "durationS": 497
+     "startS": 1737,
+     "durationS": 496
     },
     {
      "hr": 93,
      "avg": 5,
-     "endS": 2388,
+     "endS": 2390,
      "watts": false,
-     "startS": 2295,
-     "durationS": 94
+     "startS": 2296,
+     "durationS": 95
     },
     {
      "hr": 138,
      "avg": 5,
-     "endS": 3590,
+     "endS": 3592,
      "watts": false,
-     "startS": 2714,
+     "startS": 2716,
      "durationS": 877
     },
     {
      "hr": 101,
      "avg": 5,
-     "endS": 4544,
+     "endS": 4547,
      "watts": false,
-     "startS": 4318,
-     "durationS": 227
+     "startS": 4320,
+     "durationS": 228
     },
     {
      "hr": 101,
      "avg": 5,
-     "endS": 5834,
+     "endS": 5838,
      "watts": false,
-     "startS": 5652,
-     "durationS": 183
+     "startS": 5654,
+     "durationS": 185
     },
     {
      "hr": 107,
      "avg": 5,
-     "endS": 6307,
+     "endS": 6309,
      "watts": false,
-     "startS": 5966,
+     "startS": 5968,
      "durationS": 342
     },
     {
      "hr": 104,
      "avg": 5,
-     "endS": 6821,
+     "endS": 6823,
      "watts": false,
-     "startS": 6712,
+     "startS": 6714,
      "durationS": 110
     }
    ],
    "lapGrades": [
     2.6,
-    1.1,
-    2.5,
+    1.7,
+    1.7,
     0,
     1.6,
-    2.3,
+    1.7,
     2.5,
-    1.7,
-    1.7,
-    2.6,
-    0,
+    2.3,
+    0.8,
+    2.5,
+    0.9,
     0.8,
     0.6,
-    1.6,
-    4.5,
-    2.2,
+    1.5,
+    4.8,
+    2.3,
     2.9,
     2.6,
-    -3.8,
-    3.4,
+    -4,
+    3.3,
     0
    ],
    "powerHist": null,
@@ -1014032,7 +1014049,7 @@
  {
   "id": "mws3aj5hsyoz",
   "deleted": false,
-  "updated_at": "2026-11-23T10:43:26.465953+00:00",
+  "updated_at": "2026-11-23T15:46:24.23241+00:00",
   "data": {
    "ef": 1.86,
    "id": "mws3aj5hsyoz",
@@ -1014324,62 +1014341,62 @@
     {
      "hr": 134,
      "avg": 352,
-     "endS": 194,
+     "endS": 197,
      "watts": true,
-     "startS": 23,
-     "durationS": 172
+     "startS": 25,
+     "durationS": 173
     },
     {
      "hr": 137,
      "avg": 311,
-     "endS": 643,
+     "endS": 646,
      "watts": true,
-     "startS": 263,
-     "durationS": 381
+     "startS": 265,
+     "durationS": 382
     },
     {
      "hr": 157,
      "avg": 295,
-     "endS": 1015,
+     "endS": 1017,
      "watts": true,
-     "startS": 871,
-     "durationS": 145
+     "startS": 874,
+     "durationS": 144
     },
     {
      "hr": 157,
      "avg": 303,
-     "endS": 1393,
+     "endS": 1396,
      "watts": true,
-     "startS": 1306,
-     "durationS": 88
+     "startS": 1308,
+     "durationS": 89
     },
     {
      "hr": 150,
-     "avg": 306,
-     "endS": 2751,
+     "avg": 305,
+     "endS": 2752,
      "watts": true,
-     "startS": 2147,
-     "durationS": 605
+     "startS": 2150,
+     "durationS": 603
     },
     {
      "hr": 134,
-     "avg": 324,
-     "endS": 2958,
+     "avg": 323,
+     "endS": 2960,
      "watts": true,
-     "startS": 2880,
+     "startS": 2882,
      "durationS": 79
     }
    ],
    "lapGrades": [
-    79,
-    -5.4,
-    -1.2,
+    79.5,
+    -5.3,
+    -1.3,
     -7.7,
-    -1,
+    -0.9,
     8.9,
     7.5,
-    -8,
-    -1
+    -7.9,
+    -1.5
    ],
    "powerHist": null,
    "decoupling": 0.7,

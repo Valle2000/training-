@@ -2,7 +2,7 @@
  {
   "id": "settings",
   "deleted": false,
-  "updated_at": "2026-11-23T11:36:36.510335+00:00",
+  "updated_at": "2026-11-24T12:23:57.257422+00:00",
   "data": {
    "ai": {
     "coach": {
@@ -67,6 +67,7 @@
    "hrRest": "38",
    "season": {
     "focus": [],
+    "bikeTo": 10,
     "wizard": {
      "end": "2027-03-21",
      "keys": [
@@ -83,7 +84,7 @@
       "hit_pyr",
       "race_tt"
      ],
-     "start": "2026-11-02",
+     "start": "2026-11-30",
      "dtDays": 1,
      "horizon": 8,
      "longDay": 7,
@@ -134,12 +135,13 @@
      ],
      "strengthPerWeek": 2
     },
+    "bikeFrom": 4,
     "baseHours": "17",
     "mainSport": "rollerski",
     "peakHours": "19",
-    "winterRunHours": "3"
+    "winterRunHours": "5"
    },
-   "lastSync": "2026-11-23T11:36:31.277Z",
+   "lastSync": "2026-11-24T12:11:18.073Z",
    "strategy": "Aktuell ca. 15 h Ausdauer pro Woche plus 2 Krafteinheiten (zusammen ca. 2 h). Bald möchte ich Double-Threshold-Tage einbauen und später auch etwas mehr Intensität.",
    "weightKg": "80",
    "ftpSkierg": "224",
@@ -159,7 +161,7 @@
    "polarSportMap": {
     "83": "strength"
    },
-   "metricsVersion": 10,
+   "metricsVersion": 12,
    "hiddenTemplates": [
     "JOE"
    ],

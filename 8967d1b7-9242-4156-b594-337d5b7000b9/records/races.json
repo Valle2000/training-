@@ -148,7 +148,7 @@
  {
   "id": "mvzew6s6uvbag",
   "deleted": false,
-  "updated_at": "2026-11-02T15:27:53.35516+00:00",
+  "updated_at": "2026-11-23T15:49:44.963764+00:00",
   "data": {
    "id": "mvzew6s6uvbag",
    "date": "2026-10-11",
@@ -162,8 +162,8 @@
    },
    "result": {
     "timeS": 4514,
-    "gapPct": null,
-    "winnerS": null,
+    "gapPct": 15.7,
+    "winnerS": 3900,
     "activityId": "mvpxp50qku0d"
    },
    "priority": "C",
@@ -523,6 +523,73 @@
    "priority": "C",
    "technique": "Lauf",
    "distanceKm": 18.5
+  }
+ },
+ {
+  "id": "mwtfvgt3rth42",
+  "deleted": false,
+  "updated_at": "2026-11-23T15:48:05.31523+00:00",
+  "data": {
+   "id": "mwtfvgt3rth42",
+   "date": "2026-11-14",
+   "goal": "",
+   "name": "Rennen",
+   "notes": "",
+   "report": {
+    "notes": "Schwelle ok aber müde Beine von Kraft und allgemein müde nicht richtig tief gehen können",
+    "rating": 2
+   },
+   "result": {
+    "place": "2",
+    "timeS": 1192,
+    "gapPct": 10.4,
+    "winnerS": 1080,
+    "fieldSize": "25",
+    "activityId": "mwgkruk077s3"
+   },
+   "priority": "C",
+   "technique": "Lauf",
+   "distanceKm": 4.6
+  }
+ },
+ {
+  "id": "mwtfwrovtr4pm",
+  "deleted": false,
+  "updated_at": "2026-11-23T15:48:45.187484+00:00",
+  "data": {
+   "id": "mwtfwrovtr4pm",
+   "date": "2027-04-04",
+   "goal": "Sub 1:15",
+   "name": "Freiburg Marathon",
+   "notes": "",
+   "result": {
+    "timeS": null,
+    "gapPct": null,
+    "winnerS": null
+   },
+   "priority": "B",
+   "technique": "Lauf",
+   "distanceKm": "21,1"
+  }
+ },
+ {
+  "id": "mwtfxnbgij5ql",
+  "deleted": false,
+  "updated_at": "2026-11-23T15:49:19.255112+00:00",
+  "data": {
+   "id": "mwtfxnbgij5ql",
+   "date": "2027-03-20",
+   "goal": "Spaß haben",
+   "name": "DM",
+   "notes": "",
+   "result": {
+    "timeS": null,
+    "gapPct": null,
+    "winnerS": null
+   },
+   "priority": "C",
+   "technique": "Skating",
+   "distanceKm": "30"
   }
  }
 ]
