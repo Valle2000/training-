@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
     "lint": "eslint .",
-    "test": "eslint . && node --test tests/*.test.mjs"
+    "test": "eslint . && node --test tests/*.test.mjs",
+    "test:e2e": "vite build && node tests/e2e/smoke.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.1.0",
