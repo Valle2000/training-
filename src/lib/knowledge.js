@@ -12,9 +12,13 @@ const S = {
   brackley20: { text: 'Brackley et al. 2020, J Sports Sci – Wie Elite-Schwimmtrainer Technik vermitteln', url: 'https://doi.org/10.1080/02640414.2020.1792703' },
   neiva14: { text: 'Neiva et al. 2014, IJSPP – Aufwärmen mit Technikübungen und 100 m Freistil', url: 'https://doi.org/10.1123/ijspp.2012-0345' },
   stoggl14: { text: 'Stöggl & Sperlich 2014, Front Physiol – 48 gut trainierte Ausdauersportler, 9 Wochen, vier Verteilungen', url: 'https://pubmed.ncbi.nlm.nih.gov/24550842/' },
-  neal13: { text: 'Neal et al. 2013 – 12 gut trainierte Radfahrer, Crossover polarisiert vs. schwellenbetont', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Neal+2013+polarized+threshold+cyclists' },
+  neal13: { text: 'Neal et al. 2013, J Appl Physiol – 12 gut trainierte Radfahrer, Crossover polarisiert vs. schwellenbetont', url: 'https://doi.org/10.1152/japplphysiol.00652.2012' },
+  esteve07: { text: 'Esteve-Lanao et al. 2007, J Strength Cond Res – Intensitätsverteilung bei Läufern über 5 Monate (RCT)', url: 'https://doi.org/10.1519/R-19725.1' },
+  rosenblat19: { text: 'Rosenblat et al. 2019, J Strength Cond Res – Metaanalyse polarisiert vs. Schwelle (RCTs)', url: 'https://doi.org/10.1519/JSC.0000000000002618' },
+  helgerud07: { text: 'Helgerud et al. 2007, Med Sci Sports Exerc – 4×4-min-Intervalle vs. Schwelle vs. locker (RCT)', url: 'https://doi.org/10.1249/mss.0b013e3180304570' },
+  molmen19: { text: 'Mølmen et al. 2019, Open Access J Sports Med – Block-Periodisierung (Systematische Übersicht und Metaanalyse)', url: 'https://doi.org/10.2147/OAJSM.S180408' },
   run24hiit: { text: 'Randomisierte Studie 2024 (J Sports Sci) – HIIT und Krafttraining bei gut trainierten Läufern, 4 Wochen', url: 'https://www.tandfonline.com/doi/full/10.1080/02640414.2024.2364425' },
-  filipas16: { text: 'Filipas et al. – 16 Wochen, 60 gut trainierte Läufer: pyramidal vs. polarisiert (RCT)', url: 'https://pubmed.ncbi.nlm.nih.gov/34792817/' },
+  filipas16: { text: 'Filipas et al. 2022, Scand J Med Sci Sports – 16 Wochen, 60 gut trainierte Läufer: pyramidal vs. polarisiert', url: 'https://doi.org/10.1111/sms.14101' },
   rosenblat21: { text: 'Rosenblat et al. 2021, Sports Med – Intervalltraining für Zeitfahrleistung (Systematische Übersicht und Metaanalyse)', url: 'https://pubmed.ncbi.nlm.nih.gov/33826121/' },
   norte: { text: 'Norte, Steele & Wright – Intervalltraining bei ausdauertrainierten Radfahrern (explorative Übersicht und Metaanalyse)', url: 'https://researchonline.ljmu.ac.uk/24748/' },
   millet02: { text: 'Millet et al. 2002 – Übertragung von Trainingseffekten bei Elite-Triathleten (40 Wochen, 4 Athleten)', url: 'https://pubmed.ncbi.nlm.nih.gov/11774068/' },
@@ -384,6 +388,128 @@ export const TOPICS = [
     ],
     practice: 'Zwei bis drei Einheiten pro Woche schlagen eine lange. Jede Einheit mit 10–15 min Technikübungen beginnen, dann ruhig Kraul. Züge pro Bahn zählen; weniger Züge bei gleichem Tempo heißt effizienter. Ein Video von der Seite oder ein Technikkurs hilft am Anfang mehr als jede Serie.',
     sources: [S.ferreira16, S.brackley20, S.neiva14],
+  },
+  // ——— Studien zu Trainingsansätzen: einzeln zusammengefasst (Design, Ergebnis, Einordnung) ———
+  {
+    id: 'st_overview', cat: 'Studien: Trainingsansätze', title: 'Überblick: was die Studien zu Trainingsansätzen gemeinsam zeigen', evidence: 'mittel',
+    facts: [
+      'Erfolgreiche Ausdauerathleten trainieren rund 75–90 % ihrer Zeit locker und nur einen kleinen Teil hart. Das zeigen Beobachtungsstudien von Junioren bis Weltklasse.',
+      'In kurzen kontrollierten Studien (6–16 Wochen) schneidet polarisiertes Training oft etwas besser ab als schwellenbetontes, vor allem bei der maximalen Sauerstoffaufnahme. Über längere Zeit ist kein Ansatz klar überlegen.',
+      'Viele Studien sind klein, kurz und von mäßiger Qualität. Die Effekte sind real, aber nicht so groß, wie Schlagzeilen oft vermuten lassen.',
+      'Was über Jahre am meisten zählt: viel lockerer Umfang, kontinuierlich gesteigert, wenige gut dosierte harte Einheiten und wenig Ausfall durch Krankheit oder Verletzung.',
+    ],
+    practice: 'Wähle den Ansatz, den du über Monate durchhältst. Prüfe vor allem, ob deine lockeren Einheiten wirklich locker sind, und setze die harten gezielt. Die Einzelstudien unten zeigen, worauf die Aussagen beruhen.',
+    sources: [S.seiler10, S.rosenblat19, S.oliveira24, S.walther23],
+  },
+  {
+    id: 'st_seiler06', cat: 'Studien: Trainingsansätze', title: 'Seiler & Kjerland 2006: Wie Junioren-Langläufer wirklich trainieren', evidence: 'mittel',
+    facts: [
+      'Design: 11 national konkurrenzfähige Junioren-Langläufer, 32 Tage, 384 Einheiten, erfasst über Puls, subjektive Anstrengung und Laktat (Beobachtungsstudie).',
+      'Ergebnis: rund 75 % der Ausdauereinheiten unterhalb der ersten Schwelle, 8 % zwischen den Schwellen, 17 % darüber. 71 % der gemessenen Einheiten lagen bei höchstens 2 mmol/l Laktat.',
+      'Einordnung: Die Athleten trainierten erstaunlich wenig an der Schwelle. Das Muster ist dem anderer Ausdauersportarten ähnlich und wurde als „polarisiert“ beschrieben.',
+    ],
+    practice: 'Locker heißt wirklich locker (unter 2 mmol/l, bei dir I1/I2). Die Studie beschreibt, was gute Athleten tun, sie beweist nicht, dass es so am besten ist.',
+    sources: [S.seiler06],
+  },
+  {
+    id: 'st_esteve07', cat: 'Studien: Trainingsansätze', title: 'Esteve-Lanao et al. 2007: mehr locker oder mehr Schwelle bei Läufern?', evidence: 'mittel',
+    facts: [
+      'Design: 12 subelite Läufer, zufällig zwei Gruppen, 5 Monate. Gruppe 1: 80 % locker, 12 % zwischen den Schwellen, 8 % hart. Gruppe 2: 67 % locker, 25 % zwischen den Schwellen, 8 % hart.',
+      'Ergebnis: Beim simulierten 10,4-km-Crosslauf verbesserte sich die Gruppe mit mehr lockerem Training stärker (−157 s gegenüber −121 s).',
+      'Einordnung: Eine der wenigen Studien über mehrere Monate. Sie spricht für einen großen lockeren Anteil, solange die harten Einheiten ausreichen. Die Stichprobe ist klein.',
+    ],
+    practice: 'Mehr Schwellenzeit auf Kosten des lockeren Umfangs brachte hier weniger. Schwelle gezielt einsetzen, nicht als Standardtempo.',
+    sources: [S.esteve07],
+  },
+  {
+    id: 'st_neal13', cat: 'Studien: Trainingsansätze', title: 'Neal et al. 2013: polarisiert gegen Schwelle bei Radfahrern', evidence: 'mittel',
+    facts: [
+      'Design: 12 trainierte Radfahrer, Crossover über zweimal 6 Wochen. Polarisiert: 80 % locker, 20 % hart, 6,4 h pro Woche. Schwellenmodell: 57 % locker, 43 % mittel, 7,5 h pro Woche.',
+      'Ergebnis: Mit polarisiertem Training stiegen Spitzenleistung (+8 % gegenüber +3 %), Laktatschwelle (+9 % gegenüber +2 %) und Ausdauer bei hoher Intensität (+85 % gegenüber +37 %) stärker, trotz weniger Stunden.',
+      'Einordnung: Kurz und klein, aber sauber kontrolliert. Das Schwellenmodell hatte gar keine harten Einheiten, das ist eher ein Extremvergleich.',
+    ],
+    practice: 'Viel mittlere Intensität ohne harte Reize ist der schwächste Weg. Mischung aus viel locker und gezielten harten Einheiten wirkt besser.',
+    sources: [S.neal13],
+  },
+  {
+    id: 'st_stoggl14', cat: 'Studien: Trainingsansätze', title: 'Stöggl & Sperlich 2014: vier Trainingskonzepte im Vergleich', evidence: 'mittel',
+    facts: [
+      'Design: 48 gut trainierte Läufer, Radfahrer, Triathleten und Langläufer, zufällig auf vier Gruppen verteilt, 9 Wochen: viel Umfang, Schwelle, Intervalle (HIIT) oder polarisiert.',
+      'Ergebnis: Polarisiert verbesserte die maximale Sauerstoffaufnahme am stärksten (+11,7 %), dazu Zeit bis zur Erschöpfung (+17,4 %) und Spitzengeschwindigkeit bzw. -leistung (+5,1 %). Schwellen- und Umfangsgruppe verbesserten sich kaum weiter.',
+      'Einordnung: Häufig zitiert, auch Langläufer waren dabei. Neun Wochen sind kurz, langfristige Effekte zeigt die Studie nicht.',
+    ],
+    practice: 'Wenn du stagnierst, kann ein Block mit klarer Trennung (sehr locker / wirklich hart) neue Reize setzen.',
+    sources: [S.stoggl14],
+  },
+  {
+    id: 'st_rosenblat19', cat: 'Studien: Trainingsansätze', title: 'Rosenblat et al. 2019: Metaanalyse polarisiert gegen Schwelle', evidence: 'mittel',
+    facts: [
+      'Design: systematische Übersicht randomisierter Studien mit erfahrenen Ausdauersportlern; 4 Studien eingeschlossen, 3 in der Metaanalyse.',
+      'Ergebnis: Beim Zeitfahren ein moderater Vorteil für polarisiertes Training (Effektstärke −0,66).',
+      'Einordnung: Sehr wenige Studien, deren Qualität mäßig war (4–5 von 10 Punkten). Die Richtung ist klar, die Größe des Effekts unsicher.',
+    ],
+    practice: 'Polarisiert ist ein guter Standard, aber kein Muss. Die neuere, größere Metaanalyse (Oliveira et al. 2024) relativiert den Vorteil.',
+    sources: [S.rosenblat19],
+  },
+  {
+    id: 'st_oliveira24', cat: 'Studien: Trainingsansätze', title: 'Oliveira et al. 2024: neuere Metaanalyse zu Intensitätsverteilungen', evidence: 'mittel',
+    facts: [
+      'Design: systematische Übersicht und Metaanalyse, polarisiertes Training gegen andere Verteilungen bei Ausdauersportlern.',
+      'Ergebnis: Polarisiert steigert die maximale Sauerstoffaufnahme (VO2peak) stärker. Bei anderen Leistungsmaßen (z. B. Zeitfahren, Schwelle) zeigte sich kein klarer Vorteil.',
+      'Einordnung: Breiter als ältere Analysen; die Vorteile zeigten sich eher bei kurzen Interventionen unter 12 Wochen.',
+    ],
+    practice: 'Für die Leistung im Rennen ist das Etikett zweitrangig. Polarisierte Blöcke eignen sich, um gezielt die VO2max anzuheben.',
+    sources: [S.oliveira24],
+  },
+  {
+    id: 'st_filipas22', cat: 'Studien: Trainingsansätze', title: 'Filipas et al. 2022: pyramidal, polarisiert oder beides nacheinander?', evidence: 'mittel',
+    facts: [
+      'Design: 60 gut trainierte Läufer, 16 Wochen, vier Gruppen bei gleicher Belastung: nur pyramidal, nur polarisiert, erst pyramidal dann polarisiert, oder umgekehrt.',
+      'Ergebnis: Alle Gruppen verbesserten sich. Am stärksten die Gruppe „erst pyramidal, dann polarisiert“ (rund 1,5 % im 5-km-Zeitlauf, rund 3 % bei der relativen VO2max).',
+      'Einordnung: Spricht für eine Periodisierung: in der Grundlagenzeit mehr Schwelle (pyramidal), vor dem Wettkampf mehr harte Intervalle (polarisiert).',
+    ],
+    practice: 'Passt zum Aufbau im Saisonplan: Grundlage mit Schwelle, in der Wettkampfvorbereitung mehr harte, kurze Reize.',
+    sources: [S.filipas16],
+  },
+  {
+    id: 'st_helgerud07', cat: 'Studien: Trainingsansätze', title: 'Helgerud et al. 2007: der Ursprung der 4×4-Intervalle', evidence: 'mittel',
+    facts: [
+      'Design: 40 mäßig trainierte Männer, 8 Wochen, 3× pro Woche, bei gleicher Gesamtarbeit: locker (70 % HFmax), Schwelle (85 % HFmax), 15/15-Intervalle oder 4×4 min bei 90–95 % HFmax.',
+      'Ergebnis: Nur die Intervallgruppen steigerten die maximale Sauerstoffaufnahme deutlich (4×4: +7,2 %, 15/15: +5,5 %). Das Schlagvolumen des Herzens stieg um rund 10 %.',
+      'Einordnung: Mäßig trainierte Personen, nicht Elite. Zeigt, warum harte Intervalle für die VO2max unverzichtbar sind, sagt aber nichts über den Anteil im Gesamtplan.',
+    ],
+    practice: 'Ein bis zwei harte Intervalleinheiten pro Woche (z. B. 4×4 oder 5×4 min) reichen, um die VO2max gezielt zu fördern.',
+    sources: [S.helgerud07],
+  },
+  {
+    id: 'st_block', cat: 'Studien: Trainingsansätze', title: 'Block-Periodisierung: Rønnestad 2014 und Mølmen 2019', evidence: 'gering bis mittel',
+    facts: [
+      'Rønnestad et al. 2014: 15 trainierte Radfahrer, 12 Wochen. Block: jede vierte Woche fünf harte Einheiten, dann drei Wochen mit je einer. Klassisch: zwei harte Einheiten pro Woche, gleiche Gesamtmenge. Block steigerte die VO2max stärker (+8,8 % gegenüber +3,7 %).',
+      'Mølmen et al. 2019 (Metaanalyse, 20 Studien): kleine Vorteile für Block-Periodisierung bei VO2max und Maximalleistung, bei der Leistung an den Schwellen teils moderate bis große Effekte.',
+      'Einordnung: Die Studien sind klein und methodisch schwach (im Schnitt 3,7 von 10 Punkten). Blocks sind eine sinnvolle Alternative, aber anspruchsvoll in der Erholung.',
+    ],
+    practice: 'Ein Block mit vielen harten Einheiten passt in eine Phase mit wenig Stress und gutem Schlaf, nicht in eine Woche mit Prüfungen oder Reisen.',
+    sources: [S.ronnestad14, S.molmen19],
+  },
+  {
+    id: 'st_walther23', cat: 'Studien: Trainingsansätze', title: 'Walther et al. 2023: von Junioren zur Weltklasse im Langlauf', evidence: 'mittel',
+    facts: [
+      'Design: Rückblick auf das Training von 17 Weltklasse-Langläuferinnen und -Langläufern mit zusammen 38 Olympiamedaillen, jeweils bestes Junioren- und bestes Seniorenjahr.',
+      'Ergebnis: Der Umfang stieg im Schnitt von 658 auf 861 Stunden pro Jahr, vor allem durch mehr lockeres und mittleres Training. Die Verteilung blieb fast gleich: 91/3/6 (locker/mittel/hart) bei Junioren, 92/4/4 bei Senioren.',
+      'Einordnung: Beobachtung, kein Experiment. Wer als Junior wenig trainierte, steigerte später stärker.',
+    ],
+    practice: 'Der Weg nach oben führt über mehr lockeren Umfang über Jahre, nicht über mehr harte Einheiten.',
+    sources: [S.walther23],
+  },
+  {
+    id: 'st_norwegian', cat: 'Studien: Trainingsansätze', title: 'Norwegisches Modell (Double Threshold): was die Studienlage hergibt', evidence: 'gering',
+    facts: [
+      'Das Modell (zwei kontrollierte Schwelleneinheiten an einem Tag, Laktat etwa 2–3,5 mmol/l) stammt aus der Praxis norwegischer Läufer.',
+      'Es gibt Übersichtsarbeiten und Fallbeschreibungen, aber in dieser Recherche keine randomisierte Studie, die das Modell direkt mit anderen Ansätzen vergleicht.',
+      'Plausibel ist es, weil kontrollierte Schwelle viel Wirkung bei überschaubarer Erholung bringt. Bewiesen überlegen ist es nicht.',
+    ],
+    practice: 'Funktioniert für viele, wenn die Schwelle wirklich kontrolliert bleibt (ohne Laktat: Atmung ruhig, letzte Wiederholung wie die erste). Nicht zusätzlich zu harten Intervallen in derselben Woche stapeln.',
+    sources: [S.casado23],
   },
   // ——— Einzelerklärungen zu allen Werten, die die App zeigt ———
   {
