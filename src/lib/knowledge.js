@@ -30,7 +30,6 @@ const S = {
   strengthCoaches: { text: 'Haugen et al. 2026, J Strength Cond Res – Kraft- und Schnelligkeitstraining laut Weltklasse-Trainern', url: 'https://pubmed.ncbi.nlm.nih.gov/42172297/' },
   oliveira24: { text: 'Oliveira et al. 2024, Sports Med – Metaanalyse polarisiert vs. andere Verteilungen', url: 'https://www.researchgate.net/publication/380425831' },
   seiler06: { text: 'Seiler & Kjerland 2006, Scand J Med Sci Sports – Intensitätsverteilung', url: 'https://pubmed.ncbi.nlm.nih.gov/16430681/' },
-  casado23: { text: 'Casado, Foster, Bakken & Tjelta 2023, IJERPH – Norwegisches Modell (Review)', url: 'https://www.trailrunnermag.com/training/the-norwegian-method-for-endurance-training' },
   dtReview: { text: 'Systematischer Review: Norwegian double-threshold method in distance running', url: 'https://www.researchgate.net/publication/376465773' },
   strengthSR: { text: 'Systematischer Review 2022: Krafttraining und Langlaufleistung', url: 'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9179959/' },
   hoff99: { text: 'Hoff et al. 1999, Med Sci Sports Exerc – Maximalkraft und Ökonomie bei Langläuferinnen', url: 'https://pubmed.ncbi.nlm.nih.gov/10378915/' },
