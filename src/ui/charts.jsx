@@ -9,6 +9,10 @@ const niceMax = (v) => { if (v <= 0) return 10; const p = 10 ** Math.floor(Math.
 const axisFmt = (v) => (Math.abs(v) < 10 ? v.toFixed(2).replace('.', ',') : String(Math.round(v)));
 export const ZONE_COLORS = { I1: 'var(--z1)', I2: 'var(--z2)', I3: 'var(--z3)', I4: 'var(--z4)', I5: 'var(--z5)' };
 
+// Antippen oder Wischen im Diagramm: Index des nächsten Punkts (für Werte-Anzeige).
+const pointIndex = (e, L, iw, n) => { const r = e.currentTarget.getBoundingClientRect(); const i = Math.round((((e.clientX - r.left) / r.width) * W - L) / iw * (n - 1)); return Math.max(0, Math.min(n - 1, i)); };
+const fmtVal = (v) => (v == null || isNaN(v) ? '–' : Math.abs(v) < 10 ? String(Math.round(v * 10) / 10).replace('.', ',') : String(Math.round(v)));
+
 function path(points) {
   let d = '', pen = false;
   for (const p of points) {
@@ -37,8 +41,8 @@ export function FormChart({ days, height = 240 }) {
   const h = hover != null ? days[hover] : null;
   return (
     <div>
-      <svg className="chart" viewBox={`0 0 ${W} ${H}`} onMouseLeave={() => setHover(null)}
-        onPointerMove={(e) => { const r = e.currentTarget.getBoundingClientRect(); const i = Math.round((((e.clientX - r.left) / r.width) * W - L) / iw * (n - 1)); setHover(Math.max(0, Math.min(n - 1, i))); }}>
+      <svg className="chart" viewBox={`0 0 ${W} ${H}`} style={{ touchAction: 'pan-y' }} onMouseLeave={() => setHover(null)}
+        onPointerDown={(e) => setHover(pointIndex(e, L, iw, n))} onPointerMove={(e) => setHover(pointIndex(e, L, iw, n))}>
         {[0, 0.5, 1].map((f) => <line key={f} className="grid" x1={L} x2={W - R} y1={T + ih * f} y2={T + ih * f} />)}
         <text x={L - 4} y={T + 8} textAnchor="end">{yMax}</text><text x={L - 4} y={T + ih} textAnchor="end">0</text>
         <text x={W - R + 4} y={T + 8}>{`+${fAbs}`}</text><text x={W - R + 4} y={T + ih / 2 + 3}>0</text><text x={W - R + 4} y={T + ih}>{`−${fAbs}`}</text>
@@ -88,6 +92,7 @@ export function ZoneWeeks({ weeks, height = 200 }) {
 
 // Einfaches Liniendiagramm (z. B. Puls/Leistung einer Einheit, 1RM-Verlauf, HRV).
 export function LineChart({ series: all, labels, height = 200, xFormat = (v) => v, shared = false }) {
+  const [hover, setHover] = useState(null);
   // Reihen ohne einen einzigen Wert weglassen.
   const series = all.filter((s) => s.values.some((a) => a != null && (s.signed || a > 0)));
   const H = height, L = 36, R = 36, T = 10, B = 22, iw = W - L - R, ih = H - T - B;
@@ -106,8 +111,10 @@ export function LineChart({ series: all, labels, height = 200, xFormat = (v) => 
   const ticks = Array.from({ length: Math.min(6, n) }, (_, k) => Math.round((k * (n - 1)) / Math.max(1, Math.min(5, n - 1))));
   return (
     <div>
-      <svg className="chart" viewBox={`0 0 ${W} ${H}`}>
+      <svg className="chart" viewBox={`0 0 ${W} ${H}`} style={{ touchAction: 'pan-y' }} onMouseLeave={() => setHover(null)}
+        onPointerDown={(e) => setHover(pointIndex(e, L, iw, n))} onPointerMove={(e) => setHover(pointIndex(e, L, iw, n))}>
         {[0, 0.5, 1].map((f) => <line key={f} className="grid" x1={L} x2={W - R} y1={T + ih * f} y2={T + ih * f} />)}
+        {hover != null && hover < n && <line x1={x(hover)} x2={x(hover)} y1={T} y2={T + ih} stroke="var(--muted)" strokeDasharray="2 3" />}
         {series.map((s, k) => {
           const { lo, hi } = scales[k];
           const y = (v) => T + ih - ((v - lo) / (hi - lo || 1)) * ih;
@@ -115,6 +122,7 @@ export function LineChart({ series: all, labels, height = 200, xFormat = (v) => 
             <g key={s.label}>
               <path d={path(s.values.map((v, i) => (ok(s, v) ? [x(i), y(v)] : null)))} fill="none" stroke={s.color} strokeWidth={s.dots ? 2 : s.width || 1.4} strokeDasharray={s.dashed ? '5 4' : undefined} />
               {s.dots && s.values.map((v, i) => ok(s, v) && <circle key={i} cx={x(i)} cy={y(v)} r="3" fill={s.color} />)}
+              {hover != null && ok(s, s.values[hover]) && <circle cx={x(hover)} cy={y(s.values[hover])} r="5" fill={s.color} stroke="var(--card)" strokeWidth="2" />}
               {(!shared || k === 0) && <>
                 <text x={k === 0 ? L - 4 : W - R + 4} y={T + 8} textAnchor={k === 0 ? 'end' : 'start'} fill={shared ? 'var(--muted)' : s.color}>{axisFmt(hi)}</text>
                 <text x={k === 0 ? L - 4 : W - R + 4} y={T + ih} textAnchor={k === 0 ? 'end' : 'start'} fill={shared ? 'var(--muted)' : s.color}>{axisFmt(lo)}</text>
@@ -124,7 +132,7 @@ export function LineChart({ series: all, labels, height = 200, xFormat = (v) => 
         })}
         {labels && ticks.map((i) => <text key={i} x={x(i)} y={H - 6} textAnchor="middle">{xFormat(labels[i])}</text>)}
       </svg>
-      <div className="legend">{series.map((s) => <span key={s.label}><i style={{ background: s.color }} />{s.label}</span>)}</div>
+      <div className="legend">{hover != null && hover < n ? <>{labels && <b>{xFormat(labels[hover])}</b>}{series.map((s) => <span key={s.label}><i style={{ background: s.color }} />{s.label}: <b>{fmtVal(s.values[hover])}</b></span>)}</> : series.map((s) => <span key={s.label}><i style={{ background: s.color }} />{s.label}</span>)}</div>
     </div>
   );
 }

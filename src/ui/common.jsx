@@ -31,5 +31,6 @@ export function Toast() {
 }
 
 export function Seg({ value, options, onChange }) {
-  return <div className="seg">{options.map(([v, l]) => <button key={v} className={value === v ? 'on' : ''} onClick={() => onChange(v)}>{l}</button>)}</div>;
+  // Viele Reiter (z. B. Kalender) brechen in eine zweite Zeile um, statt seitlich zu verschwinden.
+  return <div className={options.length > 4 ? 'seg many' : 'seg'}>{options.map(([v, l]) => <button key={v} className={value === v ? 'on' : ''} onClick={() => onChange(v)}>{l}</button>)}</div>;
 }
