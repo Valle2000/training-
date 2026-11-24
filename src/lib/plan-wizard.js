@@ -360,6 +360,7 @@ function generalSport(pr = {}, i) {
   return (pool.length ? pool : OTHER)[i % (pool.length || OTHER.length)];
 }
 
+const EASY_NAME = { rollerski_skate: 'Rollski Skating', rollerski_classic: 'Rollski klassisch' };
 const SPORT_NAME = { bike: 'Rad', run: 'Laufen', rollerski: 'Rollski', skierg: 'SkiErg', hike: 'Berglauf/Wandern', row: 'Rudern', swim: 'Schwimmen' };
 const sportName = (x) => SPORT_NAME[x];
 export function flexible(pr = {}, date) {
@@ -428,6 +429,15 @@ export function generatePlan(opts, races = []) {
   // Schwerpunkt Laufen/Rad/Schwimmen: passende Einheiten der Sportart bevorzugen (zuerst aus der Auswahl). Bei zwei harten
   // Einheiten pro Woche wechselt die Vorlage so von Woche zu Woche (der Zähler steigt je Einheit).
   const pickByType = (type, k, sport = null) => { const sp = sport ? options.filter((o) => o.type === type && o.sport === sport) : []; const spk = sp.filter((o) => keys.has(o.id)); const list = spk.length ? spk : sp.length ? sp : options.filter((o) => o.type === type && keys.has(o.id)); const idx = sp.length ? Math.floor(k / 2) : k; return list.length ? list[idx % list.length] : null; };
+  const easyMix = (sport, i, date, wi) => {
+    if (!sport) return null;
+    if (opts.focusMix === false) return sport === 'tri' ? (i % 2 ? 'bike' : 'run') : sport;
+    const ski = winter(date) ? null : ((wi + i) % 2 ? 'rollerski_classic' : 'rollerski_skate');
+    const cycle = sport === 'tri' ? ['run', 'bike', ski || 'run']
+      : sport === 'swim' ? ['swim', ski || 'run', 'bike']
+        : [sport, ski || (sport === 'run' ? 'bike' : 'run'), sport === 'run' ? 'bike' : 'run'];
+    return cycle[i % cycle.length];
+  };
   let rot = 0, buildIdx = 0, rotIdx = 0, prevHours = null;
   const pickHit = (zone, k, sport = null) => { const sp = sport ? options.filter((o) => o.type === 'hit' && o.zone === zone && o.sport === sport) : []; const spk = sp.filter((o) => keys.has(o.id)); const list = spk.length ? spk : sp.length ? sp : options.filter((o) => o.type === 'hit' && o.zone === zone && keys.has(o.id)); const idx = sp.length ? Math.floor(k / 2) : k; return list.length ? list[idx % list.length] : null; };
   return weeks.map((w, wi) => {
@@ -610,9 +620,10 @@ export function generatePlan(opts, races = []) {
       const min = Math.floor(Math.min(210, room(d), Math.max(40, easy / (n - i))) / 5) * 5;
       if (min < 30) { if (room(d) < 30) continue; break; }
       const specific = (i / Math.max(1, n)) < share;
-      // Schwimmen: jede zweite lockere Einheit Rad, damit der Umfang nicht nur im Wasser liegt.
-      const easySport = focus === 'tri' ? (i % 2 ? 'bike' : 'run') : fSport === 'swim' ? (i % 2 ? 'bike' : 'swim') : fSport || focus;
-      const s = { title: (focus || fSport) ? `Locker (${focus === 'tri' ? (i % 2 ? 'Rad' : 'Laufen') : SPORT_NAME[easySport] || 'Rad'})` : 'Locker', sport: specific && !focus && !fSport ? specificSport(d.date, i + (pr.weak?.includes('classic') ? 1 : 0)) : easySport || (specific ? specificSport(d.date, i) : generalSport(pr, i + rot)), minutes: min, zone: 'I1', description: 'Grundlage I1, wirklich locker', kind: 'easy' };
+      // Schwerpunkt: Qualität in der Schwerpunkt-Sportart, der lockere Umfang bleibt gemischt (Schwerpunkt, Rollski, Rad bzw.
+      // Laufen), damit Langlauf-Grundlage und Multisport erhalten bleiben. Mit focusMix: false nur die Schwerpunkt-Sportart.
+      const easySport = easyMix(focus === 'tri' ? 'tri' : fSport || focus, i, d.date, wi);
+      const s = { title: (focus || fSport) ? `Locker (${EASY_NAME[easySport] || SPORT_NAME[easySport] || 'Rad'})` : 'Locker', sport: specific && !focus && !fSport ? specificSport(d.date, i + (pr.weak?.includes('classic') ? 1 : 0)) : easySport || (specific ? specificSport(d.date, i) : generalSport(pr, i + rot)), minutes: min, zone: 'I1', description: 'Grundlage I1, wirklich locker', kind: 'easy' };
       // Triathlon-Block: die erste lockere Einheit der Woche als Koppeltraining Rad → Lauf (gewöhnt die Beine an den Wechsel).
       if (focus === 'tri' && i === 0 && ['build', 'specific'].includes(w.phase) && room(d) >= 80) { s.title = 'Koppeln: Rad → Lauf'; s.sport = 'bike'; s.minutes = 80; s.description = 'Rad 60 min locker, direkt danach Lauf 20 min locker. Der Wechsel Rad → Lauf ist im Triathlon der Knackpunkt.'; }
       // Schwimmen: Technik-Einheiten (für Einsteiger geeignet) im Schwerpunkt Schwimmen, eine pro Woche im Triathlon

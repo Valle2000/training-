@@ -138,6 +138,7 @@ export function PlanWizard({ onClose }) {
           <div><label>Langer Tag</label><select value={o.longDay} onChange={(e) => set('longDay', Number(e.target.value))}>{DOW.map((d, i) => <option key={d} value={i + 1}>{d}</option>)}</select></div>
           <div><label>Krafteinheiten/Woche (Vorbereitung)</label><select value={o.strengthPerWeek} onChange={(e) => set('strengthPerWeek', Number(e.target.value))}>{[0, 1, 2, 3].map((n) => <option key={n} value={n}>{n}</option>)}</select></div>
           <div><label>Schwimmen Technik/Woche</label><select value={o.swimPerWeek || 0} onChange={(e) => set('swimPerWeek', Number(e.target.value))}>{[0, 1, 2].map((n) => <option key={n} value={n}>{n}</option>)}</select></div>
+          <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontWeight: 400, gridColumn: '1 / -1' }}><input type="checkbox" checked={o.focusMix !== false} onChange={(e) => set('focusMix', e.target.checked)} style={{ width: 18, height: 18 }} />Im Schwerpunkt (Laufen, Rad, Schwimmen) lockeren Umfang mit Rollski und Rad bzw. Laufen mischen</label>
         </div>
         <label>Ruhetage</label>
         <div className="chips">{DOW.map((d, i) => <button key={d} className={`chip${o.restDays.includes(i + 1) ? ' on' : ''}`} onClick={() => set('restDays', o.restDays.includes(i + 1) ? o.restDays.filter((x) => x !== i + 1) : [...o.restDays, i + 1])}>{d}</button>)}</div>

@@ -181,8 +181,15 @@ test('Multisport: Schwerpunkte setzen die Sportart, Triathlon bekommt Koppeltrai
   assert.equal(raceSport('Rad', '2027-07-01'), 'bike');
   const o = { ...base, start: '2027-05-03', end: '2027-08-29', approach: 'pyramidal' };
   const run = generatePlan({ ...o, focusFor: (m) => focusOn(m, [{ sport: 'run', from: '2027-05-01', to: '2027-08-31' }]) }, []);
+  // Lockerer Umfang bleibt gemischt: Laufen, Rollski und Rad; nur mit focusMix: false alles Laufen.
   const easy = run.flatMap((w) => w.days.flatMap((d) => d.sessions)).filter((s) => s.kind === 'easy' && s.title.startsWith('Locker ('));
-  assert.ok(easy.length > 0 && easy.every((s) => s.sport === 'run'), 'lockere Einheiten laufen');
+  const easySports = new Set(easy.map((s) => s.sport));
+  assert.ok(easySports.has('run') && easySports.has('bike') && [...easySports].some((x) => x.startsWith('rollerski')), `gemischt: ${[...easySports]}`);
+  const pure = generatePlan({ ...o, focusMix: false, focusFor: (m) => focusOn(m, [{ sport: 'run', from: '2027-05-01', to: '2027-08-31' }]) }, []);
+  const pureEasy = pure.flatMap((w) => w.days.flatMap((d) => d.sessions)).filter((s) => s.kind === 'easy' && s.title.startsWith('Locker ('));
+  assert.ok(pureEasy.length > 0 && pureEasy.every((s) => s.sport === 'run'), 'ohne Mischung laufen alle lockeren Einheiten');
+  const hardRun = run.flatMap((w) => w.days.flatMap((d) => d.sessions)).filter((s) => s.kind === 'hard');
+  assert.ok(hardRun.every((s) => s.sport === 'run'), 'Qualität bleibt Laufen');
   const tri = generatePlan({ ...o, focusFor: (m) => focusOn(m, list) }, [{ id: 'r', date: '2027-08-15', name: 'Triathlon Sprint', priority: 'A', technique: 'Triathlon', distanceKm: 25 }]);
   const brick = tri.flatMap((w) => w.days.flatMap((d) => d.sessions)).filter((s) => s.title.startsWith('Koppeln'));
   assert.ok(brick.length >= 2, 'Koppeltraining je Woche in Aufbau/Vorbereitung');
