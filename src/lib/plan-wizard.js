@@ -404,13 +404,41 @@ export function focusSuggestions(races = [], focus = []) {
 export const RACE_MIN_PER_KM = { run: 4.5, bike: 2.2, swim: 25 };
 export const raceSport = (technique, date) => (technique === 'Schwimmen' ? 'swim' : technique === 'Rad' ? 'bike' : technique === 'Lauf' || technique === 'Triathlon' ? 'run' : technique === 'Rollski' ? 'rollerski_skate' : winter(date) ? 'xc_skate' : 'rollerski_skate');
 
-// Schwimm-Technikeinheiten, auch für Einsteiger (Strecken in Metern, Pausen nach Bedarf).
-export const SWIM_EASY = [
-  { title: 'Schwimmen Technik: Wasserlage', minutes: 40, description: '10 min locker einschwimmen (Brust erlaubt). 6× 25 m Beinschlag mit Brett, 6× 25 m Seitlage (unterer Arm vorne, Blick zum Boden), 4× 25 m Gleiten aus dem Abstoß in Stromlinie. 4× 50 m ruhig Kraul. Pausen nach Bedarf.' },
-  { title: 'Schwimmen Technik: Atmung', minutes: 40, description: '10 min ein. 6× 25 m Kraul mit Dreier-Atmung (beidseitig), 6× 25 m „6-1-6“ (6 Beinschläge in Seitlage, 1 Zug, 6 Beinschläge auf der anderen Seite), 4× 50 m ruhig Kraul, unter Wasser langsam ausatmen.' },
-  { title: 'Schwimmen Technik: Armzug', minutes: 40, description: '10 min ein. 6× 25 m Abschlagschwimmen (eine Hand wartet vorne, bis die andere ankommt), 6× 25 m Fingerspitzen über die Wasseroberfläche ziehen, 4× 25 m Faustschwimmen, 4× 50 m ruhig Kraul mit langem Zug.' },
-  { title: 'Schwimmen Ausdauer ruhig', minutes: 45, description: '10 min Technikübungen nach Wahl, dann 4–6× 100–200 m ruhig Kraul, 20–40 s Pause. Züge pro Bahn zählen: weniger Züge bei gleichem Tempo heißt effizienter.' },
-];
+// Schwimm-Aufbau über den Planzeitraum: erst Wasserlage und Atmung, dann Technik + Ausdauer, zuletzt Zieltempo.
+// cur/goal: Tempo pro 100 m in Sekunden (z. B. 150 = 2:30, 105 = 1:45). Alle 6 Wochen ein Tempotest (CSS).
+export const fmtPace = (sec) => `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
+export const parsePace = (txt) => {
+  const m = String(txt || '').trim().match(/^(\d{1,2})[:.,](\d{2})$/);
+  return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+};
+export function swimSession({ wi = 0, weeks = 12, k = 0, cur = null, goal = null } = {}) {
+  const c = Number(cur) || null;
+  const g = Number(goal) || (c ? Math.max(60, c - 20) : null);
+  const f = weeks > 1 ? wi / (weeks - 1) : 0;
+  const stage = f < 0.35 ? 1 : f < 0.7 ? 2 : 3;
+  // Zwischenziel: vom aktuellen zum Zieltempo, auf 5 s gerundet; Endtempo erst im letzten Drittel.
+  const step = (x) => (c && g ? Math.round((c - (c - g) * Math.min(1, x)) / 5) * 5 : null);
+  const p = (sec, plus = 0) => (sec ? `ca. ${fmtPace(sec + plus)} pro 100 m` : '');
+  if (k === 0 && wi % 6 === 5) {
+    return { title: 'Schwimmen: Tempotest (400 m + 200 m)', minutes: 40, stage, description: '300 m ein, dabei 4× 25 m zügig. 400 m auf Zeit, 5 min locker, 200 m auf Zeit, 200 m aus. Tempo pro 100 m ≈ (Zeit 400 m − Zeit 200 m) ÷ 2. Den Wert im Saisonplan als aktuelles Schwimmtempo eintragen, dann passt der Plan die Tempi an.' };
+  }
+  if (stage === 1) {
+    return k % 2 === 0
+      ? { title: 'Schwimmen Technik: Wasserlage', minutes: 45, stage, description: '200 m locker ein (Brust erlaubt). Technik: 8× 25 m abwechselnd Seitlage mit Beinschlag (unterer Arm vorne, Blick zum Boden) und Gleiten aus dem Abstoß in Stromlinie. 6× 25 m Beinschlag mit Brett, Hüfte hoch. Hauptteil 6× 50 m ruhig Kraul, 20–30 s Pause: Kopf tief, Blick zum Boden, dann kommen die Beine hoch. 100 m locker aus. Gesamt ca. 1000 m.' }
+      : { title: 'Schwimmen Technik: Atmung', minutes: 45, stage, description: '200 m ein. Technik: 8× 25 m „6-1-6“ (6 Beinschläge in Seitlage, 1 Zug, 6 Beinschläge auf der anderen Seite), 4× 25 m Dreier-Atmung. Hauptteil 4× 100 m ruhig Kraul mit Dreier-Atmung, 30 s Pause; unter Wasser durch Nase und Mund ganz ausatmen, beim Einatmen nur einen Mundwinkel aus dem Wasser drehen. 100 m aus. Gesamt ca. 1000 m.' };
+  }
+  if (stage === 2) {
+    const sp = step((f - 0.35) / 0.35 * 0.6);
+    return k % 2 === 0
+      ? { title: 'Schwimmen: Technik + Ausdauer', minutes: 50, stage, description: `300 m ein. Technik: 6× 50 m (25 m Abschlag, 25 m Fingerspitzen über die Wasseroberfläche ziehen). Hauptteil 3× 300 m ruhig und gleichmäßig${sp ? ` (${p(sp, 10)})` : ''}, 45 s Pause, Züge pro Bahn zählen. 100 m aus. Gesamt ca. 1600 m.` }
+      : { title: 'Schwimmen: 100er im Tempo-Aufbau', minutes: 50, stage, description: `300 m ein, 6× 25 m Technik nach Wahl. Hauptteil 10× 100 m${sp ? ` in ${p(sp)}` : ' zügig, aber sauber'}, 20–30 s Pause. Wenn die Technik zerfällt, langsamer. 100 m aus. Gesamt ca. 1550 m.` };
+  }
+  const gp = step(0.6 + (f - 0.7) / 0.3 * 0.4);
+  return k % 2 === 0
+    ? { title: 'Schwimmen: Zieltempo', minutes: 55, stage, description: `400 m ein mit Technik. Hauptteil 12× 100 m${gp ? ` in ${p(gp)}` : ' im Zieltempo'}, 20 s Pause. Dann 4× 25 m schnell, volle Pause. 200 m aus. Gesamt ca. 1900 m.` }
+    : { title: 'Schwimmen: Ausdauer im Tempo', minutes: 55, stage, description: `400 m ein. Hauptteil 2× 400 m${gp ? ` in ${p(gp, 5)}` : ' knapp unter Zieltempo'}, 1 min Pause, danach 6× 50 m etwas schneller, 20 s Pause. 200 m aus. Gesamt ca. 1900 m.` };
+}
+
 // Lange Einheit je Sportart im Schwerpunkt bzw. bei Lauf-, Rad- und Schwimmansätzen.
 const LONG_BY_SPORT = {
   run: { title: 'Langer Lauf', max: 150, description: 'Locker und gleichmäßig, Verpflegung und Schuhe für das Rennen testen' },
@@ -613,6 +641,8 @@ export function generatePlan(opts, races = []) {
     let speedDone = !(keys.has('speed') && ['base', 'build', 'specific'].includes(w.phase));
     let speedLeft = pr.weak?.includes('sprint') ? 2 : 1;
     let swimLeft = ['race', 'taper', 'recovery'].includes(w.phase) ? 0 : Number(opts.swimPerWeek) || 0;
+    let swimCount = 0;
+    const nextSwim = () => swimSession({ wi, weeks: weeks.length, k: swimCount++, cur: opts.swimPace, goal: opts.swimGoal });
     let techLeft = pr.weak?.some((x) => x === 'skate' || x === 'classic') && !['race', 'taper'].includes(w.phase) ? 1 : 0;
     const share = per?.type === 'travel' ? 0.1 : focus ? Math.min(0.2, specificShare(w.phase, w.from, pr)) : specificShare(w.phase, w.from, pr);
     for (let i = 0; i < n; i++) {
@@ -630,8 +660,8 @@ export function generatePlan(opts, races = []) {
       // und zusätzlich die gewählte Anzahl pro Woche in jedem Plan (ersetzt eine lockere Einheit, nie die erste).
       const triSwim = focus === 'tri' && i === 1;
       if ((easySport === 'swim' || triSwim || (swimLeft > 0 && i >= 1)) && room(d) >= 40) {
-        const sw = SWIM_EASY[(wi + i) % SWIM_EASY.length];
-        Object.assign(s, { title: sw.title, sport: 'swim', minutes: Math.min(min, 60), zone: 'I1', description: `${sw.description} Rest der Zeit ruhig Kraul oder Brust.` });
+        const sw = nextSwim();
+        Object.assign(s, { title: sw.title, sport: 'swim', minutes: Math.min(min, sw.minutes), zone: 'I1', description: sw.description });
         if (easySport !== 'swim' && !triSwim) swimLeft--;
       }
       if (specific && techLeft > 0) { s.title = 'Locker + Technik'; s.description = `Grundlage I1 mit Technikübungen (${pr.weak?.includes('classic') ? 'Klassisch: Abstoß, Gleiten auf einem Ski' : 'Skating: Gewichtsverlagerung, Eins-zu-eins, ohne Stöcke'}), gern Video`; techLeft--; }
@@ -648,9 +678,10 @@ export function generatePlan(opts, races = []) {
     // Gewählte Schwimm-Technik noch offen (z. B. in Wochen mit nur einer lockeren Einheit): auf einen freien Tag legen.
     for (const d of days) {
       if (swimLeft <= 0) break;
-      if (rest.has(d.dow) || d.sessions.length || raceDows.has(d.dow) || room(d) < 40) continue;
-      const sw = SWIM_EASY[(wi + d.dow) % SWIM_EASY.length];
-      put(d, { title: sw.title, sport: 'swim', minutes: 40, zone: 'I1', description: sw.description, kind: 'easy' });
+      // freier Tag oder Tag mit nur einer lockeren Einheit (keine harte, keine lange, kein Rennen)
+      if (rest.has(d.dow) || d.sessions.length >= 2 || d.sessions.some((x) => x.kind !== 'easy' || x.sport === 'swim') || raceDows.has(d.dow) || room(d) < 40) continue;
+      const sw = nextSwim();
+      put(d, { title: sw.title, sport: 'swim', minutes: Math.min(room(d), sw.minutes), zone: 'I1', description: sw.description, kind: 'easy' });
       swimLeft--;
     }
     for (const d of days) if (rest.has(d.dow) && !d.sessions.length) d.rest = true;

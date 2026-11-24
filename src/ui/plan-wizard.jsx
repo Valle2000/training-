@@ -5,7 +5,7 @@ import { today, weeks as weekStats } from '../lib/activities.js';
 import { addDays } from '../lib/metrics.js';
 import { sportLabel, SPORTS } from '../lib/sports.js';
 import { PHASES, PRIORITY_INFO, raceAdvice } from '../lib/season.js';
-import { focusSuggestions, FOCUS_OPTIONS, focusOn, noSnowOn, APPROACHES, KEY_TYPES, allOptions, makeKey, PLAN_SOURCES, GOALS, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend, hardDayCount, suggestHardDays, checkHardDays } from '../lib/plan-wizard.js';
+import { parsePace, focusSuggestions, FOCUS_OPTIONS, focusOn, noSnowOn, APPROACHES, KEY_TYPES, allOptions, makeKey, PLAN_SOURCES, GOALS, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend, hardDayCount, suggestHardDays, checkHardDays } from '../lib/plan-wizard.js';
 import { Sheet, fmtDate, fmtNum, toast } from './common.jsx';
 import { freeMinutes, hasSchedule, periodForWeek, busyOn } from '../lib/week-adapt.js';
 
@@ -51,7 +51,7 @@ export function PlanWizard({ onClose }) {
   const rec = recommend(pr, Number(o.startHours) || 10);
   // Hauptziel der Saison: gilt in allen Wochen ohne Schwerpunkt-Zeitraum (Ski/Rollski ist der Standard, dann null).
   const mainFocus = ['run', 'bike', 'swim', 'tri'].includes(settings.season?.mainSport) ? settings.season.mainSport : null;
-  const plan = useMemo(() => (step >= 5 ? generatePlan({ ...o, keys, customKeys: custom, capFor: hasSchedule(settings.schedule) ? (d) => freeMinutes(d, settings.schedule) : null, periodFor: settings.schedule?.periods?.length ? (m) => periodForWeek(m, settings.schedule) : null, busyFor: hasSchedule(settings.schedule) ? (d) => busyOn(d, settings.schedule).length > 0 : null, focusFor: (m) => focusOn(m, settings.season?.focus, settings.season?.snow, settings.season?.winterSub) || mainFocus, winterRunHours: settings.season?.winterRunHours ?? 2.5 }, races) : []), [step, o, keys, races, custom, settings.schedule, settings.season?.focus, settings.season?.snow, settings.season?.winterSub, settings.season?.winterRunHours, settings.season?.mainSport]);
+  const plan = useMemo(() => (step >= 5 ? generatePlan({ ...o, swimPace: parsePace(o.swimPaceTxt), swimGoal: parsePace(o.swimGoalTxt), keys, customKeys: custom, capFor: hasSchedule(settings.schedule) ? (d) => freeMinutes(d, settings.schedule) : null, periodFor: settings.schedule?.periods?.length ? (m) => periodForWeek(m, settings.schedule) : null, busyFor: hasSchedule(settings.schedule) ? (d) => busyOn(d, settings.schedule).length > 0 : null, focusFor: (m) => focusOn(m, settings.season?.focus, settings.season?.snow, settings.season?.winterSub) || mainFocus, winterRunHours: settings.season?.winterRunHours ?? 2.5 }, races) : []), [step, o, keys, races, custom, settings.schedule, settings.season?.focus, settings.season?.snow, settings.season?.winterSub, settings.season?.winterRunHours, settings.season?.mainSport]);
   const set = (k, v) => setO({ ...o, [k]: v });
   const toggleKey = (id) => set('keys', keys.includes(id) ? keys.filter((k) => k !== id) : [...keys, id]);
   const setPr = (k, v) => set('profile', { ...pr, [k]: v });
@@ -137,7 +137,12 @@ export function PlanWizard({ onClose }) {
           <div><label>Planen bis</label><input type="date" value={o.end} onChange={(e) => set('end', e.target.value)} /></div>
           <div><label>Langer Tag</label><select value={o.longDay} onChange={(e) => set('longDay', Number(e.target.value))}>{DOW.map((d, i) => <option key={d} value={i + 1}>{d}</option>)}</select></div>
           <div><label>Krafteinheiten/Woche (Vorbereitung)</label><select value={o.strengthPerWeek} onChange={(e) => set('strengthPerWeek', Number(e.target.value))}>{[0, 1, 2, 3].map((n) => <option key={n} value={n}>{n}</option>)}</select></div>
-          <div><label>Schwimmen Technik/Woche</label><select value={o.swimPerWeek || 0} onChange={(e) => set('swimPerWeek', Number(e.target.value))}>{[0, 1, 2].map((n) => <option key={n} value={n}>{n}</option>)}</select></div>
+          <div><label>Schwimmen/Woche (Ergänzung)</label><select value={o.swimPerWeek || 0} onChange={(e) => set('swimPerWeek', Number(e.target.value))}>{[0, 1, 2, 3].map((n) => <option key={n} value={n}>{n}</option>)}</select></div>
+          {(o.swimPerWeek > 0) && <>
+            <div><label>Schwimmtempo jetzt (min/100 m)</label><input inputMode="text" value={o.swimPaceTxt || ''} onChange={(e) => set('swimPaceTxt', e.target.value)} placeholder="z. B. 2:20" /></div>
+            <div><label>Ziel (min/100 m)</label><input inputMode="text" value={o.swimGoalTxt || ''} onChange={(e) => set('swimGoalTxt', e.target.value)} placeholder="z. B. 1:45" /></div>
+            <p className="muted small" style={{ gridColumn: '1 / -1', margin: 0 }}>Der Plan baut auf: erst Wasserlage und Atmung, dann Technik mit Ausdauer, zuletzt 100er im Zieltempo. Alle 6 Wochen ein Tempotest (400 m + 200 m). Tempo unbekannt? Feld leer lassen und den ersten Test abwarten.</p>
+          </>}
           <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontWeight: 400, gridColumn: '1 / -1' }}><input type="checkbox" checked={o.focusMix !== false} onChange={(e) => set('focusMix', e.target.checked)} style={{ width: 18, height: 18 }} />Im Schwerpunkt (Laufen, Rad, Schwimmen) lockeren Umfang mit Rollski und Rad bzw. Laufen mischen</label>
         </div>
         <label>Ruhetage</label>

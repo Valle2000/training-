@@ -47,3 +47,30 @@ test('Schwimm-Rennen: Sportart und Schwerpunkt-Vorschlag', () => {
   assert.equal(s[0].sport, 'swim');
   assert.match(s[0].label, /Schwimmen/);
 });
+
+test('Schwimm-Aufbau: Stufen, Tempo vom aktuellen zum Ziel, Tempotest alle 6 Wochen', async () => {
+  const { swimSession, parsePace, fmtPace } = await import('../src/lib/plan-wizard.js');
+  assert.equal(parsePace('2:20'), 140);
+  assert.equal(parsePace('1:45'), 105);
+  assert.equal(parsePace('abc'), null);
+  assert.equal(fmtPace(105), '1:45');
+  const first = swimSession({ wi: 0, weeks: 30, k: 0, cur: 140, goal: 105 });
+  assert.equal(first.stage, 1);
+  assert.match(first.title, /Wasserlage/);
+  const mid = swimSession({ wi: 15, weeks: 30, k: 1, cur: 140, goal: 105 });
+  assert.equal(mid.stage, 2);
+  assert.match(mid.description, /pro 100 m/);
+  const last = swimSession({ wi: 28, weeks: 29, k: 0, cur: 140, goal: 105 }); // Woche 29 wäre Testwoche
+  assert.equal(last.stage, 3);
+  assert.match(last.description, /1:45 pro 100 m/);
+  assert.match(swimSession({ wi: 5, weeks: 30, k: 0, cur: 140, goal: 105 }).title, /Tempotest/);
+  assert.doesNotMatch(swimSession({ wi: 20, weeks: 30, k: 0 }).description, /pro 100 m/);
+});
+
+test('Drei Schwimmeinheiten pro Woche werden untergebracht', () => {
+  const w = generatePlan({ ...base, approach: 'pyramidal', swimPerWeek: 3, swimPace: 140, swimGoal: 105 }, []);
+  const build = w.filter((x) => ['base', 'build'].includes(x.phase));
+  const counts = build.map((x) => x.days.flatMap((d) => d.sessions).filter((s) => s.sport === 'swim').length);
+  assert.ok(counts.every((n) => n >= 2), counts.join());
+  assert.ok(counts.some((n) => n === 3), counts.join());
+});

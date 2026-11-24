@@ -380,6 +380,7 @@ export const TOPICS = [
       'Elite-Schwimmtrainer zerlegen die Technik in Teilübungen (z. B. nur Beinschlag, Seitlage, Abschlag) und achten darauf, dass das Geübte dem echten Schwimmen nahe bleibt (Brackley et al. 2020).',
       'Bei Wettkampfschwimmern verbesserte ein Aufwärmen mit Technikübungen die 100-m-Zeit, vor allem über einen längeren Zug pro Armzug (Neiva et al. 2014).',
       'Typische Einsteigerprobleme: absinkende Beine (Kopf zu hoch), zu kurzes Ausatmen, kurzer Armzug. Die Übungen in der App setzen genau dort an: Wasserlage, Atmung, Armzug.',
+      'Tempotest (in der Trainingspraxis „Critical Swim Speed“): 400 m und 200 m auf Zeit, das Schwellentempo pro 100 m ist ungefähr (Zeit 400 m − Zeit 200 m) ÷ 2. Der Plan nutzt dein aktuelles Tempo und dein Ziel, um die Tempi Stufe für Stufe anzupassen. Das ist eine gängige Trainermethode, keine in dieser Recherche geprüfte Studienzahl.',
     ],
     practice: 'Zwei bis drei Einheiten pro Woche schlagen eine lange. Jede Einheit mit 10–15 min Technikübungen beginnen, dann ruhig Kraul. Züge pro Bahn zählen; weniger Züge bei gleichem Tempo heißt effizienter. Ein Video von der Seite oder ein Technikkurs hilft am Anfang mehr als jede Serie.',
     sources: [S.ferreira16, S.brackley20, S.neiva14],
