@@ -97,3 +97,21 @@ test('Engadiner (A), DM eine Woche später, Halbmarathon (B) drei Wochen nach En
   const opener = after.find((s) => /Vorbelastung/.test(s.title));
   assert.equal(opener?.sport, 'run');
 });
+
+test('Taper kürzt Wiederholungen, Block-Wochen wie in der Studie, Renntempo nach dem A-Rennen', async () => {
+  const { generatePlan, taperKey, KEY_OPTIONS, focusOn, focusBlockOn } = await import('../src/lib/plan-wizard.js');
+  const mp = KEY_OPTIONS.find((k) => k.id === 'run_mp3x15');
+  const t = taperKey(mp);
+  assert.equal(t.name, 'Marathontempo: 2×15 min');
+  assert.ok(t.minutes < mp.minutes);
+  const hard = (w) => w.days.flatMap((d) => d.sessions).filter((s) => s.kind === 'hard');
+  const m = generatePlan({ startHours: 8, peakHours: 10, start: '2027-03-22', end: '2027-04-25', restDays: [1], longDay: 7, strengthPerWeek: 1, keys: [], approach: 'run_marathon' }, [{ id: 'm', date: '2027-04-25', technique: 'Lauf', priority: 'A', distanceKm: 42.2, name: 'M' }]);
+  assert.ok(m.filter((x) => x.phase === 'taper').flatMap(hard).every((s) => !/3×15/.test(s.title)));
+  const b = generatePlan({ startHours: 12, peakHours: 15, start: '2026-12-07', end: '2027-01-10', restDays: [1], longDay: 7, strengthPerWeek: 2, keys: [], approach: 'block' }, [{ id: 'e', date: '2027-03-14', technique: 'Skating', priority: 'A', distanceKm: 45, name: 'E' }]);
+  const counts = b.map((x) => hard(x).length);
+  assert.ok(counts.includes(5) && counts.filter((n) => n !== 5).every((n) => n === 1), counts.join());
+  const races = [{ id: 'e', date: '2027-03-14', name: 'Engadiner', technique: 'Skating', priority: 'A', distanceKm: 45 }, { id: 'd', date: '2027-03-21', name: 'DM', technique: 'Skating', priority: 'B', distanceKm: 15 }, { id: 'h', date: '2027-04-04', name: 'HM', technique: 'Lauf', priority: 'B', distanceKm: 21.1 }];
+  const list = focusSuggestions(races, []);
+  const w = generatePlan({ startHours: 13, peakHours: 16, start: '2027-03-15', end: '2027-04-11', restDays: [1], longDay: 7, strengthPerWeek: 2, keys: [], approach: 'threshold', focusFor: (x) => focusOn(x, list), focusKindFor: (x) => focusBlockOn(x, list)?.kind || null }, races);
+  assert.ok(hard(w.find((x) => x.from === '2027-03-22')).some((s) => /Halbmarathontempo/.test(s.title)));
+});

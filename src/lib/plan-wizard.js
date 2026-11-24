@@ -496,7 +496,7 @@ export function generatePlan(opts, races = []) {
     const fPref = fKind ? new Set(APPROACHES.find((a) => a.id === fKind)?.defaults || []) : null;
     // Triathlon: harte Einheiten wechseln zwischen Lauf und Rad (sonst Rollski wie im Standardplan).
     let triFlip = 0;
-    const sess = (o, date, i, when) => session(o, date, i, when, focus === 'tri' ? (triFlip++ % 2 ? 'bike' : 'run') : fSport);
+    const sess = (o, date, i, when) => session(w.phase === 'taper' ? taperKey(o) : o, date, i, when, focus === 'tri' ? (triFlip++ % 2 ? 'bike' : 'run') : fSport);
     // Besondere Zeiten (Prüfungsphase, Reise, Trainingslager): Umfang skalieren, harte Einheiten begrenzen.
     const per = opts.periodFor ? opts.periodFor(w.from) : null;
     if (per) {
@@ -509,7 +509,8 @@ export function generatePlan(opts, races = []) {
     let hardDays = own || ap.days.hard;
     if (hardSlots === 'block') {
       const blockWeek = buildIdx % 4 === 0; buildIdx++;
-      hardSlots = blockWeek ? ['hit', 'hit', 'hit', 'hit', 'hit'] : w.phase === 'specific' ? ['threshold', 'race'] : ['threshold', 'hit'];
+      // Wie bei Rønnestad et al. 2014: Block-Woche mit fünf harten Einheiten, danach drei Wochen mit je einer.
+      hardSlots = blockWeek ? ['hit', 'hit', 'hit', 'hit', 'hit'] : [w.phase === 'specific' ? 'race' : 'hit'];
       if (blockWeek) { hardDays = ap.days.block; w.targetHours = Math.round(w.targetHours * 0.85 * 10) / 10; w.block = true; }
     }
     if (own && !w.block && Array.isArray(hardSlots)) {
@@ -526,6 +527,8 @@ export function generatePlan(opts, races = []) {
       hardSlots = hardSlots.flatMap((x) => (x === 'rot' ? (what ? [what] : []) : [x]));
     }
     if (deload && ap.id === 'threshold') hardSlots = hardSlots.slice(0, 1);
+    // Schwerpunkt vor einem Rennen nach dem Saisonhöhepunkt (Übergangsphase): zusätzlich eine Einheit im Renntempo.
+    if (fKind && w.phase === 'transition' && Array.isArray(hardSlots) && !hardSlots.includes('race')) hardSlots = [...hardSlots, 'race'];
     const rest = new Set(opts.restDays || [1]), longDay = Number(opts.longDay) || 7;
     const days = Array.from({ length: 7 }, (_, i) => ({ dow: i + 1, date: addDays(w.from, i), sessions: [] }));
     // B- und C-Rennen ersetzen je eine harte Einheit; vor B-Rennen Vorbelastung am Vortag.
@@ -728,6 +731,18 @@ export function generatePlan(opts, races = []) {
     for (const d of days) if (rest.has(d.dow) && !d.sessions.length) d.rest = true;
     return { ...w, approach: ap.id, days, plannedHours: Math.round((used / 60) * 10) / 10 };
   });
+}
+
+// Taper: weniger Wiederholungen bei gleichem Tempo (Umfang runter, Intensität halten; Bosquet et al. 2007).
+export function taperKey(o) {
+  const sp = o?.spec;
+  if (!sp || !['threshold', 'race', 'hit', 'dt_am', 'dt_pm'].includes(o.type) || !(sp.reps > 1)) return o;
+  const reps = Math.max(1, Math.round(sp.reps * 0.6));
+  if (reps === sp.reps) return o;
+  const re = new RegExp(`(^|[^0-9])${sp.reps}×`);
+  if (!re.test(o.name)) return o;
+  const swap = (t) => String(t || '').replace(re, (m, pre) => `${pre}${reps}×`);
+  return { ...o, name: swap(o.name), desc: `${swap(o.desc)} (Taper: weniger Wiederholungen, gleiches Tempo)`, minutes: makeKey({ ...sp, reps }).minutes };
 }
 
 function session(o, date, i, when = '', focusSport = null) {
