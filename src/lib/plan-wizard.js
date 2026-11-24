@@ -374,11 +374,22 @@ export function flexible(pr = {}, date) {
 export const FOCUS_OPTIONS = [['run', 'Laufen'], ['bike', 'Rad'], ['swim', 'Schwimmen (Technik + Ausdauer)'], ['tri', 'Triathlon (Rad + Lauf)'], ['rollerski', 'Rollski/Ski (Standard)']];
 // Schneelage: Zeiträume ohne Schnee (snow: false) ersetzen Ski durch eine Ersatzsportart (winterSub).
 export const noSnowOn = (date, snow = []) => (snow || []).some((p) => !p.snow && date >= p.from && date <= p.to);
-export function focusOn(date, list = [], snow = [], winterSub = 'run') {
-  // Überschneiden sich Zeiträume, gilt der kürzere: z. B. ein Rad-Schwerpunkt vor einem Bergzeitfahren innerhalb des
-  // Multisport-Sommers oder ein Lauf-Schwerpunkt vor einem Herbst-Marathon.
+// Überschneiden sich Zeiträume, gilt der kürzere: z. B. ein Rad-Schwerpunkt vor einem Bergzeitfahren innerhalb des
+// Multisport-Sommers oder ein Lauf-Schwerpunkt vor einem Herbst-Marathon.
+export function focusBlockOn(date, list = []) {
   const span = (x) => Date.parse(x.to) - Date.parse(x.from);
-  const f = (list || []).filter((x) => date >= x.from && date <= x.to && x.sport !== 'rollerski').sort((a, b) => span(a) - span(b))[0];
+  return (list || []).filter((x) => date >= x.from && date <= x.to && x.sport !== 'rollerski').sort((a, b) => span(a) - span(b))[0] || null;
+}
+// Rennart aus Technik, Distanz und Name: bestimmt die Einheiten im Schwerpunkt davor (IDs wie die passenden Ansätze).
+export function raceKind(r = {}) {
+  const km = Number(r.distanceKm) || 0;
+  if (r.technique === 'Lauf') return km >= 30 ? 'run_marathon' : km >= 15 ? 'run_hm' : km > 0 ? 'run_10k' : null;
+  if (r.technique === 'Rad') return /berg|climb|hill|bergzeit/i.test(r.name || '') || (km > 0 && km <= 40) ? 'bike_climb' : km >= 60 ? 'bike_marathon' : null;
+  return null;
+}
+export const RACE_KIND_LABEL = { run_marathon: 'Marathon', run_hm: 'Halbmarathon', run_10k: '10 km', bike_climb: 'Bergzeitfahren', bike_marathon: 'Radmarathon' };
+export function focusOn(date, list = [], snow = [], winterSub = 'run') {
+  const f = focusBlockOn(date, list);
   if (f) return f.sport;
   if (noSnowOn(date, snow) && (winterSub === 'run' || winterSub === 'bike')) return winterSub;
   return null;
@@ -398,7 +409,8 @@ export function focusSuggestions(races = [], focus = []) {
     for (const s of races) if (SKI_TECH.includes(s.technique) && (s.priority === 'A' || s.priority === 'B') && s.date < r.date && s.date >= from) from = addDays(s.date, 1);
     if (from > addDays(r.date, -14)) continue; // weniger als zwei Wochen Vorlauf: kein Vorschlag
     if (focus.some((f) => f.sport === sport && f.from <= r.date && f.to >= from)) continue; // gleiche Sportart ist schon abgedeckt
-    out.push({ id: `sugg-${r.id}`, sport, label: `${SPORT_NAME[sport]} vor ${r.name?.trim() || 'Rennen'}`, from, to: r.date, race: r.name?.trim() || '', priority: r.priority });
+    const kind = raceKind(r);
+    out.push({ id: `sugg-${r.id}`, sport, kind, label: `${SPORT_NAME[sport]} vor ${r.name?.trim() || 'Rennen'}${kind ? ` (${RACE_KIND_LABEL[kind]})` : ''}`, from, to: r.date, race: r.name?.trim() || '', priority: r.priority });
   }
   return out;
 }
@@ -459,7 +471,7 @@ export function generatePlan(opts, races = []) {
   const options = allOptions(opts.customKeys);
   // Schwerpunkt Laufen/Rad/Schwimmen: passende Einheiten der Sportart bevorzugen (zuerst aus der Auswahl). Bei zwei harten
   // Einheiten pro Woche wechselt die Vorlage so von Woche zu Woche (der Zähler steigt je Einheit).
-  const pickByType = (type, k, sport = null) => { const sp = sport ? options.filter((o) => o.type === type && o.sport === sport) : []; const spk = sp.filter((o) => keys.has(o.id)); const list = spk.length ? spk : sp.length ? sp : options.filter((o) => o.type === type && keys.has(o.id)); const idx = sp.length ? Math.floor(k / 2) : k; return list.length ? list[idx % list.length] : null; };
+  const pickByType = (type, k, sport = null, pref = null, strict = false) => { const sp = sport ? options.filter((o) => o.type === type && o.sport === sport) : []; const spp = pref ? sp.filter((o) => pref.has(o.id)) : []; const spk = sp.filter((o) => keys.has(o.id)); const list = spp.length ? spp : spk.length ? spk : sp.length ? sp : options.filter((o) => o.type === type && keys.has(o.id)); const idx = sp.length ? Math.floor(k / 2) : k; if (strict) { const ord = [...pref]; spp.sort((x, y) => ord.indexOf(x.id) - ord.indexOf(y.id)); return spp.length ? spp[(strict === 'first' ? 0 : idx) % spp.length] : null; } return list.length ? list[idx % list.length] : null; };
   const easyMix = (sport, i, date, wi) => {
     if (!sport) return null;
     if (opts.focusMix === false) return sport === 'tri' ? (i % 2 ? 'bike' : 'run') : sport;
@@ -470,7 +482,7 @@ export function generatePlan(opts, races = []) {
     return cycle[i % cycle.length];
   };
   let rot = 0, buildIdx = 0, rotIdx = 0, prevHours = null;
-  const pickHit = (zone, k, sport = null) => { const sp = sport ? options.filter((o) => o.type === 'hit' && o.zone === zone && o.sport === sport) : []; const spk = sp.filter((o) => keys.has(o.id)); const list = spk.length ? spk : sp.length ? sp : options.filter((o) => o.type === 'hit' && o.zone === zone && keys.has(o.id)); const idx = sp.length ? Math.floor(k / 2) : k; return list.length ? list[idx % list.length] : null; };
+  const pickHit = (zone, k, sport = null, pref = null, strict = false) => { const sp = sport ? options.filter((o) => o.type === 'hit' && o.zone === zone && o.sport === sport) : []; const spp = pref ? sp.filter((o) => pref.has(o.id)) : []; const spk = sp.filter((o) => keys.has(o.id)); const list = spp.length ? spp : spk.length ? spk : sp.length ? sp : options.filter((o) => o.type === 'hit' && o.zone === zone && keys.has(o.id)); const idx = sp.length ? Math.floor(k / 2) : k; if (strict) { const ord = [...pref]; spp.sort((x, y) => ord.indexOf(x.id) - ord.indexOf(y.id)); return spp.length ? spp[(strict === 'first' ? 0 : idx) % spp.length] : null; } return list.length ? list[idx % list.length] : null; };
   return weeks.map((w, wi) => {
     let hardSlots = phasesFor(ap, opts.dtDays)[w.phase] ?? [];
     // Rhythmus Double Threshold: jede Woche, jede zweite Woche oder 3:1 (drei mit, eine ohne).
@@ -478,6 +490,9 @@ export function generatePlan(opts, races = []) {
     if (dtOff && Array.isArray(hardSlots)) hardSlots = hardSlots.map((x) => (x === 'dt' ? 'threshold' : x));
     const focus = opts.focusFor ? opts.focusFor(w.from) : null;
     const fSport = ['run', 'bike', 'swim'].includes(focus) ? focus : (ap.only || null);
+    // Schwerpunkt vor einem bestimmten Rennen: Einheiten der passenden Rennart bevorzugen (z. B. Marathontempo vor dem Marathon).
+    const fKind = opts.focusKindFor ? opts.focusKindFor(w.from) : null;
+    const fPref = fKind ? new Set(APPROACHES.find((a) => a.id === fKind)?.defaults || []) : null;
     // Triathlon: harte Einheiten wechseln zwischen Lauf und Rad (sonst Rollski wie im Standardplan).
     let triFlip = 0;
     const sess = (o, date, i, when) => session(o, date, i, when, focus === 'tri' ? (triFlip++ % 2 ? 'bike' : 'run') : fSport);
@@ -557,13 +572,13 @@ export function generatePlan(opts, races = []) {
       hardUsed.add(dow);
       const day = days[dow - 1];
       if (slot === 'dt') {
-        const am = pickByType('dt_am', rot, fSport) || pickByType('threshold', rot, fSport), pm = pickByType('dt_pm', rot, fSport) || pickByType('threshold', rot + 1, fSport);
+        const am = pickByType('dt_am', rot, fSport, fPref) || pickByType('threshold', rot, fSport, fPref), pm = pickByType('dt_pm', rot, fSport, fPref) || pickByType('threshold', rot + 1, fSport, fPref);
         // Zweimal am Tag: immer, nie, oder nur an Tagen ohne Termin (Uni, Arbeit) – auto.
         const busy = opts.busyFor ? opts.busyFor(day.date) : false;
         const twice = opts.dtDouble === 'always' || (opts.dtDouble !== 'never' && !busy);
         if (!twice && am) {
           // Eine Schwelleneinheit statt zwei: der Tag bleibt frei, die Schwelle bleibt drin.
-          const single = pickByType('threshold', rot, fSport) || optionById('thr_6x10');
+          const single = pickByType('threshold', rot, fSport, fPref) || optionById('thr_6x10');
           put(day, sess(single, day.date, rot++, ''));
         } else if (am) {
           const x = sess(am, day.date, rot++, 'vormittags');
@@ -586,10 +601,13 @@ export function generatePlan(opts, races = []) {
         const d = race ? days.find((x) => x.date === addDays(race.date, -1)) || day : day;
         put(d, sess(optionById('opener'), d.date, rot++));
       } else if (slot === 'i4' || slot === 'i5') {
-        const o = pickHit(slot.toUpperCase(), rot, fSport) || pickHit(slot === 'i5' ? 'I4' : 'I5', rot, fSport) || pickByType('hit', rot, fSport);
+        // Schwerpunkt mit Rennart: erst nur deren Einheiten (auch eine andere Intensität), dann wie gewohnt.
+        const other = slot === 'i5' ? 'I4' : 'I5';
+        const o = (fPref && (pickHit(slot.toUpperCase(), rot, fSport, fPref, true) || pickHit(other, rot, fSport, fPref, true) || pickByType('hit', rot, fSport, fPref, true))) || pickHit(slot.toUpperCase(), rot, fSport, fPref) || pickHit(other, rot, fSport, fPref) || pickByType('hit', rot, fSport, fPref);
         if (o) put(day, sess(o, day.date, rot++));
       } else {
-        const o = pickByType(slot, rot, fSport) || pickByType(slot === 'race' ? 'hit' : slot === 'hit' ? 'threshold' : 'hit', rot, fSport);
+        const alt = slot === 'race' ? 'hit' : slot === 'hit' ? 'threshold' : 'hit';
+        const o = (fPref && (pickByType(slot, rot, fSport, fPref, true) || pickByType(alt, rot, fSport, fPref, slot === 'race' ? 'first' : true))) || pickByType(slot, rot, fSport, fPref) || pickByType(alt, rot, fSport, fPref);
         if (o) put(day, sess(o, day.date, rot++));
       }
     });
