@@ -5,6 +5,10 @@ import { mondayOf, estimatePlanLoad } from './activities.js';
 import { seasonPlan } from './season.js';
 
 export const PLAN_SOURCES = {
+  anton07: { text: 'Antón et al. 2007 – Bergzeitfahren hängt von der Leistung pro kg ab, flaches Zeitfahren von der absoluten Leistung (Int J Sports Med)', url: 'https://doi.org/10.1055/s-2006-924356' },
+  bossi17: { text: 'Bossi et al. 2017 – 20-min-Bergzeitfahren: VO2peak und Schwelle (W/kg) erklären 91 % der Leistung (J Sports Sci)', url: 'https://doi.org/10.1080/02640414.2016.1182199' },
+  ahrend18: { text: 'Ahrend et al. 2018 – Leistungstest für MTB-Marathon: 1-min-Maximalleistung, Schwelle und Körpergewicht (BMJ Open Sport Exerc Med)', url: 'https://doi.org/10.1136/bmjsem-2017-000293' },
+  ferreira16: { text: 'Ferreira et al. 2016 – Masters-Schwimmer (Systematische Übersicht): mehr Technikübungen, mit Ausdauer kombinieren (J Strength Cond Res)', url: 'https://doi.org/10.1519/JSC.0000000000001279' },
   casado23: { text: 'Casado et al. 2023 – Das norwegische Modell / Double Threshold (Review)', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Casado+Foster+Bakken+Tjelta+Norwegian+method' },
   molmen19: { text: 'Mølmen et al. 2019 – Block-Periodisierung im Ausdauersport (Systematischer Review/Metaanalyse)', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=M%C3%B8lmen+block+periodization+endurance+systematic+review' },
   raysmith16: { text: 'Raysmith & Drew 2016 – Kontinuität: verlorene Trainingswochen und Erfolg (J Sci Med Sport)', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Raysmith+Drew+2016+weeks+lost+injury+illness+track+and+field' },
@@ -62,25 +66,46 @@ export const APPROACHES = [
     days: { hard: [] }, sources: ['seiler10'], defaults: ['speed', 'long'],
   },
   {
-    id: 'run_marathon', name: 'Marathon (Laufen)', evidence: 'Praxis, gestützt auf Studien zur Intensitätsverteilung', runOnly: true,
+    id: 'run_marathon', name: 'Marathon (Laufen)', evidence: 'Praxis, gestützt auf Studien zur Intensitätsverteilung', only: 'run',
     short: 'Ein langer Lauf pro Woche, Marathontempo-Blöcke und ein bis zwei Schwelleneinheiten. Taper über 2–3 Wochen.',
     detail: 'Der Marathon braucht vor allem Ausdauer und ein gleichmäßiges Tempo über lange Zeit. Harte Einheiten sind wenige, aber gezielt: Schwelle für die Grundlage, Marathontempo für die Renngewöhnung. Das Tempo leitet sich aus deiner Schwellenpace ab (Einstellungen), die Blöcke bewusst nicht schneller laufen als geplant.',
     phases: { base: ['threshold'], build: ['threshold', 'race'], specific: ['race', 'threshold'], taper: ['race'], race: ['opener'], recovery: [], transition: ['threshold'] },
     days: { hard: [2, 4] }, sources: ['stoggl14', 'oliveira24', 'raysmith16'], defaults: ['run_tempo4x8', 'run_tempo3x12', 'run_mp3x15', 'run_dauer25', 'speed', 'long'],
   },
   {
-    id: 'run_hm', name: 'Halbmarathon (Laufen)', evidence: 'Praxis, gestützt auf Studien zur Intensitätsverteilung', runOnly: true,
+    id: 'run_hm', name: 'Halbmarathon (Laufen)', evidence: 'Praxis, gestützt auf Studien zur Intensitätsverteilung', only: 'run',
     short: 'Schwelle als Grundlage, Halbmarathontempo kurz vor dem Rennen. Ein langer Lauf pro Woche, Taper über etwa eine Woche.',
     detail: 'Der Halbmarathon liegt knapp unter der Schwelle. Das Training kombiniert Schwellenblöcke für die Basis mit Tempoblöcken im Renntempo. Das Tempo leitet sich aus deiner Schwellenpace ab.',
     phases: { base: ['threshold'], build: ['threshold', 'race'], specific: ['race', 'threshold'], taper: ['race'], race: ['opener'], recovery: [], transition: ['threshold'] },
     days: { hard: [2, 4] }, sources: ['stoggl14', 'oliveira24', 'raysmith16'], defaults: ['run_tempo3x12', 'run_dauer25', 'run_hm3x10', 'run_10k5x4', 'speed', 'long'],
   },
   {
-    id: 'run_10k', name: '10-km-Laufen', evidence: 'Praxis, gestützt auf Studien zur Intensitätsverteilung', runOnly: true,
+    id: 'run_10k', name: '10-km-Laufen', evidence: 'Praxis, gestützt auf Studien zur Intensitätsverteilung', only: 'run',
     short: 'Intervalle nahe der VO2max-Grenze plus Schwellenläufe. Kurzer Taper von etwa einer Woche.',
     detail: 'Die 10 km werden stark über Intensität entschieden: Intervalle um 4 min im 10-km-Tempo bauen die Laufleistung auf, Schwelle hält die Grundlage. Das Tempo leitet sich aus deiner Schwellenpace ab.',
     phases: { base: ['threshold'], build: ['hit', 'threshold'], specific: ['hit', 'race'], taper: ['hit', 'opener'], race: ['opener'], recovery: [], transition: ['threshold'] },
     days: { hard: [2, 5] }, sources: ['stoggl14', 'oliveira24', 'raysmith16'], defaults: ['run_10k5x4', 'run_tempo4x8', 'hit_hill8x4', 'speed', 'long'],
+  },
+  {
+    id: 'bike_climb', name: 'Rad: Bergzeitfahren (ca. 30 min)', evidence: 'mittel (Leistungsfaktoren), Praxis (Aufbau)', only: 'bike',
+    short: 'Schwelle und Intervalle nahe der VO2max, dazu Simulationen am Berg. Entscheidend ist die Leistung pro kg über 20–40 min.',
+    detail: 'Ein Bergzeitfahren von etwa 30 min wird nahe der Schwelle gefahren, mit hoher Sauerstoffaufnahme. Studien zeigen: Am Berg zählt die Leistung pro kg, im Flachen die absolute Leistung. Training: Schwellenblöcke und Over-Unders für die Basis, Bergintervalle von 4–6 min für die VO2max, kurz vor dem Rennen Simulationen im Renntempo. Den Start nicht überziehen.',
+    phases: { base: ['threshold'], build: ['threshold', 'hit'], specific: ['hit', 'race'], taper: ['race'], race: ['opener'], recovery: [], transition: ['threshold'] },
+    days: { hard: [2, 5] }, sources: ['anton07', 'bossi17', 'stoggl14'], defaults: ['bike_2x20', 'bike_overunder', 'bike_climb5x6', 'bike_hit5x4', 'bike_climb_tt', 'speed', 'long'],
+  },
+  {
+    id: 'bike_marathon', name: 'Rad: Radmarathon (ca. 3 h)', evidence: 'gering bis mittel (Leistungsfaktoren), Praxis (Aufbau)', only: 'bike',
+    short: 'Lange Ausfahrten mit Verpflegung, Sweet Spot und Schwelle, dazu kurze harte Reize für Anstiege und Antritte.',
+    detail: 'Ein Rad- oder MTB-Marathon von etwa 3 h verlangt Ausdauer, eine hohe Schwelle und die Fähigkeit, kurze harte Stücke wegzustecken. Eine Studie zum MTB-Marathon fand die 1-min-Maximalleistung, die Schwelle und das Körpergewicht als beste Vorhersage der Rennzeit. Training: eine lange Ausfahrt pro Woche mit 60–90 g Kohlenhydraten pro Stunde, Sweet Spot und Schwelle, später Tempo im Renntempo.',
+    phases: { base: ['threshold'], build: ['threshold', 'race'], specific: ['race', 'hit'], taper: ['race'], race: ['opener'], recovery: [], transition: ['threshold'] },
+    days: { hard: [2, 4] }, sources: ['ahrend18', 'stoggl14', 'raysmith16'], defaults: ['bike_sweet2x15', 'bike_2x20', 'bike_tempo2x30', 'bike_hit5x4', 'long'],
+  },
+  {
+    id: 'swim_learn', name: 'Schwimmen: Technik und Ausdauer (auch Einsteiger)', evidence: 'gering (Technik-Empfehlungen aus Übersichten), Praxis', only: 'swim',
+    short: 'Technikübungen in jeder Einheit (Wasserlage, Atmung, Armzug), dazu ruhige Ausdauer. Erst später zügige Serien.',
+    detail: 'Im Schwimmen entscheidet die Technik mehr als die Fitness, gerade für Einsteiger aus anderen Ausdauersportarten. Übersichten empfehlen einen hohen Anteil an Technikübungen, verbunden mit Ausdauerserien. Der Plan beginnt nur mit Technik und ruhigem Kraul, ab der Aufbauphase kommen zügige 100er und kurze schnelle 50er dazu.',
+    phases: { base: [], build: ['threshold'], specific: ['threshold', 'hit'], taper: ['race'], race: ['opener'], recovery: [], transition: [] },
+    days: { hard: [3] }, sources: ['ferreira16'], defaults: ['swim_css8x100', 'swim_10x50', 'swim_race4x200', 'long'],
   },
 ];
 
@@ -143,6 +168,15 @@ export const KEY_OPTIONS = [
   // Laufen: renn-spezifische Tempoblöcke (Marathon, Halbmarathon, 10 km)
   K('run_mp3x15', 'race', 3, 15, 3, { sport: 'run', warm: 15, cool: 10, name: 'Marathontempo: 3×15 min', note: 'genau im geplanten Marathontempo, nicht schneller' }),
   K('run_hm3x10', 'race', 3, 10, 2, { sport: 'run', warm: 15, cool: 10, name: 'Halbmarathontempo: 3×10 min', note: 'Renntempo Halbmarathon, lockere Pause' }),
+  // Rad: Berg und Marathon
+  K('bike_climb5x6', 'hit', 5, 6, 3, { sport: 'bike', zone: 'I4', warm: 20, cool: 15, name: 'Rad Bergintervalle (I4): 5×6 min', note: 'am Berg, sitzend, gleichmäßig hohe Leistung' }),
+  K('bike_overunder', 'threshold', 3, 12, 4, { sport: 'bike', warm: 20, cool: 15, name: 'Rad Over-Under: 3×12 min', desc: '20 min ein, 3× 12 min im Wechsel 2 min knapp über und 2 min knapp unter der Schwelle, 4 min Pause, 15 min aus' }),
+  K('bike_climb_tt', 'race', 1, 25, 0, { sport: 'bike', warm: 20, cool: 15, name: 'Bergzeitfahren-Simulation: 25 min', note: 'am Berg im geplanten Renntempo, die ersten 2 min nicht überziehen' }),
+  K('bike_tempo2x30', 'race', 2, 30, 5, { sport: 'bike', zone: 'I2', warm: 15, cool: 15, name: 'Rad Marathontempo: 2×30 min', note: 'zügiges Dauertempo, dabei 60–90 g Kohlenhydrate pro Stunde üben' }),
+  // Schwimmen: Schwelle, schnell, Renntempo (Strecken in Metern, Dauer geschätzt)
+  K('swim_css8x100', 'threshold', 8, 2, 20, { restUnit: 's', sport: 'swim', warm: 10, cool: 5, name: 'Schwimmen Schwelle: 8×100 m', desc: '10 min Technik-Einschwimmen, 8× 100 m zügig und gleichmäßig (Schwellentempo), 20 s Pause, 5 min locker aus' }),
+  K('swim_10x50', 'hit', 10, 1, 30, { restUnit: 's', sport: 'swim', zone: 'I4', warm: 10, cool: 5, name: 'Schwimmen schnell: 10×50 m', desc: '10 min ein, 10× 50 m schnell mit sauberer Technik, 30 s Pause, 5 min aus' }),
+  K('swim_race4x200', 'race', 4, 4, 1, { sport: 'swim', warm: 10, cool: 5, name: 'Schwimmen Renntempo: 4×200 m', desc: '10 min ein, 4× 200 m im geplanten Renntempo, 1 min Pause, 5 min aus' }),
   K('run_10k5x4', 'hit', 5, 4, 2, { sport: 'run', zone: 'I4', warm: 15, cool: 10, name: '10-km-Tempo: 5×4 min', note: 'etwas schneller als Halbmarathontempo, volle Pause halten' }),
   // Rad: Schwelle und Sweet Spot (Watt halten, nicht dem Puls hinterherlaufen)
   K('bike_2x20', 'threshold', 2, 20, 5, { sport: 'bike', warm: 20, cool: 15, name: 'Rad Schwelle: 2×20 min', note: 'Watt gleichmäßig halten, untere FTP-Grenze' }),
@@ -209,6 +243,13 @@ const WHY = {
   run_dauer25: 'Ein durchgehender Schwellenblock von 25 min, ideal für gleichmäßiges Tempo ohne Pausen.',
   run_mp3x15: 'Marathontempo üben: Blöcke, bei denen du das Tempo am Renntag halten kannst, ohne dass der Körper zerfällt.',
   run_hm3x10: 'Halbmarathontempo als Wettkampfvorbereitung: kurze Blöcke im Renntempo, gut zur Tempokontrolle.',
+  bike_climb5x6: 'Bergintervalle von 4–6 min trainieren die VO2max, die bei einem 20–40-min-Bergzeitfahren entscheidend ist.',
+  bike_overunder: 'Wechsel knapp über und unter der Schwelle: gewöhnt an Tempowechsel am Berg und hebt die Schwelle.',
+  bike_climb_tt: 'Renntempo am Berg üben: Pacing lernen, vor allem den zu schnellen Start vermeiden.',
+  bike_tempo2x30: 'Zügiges Dauertempo wie im Marathon, mit Verpflegung: trainiert Ausdauer und Magen zugleich.',
+  swim_css8x100: 'Schwellentempo im Schwimmen: gleichmäßige 100er mit kurzer Pause, gut vergleichbar über Wochen.',
+  swim_10x50: 'Kurze schnelle Strecken mit sauberer Technik: Tempo ohne dass die Technik zerfällt.',
+  swim_race4x200: 'Renntempo üben: 200er im geplanten Tempo, gut für Triathlon- und Freiwasserstarts.',
   run_10k5x4: '10-km-Tempo: 4-min-Intervalle nahe der VO2max-Grenze der Laufleistung, gut für die Kurzstrecke.',
   bike_2x20: 'Radschwelle mit zwei langen Blöcken: Watt halten, Wirkung auf die aerobe Schwelle ohne hohe Stoßbelastung.',
   bike_3x12: 'Kürzere Radschwellenblöcke, gut dosierbar und nach längeren Pausen als Einstieg.',
@@ -329,7 +370,7 @@ export function flexible(pr = {}, date) {
 }
 
 // Multisport: Schwerpunkt-Zeiträume (z. B. Juni–August Laufen oder Rad, Triathlon-Block mit Rad + Lauf).
-export const FOCUS_OPTIONS = [['run', 'Laufen'], ['bike', 'Rad'], ['tri', 'Triathlon (Rad + Lauf)'], ['rollerski', 'Rollski/Ski (Standard)']];
+export const FOCUS_OPTIONS = [['run', 'Laufen'], ['bike', 'Rad'], ['swim', 'Schwimmen (Technik + Ausdauer)'], ['tri', 'Triathlon (Rad + Lauf)'], ['rollerski', 'Rollski/Ski (Standard)']];
 // Schneelage: Zeiträume ohne Schnee (snow: false) ersetzen Ski durch eine Ersatzsportart (winterSub).
 export const noSnowOn = (date, snow = []) => (snow || []).some((p) => !p.snow && date >= p.from && date <= p.to);
 export function focusOn(date, list = [], snow = [], winterSub = 'run') {
@@ -346,20 +387,34 @@ const SKI_TECH = ['Skating', 'Klassisch', 'Skiathlon', 'Rollski'];
 export function focusSuggestions(races = [], focus = []) {
   const out = [];
   for (const r of races) {
-    const sport = r.technique === 'Lauf' ? 'run' : r.technique === 'Rad' ? 'bike' : null;
+    const sport = r.technique === 'Lauf' ? 'run' : r.technique === 'Rad' ? 'bike' : r.technique === 'Schwimmen' ? 'swim' : null;
     const weeks = FOCUS_WEEKS[r.priority];
     if (!sport || !weeks || !r.date) continue;
     let from = addDays(r.date, -7 * weeks);
     for (const s of races) if (SKI_TECH.includes(s.technique) && (s.priority === 'A' || s.priority === 'B') && s.date < r.date && s.date >= from) from = addDays(s.date, 1);
     if (from > addDays(r.date, -14)) continue; // weniger als zwei Wochen Vorlauf: kein Vorschlag
     if (focus.some((f) => f.from <= r.date && f.to >= from)) continue; // überschneidet sich mit einem bestehenden Zeitraum
-    out.push({ id: `sugg-${r.id}`, sport, label: `${sport === 'run' ? 'Laufen' : 'Rad'} vor ${r.name?.trim() || 'Rennen'}`, from, to: r.date, race: r.name?.trim() || '', priority: r.priority });
+    out.push({ id: `sugg-${r.id}`, sport, label: `${SPORT_NAME[sport]} vor ${r.name?.trim() || 'Rennen'}`, from, to: r.date, race: r.name?.trim() || '', priority: r.priority });
   }
   return out;
 }
 
 // Sportart einer Rennzeile im Kalender.
-export const raceSport = (technique, date) => (technique === 'Rad' ? 'bike' : technique === 'Lauf' || technique === 'Triathlon' ? 'run' : technique === 'Rollski' ? 'rollerski_skate' : winter(date) ? 'xc_skate' : 'rollerski_skate');
+export const RACE_MIN_PER_KM = { run: 4.5, bike: 2.2, swim: 25 };
+export const raceSport = (technique, date) => (technique === 'Schwimmen' ? 'swim' : technique === 'Rad' ? 'bike' : technique === 'Lauf' || technique === 'Triathlon' ? 'run' : technique === 'Rollski' ? 'rollerski_skate' : winter(date) ? 'xc_skate' : 'rollerski_skate');
+
+// Schwimm-Technikeinheiten, auch für Einsteiger (Strecken in Metern, Pausen nach Bedarf).
+export const SWIM_EASY = [
+  { title: 'Schwimmen Technik: Wasserlage', minutes: 40, description: '10 min locker einschwimmen (Brust erlaubt). 6× 25 m Beinschlag mit Brett, 6× 25 m Seitlage (unterer Arm vorne, Blick zum Boden), 4× 25 m Gleiten aus dem Abstoß in Stromlinie. 4× 50 m ruhig Kraul. Pausen nach Bedarf.' },
+  { title: 'Schwimmen Technik: Atmung', minutes: 40, description: '10 min ein. 6× 25 m Kraul mit Dreier-Atmung (beidseitig), 6× 25 m „6-1-6“ (6 Beinschläge in Seitlage, 1 Zug, 6 Beinschläge auf der anderen Seite), 4× 50 m ruhig Kraul, unter Wasser langsam ausatmen.' },
+  { title: 'Schwimmen Technik: Armzug', minutes: 40, description: '10 min ein. 6× 25 m Abschlagschwimmen (eine Hand wartet vorne, bis die andere ankommt), 6× 25 m Fingerspitzen über die Wasseroberfläche ziehen, 4× 25 m Faustschwimmen, 4× 50 m ruhig Kraul mit langem Zug.' },
+  { title: 'Schwimmen Ausdauer ruhig', minutes: 45, description: '10 min Technikübungen nach Wahl, dann 4–6× 100–200 m ruhig Kraul, 20–40 s Pause. Züge pro Bahn zählen: weniger Züge bei gleichem Tempo heißt effizienter.' },
+];
+// Lange Einheit je Sportart im Schwerpunkt bzw. bei Lauf-, Rad- und Schwimmansätzen.
+const LONG_BY_SPORT = {
+  run: { title: 'Langer Lauf', max: 150, description: 'Locker und gleichmäßig, Verpflegung und Schuhe für das Rennen testen' },
+  bike: { title: 'Lange Ausfahrt', max: 240, description: 'Locker, 60–90 g Kohlenhydrate pro Stunde üben, gleichmäßig treten' },
+};
 
 // Optionen: approach, startHours, peakHours, start, end, restDays ([1] = Montag), longDay (7 = Sonntag), doubles, strengthPerWeek, keys (IDs)
 export function generatePlan(opts, races = []) {
@@ -370,17 +425,18 @@ export function generatePlan(opts, races = []) {
   // Wiedereinstieg: höchstens +10 % pro Woche, alle 4 Wochen leichter.
   if (ap.id === 'base') weeks.forEach((w, i) => { w.targetHours = Math.round(Math.min(Number(opts.peakHours) || 14, (Number(opts.startHours) || 8) * 1.1 ** i) * (i % 4 === 3 ? 0.75 : 1) * 10) / 10; });
   const options = allOptions(opts.customKeys);
-  // Schwerpunkt Laufen/Rad: passende Lauf- bzw. Rad-Einheiten bevorzugen, unabhängig von der Auswahl der Schlüsseleinheiten.
-  const pickByType = (type, k, sport = null) => { const sp = sport ? options.filter((o) => o.type === type && o.sport === sport) : []; const list = sp.length ? sp : options.filter((o) => o.type === type && keys.has(o.id)); return list.length ? list[k % list.length] : null; };
+  // Schwerpunkt Laufen/Rad/Schwimmen: passende Einheiten der Sportart bevorzugen (zuerst aus der Auswahl). Bei zwei harten
+  // Einheiten pro Woche wechselt die Vorlage so von Woche zu Woche (der Zähler steigt je Einheit).
+  const pickByType = (type, k, sport = null) => { const sp = sport ? options.filter((o) => o.type === type && o.sport === sport) : []; const spk = sp.filter((o) => keys.has(o.id)); const list = spk.length ? spk : sp.length ? sp : options.filter((o) => o.type === type && keys.has(o.id)); const idx = sp.length ? Math.floor(k / 2) : k; return list.length ? list[idx % list.length] : null; };
   let rot = 0, buildIdx = 0, rotIdx = 0, prevHours = null;
-  const pickHit = (zone, k, sport = null) => { const sp = sport ? options.filter((o) => o.type === 'hit' && o.zone === zone && o.sport === sport) : []; const list = sp.length ? sp : options.filter((o) => o.type === 'hit' && o.zone === zone && keys.has(o.id)); return list.length ? list[k % list.length] : null; };
+  const pickHit = (zone, k, sport = null) => { const sp = sport ? options.filter((o) => o.type === 'hit' && o.zone === zone && o.sport === sport) : []; const spk = sp.filter((o) => keys.has(o.id)); const list = spk.length ? spk : sp.length ? sp : options.filter((o) => o.type === 'hit' && o.zone === zone && keys.has(o.id)); const idx = sp.length ? Math.floor(k / 2) : k; return list.length ? list[idx % list.length] : null; };
   return weeks.map((w, wi) => {
     let hardSlots = phasesFor(ap, opts.dtDays)[w.phase] ?? [];
     // Rhythmus Double Threshold: jede Woche, jede zweite Woche oder 3:1 (drei mit, eine ohne).
     const dtOff = (opts.dtRhythm === 'biweekly' && wi % 2 === 1) || (opts.dtRhythm === '3:1' && wi % 4 === 3);
     if (dtOff && Array.isArray(hardSlots)) hardSlots = hardSlots.map((x) => (x === 'dt' ? 'threshold' : x));
     const focus = opts.focusFor ? opts.focusFor(w.from) : null;
-    const fSport = focus === 'run' || focus === 'bike' ? focus : (ap.runOnly ? 'run' : null);
+    const fSport = ['run', 'bike', 'swim'].includes(focus) ? focus : (ap.only || null);
     // Triathlon: harte Einheiten wechseln zwischen Lauf und Rad (sonst Rollski wie im Standardplan).
     let triFlip = 0;
     const sess = (o, date, i, when) => session(o, date, i, when, focus === 'tri' ? (triFlip++ % 2 ? 'bike' : 'run') : fSport);
@@ -497,12 +553,15 @@ export function generatePlan(opts, races = []) {
       }
     });
     // Rennen der Woche als Einheit eintragen (Dauer grob nach Distanz).
-    for (const r of w.races || []) { const d = days.find((x) => x.date === r.date); if (d) put(d, { title: `Rennen: ${r.name}`, sport: raceSport(r.technique, r.date), minutes: Math.round((Number(r.distanceKm) || 15) * 3.2 + 40), zone: 'I4', description: 'Inkl. Ein- und Auslaufen', kind: 'race' }); }
+    for (const r of w.races || []) { const d = days.find((x) => x.date === r.date); if (d) put(d, { title: `Rennen: ${r.name}`, sport: raceSport(r.technique, r.date), minutes: Math.round((Number(r.distanceKm) || 15) * (RACE_MIN_PER_KM[raceSport(r.technique, r.date)] || 3.2) + 40), zone: 'I4', description: 'Inkl. Ein- und Auslaufen', kind: 'race' }); }
     // 2) Lange Einheit (ca. 22 % der Woche, 1,5–3,5 h), nicht in Renn-/Taperwochen mit Rennen am Wochenende.
     const raceOnLong = (w.races || []).some((r) => days[longDay - 1]?.date === r.date);
     if (keys.has('long') && !raceOnLong && !['race', 'recovery'].includes(w.phase)) {
       const min = Math.round(Math.min(240, room(days[longDay - 1]), Math.max(90, total * 0.22)) / 15) * 15;
-      if (min >= 60) put(days[longDay - 1], { title: 'Lange Grundlage', sport: specificSport(w.from, 1), minutes: min, zone: 'I1', description: 'Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)', kind: 'long' });
+      // Schwimmen: die lange Einheit als Ausfahrt (lange Schwimmeinheiten sind für Einsteiger wenig sinnvoll).
+      const longSport = fSport === 'swim' ? 'bike' : fSport || (focus === 'tri' ? 'bike' : null);
+      const lg = longSport && LONG_BY_SPORT[longSport];
+      if (min >= 60) put(days[longDay - 1], lg ? { title: lg.title, sport: longSport, minutes: Math.min(min, lg.max), zone: 'I1', description: lg.description, kind: 'long' } : { title: 'Lange Grundlage', sport: specificSport(w.from, 1), minutes: min, zone: 'I1', description: 'Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)', kind: 'long' });
     }
     // 3) Kraft auf Tage ohne harte Einheit.
     // Kraft: Vorbereitung wie gewählt, ab Wettkampfvorbereitung und in Erholungswochen höchstens 1× (Erhalt).
@@ -543,6 +602,7 @@ export function generatePlan(opts, races = []) {
     if (n === 0 && easy >= 30) n = 1;
     let speedDone = !(keys.has('speed') && ['base', 'build', 'specific'].includes(w.phase));
     let speedLeft = pr.weak?.includes('sprint') ? 2 : 1;
+    let swimLeft = ['race', 'taper', 'recovery'].includes(w.phase) ? 0 : Number(opts.swimPerWeek) || 0;
     let techLeft = pr.weak?.some((x) => x === 'skate' || x === 'classic') && !['race', 'taper'].includes(w.phase) ? 1 : 0;
     const share = per?.type === 'travel' ? 0.1 : focus ? Math.min(0.2, specificShare(w.phase, w.from, pr)) : specificShare(w.phase, w.from, pr);
     for (let i = 0; i < n; i++) {
@@ -550,10 +610,19 @@ export function generatePlan(opts, races = []) {
       const min = Math.floor(Math.min(210, room(d), Math.max(40, easy / (n - i))) / 5) * 5;
       if (min < 30) { if (room(d) < 30) continue; break; }
       const specific = (i / Math.max(1, n)) < share;
-      const easySport = focus === 'tri' ? (i % 2 ? 'bike' : 'run') : fSport || focus;
-      const s = { title: (focus || fSport) ? `Locker (${focus === 'tri' ? (i % 2 ? 'Rad' : 'Laufen') : (focus || fSport) === 'run' ? 'Laufen' : 'Rad'})` : 'Locker', sport: specific && !focus && !fSport ? specificSport(d.date, i + (pr.weak?.includes('classic') ? 1 : 0)) : easySport || (specific ? specificSport(d.date, i) : generalSport(pr, i + rot)), minutes: min, zone: 'I1', description: 'Grundlage I1, wirklich locker', kind: 'easy' };
+      // Schwimmen: jede zweite lockere Einheit Rad, damit der Umfang nicht nur im Wasser liegt.
+      const easySport = focus === 'tri' ? (i % 2 ? 'bike' : 'run') : fSport === 'swim' ? (i % 2 ? 'bike' : 'swim') : fSport || focus;
+      const s = { title: (focus || fSport) ? `Locker (${focus === 'tri' ? (i % 2 ? 'Rad' : 'Laufen') : SPORT_NAME[easySport] || 'Rad'})` : 'Locker', sport: specific && !focus && !fSport ? specificSport(d.date, i + (pr.weak?.includes('classic') ? 1 : 0)) : easySport || (specific ? specificSport(d.date, i) : generalSport(pr, i + rot)), minutes: min, zone: 'I1', description: 'Grundlage I1, wirklich locker', kind: 'easy' };
       // Triathlon-Block: die erste lockere Einheit der Woche als Koppeltraining Rad → Lauf (gewöhnt die Beine an den Wechsel).
       if (focus === 'tri' && i === 0 && ['build', 'specific'].includes(w.phase) && room(d) >= 80) { s.title = 'Koppeln: Rad → Lauf'; s.sport = 'bike'; s.minutes = 80; s.description = 'Rad 60 min locker, direkt danach Lauf 20 min locker. Der Wechsel Rad → Lauf ist im Triathlon der Knackpunkt.'; }
+      // Schwimmen: Technik-Einheiten (für Einsteiger geeignet) im Schwerpunkt Schwimmen, eine pro Woche im Triathlon
+      // und zusätzlich die gewählte Anzahl pro Woche in jedem Plan (ersetzt eine lockere Einheit, nie die erste).
+      const triSwim = focus === 'tri' && i === 1;
+      if ((easySport === 'swim' || triSwim || (swimLeft > 0 && i >= 1)) && room(d) >= 40) {
+        const sw = SWIM_EASY[(wi + i) % SWIM_EASY.length];
+        Object.assign(s, { title: sw.title, sport: 'swim', minutes: Math.min(min, 60), zone: 'I1', description: `${sw.description} Rest der Zeit ruhig Kraul oder Brust.` });
+        if (easySport !== 'swim' && !triSwim) swimLeft--;
+      }
       if (specific && techLeft > 0) { s.title = 'Locker + Technik'; s.description = `Grundlage I1 mit Technikübungen (${pr.weak?.includes('classic') ? 'Klassisch: Abstoß, Gleiten auf einem Ski' : 'Skating: Gewichtsverlagerung, Eins-zu-eins, ohne Stöcke'}), gern Video`; techLeft--; }
       if (!speedDone && specific && s.title === 'Locker') { s.title = 'Locker + Sprints'; s.description = 'Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause'; speedLeft--; if (speedLeft <= 0) speedDone = true; }
       // Wer es nicht so ernst nimmt, legt die Sportart nicht fest: locker nach Lust (Spaß-Fokus außerhalb des Winters,
@@ -564,6 +633,14 @@ export function generatePlan(opts, races = []) {
         s.description = `Grundlage I1 – Sportart frei: ${liked.length ? liked.join(', ') + ' oder was sonst Spaß macht' : 'Rad, Laufen, Rollski, Wandern, Schwimmen … was Spaß macht'}`;
       }
       put(d, s); easy -= min;
+    }
+    // Gewählte Schwimm-Technik noch offen (z. B. in Wochen mit nur einer lockeren Einheit): auf einen freien Tag legen.
+    for (const d of days) {
+      if (swimLeft <= 0) break;
+      if (rest.has(d.dow) || d.sessions.length || raceDows.has(d.dow) || room(d) < 40) continue;
+      const sw = SWIM_EASY[(wi + d.dow) % SWIM_EASY.length];
+      put(d, { title: sw.title, sport: 'swim', minutes: 40, zone: 'I1', description: sw.description, kind: 'easy' });
+      swimLeft--;
     }
     for (const d of days) if (rest.has(d.dow) && !d.sessions.length) d.rest = true;
     return { ...w, approach: ap.id, days, plannedHours: Math.round((used / 60) * 10) / 10 };

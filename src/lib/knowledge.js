@@ -3,6 +3,14 @@
 // evidence: 'stark' = Metaanalysen/Konsens, 'mittel' = mehrere Studien, 'gering' = beschreibend/Fallstudien/Praxis.
 
 const S = {
+  anton07: { text: 'Antón et al. 2007, Int J Sports Med – Flaches vs. Bergzeitfahren bei Elite-Amateuren', url: 'https://doi.org/10.1055/s-2006-924356' },
+  bossi17: { text: 'Bossi et al. 2017, J Sports Sci – Labor-Vorhersage eines 20-min-Bergzeitfahrens', url: 'https://doi.org/10.1080/02640414.2016.1182199' },
+  peinado18: { text: 'Peinado et al. 2018, IJSPP – Physiologie eines Bergzeitfahrens (9,2 km, 7,1 %) bei Elite-Radfahrern', url: 'https://doi.org/10.1123/ijspp.2016-0768' },
+  ahrend18: { text: 'Ahrend et al. 2018, BMJ Open Sport Exerc Med – Leistungstest und Rennzeit im MTB-Marathon', url: 'https://doi.org/10.1136/bmjsem-2017-000293' },
+  wirnitzer08: { text: 'Wirnitzer & Kornexl 2008, Eur J Appl Physiol – Intensität beim 8-tägigen MTB-Marathon (Transalp)', url: 'https://doi.org/10.1007/s00421-008-0855-y' },
+  ferreira16: { text: 'Ferreira et al. 2016, J Strength Cond Res – Masters-Schwimmer (Systematische Übersicht)', url: 'https://doi.org/10.1519/JSC.0000000000001279' },
+  brackley20: { text: 'Brackley et al. 2020, J Sports Sci – Wie Elite-Schwimmtrainer Technik vermitteln', url: 'https://doi.org/10.1080/02640414.2020.1792703' },
+  neiva14: { text: 'Neiva et al. 2014, IJSPP – Aufwärmen mit Technikübungen und 100 m Freistil', url: 'https://doi.org/10.1123/ijspp.2012-0345' },
   stoggl14: { text: 'Stöggl & Sperlich 2014, Front Physiol – 48 gut trainierte Ausdauersportler, 9 Wochen, vier Verteilungen', url: 'https://pubmed.ncbi.nlm.nih.gov/24550842/' },
   neal13: { text: 'Neal et al. 2013 – 12 gut trainierte Radfahrer, Crossover polarisiert vs. schwellenbetont', url: 'https://pubmed.ncbi.nlm.nih.gov/?term=Neal+2013+polarized+threshold+cyclists' },
   run24hiit: { text: 'Randomisierte Studie 2024 (J Sports Sci) – HIIT und Krafttraining bei gut trainierten Läufern, 4 Wochen', url: 'https://www.tandfonline.com/doi/full/10.1080/02640414.2024.2364425' },
@@ -344,6 +352,37 @@ export const TOPICS = [
     ],
     practice: 'Bei Triathlon als Fokus: Laufen ist meist der wichtigste Hebel, Schwimmen eigenständig trainieren, Koppeln Rad → Lauf etwa einmal pro Woche im Renntempo.',
     sources: [S.millet02],
+  },
+  {
+    id: 'bike_climb', cat: 'Radsport', title: 'Bergzeitfahren (ca. 20–40 min): worauf es ankommt', evidence: 'mittel',
+    facts: [
+      'Bei 18 Elite-Amateuren hing die Zeit am Berg (6,7 km, 6 %) mit der maximalen Leistung pro kg zusammen, die Zeit im Flachen dagegen mit der absoluten Leistung und der Stirnfläche (Antón et al. 2007).',
+      'Bei einem 20-min-Bergzeitfahren erklärten die maximale Sauerstoffaufnahme und die Leistung an der zweiten Schwelle (beides pro kg) 91 % der Leistung. Die Fahrer starteten in den ersten 2 min mit rund 123 % ihrer Durchschnittsleistung (Bossi et al. 2017).',
+      'Elite-Radfahrer fuhren einen 9,2-km-Pass mit 7,1 % bei rund 90 % der maximalen Herzfrequenz und Sauerstoffaufnahme; das Laktat lag am Ende bei rund 11 mmol/l (Peinado et al. 2018).',
+    ],
+    practice: 'Für ca. 30 min am Berg: Schwelle (2×20 min, Over-Unders) und Bergintervalle von 4–6 min, kurz vor dem Rennen eine Simulation im Renntempo. Den Start bewusst kontrollieren, nicht mit 120 % losfahren. Die Leistung pro kg zählt, das Gewicht aber nie auf Kosten der Energie drücken.',
+    sources: [S.anton07, S.bossi17, S.peinado18],
+  },
+  {
+    id: 'bike_marathon', cat: 'Radsport', title: 'Rad- und MTB-Marathon (ca. 3 h)', evidence: 'gering',
+    facts: [
+      'Bei 49 Fahrern sagten die 1-min-Maximalleistung, die individuelle Schwelle und das Körpergewicht die Rennzeit im MTB-Marathon am besten voraus (Ahrend et al. 2018).',
+      'Im mehrtägigen MTB-Marathon Transalp lag der Puls im Schnitt bei 85 % des Maximums, gut ein Drittel der Zeit wurde hart gefahren (Wirnitzer & Kornexl 2008). Marathon heißt also nicht nur locker.',
+      'Verpflegung ist bei 3 h entscheidend: 60–90 g Kohlenhydrate pro Stunde, im Training geübt (siehe Kohlenhydrate und Darmtraining).',
+    ],
+    practice: 'Eine lange Ausfahrt pro Woche mit Rennverpflegung, Sweet Spot und Schwelle für die Basis, dazu kurze harte Reize (1–5 min) für Anstiege und Antritte. Vor dem Rennen das Renntempo über 2×30 min üben.',
+    sources: [S.ahrend18, S.wirnitzer08],
+  },
+  {
+    id: 'swim_beginner', cat: 'Schwimmen', title: 'Kraulen lernen als Ausdauersportler', evidence: 'gering',
+    facts: [
+      'Im Schwimmen entscheidet die Technik mehr als die Fitness. Eine Übersicht zu Masters-Schwimmern empfiehlt einen hohen Anteil an Technikübungen, verbunden mit Ausdauerserien (Ferreira et al. 2016). Die Studienlage dort ist allerdings dünn.',
+      'Elite-Schwimmtrainer zerlegen die Technik in Teilübungen (z. B. nur Beinschlag, Seitlage, Abschlag) und achten darauf, dass das Geübte dem echten Schwimmen nahe bleibt (Brackley et al. 2020).',
+      'Bei Wettkampfschwimmern verbesserte ein Aufwärmen mit Technikübungen die 100-m-Zeit, vor allem über einen längeren Zug pro Armzug (Neiva et al. 2014).',
+      'Typische Einsteigerprobleme: absinkende Beine (Kopf zu hoch), zu kurzes Ausatmen, kurzer Armzug. Die Übungen in der App setzen genau dort an: Wasserlage, Atmung, Armzug.',
+    ],
+    practice: 'Zwei bis drei Einheiten pro Woche schlagen eine lange. Jede Einheit mit 10–15 min Technikübungen beginnen, dann ruhig Kraul. Züge pro Bahn zählen; weniger Züge bei gleichem Tempo heißt effizienter. Ein Video von der Seite oder ein Technikkurs hilft am Anfang mehr als jede Serie.',
+    sources: [S.ferreira16, S.brackley20, S.neiva14],
   },
   // ——— Einzelerklärungen zu allen Werten, die die App zeigt ———
   {
@@ -726,6 +765,9 @@ export const FAQ = [
   { q: 'Wie viel darf ich pro Woche abnehmen?', a: 'Praktisch etwa 0,2–0,5 kg pro Woche, also ein Defizit von 250–500 kcal am Tag. Schneller bedeutet meist Muskelverlust und Leistungseinbruch. Im Ernährungsplan kannst du das Defizit wählen.', refs: ['weight_loss'] },
   { q: 'Warum schwankt mein Gewicht von Tag zu Tag?', a: 'Vor allem durch Wasser: Glykogen bindet beim Speichern Wasser, dazu kommen Salz, Essen, Verdauung und Training. 1–2 kg Schwankung sind normal. Entscheidend ist der Trend über ein bis zwei Wochen.', refs: ['weight_sport'] },
   { q: 'Wie nehme ich ab, ohne Leistung zu verlieren?', a: 'Moderates Defizit, Eiweiß hoch lassen, die Kohlenhydrate zuerst an lockeren Tagen kürzen und harte Einheiten gut versorgen. Abnehmen besser in Aufbauphasen als in der Woche vor einem Rennen. Sinkt die Leistung trotz Training, das Defizit beenden.', refs: ['weight_loss', 'energy'] },
+  { q: 'Wie trainiere ich für ein Bergzeitfahren von 30 min?', a: 'Schwelle (z. B. 2×20 min oder Over-Unders) und Bergintervalle von 4–6 min, kurz vor dem Rennen eine Simulation am Berg im Renntempo. Am Berg zählt die Leistung pro kg. Den Start kontrollieren: Wer in den ersten Minuten überzieht, zahlt am Ende. Im Saisonplan gibt es dafür den Ansatz „Rad: Bergzeitfahren“.', refs: ['bike_climb'] },
+  { q: 'Wie bereite ich mich auf einen Radmarathon von 3 h vor?', a: 'Eine lange Ausfahrt pro Woche mit Rennverpflegung (60–90 g Kohlenhydrate pro Stunde), Sweet Spot und Schwelle für die Basis und kurze harte Reize für Anstiege. Vor dem Rennen das Renntempo über 2×30 min üben. Im Saisonplan gibt es dafür den Ansatz „Rad: Radmarathon“.', refs: ['bike_marathon', 'carbs'] },
+  { q: 'Wie lerne ich als Erwachsener Kraulen?', a: 'Technik vor Umfang: jede Einheit mit Übungen für Wasserlage, Atmung und Armzug beginnen, dann ruhig Kraul. Lieber zwei bis drei kurze Einheiten pro Woche als eine lange. Im Saisonplan kannst du 1–2 Technik-Schwimmeinheiten pro Woche dazunehmen, die Übungen stehen in der Einheit.', refs: ['swim_beginner'] },
 ];
 
 export const EVIDENCE_LABEL = { stark: 'starke Evidenz', mittel: 'mittlere Evidenz', gering: 'begrenzte Evidenz' };

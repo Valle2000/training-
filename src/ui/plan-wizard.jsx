@@ -10,7 +10,7 @@ import { Sheet, fmtDate, fmtNum, toast } from './common.jsx';
 import { freeMinutes, hasSchedule, periodForWeek, busyOn } from '../lib/week-adapt.js';
 
 const DOW = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
-const MAIN_GOALS = [['rollerski', 'Ski / Rollski'], ['run', 'Laufen'], ['bike', 'Rad'], ['tri', 'Triathlon']];
+const MAIN_GOALS = [['rollerski', 'Ski / Rollski'], ['run', 'Laufen'], ['bike', 'Rad'], ['swim', 'Schwimmen'], ['tri', 'Triathlon']];
 // Gruppen im Katalog; Intervalle nach Zone getrennt.
 const GROUPS = [
   ...KEY_TYPES.map(([id, label]) => ({ id, label, match: (k) => (id.startsWith('hit_') ? k.type === 'hit' && k.zone === id.slice(4) : k.type === id) })),
@@ -50,7 +50,7 @@ export function PlanWizard({ onClose }) {
   const pr = o.profile || {};
   const rec = recommend(pr, Number(o.startHours) || 10);
   // Hauptziel der Saison: gilt in allen Wochen ohne Schwerpunkt-Zeitraum (Ski/Rollski ist der Standard, dann null).
-  const mainFocus = ['run', 'bike', 'tri'].includes(settings.season?.mainSport) ? settings.season.mainSport : null;
+  const mainFocus = ['run', 'bike', 'swim', 'tri'].includes(settings.season?.mainSport) ? settings.season.mainSport : null;
   const plan = useMemo(() => (step >= 5 ? generatePlan({ ...o, keys, customKeys: custom, capFor: hasSchedule(settings.schedule) ? (d) => freeMinutes(d, settings.schedule) : null, periodFor: settings.schedule?.periods?.length ? (m) => periodForWeek(m, settings.schedule) : null, busyFor: hasSchedule(settings.schedule) ? (d) => busyOn(d, settings.schedule).length > 0 : null, focusFor: (m) => focusOn(m, settings.season?.focus, settings.season?.snow, settings.season?.winterSub) || mainFocus, winterRunHours: settings.season?.winterRunHours ?? 2.5 }, races) : []), [step, o, keys, races, custom, settings.schedule, settings.season?.focus, settings.season?.snow, settings.season?.winterSub, settings.season?.winterRunHours, settings.season?.mainSport]);
   const set = (k, v) => setO({ ...o, [k]: v });
   const toggleKey = (id) => set('keys', keys.includes(id) ? keys.filter((k) => k !== id) : [...keys, id]);
@@ -137,6 +137,7 @@ export function PlanWizard({ onClose }) {
           <div><label>Planen bis</label><input type="date" value={o.end} onChange={(e) => set('end', e.target.value)} /></div>
           <div><label>Langer Tag</label><select value={o.longDay} onChange={(e) => set('longDay', Number(e.target.value))}>{DOW.map((d, i) => <option key={d} value={i + 1}>{d}</option>)}</select></div>
           <div><label>Krafteinheiten/Woche (Vorbereitung)</label><select value={o.strengthPerWeek} onChange={(e) => set('strengthPerWeek', Number(e.target.value))}>{[0, 1, 2, 3].map((n) => <option key={n} value={n}>{n}</option>)}</select></div>
+          <div><label>Schwimmen Technik/Woche</label><select value={o.swimPerWeek || 0} onChange={(e) => set('swimPerWeek', Number(e.target.value))}>{[0, 1, 2].map((n) => <option key={n} value={n}>{n}</option>)}</select></div>
         </div>
         <label>Ruhetage</label>
         <div className="chips">{DOW.map((d, i) => <button key={d} className={`chip${o.restDays.includes(i + 1) ? ' on' : ''}`} onClick={() => set('restDays', o.restDays.includes(i + 1) ? o.restDays.filter((x) => x !== i + 1) : [...o.restDays, i + 1])}>{d}</button>)}</div>
@@ -366,6 +367,7 @@ const FOCUS_PRESETS = [
   { label: 'Multisport Rad + Lauf (Mai–Sep)', sport: 'tri', from: '05-01', to: '09-30' },
   { label: 'Sommer Laufen (Mai–Sep)', sport: 'run', from: '05-01', to: '09-30' },
   { label: 'Sommer Rad (Mai–Sep)', sport: 'bike', from: '05-01', to: '09-30' },
+  { label: 'Sommer Schwimmen (Mai–Sep)', sport: 'swim', from: '05-01', to: '09-30' },
 ];
 const FOCUS_WHY = {
   run: 'Laufen im Sommer: viel Ausdauer ohne Ski. Die Stoßbelastung steigt – Laufumfang langsam steigern (max. ca. 10 % pro Woche), Schwellen- und Intervalleinheiten laufen.',

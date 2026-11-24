@@ -21,7 +21,7 @@ const goalText = (r) => {
   const diff = r.result.timeS - parseTime(m[1]);
   return `${diff <= 0 ? '−' : '+'}${fmtTime(Math.abs(diff))} zum Ziel`;
 };
-const TECHNIQUE = ['Skating', 'Klassisch', 'Skiathlon', 'Rollski', 'Lauf', 'Rad', 'Triathlon', 'Sonstiges'];
+const TECHNIQUE = ['Skating', 'Klassisch', 'Skiathlon', 'Rollski', 'Lauf', 'Rad', 'Schwimmen', 'Triathlon', 'Sonstiges'];
 
 export const nextRace = (races, t) => [...races].filter((r) => r.date >= t).sort((a, b) => a.date.localeCompare(b.date))[0];
 
