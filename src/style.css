@@ -161,3 +161,23 @@ table.t.nowrap td, table.t.nowrap th { white-space: nowrap }
 @media (prefers-color-scheme: dark) { .chip.on { color: #04232b; box-shadow: none } }
 @media (max-width: 420px) { .seg button { padding: 8px 7px; font-size: 13.5px } .chart text { font-size: 18px } }
 .seg.many { flex-wrap: wrap; overflow-x: visible } .seg.many button { flex: 1 1 auto }
+/* Wochenansicht als Tagesliste: Datum links, Einheiten mit Symbol, Dauer und Zonenstreifen */
+.agenda { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 10px }
+.ag-day { display: flex; gap: 10px; align-items: flex-start; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 10px; box-shadow: var(--shadow-sm) }
+.ag-day.today { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft) }
+.ag-day.past { opacity: .82 }
+.ag-date { flex: none; width: 46px; border: 0; background: var(--soft); border-radius: 12px; padding: 6px 0; display: flex; flex-direction: column; align-items: center; color: var(--muted) }
+.ag-date span { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px }
+.ag-date b { font-size: 20px; color: var(--ink); line-height: 1.1 }
+.ag-day.today .ag-date { background: var(--accent); color: #fff } .ag-day.today .ag-date b { color: #fff }
+.ag-items { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px }
+.ag-item { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; border: 1px dashed var(--line); background: transparent; border-radius: 12px; padding: 8px 10px }
+.ag-item.done { border-style: solid; background: var(--soft) }
+.ag-item.plan { border-color: var(--accent) }
+.ag-item.missed { opacity: .55 } .ag-item.missed .ag-txt { text-decoration: line-through }
+.ag-ico { font-size: 22px; line-height: 1; flex: none }
+.ag-txt { flex: 1; min-width: 0; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis } .ag-txt b { font-variant-numeric: tabular-nums } .ag-txt em { font-style: normal; color: var(--muted) }
+.ag-zone { flex: none; font-size: 11px; font-weight: 700; color: var(--muted) }
+.ag-check { flex: none; color: var(--good) }
+.ag-empty { border: 0; background: transparent; color: var(--muted); font-size: 13px; text-align: left; padding: 10px 2px }
+.ag-total { flex: none; font-size: 12px; font-weight: 700; color: var(--muted); padding-top: 6px; font-variant-numeric: tabular-nums }

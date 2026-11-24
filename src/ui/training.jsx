@@ -4,7 +4,7 @@ import { useData, update, getData, getSeries, getLocalSeries, putSeries, uid } f
 import { today, weeks, mondayOf, buildActivity, evaluate, estimatePlanLoad, matchPlan, compliance, cropActivity, localDate, reevaluate } from '../lib/activities.js';
 import { addDays, ZONES, cleanSeries } from '../lib/metrics.js';
 import { detectIntervals } from '../lib/intervals.js';
-import { SPORTS, sportLabel, guessSport } from '../lib/sports.js';
+import { SPORTS, sportLabel, sportEmoji, guessSport } from '../lib/sports.js';
 import { recomputeAll } from '../lib/recompute.js';
 import { importFiles, deleteActivities, mapPolarSport, askTempoGroups } from '../lib/sync.js';
 import { deleteRemoteSeries } from '../lib/cloud-sync.js';
@@ -21,6 +21,15 @@ import { fmtPace } from '../lib/laps.js';
 import { athleteOf } from '../lib/activities.js';
 import { BIKE_SWAP, swapPlanItem } from '../lib/weather-swap.js';
 import { planTargets } from '../lib/targets.js';
+
+// Dauer kurz: „45′“ bzw. „1:30 h“.
+const fmtMin = (m) => { const v = Math.round(Number(m) || 0); return v < 60 ? `${v}′` : `${Math.floor(v / 60)}:${String(v % 60).padStart(2, '0')} h`; };
+// Hauptzone einer Einheit für den Farbstreifen: harte Zone ab 10 min, sonst die Zone mit der meisten Zeit.
+const actZone = (a) => {
+  const z = a.zones || {};
+  const hard = ['I5', 'I4', 'I3'].find((k) => (z[k] || 0) >= 600);
+  return hard || Object.entries(z).filter(([k]) => /^I[1-5]$/.test(k)).sort((x, y) => y[1] - x[1])[0]?.[0] || null;
+};
 
 export function Training({ openActivity, openAdd }) {
   const { activities, plan, settings } = useData();
@@ -65,17 +74,42 @@ export function Training({ openActivity, openAdd }) {
           </div>
           {(() => { const wp = weekPeriod(monday, settings.schedule); return wp && <div className="notice">{wp.label}: {wp.days} Tag(e) diese Woche · Umfang ca. {Math.round(wp.factor * 100)} %</div>; })()}
           {monday === mondayOf(t) && <AdaptCard />}
-          <div className="week">
-            {days.map((d) => { const open = plan.filter((p) => p.date === d && !p.done && !(d <= t && matchPlan(p, activities))); const slot = sched ? slotDay(d, open, sched) : null; return (
-              <div key={d} className={`day${d === t ? ' today' : ''}`} onClick={(e) => e.target === e.currentTarget && setPlanItem({ date: d })}>
-                <b onClick={() => setPlanItem({ date: d })}>{fmtDate(d, { weekday: 'short', day: 'numeric' })}</b>
-                {activities.filter((a) => a.date === d).map((a) => <div key={a.id} className="a" onClick={() => openActivity(a)}>{Math.round(a.durationS / 60)}′ {sportLabel(a.sport)}</div>)}
-                {open.map((p) => <div key={p.id} className={`p${d < t ? ' missed' : ''}`} style={slot?.overflow.includes(p.id) && d >= t ? { borderColor: 'var(--bad)' } : undefined} onClick={() => setPlanItem(p)}>{slot?.slots[p.id] && d >= t && <span style={{ display: 'block', fontWeight: 700 }}>{fmtTime(slot.slots[p.id].from)}</span>}{p.minutes}′ {p.title || sportLabel(p.sport)}</div>)}
-                {sched && d >= t && <div className="muted" style={{ fontSize: 11 }}>frei {fmtNum(freeMinutes(d, sched) / 60, 1)} h</div>}
-              </div>
-            ); })}
+          <div className="agenda">
+            {days.map((d) => {
+              const open = plan.filter((p) => p.date === d && !p.done && !(d <= t && matchPlan(p, activities)));
+              const done = activities.filter((a) => a.date === d);
+              const slot = sched ? slotDay(d, open, sched) : null;
+              const total = done.reduce((x, a) => x + (a.durationS || 0) / 60, 0) + open.reduce((x, p) => x + (Number(p.minutes) || 0), 0);
+              const restDay = new Date(`${d}T12:00:00Z`).getUTCDay() === 1;
+              return (
+                <div key={d} className={`ag-day${d === t ? ' today' : ''}${d < t ? ' past' : ''}`}>
+                  <button className="ag-date" onClick={() => setPlanItem({ date: d })} aria-label={`Einheit am ${fmtDate(d)} planen`}>
+                    <span>{fmtDate(d, { weekday: 'short' }).replace('.', '')}</span><b>{Number(d.slice(8))}</b>
+                  </button>
+                  <div className="ag-items">
+                    {done.map((a) => (
+                      <button key={a.id} className="ag-item done" style={{ borderLeft: `5px solid ${ZONE_COLORS[actZone(a)] || 'var(--line)'}` }} onClick={() => openActivity(a)}>
+                        <span className="ag-ico">{sportEmoji(a.sport)}</span>
+                        <span className="ag-txt"><b>{fmtMin(a.durationS / 60)}</b> {a.title || sportLabel(a.sport)}</span>
+                        <Check size={15} className="ag-check" />
+                      </button>
+                    ))}
+                    {open.map((p) => (
+                      <button key={p.id} className={`ag-item plan${d < t ? ' missed' : ''}`} style={{ ...(slot?.overflow.includes(p.id) && d >= t ? { borderColor: 'var(--bad)' } : {}), borderLeft: `5px solid ${ZONE_COLORS[p.zone] || 'var(--line)'}` }} onClick={() => setPlanItem(p)}>
+                        <span className="ag-ico">{sportEmoji(p.sport)}</span>
+                        <span className="ag-txt"><b>{fmtMin(p.minutes)}</b> {p.title || sportLabel(p.sport)}{slot?.slots[p.id] && d >= t ? <em> · {fmtTime(slot.slots[p.id].from)}</em> : null}</span>
+                        {ZONE_COLORS[p.zone] && <span className="ag-zone">{p.zone}</span>}
+                      </button>
+                    ))}
+                    {!done.length && !open.length && <button className="ag-empty" onClick={() => setPlanItem({ date: d })}>{restDay ? 'Ruhetag' : 'frei · tippen zum Planen'}</button>}
+                    {sched && d >= t && <span className="muted small">frei {fmtNum(freeMinutes(d, sched) / 60, 1)} h</span>}
+                  </div>
+                  {total > 0 && <span className="ag-total">{fmtMin(total)}</span>}
+                </div>
+              );
+            })}
           </div>
-          <p className="muted small">Tippe auf einen Tag, um eine Einheit zu planen. Gestrichelt = geplant, durchgestrichen = verpasst.{sched ? ' Uhrzeit = Vorschlag in deiner freien Zeit, rot umrandet = passt nicht in den Tag.' : ''}</p>
+          <p className="muted small">Tippe auf das Datum, um eine Einheit zu planen. Ausgefüllt mit Haken = erledigt, gestrichelt = geplant, durchgestrichen = verpasst. Der Farbstreifen zeigt die Zone.{sched ? ' Uhrzeit = Vorschlag in deiner freien Zeit, rot umrandet = passt nicht in den Tag.' : ''}</p>
           <div className="stats">
             <div><b>{fmtNum(comp.actualMin / 60, 1)}<small className="muted">/{fmtNum(comp.plannedMin / 60, 1)}</small></b><span>Stunden Ist/Soll</span></div>
             <div><b>{fmtNum(comp.actualLoad)}<small className="muted">/{fmtNum(comp.plannedLoad)}</small></b><span>Belastung Ist/Soll</span></div>

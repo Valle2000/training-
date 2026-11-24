@@ -18,6 +18,9 @@ export const SPORTS = [
 ];
 export const sportById = (id) => SPORTS.find((s) => s.id === id) || SPORTS[SPORTS.length - 1];
 export const sportLabel = (id) => sportById(id).label;
+// Symbole für Kalender und Listen (auf dem Handy gut erkennbar).
+const EMOJI = { xc_skate: '⛷️', xc_classic: '⛷️', rollerski_skate: '🛼', rollerski_classic: '🛼', rollerski: '🛼', skierg: '🎿', run: '🏃', hike: '🥾', bike: '🚴', bikeerg: '🚴', row: '🚣', swim: '🏊', strength: '🏋️', mobility: '🧘', other: '⚡' };
+export const sportEmoji = (id) => EMOJI[id] || EMOJI.other;
 
 // FIT sport/subSport → eigene Sportart.
 export function sportFromFit(sport, subSport) {
