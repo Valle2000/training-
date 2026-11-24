@@ -464,7 +464,10 @@ const LONG_BY_SPORT = {
 // Optionen: approach, startHours, peakHours, start, end, restDays ([1] = Montag), longDay (7 = Sonntag), doubles, strengthPerWeek, keys (IDs)
 export function generatePlan(opts, races = []) {
   const ap = APPROACHES.find((a) => a.id === opts.approach) || APPROACHES[0];
-  const keys = new Set(opts.keys?.length ? opts.keys : ap.defaults);
+  let keys = new Set(opts.keys?.length ? opts.keys : ap.defaults);
+  const baseKeys = keys;
+  // Ansatz je Phase (optional): z. B. Grundlage pyramidal, Wettkampfvorbereitung polarisiert oder Block.
+  const phaseAp = (phase) => APPROACHES.find((a) => a.id === opts.phaseApproach?.[phase]) || ap;
   const pr = opts.profile || {};
   const weeks = seasonPlan(races, { start: opts.start, end: opts.end, baseHours: Number(opts.startHours) || 10, peakHours: Number(opts.peakHours) || 14, style: pr.style === 'steady' ? 'steady' : pr.style === 'varied' ? 'varied' : 'standard' });
   // Wiedereinstieg: höchstens +10 % pro Woche, alle 4 Wochen leichter.
@@ -485,12 +488,15 @@ export function generatePlan(opts, races = []) {
   let rot = 0, buildIdx = 0, rotIdx = 0, prevHours = null;
   const pickHit = (zone, k, sport = null, pref = null, strict = false) => { const sp = sport ? options.filter((o) => o.type === 'hit' && o.zone === zone && o.sport === sport) : []; const spp = pref ? sp.filter((o) => pref.has(o.id)) : []; const spk = sp.filter((o) => keys.has(o.id)); const list = spp.length ? spp : spk.length ? spk : sp.length ? sp : options.filter((o) => o.type === 'hit' && o.zone === zone && keys.has(o.id)); const idx = sp.length ? Math.floor(k / 2) : k; if (strict) { const ord = [...pref]; spp.sort((x, y) => ord.indexOf(x.id) - ord.indexOf(y.id)); return spp.length ? spp[(strict === 'first' ? 0 : idx) % spp.length] : null; } return list.length ? list[idx % list.length] : null; };
   return weeks.map((w, wi) => {
-    let hardSlots = phasesFor(ap, opts.dtDays)[w.phase] ?? [];
+    const apw = phaseAp(w.phase);
+    // Ohne eigene Auswahl gelten die Schlüsseleinheiten des Ansatzes dieser Phase (die lange Einheit bleibt).
+    keys = opts.keys?.length || apw === ap ? baseKeys : new Set([...apw.defaults, ...(ap.defaults.includes('long') ? ['long'] : [])]);
+    let hardSlots = phasesFor(apw, opts.dtDays)[w.phase] ?? [];
     // Rhythmus Double Threshold: jede Woche, jede zweite Woche oder 3:1 (drei mit, eine ohne).
     const dtOff = (opts.dtRhythm === 'biweekly' && wi % 2 === 1) || (opts.dtRhythm === '3:1' && wi % 4 === 3);
     if (dtOff && Array.isArray(hardSlots)) hardSlots = hardSlots.map((x) => (x === 'dt' ? 'threshold' : x));
     const focus = opts.focusFor ? opts.focusFor(w.from) : null;
-    const fSport = ['run', 'bike', 'swim'].includes(focus) ? focus : (ap.only || null);
+    const fSport = ['run', 'bike', 'swim'].includes(focus) ? focus : (apw.only || null);
     // Schwerpunkt vor einem bestimmten Rennen: Einheiten der passenden Rennart bevorzugen (z. B. Marathontempo vor dem Marathon).
     const fKind = opts.focusKindFor ? opts.focusKindFor(w.from) : null;
     const fPref = fKind ? new Set(APPROACHES.find((a) => a.id === fKind)?.defaults || []) : null;
@@ -506,12 +512,12 @@ export function generatePlan(opts, races = []) {
     }
     // Eigene harte Tage: Anzahl harter Einheiten passt sich an (weniger Tage = bewusst weniger Intensität).
     const own = opts.hardDays?.length ? [...opts.hardDays].sort((a, b) => a - b) : null;
-    let hardDays = own || ap.days.hard;
+    let hardDays = own || apw.days.hard;
     if (hardSlots === 'block') {
       const blockWeek = buildIdx % 4 === 0; buildIdx++;
       // Wie bei Rønnestad et al. 2014: Block-Woche mit fünf harten Einheiten, danach drei Wochen mit je einer.
       hardSlots = blockWeek ? ['hit', 'hit', 'hit', 'hit', 'hit'] : [w.phase === 'specific' ? 'race' : 'hit'];
-      if (blockWeek) { hardDays = ap.days.block; w.targetHours = Math.round(w.targetHours * 0.85 * 10) / 10; w.block = true; }
+      if (blockWeek) { hardDays = apw.days.block; w.targetHours = Math.round(w.targetHours * 0.85 * 10) / 10; w.block = true; }
     }
     if (own && !w.block && Array.isArray(hardSlots)) {
       const opener = hardSlots.filter((x) => x === 'opener');
@@ -526,7 +532,7 @@ export function generatePlan(opts, races = []) {
       const what = r === 2 ? 'i5' : r === 0 ? (w.phase === 'specific' ? 'race' : 'i4') : null;
       hardSlots = hardSlots.flatMap((x) => (x === 'rot' ? (what ? [what] : []) : [x]));
     }
-    if (deload && ap.id === 'threshold') hardSlots = hardSlots.slice(0, 1);
+    if (deload && apw.id === 'threshold') hardSlots = hardSlots.slice(0, 1);
     // Schwerpunkt vor einem Rennen nach dem Saisonhöhepunkt (Übergangsphase): zusätzlich eine Einheit im Renntempo.
     if (fKind && w.phase === 'transition' && Array.isArray(hardSlots) && !hardSlots.includes('race')) hardSlots = [...hardSlots, 'race'];
     const rest = new Set(opts.restDays || [1]), longDay = Number(opts.longDay) || 7;
@@ -729,7 +735,7 @@ export function generatePlan(opts, races = []) {
       }
     }
     for (const d of days) if (rest.has(d.dow) && !d.sessions.length) d.rest = true;
-    return { ...w, approach: ap.id, days, plannedHours: Math.round((used / 60) * 10) / 10 };
+    return { ...w, approach: apw.id, days, plannedHours: Math.round((used / 60) * 10) / 10 };
   });
 }
 

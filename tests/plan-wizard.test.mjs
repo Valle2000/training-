@@ -306,3 +306,13 @@ test('Multisport-Sommer (Rad + Lauf) plant beide Sportarten, danach Ski', () => 
   const autumn = w.filter((x) => x.from > '2027-10-01').flatMap((x) => x.days.flatMap((d) => d.sessions));
   assert.ok(autumn.some((s) => /^(xc_|rollerski)/.test(s.sport || '')), 'Ski nach dem Sommer');
 });
+
+test('Ansatz je Phase: Grundlage pyramidal, Wettkampfvorbereitung Block', () => {
+  const o = { ...base, start: '2026-11-02', end: '2027-03-01', approach: 'pyramidal', phaseApproach: { specific: 'block' } };
+  const w = generatePlan(o, races);
+  const spec = w.filter((x) => x.phase === 'specific');
+  const other = w.filter((x) => x.phase === 'base' || x.phase === 'build');
+  assert.ok(spec.length > 0 && spec.every((x) => x.approach === 'block'), spec.map((x) => x.approach).join());
+  assert.ok(other.every((x) => x.approach === 'pyramidal'));
+  assert.ok(spec.some((x) => x.block), 'Block-Woche in der Wettkampfvorbereitung');
+});

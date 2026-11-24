@@ -128,6 +128,16 @@ export function PlanWizard({ onClose }) {
             {o.approach === a.id && <Check size={18} />}
           </button>
         ))}
+        <details className="card" open={!!(o.phaseApproach && Object.values(o.phaseApproach).some(Boolean))}>
+          <summary><b>Ansatz je Phase</b> <span className="muted small">optional</span></summary>
+          <p className="muted small">Zum Beispiel in der Grundlage pyramidal und in der Wettkampfvorbereitung polarisiert oder mit HIT-Blöcken. In einer Studie mit Läufern brachte „erst pyramidal, dann polarisiert“ am meisten (Filipas et al. 2022, siehe Wissen). Taper und Rennwochen bleiben beim oben gewählten Ansatz.</p>
+          {[['base', 'Grundlage'], ['build', 'Aufbau'], ['specific', 'Wettkampfvorbereitung']].map(([ph, label]) => (
+            <div key={ph}><label>{label}</label><select value={o.phaseApproach?.[ph] || ''} onChange={(e) => set('phaseApproach', { ...(o.phaseApproach || {}), [ph]: e.target.value || null })}>
+              <option value="">wie oben ({APPROACHES.find((a) => a.id === o.approach)?.name || '–'})</option>
+              {APPROACHES.filter((a) => a.id !== 'base').map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+            </select></div>
+          ))}
+        </details>
       </>}
 
       {step === 3 && <>
