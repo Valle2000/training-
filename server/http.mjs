@@ -1,6 +1,7 @@
 // Gemeinsame Einbindung für Vercel-Funktionen (api/*.js) und den Vite-Server (npm run dev / preview).
 import { handleAi, aiRoutes } from './ai.mjs';
 import { handleConnect } from './connect.mjs';
+import { handlePush } from './push.mjs';
 
 function sendJson(res, status, body) {
   res.statusCode = status;
@@ -30,12 +31,25 @@ export function aiHandler(path) {
 
 export const connectHandler = handleConnect;
 
+// Mitteilungen: Abo verwalten (POST) und Wochenrückblick per Zeitplan (GET ?cron=1).
+export async function pushHandler(req, res) {
+  try {
+    const query = Object.fromEntries(new URL(req.url, 'http://x').searchParams);
+    const body = req.method === 'POST' ? await readJson(req) : {};
+    sendJson(res, 200, await handlePush({ method: req.method, query, body, headers: req.headers }));
+  } catch (e) {
+    console.error('[push]', e.message);
+    sendJson(res, e.status && e.status < 600 ? e.status : 500, { error: e.message || String(e) });
+  }
+}
+
 export function devMiddleware() {
   const ai = Object.fromEntries(aiRoutes.map((p) => [p, aiHandler(p)]));
   return (req, res, next) => {
     const path = req.url.split('?')[0];
     if (ai[path]) return ai[path](req, res);
     if (path === '/api/connect') return handleConnect(req, res);
+    if (path === '/api/push') return pushHandler(req, res);
     next();
   };
 }

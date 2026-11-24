@@ -3,6 +3,7 @@ import { Cloud, CloudOff, RefreshCw, LogOut } from 'lucide-react';
 import { cloudConfigured } from '../lib/supabase.js';
 import { useCloudStatus, syncNow, signIn, signUp, resetPassword, signOut, listCoaches, grantCoach, revokeCoach, syncDiagnostics, pullMissing } from '../lib/cloud-sync.js';
 import { toast } from './common.jsx';
+import { pushAvailable, pushReady, currentSubscription, enablePush, disablePush, testPush } from '../lib/push.js';
 
 const fmtTime = (iso) => (iso ? new Date(iso).toLocaleString('de-DE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '–');
 
@@ -41,6 +42,7 @@ export function AccountCard() {
       </div>
     </div>
     <SyncCheck />
+    <PushCard />
     <CoachAccess />
     </>
   );
@@ -148,6 +150,29 @@ function SyncCheck() {
         </div>
       </>}
       {res && !res.signedIn && <p className="small">Nicht angemeldet.</p>}
+      {msg && <p className="small">{msg}</p>}
+    </details>
+  );
+}
+
+// Wochenrückblick als Mitteilung am Sonntagabend (Web Push).
+function PushCard() {
+  const [on, setOn] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState('');
+  useEffect(() => { currentSubscription().then((s) => setOn(!!s)).catch(() => setOn(false)); }, []);
+  const run = async (fn, ok) => { setBusy(true); setMsg(''); try { await fn(); setMsg(ok); setOn(!!(await currentSubscription())); } catch (e) { setMsg(e.message); } setBusy(false); };
+  const standalone = typeof window !== 'undefined' && (window.matchMedia?.('(display-mode: standalone)').matches || navigator.standalone);
+  return (
+    <details className="card">
+      <summary><b>Wochenrückblick als Mitteilung</b> <span className="muted small">{on ? 'an' : 'aus'}</span></summary>
+      <p className="muted small">Sonntags um 18 Uhr eine kurze Mitteilung: Stunden, Einheiten und Belastung der Woche, Vergleich zur Vorwoche und das nächste Rennen.</p>
+      {!pushAvailable() && <p className="small">Dieser Browser kann keine Mitteilungen empfangen.{/iPhone|iPad/.test(navigator.userAgent) && !standalone ? ' Auf dem iPhone: App über Safari → Teilen → „Zum Home-Bildschirm“ installieren und von dort öffnen (ab iOS 16.4).' : ''}</p>}
+      {pushAvailable() && !pushReady() && <p className="small">Auf dem Server noch nicht eingerichtet (VITE_VAPID_PUBLIC_KEY u. a., siehe docs/SELBST-HOSTEN.md).</p>}
+      {pushReady() && <div className="row" style={{ gap: 6 }}>
+        {!on ? <button className="secondary" disabled={busy} onClick={() => run(enablePush, 'Mitteilungen eingeschaltet.')}>Einschalten</button>
+          : <><button className="secondary" disabled={busy} onClick={() => run(testPush, 'Test gesendet.')}>Test senden</button><button className="ghost" disabled={busy} onClick={() => run(disablePush, 'Mitteilungen ausgeschaltet.')}>Ausschalten</button></>}
+      </div>}
       {msg && <p className="small">{msg}</p>}
     </details>
   );

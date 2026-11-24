@@ -1,8 +1,18 @@
 {
   "functions": {
-    "api/*.js": { "maxDuration": 300 }
+    "api/*.js": {
+      "maxDuration": 300
+    }
   },
   "git": {
-    "deploymentEnabled": { "backup": false }
-  }
+    "deploymentEnabled": {
+      "backup": false
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/push?cron=1",
+      "schedule": "0 17 * * 0"
+    }
+  ]
 }

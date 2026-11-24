@@ -90,6 +90,22 @@ Die Client-ID und das Geheimnis trägst du in Vercel ein, nie in den Code.
 
 Ab dann gleicht die App deine Daten zwischen Geräten ab.
 
+## Wochenrückblick als Mitteilung (optional)
+
+Die App kann sonntags um 18 Uhr eine Mitteilung mit dem Wochenrückblick schicken. Auf dem iPhone geht das nur, wenn die App über Safari zum Home-Bildschirm hinzugefügt ist (ab iOS 16.4).
+
+1. **Schlüssel erzeugen:** im Projektordner `npx web-push generate-vapid-keys` ausführen. Du bekommst einen öffentlichen und einen privaten Schlüssel.
+2. **Tabelle anlegen:** in Supabase im SQL-Editor den Inhalt von `supabase/training-push.sql` ausführen.
+3. **In Vercel eintragen** (Settings → Environment Variables), danach neu veröffentlichen:
+   - `VITE_VAPID_PUBLIC_KEY` und `VAPID_PUBLIC_KEY`: beide der öffentliche Schlüssel
+   - `VAPID_PRIVATE_KEY`: der private Schlüssel
+   - `VAPID_SUBJECT`: eine Kontaktadresse in der Form `mailto:…` (verlangt der Push-Standard)
+   - `SUPABASE_SERVICE_ROLE_KEY`: aus Supabase (Project Settings → API → service_role). **Nur in Vercel eintragen, nie im Code oder Browser.**
+   - `CRON_SECRET`: eine beliebige lange Zeichenkette; Vercel schickt sie beim geplanten Aufruf mit, damit niemand sonst den Versand auslösen kann.
+4. **Einschalten:** in der App unter Mehr → Einstellungen → Konto „Wochenrückblick als Mitteilung“ → Einschalten, dann „Test senden“.
+
+Der Zeitplan steht in `vercel.json` (`0 17 * * 0` = Sonntag 17 Uhr UTC, also 18 Uhr Winterzeit bzw. 19 Uhr Sommerzeit).
+
 ## Mit oder ohne Anmeldung
 
 - **Mit Anmeldung:** Daten werden zwischen deinen Geräten abgeglichen und in deinem Supabase-Projekt gespeichert.
