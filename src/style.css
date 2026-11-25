@@ -171,6 +171,7 @@ table.t.nowrap td, table.t.nowrap th { white-space: nowrap }
 .ag-date b { font-size: 20px; color: var(--ink); line-height: 1.1 }
 .ag-vit { display: flex; flex-direction: column; align-items: center; margin-top: 3px; font-size: 10px; line-height: 1.25; font-weight: 600 }
 .ag-vit i { font-style: normal }
+.ag-comp i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin: 0 4px 0 6px; vertical-align: middle }
 .ag-day.today .ag-date { background: var(--accent); color: #fff } .ag-day.today .ag-date b { color: #fff }
 .ag-items { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px }
 .ag-item { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; border: 1px dashed var(--line); background: transparent; border-radius: 12px; padding: 8px 10px }

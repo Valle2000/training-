@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check, Copy, Scissors,
 import { PlanImportSheet } from './plan-import.jsx';
 import { dayVitals } from '../lib/readiness.js';
 import { useData, update, getData, getSeries, getLocalSeries, putSeries, uid } from '../lib/store.js';
-import { today, weeks, mondayOf, buildActivity, evaluate, estimatePlanLoad, matchPlan, compliance, sportSummary, cropActivity, localDate, reevaluate } from '../lib/activities.js';
+import { today, weeks, mondayOf, buildActivity, evaluate, estimatePlanLoad, matchPlan, compliance, sportSummary, sessionCompliance, cropActivity, localDate, reevaluate } from '../lib/activities.js';
 import { addDays, ZONES, cleanSeries } from '../lib/metrics.js';
 import { detectIntervals } from '../lib/intervals.js';
 import { SPORTS, sportLabel, sportEmoji, guessSport } from '../lib/sports.js';
@@ -134,7 +134,7 @@ export function Training({ openActivity, openAdd }) {
                     {done.map((a) => (
                       <button key={a.id} className="ag-item done" style={{ borderLeft: `5px solid ${ZONE_COLORS[actZone(a)] || 'var(--line)'}` }} onClick={() => openActivity(a)}>
                         <span className="ag-ico">{sportEmoji(a.sport)}</span>
-                        <span className="ag-txt"><b>{fmtMin(a.durationS / 60)}</b> {a.title || sportLabel(a.sport)}{a.feel ? <em> · {FEEL_ICON[a.feel]}</em> : null}{a.rpe ? <em> · RPE {a.rpe}</em> : null}</span>
+                        <span className="ag-txt"><b>{fmtMin(a.durationS / 60)}</b> {a.title || sportLabel(a.sport)}{a.feel ? <em> · {FEEL_ICON[a.feel]}</em> : null}{a.rpe ? <em> · RPE {a.rpe}</em> : null}{(() => { const c = sessionCompliance(a, plan); return c ? <em className="ag-comp" title={`Plan: ${c.title || ''} ${c.planned} min · ${c.pct} %`}><i style={{ background: COMP_COLOR[c.level] }} />Soll {fmtMin(c.planned)}</em> : null; })()}</span>
                         <Check size={15} className="ag-check" />
                       </button>
                     ))}
@@ -153,7 +153,7 @@ export function Training({ openActivity, openAdd }) {
               );
             })}
           </div>
-          <p className="muted small">Tippe auf das Datum, um eine Einheit zu planen, oder wische nach links und rechts für die nächste bzw. vorige Woche. Ausgefüllt mit Haken = erledigt, gestrichelt = geplant, durchgestrichen = verpasst. Der Farbstreifen zeigt die Zone; unter dem Datum stehen Ruhepuls (♥) und HRV der Nacht, rot = deutlich schlechter als dein Mittel der letzten 4 Wochen; die Balken oben zeigen die Woche auf einen Blick (gefüllt erledigt, umrandet geplant, grau verpasst).{sched ? ' Uhrzeit = Vorschlag in deiner freien Zeit, rot umrandet = passt nicht in den Tag.' : ''}</p>
+          <p className="muted small">Tippe auf das Datum, um eine Einheit zu planen, oder wische nach links und rechts für die nächste bzw. vorige Woche. Ausgefüllt mit Haken = erledigt, gestrichelt = geplant, durchgestrichen = verpasst. Der Farbstreifen zeigt die Zone; der Punkt bei „Soll“ zeigt, wie gut die Dauer zum Plan passte (grün 80–120 %, gelb 60–140 %, rot daneben); unter dem Datum stehen Ruhepuls (♥) und HRV der Nacht, rot = deutlich schlechter als dein Mittel der letzten 4 Wochen; die Balken oben zeigen die Woche auf einen Blick (gefüllt erledigt, umrandet geplant, grau verpasst).{sched ? ' Uhrzeit = Vorschlag in deiner freien Zeit, rot umrandet = passt nicht in den Tag.' : ''}</p>
           <div className="stats">
             <div><b>{fmtNum(comp.actualMin / 60, 1)}<small className="muted">/{fmtNum(comp.plannedMin / 60, 1)}</small></b><span>Stunden Ist/Soll</span></div>
             <div><b>{fmtNum(comp.actualLoad)}<small className="muted">/{fmtNum(comp.plannedLoad)}</small></b><span>Belastung Ist/Soll</span></div>
@@ -784,6 +784,7 @@ function OtherTools({ list }) {
   );
 }
 
+const COMP_COLOR = { good: 'var(--good)', ok: '#d4a72c', off: 'var(--bad)' };
 const FEEL_ICON = { strong: "💪", normal: "🙂", weak: "😮‍💨" };
 
 // Summe je Sportart: Ist/Soll-Balken, Distanz, Höhenmeter, Arbeit (kJ), Gefühl.

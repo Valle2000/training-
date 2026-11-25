@@ -15,3 +15,11 @@ test('Wochensumme je Sportart mit Ist/Soll und Gefühl', () => {
   assert.deepEqual(ski.feel, { strong: 1, normal: 0, weak: 1 });
   assert.equal(r.find((x) => x.group === 'run').planMin, 45);
 });
+
+test('Soll/Ist je Einheit', async () => {
+  const { sessionCompliance } = await import('../src/lib/activities.js');
+  const plan = [{ date: '2026-11-23', sport: 'xc_skate', minutes: 90, title: '3x12' }, { date: '2026-11-23', sport: 'run', minutes: 0 }];
+  assert.equal(sessionCompliance({ date: '2026-11-23', sport: 'rollerski_skate', durationS: 5400 }, plan).level, 'good');
+  assert.equal(sessionCompliance({ date: '2026-11-23', sport: 'xc_classic', durationS: 3000 }, plan).level, 'off');
+  assert.equal(sessionCompliance({ date: '2026-11-23', sport: 'run', durationS: 3000 }, plan), null);
+});

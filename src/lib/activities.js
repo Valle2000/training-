@@ -350,3 +350,13 @@ export function sportSummary(plan, activities, from, to) {
   }
   return [...m.values()].sort((a, b) => Math.max(b.doneMin, b.planMin) - Math.max(a.doneMin, a.planMin));
 }
+
+// Soll/Ist einer erledigten Einheit: passende geplante Einheit am selben Tag (gleiche Sportart bzw. Sportgruppe)
+// und Verhältnis der Dauer. good = 80–120 %, ok = 60–140 %, sonst off.
+export function sessionCompliance(a, plan = []) {
+  const g = sportById(a.sport).group;
+  const p = plan.find((x) => x.date === a.date && Number(x.minutes) > 0 && (x.sport === a.sport || sportById(x.sport).group === g));
+  if (!p || !a.durationS) return null;
+  const pct = Math.round(((a.durationS / 60) / Number(p.minutes)) * 100);
+  return { planned: Number(p.minutes), pct, level: pct >= 80 && pct <= 120 ? 'good' : pct >= 60 && pct <= 140 ? 'ok' : 'off', title: p.title };
+}
