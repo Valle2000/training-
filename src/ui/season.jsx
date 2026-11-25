@@ -6,6 +6,8 @@ import { addDays, performanceCurve } from '../lib/metrics.js';
 import { PHASES, seasonPlan, seasonStart, gapPct, parseTime, fmtTime, PRIORITY_INFO, raceAdvice } from '../lib/season.js';
 import { SeasonChart, LineChart } from './charts.jsx';
 import { Sheet, fmtDate, fmtNum, toast } from './common.jsx';
+import { RaceApproachFields, FOCUS_HELP } from './race-approach.jsx';
+const RACE_APPROACH_TECH = ['Lauf', 'Rad'];
 
 import { RaceReport, RacePlanSheet } from './race-plan.jsx';
 
@@ -149,6 +151,8 @@ export function RaceEditor({ race, activities, onClose, openActivity, t }) {
         <div><label>Distanz (km)</label><input inputMode="decimal" value={r.distanceKm} onChange={set('distanceKm')} /></div>
       </div>
       <p className="muted small">{PRIORITY_INFO[r.priority]}</p>
+      <RaceApproachFields race={r} onChange={(v) => setR({ ...r, ...v })} />
+      {RACE_APPROACH_TECH.includes(r.technique) && <p className="muted small">{FOCUS_HELP} Den Zeitraum legst du im Saisonplan-Assistenten unter „Rennen“ fest (Vorschlag übernehmen).</p>}
       <label>Ziel</label><input value={r.goal} onChange={set('goal')} placeholder="z. B. unter 2:00 h, Top 50" />
       <button className="secondary wide" style={{ marginTop: 10 }} onClick={() => { update((d) => ({ ...d, races: [...d.races.filter((x) => x.id !== r.id), { ...(d.races.find((x) => x.id === r.id) || {}), ...r }] })); setPlanOpen(true); }}><Utensils size={16} />Rennplan & Verpflegung</button>
       {planOpen && <RacePlanSheet race={r} onClose={() => setPlanOpen(false)} />}

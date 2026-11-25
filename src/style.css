@@ -105,7 +105,7 @@ input:not([type=checkbox]):not([type=file]):not([type=range]), select, textarea 
 input:not([type=checkbox]):not([type=file]):not([type=range]):focus, select:focus, textarea:focus { background: var(--card); border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft) }
 input[type=checkbox] { accent-color: var(--accent) }
 textarea { min-height: 80px; resize: vertical }
-.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px } .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 10px }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 12px } .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 10px }
 .seg { display: flex; background: var(--soft); border-radius: 14px; padding: 4px; gap: 2px; overflow-x: auto; border: 1px solid var(--line) }
 .seg button { flex: 1; border: 0; background: transparent; padding: 9px 10px; border-radius: 11px; color: var(--muted); white-space: nowrap; font-weight: 600 }
 .seg .on { background: var(--card); color: var(--ink); font-weight: 700; box-shadow: 0 1px 2px rgba(15, 46, 59, .08), 0 2px 8px rgba(15, 46, 59, .06) }

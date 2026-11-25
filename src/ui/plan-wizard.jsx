@@ -6,8 +6,9 @@ import { today, weeks as weekStats } from '../lib/activities.js';
 import { addDays } from '../lib/metrics.js';
 import { sportLabel, SPORTS } from '../lib/sports.js';
 import { PHASES, PRIORITY_INFO, raceAdvice } from '../lib/season.js';
-import { parsePace, focusBlockOn, raceKind, focusSuggestions, FOCUS_OPTIONS, focusOn, noSnowOn, APPROACHES, KEY_TYPES, allOptions, makeKey, PLAN_SOURCES, GOALS, SESSION_GUIDE, PROFILE_INFO, PROFILES, MIX_KEYS, profileMix, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend, hardDayCount, suggestHardDays, checkHardDays } from '../lib/plan-wizard.js';
+import { parsePace, focusBlockOn, raceKind, RACE_APPROACHES, RACE_KIND_LABEL, FOCUS_STRENGTHS, focusSuggestions, FOCUS_OPTIONS, focusOn, noSnowOn, APPROACHES, KEY_TYPES, allOptions, makeKey, PLAN_SOURCES, GOALS, SESSION_GUIDE, PROFILE_INFO, PROFILES, MIX_KEYS, profileMix, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend, hardDayCount, suggestHardDays, checkHardDays } from '../lib/plan-wizard.js';
 import { Sheet, fmtDate, fmtNum, toast } from './common.jsx';
+import { RaceApproachFields, FOCUS_HELP } from './race-approach.jsx';
 import { freeMinutes, hasSchedule, periodForWeek, busyOn } from '../lib/week-adapt.js';
 
 const DOW = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
@@ -53,7 +54,7 @@ export function PlanWizard({ onClose }) {
   const rec = recommend(pr, Number(o.startHours) || 10);
   // Hauptziel der Saison: gilt in allen Wochen ohne Schwerpunkt-Zeitraum (Ski/Rollski ist der Standard, dann null).
   const mainFocus = ['run', 'bike', 'swim', 'tri'].includes(settings.season?.mainSport) ? settings.season.mainSport : null;
-  const plan = useMemo(() => (step >= 5 ? generatePlan({ ...o, swimPace: parsePace(o.swimPaceTxt), swimGoal: parsePace(o.swimGoalTxt), keys, customKeys: custom, capFor: hasSchedule(settings.schedule) ? (d) => freeMinutes(d, settings.schedule) : null, periodFor: settings.schedule?.periods?.length ? (m) => periodForWeek(m, settings.schedule) : null, busyFor: hasSchedule(settings.schedule) ? (d) => busyOn(d, settings.schedule).length > 0 : null, focusFor: (m) => focusOn(m, settings.season?.focus, settings.season?.snow, settings.season?.winterSub) || mainFocus, bikeFrom: settings.season?.bikeFrom || null, bikeTo: settings.season?.bikeTo || null, focusKindFor: (m) => { const b = focusBlockOn(m, settings.season?.focus); return b ? b.kind || raceKind(races.find((r) => r.date === b.to) || {}) : null; }, winterRunHours: settings.season?.winterRunHours ?? 2.5 }, races) : []), [step, o, keys, races, custom, settings.schedule, settings.season?.focus, settings.season?.snow, settings.season?.winterSub, settings.season?.winterRunHours, settings.season?.mainSport, settings.season?.bikeFrom, settings.season?.bikeTo]);
+  const plan = useMemo(() => (step >= 5 ? generatePlan({ ...o, swimPace: parsePace(o.swimPaceTxt), swimGoal: parsePace(o.swimGoalTxt), keys, customKeys: custom, capFor: hasSchedule(settings.schedule) ? (d) => freeMinutes(d, settings.schedule) : null, periodFor: settings.schedule?.periods?.length ? (m) => periodForWeek(m, settings.schedule) : null, busyFor: hasSchedule(settings.schedule) ? (d) => busyOn(d, settings.schedule).length > 0 : null, focusFor: (m) => focusOn(m, settings.season?.focus, settings.season?.snow, settings.season?.winterSub) || mainFocus, bikeFrom: settings.season?.bikeFrom || null, bikeTo: settings.season?.bikeTo || null, focusStrengthFor: (m) => focusBlockOn(m, settings.season?.focus)?.strength ?? null, focusKindFor: (m) => { const b = focusBlockOn(m, settings.season?.focus); return b ? b.kind || raceKind(races.find((r) => r.date === b.to) || {}) : null; }, winterRunHours: settings.season?.winterRunHours ?? 2.5 }, races) : []), [step, o, keys, races, custom, settings.schedule, settings.season?.focus, settings.season?.snow, settings.season?.winterSub, settings.season?.winterRunHours, settings.season?.mainSport, settings.season?.bikeFrom, settings.season?.bikeTo]);
   const set = (k, v) => setO({ ...o, [k]: v });
   const toggleKey = (id) => set('keys', keys.includes(id) ? keys.filter((k) => k !== id) : [...keys, id]);
   const setPr = (k, v) => set('profile', { ...pr, [k]: v });
@@ -311,10 +312,11 @@ function WizardRaces({ t }) {
       <p className="muted small">Trag deine Rennen ein und lege fest, wie wichtig sie sind – der Plan wird darauf ausgerichtet.</p>
       {Object.entries(PRIORITY_INFO).map(([k, v]) => <p key={k} className="small" style={{ margin: '4px 0' }}><span className={`badge ${k === 'A' ? 'b-kritisch' : k === 'B' ? 'b-achtung' : 'b-info'}`}>{k}</span> {v}</p>)}
       {up.map((r) => (
-        <div key={r.id} className="item">
-          <div className="grow"><b>{r.name}</b><p>{fmtDate(r.date)} · {r.technique}{r.distanceKm ? ` · ${r.distanceKm} km` : ''}</p></div>
+        <div key={r.id} className="item" style={{ flexWrap: 'wrap' }}>
+          <div className="grow" style={{ minWidth: 0 }}><b>{r.name}</b><p>{fmtDate(r.date)} · {r.technique}{r.distanceKm ? ` · ${r.distanceKm} km` : ''}</p></div>
           <div className="chips" style={{ margin: 0, flex: 'none' }}>{['A', 'B', 'C'].map((k) => <button key={k} className={`chip${r.priority === k ? ' on' : ''}`} onClick={() => setPrio(r.id, k)}>{k}</button>)}</div>
           <button className="ghost" style={{ flex: 'none' }} onClick={() => remove(r.id)} aria-label="Löschen"><Trash2 size={16} /></button>
+          <div style={{ flexBasis: '100%' }}><RaceApproachFields race={r} onChange={(v) => update((d) => ({ ...d, races: d.races.map((x) => (x.id === r.id ? { ...x, ...v } : x)) }))} /></div>
         </div>
       ))}
       {!up.length && <p className="muted small">Noch keine Rennen eingetragen.</p>}
@@ -329,6 +331,7 @@ function WizardRaces({ t }) {
           <div><label>Technik</label><select value={n.technique} onChange={(e) => setN({ ...n, technique: e.target.value })}>{TECH.map((x) => <option key={x}>{x}</option>)}</select></div>
           <div><label>Distanz (km)</label><input inputMode="decimal" value={n.distanceKm} onChange={(e) => setN({ ...n, distanceKm: e.target.value })} /></div>
         </div>
+        <RaceApproachFields race={n} onChange={(v) => setN({ ...n, ...v })} />
         <button className="secondary" onClick={add}><Plus size={16} />Hinzufügen</button>
       </div>
     </>
@@ -406,7 +409,7 @@ function FocusBlocks({ t, focus, suggestions = [], snow, winterSub, settings }) 
   const setSnow = (list) => update((d) => ({ ...d, settings: { ...d.settings, season: { ...(d.settings.season || {}), snow: list } } }));
   const setSub = (v) => update((d) => ({ ...d, settings: { ...d.settings, season: { ...(d.settings.season || {}), winterSub: v } } }));
   const mainSport = settings.season?.mainSport || 'rollerski';
-  const acceptSuggestion = (s) => set([...focus, { id: uid(), sport: s.sport, kind: s.kind || null, label: s.label, from: s.from, to: s.to }]);
+  const acceptSuggestion = (s) => set([...focus, { id: uid(), sport: s.sport, kind: s.kind || null, strength: s.strength ?? null, label: s.label, from: s.from, to: s.to }]);
   const setSeason = (k, v) => update((d) => ({ ...d, settings: { ...d.settings, season: { ...(d.settings.season || {}), [k]: v } } }));
   const setMain = (v) => update((d) => ({ ...d, settings: { ...d.settings, season: { ...(d.settings.season || {}), mainSport: v } } }));
   return (
@@ -454,12 +457,22 @@ function FocusBlocks({ t, focus, suggestions = [], snow, winterSub, settings }) 
       </>}
       {focus.map((f) => (
         <div key={f.id} className="item" style={{ flexWrap: 'wrap' }}>
-          <div className="grow"><b>{f.label || FOCUS_OPTIONS.find((x) => x[0] === f.sport)?.[1]}</b>
+          <div className="grow" style={{ minWidth: 0 }}><b>{f.label || FOCUS_OPTIONS.find((x) => x[0] === f.sport)?.[1]}</b>
             <div className="grid2" style={{ marginTop: 6 }}>
               <div><label>von</label><input type="date" value={f.from} onChange={(e) => set(focus.map((x) => (x.id === f.id ? { ...x, from: e.target.value } : x)))} /></div>
               <div><label>bis</label><input type="date" value={f.to} onChange={(e) => set(focus.map((x) => (x.id === f.id ? { ...x, to: e.target.value } : x)))} /></div>
             </div>
             <p className="small muted" style={{ margin: '4px 0 0' }}>{FOCUS_WHY[f.sport]}</p>
+            {['run', 'bike'].includes(f.sport) && <>
+              <label>Ansatz</label>
+              <select value={f.kind || ''} onChange={(e) => set(focus.map((x) => (x.id === f.id ? { ...x, kind: e.target.value || null } : x)))}>
+                <option value="">Automatisch (nach Rennen am Ende)</option>
+                {RACE_APPROACHES[f.sport === 'run' ? 'Lauf' : 'Rad'].map((k) => <option key={k} value={k}>{RACE_KIND_LABEL[k]}</option>)}
+              </select>
+              <label>Wie stark der Fokus?</label>
+              <div className="chips">{FOCUS_STRENGTHS.map(([v, l]) => <button key={l} className={`chip${(f.strength ?? null) === v ? ' on' : ''}`} onClick={() => set(focus.map((x) => (x.id === f.id ? { ...x, strength: v } : x)))}>{l}</button>)}</div>
+              <p className="small muted" style={{ margin: 0 }}>{FOCUS_HELP}</p>
+            </>}
           </div>
           <button className="ghost" style={{ flex: 'none' }} onClick={() => set(focus.filter((x) => x.id !== f.id))} aria-label="Entfernen"><Trash2 size={16} /></button>
         </div>

@@ -113,3 +113,28 @@ test('Profile und Regler: Anteile werden eingehalten', async () => {
   const hardRun = run.all.filter((s) => s.kind === 'hard' && s.sport === 'run');
   assert.ok(new Set(hardRun.map((s) => s.title)).size >= 4, 'Abwechslung bei den Laufintervallen');
 });
+
+test('Ansatz am Rennen wählbar, Fokus-Stärke hält es multisportlich', async () => {
+  const { generatePlan, raceKind, focusSuggestions, focusBlockOn } = await import('../src/lib/plan-wizard.js');
+  assert.equal(raceKind({ technique: 'Lauf', distanceKm: 21.1 }), 'run_hm');
+  assert.equal(raceKind({ technique: 'Lauf', distanceKm: 21.1, approach: 'run_10k' }), 'run_10k');
+  assert.equal(raceKind({ technique: 'Lauf', distanceKm: 21.1, approach: 'none' }), null);
+  const hm = { id: 'hm', date: '2026-06-07', priority: 'B', name: 'HM', technique: 'Lauf', distanceKm: 21.1, approach: 'run_hm', focusStrength: 60 };
+  assert.equal(focusSuggestions([{ ...hm, approach: 'none' }]).length, 0);
+  const sug = focusSuggestions([hm])[0];
+  assert.equal(sug.kind, 'run_hm'); assert.equal(sug.strength, 60);
+  const races = [{ date: '2027-03-14', priority: 'A', name: 'Engadin', technique: 'Skating' }, hm];
+  const run = (strength) => {
+    const focus = [{ sport: 'run', kind: null, from: sug.from, to: sug.to, strength }];
+    const opts = { startHours: 10, peakHours: 14, start: '2026-05-04', end: '2027-03-14', restDays: [1], longDay: 7, strengthPerWeek: 2, bikeFrom: 4, bikeTo: 10, profile: { multi: 'multi' },
+      focusFor: (m) => focusBlockOn(m, focus)?.sport || null, focusKindFor: (m) => { const b = focusBlockOn(m, focus); return b ? b.kind || raceKind(races.find((r) => r.date === b.to) || {}) : null; }, focusStrengthFor: (m) => focusBlockOn(m, focus)?.strength ?? null };
+    const ss = generatePlan(opts, races).filter((w) => w.from >= '2026-05-11' && w.from < '2026-06-01').flatMap((w) => w.days.flatMap((d) => d.sessions)).filter((s) => s.sport !== 'strength');
+    const tot = ss.reduce((a, s) => a + s.minutes, 0);
+    return { run: ss.filter((s) => s.sport === 'run').reduce((a, s) => a + s.minutes, 0) / tot * 100, ss };
+  };
+  const r60 = run(60), r100 = run(100);
+  assert.ok(r60.run > 45 && r60.run < 80, `60 % → ${r60.run}`);
+  assert.ok(r100.run > r60.run + 8, 'mehr Fokus = mehr Laufen');
+  assert.ok(r60.ss.some((s) => s.kind === 'hard' && /^rollerski|^bike$/.test(s.sport)), 'harte Einheit auch auf Rollski/Rad');
+  assert.ok(r60.ss.some((s) => /Halbmarathontempo/.test(s.title)), 'Einheiten des gewählten Ansatzes');
+});
