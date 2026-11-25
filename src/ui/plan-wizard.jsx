@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, Check, CalendarPlus, Sparkles, Pencil, Plus, Trash2 } from 'lucide-react';
-import { useData, update, uid } from '../lib/store.js';
+import { useData, update, uid, getData } from '../lib/store.js';
+import { outsideTpWeeks } from '../lib/ical.js';
 import { today, weeks as weekStats } from '../lib/activities.js';
 import { addDays } from '../lib/metrics.js';
 import { sportLabel, SPORTS } from '../lib/sports.js';
 import { PHASES, PRIORITY_INFO, raceAdvice } from '../lib/season.js';
-import { parsePace, focusBlockOn, raceKind, focusSuggestions, FOCUS_OPTIONS, focusOn, noSnowOn, APPROACHES, KEY_TYPES, allOptions, makeKey, PLAN_SOURCES, GOALS, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend, hardDayCount, suggestHardDays, checkHardDays } from '../lib/plan-wizard.js';
+import { parsePace, focusBlockOn, raceKind, focusSuggestions, FOCUS_OPTIONS, focusOn, noSnowOn, APPROACHES, KEY_TYPES, allOptions, makeKey, PLAN_SOURCES, GOALS, SESSION_GUIDE, PROFILE_INFO, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend, hardDayCount, suggestHardDays, checkHardDays } from '../lib/plan-wizard.js';
 import { Sheet, fmtDate, fmtNum, toast } from './common.jsx';
 import { freeMinutes, hasSchedule, periodForWeek, busyOn } from '../lib/week-adapt.js';
 
@@ -67,15 +68,17 @@ export function PlanWizard({ onClose }) {
 
   const apply = () => {
     const weeks = plan.slice(0, Number(o.horizon) || plan.length);
-    const items = toPlanItems(weeks, uid);
+    const all = toPlanItems(weeks, uid);
+    // Wochen mit Plan der Trainerin (TrainingPeaks) bleiben unangetastet.
+    const items = outsideTpWeeks(all, getData().plan);
     const until = weeks.at(-1)?.to;
     update((d) => ({
       ...d,
       // Frühere Assistenten-Einträge im Zeitraum ersetzen, eigene Einträge bleiben.
-      plan: [...d.plan.filter((p) => !(p.source === 'wizard' && p.date >= o.start && p.date <= until && !p.done)), ...items],
+      plan: [...d.plan.filter((p) => !(p.source === 'wizard' && p.date >= o.start && p.date <= until && !p.done && outsideTpWeeks([p], d.plan).length)), ...items],
       settings: { ...d.settings, season: { ...(d.settings.season || {}), baseHours: o.startHours, peakHours: o.peakHours, wizard: { ...o, keys } } },
     }));
-    toast(`${items.length} Einheiten für ${weeks.length} Wochen eingetragen`);
+    toast(`${items.length} Einheiten für ${weeks.length} Wochen eingetragen${all.length > items.length ? ' · Wochen mit TrainingPeaks-Plan übersprungen' : ''}`);
     onClose();
   };
 
@@ -89,6 +92,10 @@ export function PlanWizard({ onClose }) {
         <p className="muted small">Ein paar Fragen, damit der Plan zu dir passt. Am wichtigsten ist, dass du dranbleibst – deshalb zählt auch, was dir Spaß macht.</p>
         <label>Ziel</label>
         <div className="chips">{GOALS.map(([id, l]) => <button key={id} className={`chip${pr.goal === id ? ' on' : ''}`} onClick={() => setPr('goal', id)}>{l}</button>)}</div>
+        <label>Profil</label>
+        <div className="chips">{[['ski', 'Langlauf zuerst'], ['multi', 'Allrounder: Langlauf, Laufen, Rad']].map(([id, l]) => <button key={id} className={`chip${(pr.multi || 'ski') === id ? ' on' : ''}`} onClick={() => setPr('multi', id)}>{l}</button>)}</div>
+        <p className="muted small">{PROFILE_INFO[pr.multi || 'ski']}</p>
+        <SessionGuide />
         <label>Wie ernst nimmst du es?</label>
         <div className="chips">{SERIOUSNESS.map(([id, l]) => <button key={id} className={`chip${pr.seriousness === id ? ' on' : ''}`} onClick={() => setPr('seriousness', id)}>{l}</button>)}</div>
         <label>Trainingsstil</label>
@@ -457,5 +464,29 @@ function FocusBlocks({ t, focus, suggestions = [], snow, winterSub, settings }) 
         </div>
       ))}
     </div>
+  );
+}
+
+// Berater: welche Rad- und Laufeinheiten wann sinnvoll sind (Ablauf und Begründung aus dem Katalog).
+export function SessionGuide() {
+  const byId = Object.fromEntries(allOptions().map((o) => [o.id, o]));
+  return (
+    <details className="card" style={{ padding: 12 }}>
+      <summary><b>Berater: welche Rad- und Laufeinheit wann?</b></summary>
+      {SESSION_GUIDE.map((g) => (
+        <div key={g.sport}>
+          <h4 style={{ margin: '12px 0 4px' }}>{g.title}</h4>
+          {g.blocks.map((b) => (
+            <div key={b.when} style={{ marginBottom: 10 }}>
+              <div className="small"><b>{b.when}</b> – <span className="muted">{b.tip}</span></div>
+              <ul className="small" style={{ paddingLeft: 18, margin: '4px 0' }}>
+                {b.ids.map((id) => byId[id] && <li key={id}><b>{byId[id].name}</b> ({byId[id].minutes} min){byId[id].why ? <span className="muted"> – {byId[id].why}</span> : null}</li>)}
+              </ul>
+            </div>
+          ))}
+        </div>
+      ))}
+      <p className="muted small" style={{ marginBottom: 0 }}>Grundregel: höchstens 2–3 harte Einheiten pro Woche über alle Sportarten zusammen, nicht zwei harte Tage hintereinander. Für „multipel gut“ zählt vor allem viel lockerer Umfang in allen Sportarten; Intensität im Wechsel.</p>
+    </details>
   );
 }

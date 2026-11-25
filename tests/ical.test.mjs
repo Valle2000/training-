@@ -39,17 +39,21 @@ test('Textheuristiken', () => {
   assert.equal(zoneFromText('Schwelle 3x10'), 'I3');
 });
 
-test('Feed ersetzt offene TrainingPeaks-Einheiten, behält erledigte und eigene', () => {
+test('Feed hat Vorrang: offene App-Einheiten in TP-Wochen fliegen raus, erledigte und andere Wochen bleiben', () => {
   let n = 0; const id = () => `n${++n}`;
   const plan = [
     { id: 'a', source: 'trainingpeaks', externalId: 'tp-old', date: '2026-12-02', done: false },
     { id: 'b', source: 'trainingpeaks', externalId: 'tp-1', date: '2026-12-01', done: true },
-    { id: 'c', date: '2026-12-02', title: 'eigene' },
+    { id: 'c', date: '2026-12-02', title: 'eigene', source: 'wizard' },
+    { id: 'e', date: '2026-12-06', title: 'Sonntag gleiche Woche', source: 'coach' },
+    { id: 'f', date: '2026-12-03', title: 'erledigt', source: 'wizard', done: true },
+    { id: 'g', date: '2026-12-08', title: 'nächste Woche', source: 'wizard' },
     { id: 'd', source: 'trainingpeaks', externalId: 'tp-x', date: '2026-11-20', done: false },
   ];
   const r = mergeFeedPlan(plan, icsToPlan(ICS), id);
-  assert.equal(r.removed, 1);
-  assert.ok(r.plan.find((p) => p.id === 'b') && r.plan.find((p) => p.id === 'c') && r.plan.find((p) => p.id === 'd'));
+  assert.equal(r.removed, 3); assert.equal(r.replacedOwn, 2);
+  assert.ok(!r.plan.find((p) => p.id === 'c') && !r.plan.find((p) => p.id === 'e'));
+  assert.ok(['b', 'd', 'f', 'g'].every((id) => r.plan.find((p) => p.id === id)));
   assert.equal(r.plan.filter((p) => p.externalId === 'tp-1').length, 1);
   assert.equal(r.added, 3);
 });
@@ -65,4 +69,11 @@ test('Proxy erlaubt nur TrainingPeaks', async () => {
   await assert.rejects(fetchFeed('webcal://www.trainingpeaks.com/ical/x', redirectOut), /fremde Adresse/);
   const ok = async () => ({ status: 200, ok: true, headers: new Map(), text: async () => 'BEGIN:VCALENDAR\nEND:VCALENDAR' });
   assert.match(await fetchFeed('webcal://www.trainingpeaks.com/ical/x', ok), /VCALENDAR/);
+});
+
+test('App-Pläne nur außerhalb der TrainingPeaks-Wochen', async () => {
+  const { outsideTpWeeks } = await import('../src/lib/ical.js');
+  const plan = [{ source: 'trainingpeaks', date: '2026-12-02', minutes: 60 }];
+  const items = [{ date: '2026-11-30' }, { date: '2026-12-06' }, { date: '2026-12-07' }];
+  assert.deepEqual(outsideTpWeeks(items, plan).map((x) => x.date), ['2026-12-07']);
 });

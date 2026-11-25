@@ -347,6 +347,16 @@ export const TOPICS = [
     sources: [S.rosenblat21, S.norte, S.neal13, S.stoggl14],
   },
   {
+    id: 'multi_guide', cat: 'Sportübergreifend', title: 'Allrounder: Langlauf, Laufen und Rad gleichzeitig gut werden', evidence: 'mittel',
+    facts: [
+      'Die Ausdauer (Herz, Blutvolumen) überträgt sich zwischen den Sportarten, die Muskulatur und Technik nur teilweise: Trainingseffekte sind am größten in der Sportart, die man trainiert (Übersichtsarbeit Tanaka 1994).',
+      'Bei Elite-Triathleten übertrug sich Radtraining auf das Laufen und umgekehrt, das Schwimmen blieb davon getrennt (Millet et al. 2002, sehr kleine Gruppe).',
+      'Gute Ausdauersportler trainieren rund 80 % locker und 20 % hart, egal welche Sportart (Seiler 2010). Bei mehreren Sportarten zählt die harte Zeit über alle zusammen.',
+    ],
+    practice: 'Sommer (April–Oktober): Rollski, Laufen und Rad etwa gleich viel. Pro Woche 2 harte Einheiten: eine auf Rollski (Schwelle), die zweite im Wechsel Rad oder Laufen. Die lange Einheit wechselt (Rollski, 3–4 h Rad, bis 2 h Lauf). Laufen langsam steigern (Stoßbelastung), Rad bringt viel Umfang ohne Verletzungsrisiko. Rennen im Sommer als B- oder C-Rennen mitnehmen; vor einem Laufrennen 2–4 Wochen Lauf-Schwerpunkt, vor einem Radrennen Rad-Schwerpunkt. Ab November langlaufspezifisch. Im Saisonplan-Assistenten: Profil „Allrounder“, dort gibt es auch den Berater, welche Einheit wann passt.',
+    sources: [S.tanaka94, S.millet02, S.seiler10],
+  },
+  {
     id: 'tri_transfer', cat: 'Triathlon', title: 'Triathlon: Wie sich die Disziplinen gegenseitig beeinflussen', evidence: 'gering',
     facts: [
       'In einer Studie mit vier Elite-Triathleten über 40 Wochen (Millet et al. 2002) übertrug sich Radtraining auf das Laufen und umgekehrt. Das Schwimmen blieb davon weitgehend getrennt.',

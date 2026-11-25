@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BrainCircuit, CalendarPlus, Trash2, BookOpen, Search } from 'lucide-react';
 import { useData, update, getData, uid } from '../lib/store.js';
+import { outsideTpWeeks } from '../lib/ical.js';
 import { coachSummary, today, weeks as weekStats } from '../lib/activities.js';
 import { seasonPlan, seasonStart, PHASES } from '../lib/season.js';
 import { addDays } from '../lib/metrics.js';
@@ -150,13 +151,16 @@ function CoachAi() {
   };
 
   const adopt = (plan) => {
-    const items = plan.filter((p) => p.sport !== 'rest' && p.zone !== 'Ruhe').map((p) => ({ id: uid(), date: p.datum, title: p.titel, sport: p.sport, minutes: p.minuten, zone: p.zone, description: p.beschreibung, load: p.belastung, source: 'coach' }));
+    const all = plan.filter((p) => p.sport !== 'rest' && p.zone !== 'Ruhe').map((p) => ({ id: uid(), date: p.datum, title: p.titel, sport: p.sport, minutes: p.minuten, zone: p.zone, description: p.beschreibung, load: p.belastung, source: 'coach' }));
+    // Plan der Trainerin (TrainingPeaks) hat Vorrang: diese Wochen nicht überschreiben.
+    const items = outsideTpWeeks(all, getData().plan);
+    if (!items.length) return toast('Diese Tage plant deine Trainerin in TrainingPeaks – nichts übernommen');
     const dates = new Set(items.map((i) => i.date));
     // Der neue Plan ersetzt die noch offenen Einheiten an denselben Tagen (auch frühere KI- oder Wizard-Einheiten).
     // Erledigte Einheiten und Polar-Einträge bleiben erhalten.
     const replaced = getData().plan.filter((p) => !p.done && p.source !== 'polar' && dates.has(p.date)).length;
     update((d) => ({ ...d, plan: [...d.plan.filter((p) => !(!p.done && p.source !== 'polar' && dates.has(p.date))), ...items] }));
-    toast(`${items.length} Einheiten übernommen${replaced ? `, ${replaced} vorherige ersetzt` : ''}`);
+    toast(`${items.length} Einheiten übernommen${replaced ? `, ${replaced} vorherige ersetzt` : ''}${all.length > items.length ? ' · TrainingPeaks-Tage ausgelassen' : ''}`);
   };
 
   return (

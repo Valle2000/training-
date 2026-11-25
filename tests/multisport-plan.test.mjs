@@ -74,3 +74,18 @@ test('Drei Schwimmeinheiten pro Woche werden untergebracht', () => {
   assert.ok(counts.every((n) => n >= 2), counts.join());
   assert.ok(counts.some((n) => n === 3), counts.join());
 });
+
+test('Allrounder: im Sommer Rad und Laufen gleichwertig, harte Rollski-Einheit bleibt', async () => {
+  const { generatePlan } = await import('../src/lib/plan-wizard.js');
+  const opts = { startHours: 10, peakHours: 14, start: '2026-05-04', end: '2027-03-14', restDays: [1], longDay: 7, strengthPerWeek: 2, bikeFrom: 4, bikeTo: 10, profile: { multi: 'multi' } };
+  const summer = generatePlan(opts, [{ date: '2027-03-14', priority: 'A', name: 'E' }]).filter((w) => w.from >= '2026-05-04' && w.from < '2026-10-01');
+  const all = summer.flatMap((w) => w.days.flatMap((d) => d.sessions));
+  const min = (re) => all.filter((s) => re.test(s.sport)).reduce((a, s) => a + s.minutes, 0);
+  assert.ok(min(/^bike$/) > 0.6 * min(/^run$/) && min(/^run$/) > 0.6 * min(/^bike$/), 'Rad und Laufen ähnlich viel');
+  assert.ok(min(/^bike$/) > 0.35 * min(/^rollerski/), 'Rad nicht nur Beiwerk');
+  const hardBike = all.filter((s) => s.sport === 'bike' && s.kind === 'hard').length, hardRun = all.filter((s) => s.sport === 'run' && s.kind === 'hard').length;
+  assert.ok(hardBike >= 6 && hardRun >= 6, `harte Rad ${hardBike} / Lauf ${hardRun}`);
+  for (const w of summer) assert.ok(w.days.some((d) => d.sessions.some((s) => s.kind === 'hard' && /^rollerski/.test(s.sport))) || w.phase === 'recovery', `Rollski hart in ${w.from}`);
+  const longs = new Set(all.filter((s) => s.kind === 'long').map((s) => s.sport.replace(/_.*/, '')));
+  assert.ok(longs.has('bike') && longs.has('run') && longs.has('rollerski'));
+});

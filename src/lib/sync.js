@@ -420,6 +420,7 @@ export async function syncTrainingPeaks(url = getData().settings.tpFeedUrl) {
   const items = icsToPlan(j.ics).map((it) => ({ ...it, description: it.notes, load: it.minutes ? estimatePlanLoad(it.minutes, it.zone || 'I1') : 0 }));
   let res = { added: 0, removed: 0 };
   update((d) => { const m = mergeFeedPlan(d.plan, items, uid); res = m; return { ...d, plan: m.plan, settings: { ...d.settings, tpLastSync: new Date().toISOString(), tpLastCount: items.length } }; });
+  syncTrainingPeaks.lastReplaced = res.replacedOwn || 0;
   return res.added;
 }
 

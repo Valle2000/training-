@@ -105,13 +105,23 @@ export function icsToPlan(txt, { source = 'trainingpeaks' } = {}) {
   return out.sort((a, b) => a.date.localeCompare(b.date));
 }
 
-// Neue Feed-Einheiten mit dem Plan zusammenführen: offene, nicht erledigte TrainingPeaks-Einheiten im Zeitraum des
-// Feeds werden ersetzt (die Trainerin hat umgeplant), erledigte und eigene Einheiten bleiben.
+const mondayOf = (date) => { const d = new Date(`${date}T12:00:00Z`); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); return d.toISOString().slice(0, 10); };
+// Wochen (Montag), in denen die Trainerin über TrainingPeaks geplant hat.
+export const tpWeeks = (plan) => new Set(plan.filter((p) => p.source === 'trainingpeaks' && p.minutes > 0).map((p) => mondayOf(p.date)));
+// App-Pläne (Saisonplan, KI-Coach) nur außerhalb dieser Wochen eintragen: der Plan der Trainerin hat Vorrang.
+export const outsideTpWeeks = (items, plan) => { const w = tpWeeks(plan); return items.filter((it) => !w.has(mondayOf(it.date))); };
+
+// Neue Feed-Einheiten mit dem Plan zusammenführen. Die Trainerin hat Vorrang: In jeder Woche mit TrainingPeaks-Einheiten
+// fliegen alle offenen Einheiten aus der App raus (Saisonplan, KI-Coach, eigene, Polar-Planungen), ebenso offene
+// TrainingPeaks-Einheiten im Feed-Zeitraum (sie hat umgeplant). Erledigte Einheiten bleiben immer.
 export function mergeFeedPlan(plan, items, newId, source = 'trainingpeaks') {
-  if (!items.length) return { plan, added: 0, removed: 0 };
+  if (!items.length) return { plan, added: 0, removed: 0, replacedOwn: 0 };
   const from = items[0].date, to = items[items.length - 1].date;
-  const keep = plan.filter((p) => !(p.source === source && !p.done && p.date >= from && p.date <= to));
+  const weeksTp = new Set(items.filter((it) => it.minutes > 0).map((it) => mondayOf(it.date)));
+  const ownOut = (p) => p.source !== source && !p.done && weeksTp.has(mondayOf(p.date));
+  const replacedOwn = plan.filter(ownOut).length;
+  const keep = plan.filter((p) => !(p.source === source && !p.done && p.date >= from && p.date <= to) && !ownOut(p));
   const kept = new Set(keep.filter((p) => p.source === source).map((p) => p.externalId));
   const fresh = items.filter((it) => !kept.has(it.externalId)).map((it) => ({ id: newId(), ...it, done: false }));
-  return { plan: [...keep, ...fresh], added: fresh.length, removed: plan.length - keep.length };
+  return { plan: [...keep, ...fresh], added: fresh.length, removed: plan.length - keep.length, replacedOwn };
 }

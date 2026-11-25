@@ -180,6 +180,10 @@ export const KEY_OPTIONS = [
   K('swim_race4x200', 'race', 4, 4, 1, { sport: 'swim', warm: 10, cool: 5, name: 'Schwimmen Renntempo: 4×200 m', desc: '10 min ein, 4× 200 m im geplanten Renntempo, 1 min Pause, 5 min aus' }),
   K('run_10k5x4', 'hit', 5, 4, 2, { sport: 'run', zone: 'I4', warm: 15, cool: 10, name: '10-km-Tempo: 5×4 min', note: 'etwas schneller als Halbmarathontempo, volle Pause halten' }),
   // Rad: Schwelle und Sweet Spot (Watt halten, nicht dem Puls hinterherlaufen)
+  K('run_6x1000', 'hit', 6, 3.5, 2, { sport: 'run', zone: 'I4', warm: 15, cool: 10, name: 'Laufen VO2max: 6×1000 m (ca. 3:30 min)', note: 'etwa 5-km-Renntempo, gleichmäßig, Trabpause' }),
+  K('run_fartlek', 'threshold', 6, 4, 2, { sport: 'run', warm: 15, cool: 10, name: 'Laufen Fahrtspiel: 6×4 min', note: 'im Gelände nach Gefühl an der Schwelle, bergauf ruhig etwas mehr' }),
+  K('bike_ka6x6', 'threshold', 6, 6, 3, { sport: 'bike', zone: 'I3', warm: 20, cool: 15, name: 'Rad Kraftausdauer: 6×6 min (50–60 U/min)', note: 'am Berg oder mit großem Gang, niedrige Trittfrequenz, Oberkörper ruhig' }),
+  K('bike_40_20', 'hit', 10, 40, 20, { unit: 's', restUnit: 's', sets: 3, setRest: 5, zone: 'I5', sport: 'bike', warm: 20, cool: 15, name: 'Rad VO2max kurz (I5): 3×(10×40/20 s)', note: 'hohe Trittfrequenz, jede Serie gleich stark' }),
   K('bike_2x20', 'threshold', 2, 20, 5, { sport: 'bike', warm: 20, cool: 15, name: 'Rad Schwelle: 2×20 min', note: 'Watt gleichmäßig halten, untere FTP-Grenze' }),
   K('bike_3x12', 'threshold', 3, 12, 4, { sport: 'bike', warm: 20, cool: 15, name: 'Rad Schwelle: 3×12 min', note: 'etwas über der Schwelle möglich, aber nicht steigern' }),
   K('bike_sweet2x15', 'threshold', 2, 15, 4, { sport: 'bike', warm: 20, cool: 15, name: 'Rad Sweet Spot: 2×15 min', note: 'knapp unter der Schwelle, zügig und kontrolliert' }),
@@ -252,6 +256,10 @@ const WHY = {
   swim_10x50: 'Kurze schnelle Strecken mit sauberer Technik: Tempo ohne dass die Technik zerfällt.',
   swim_race4x200: 'Renntempo üben: 200er im geplanten Tempo, gut für Triathlon- und Freiwasserstarts.',
   run_10k5x4: '10-km-Tempo: 4-min-Intervalle nahe der VO2max-Grenze der Laufleistung, gut für die Kurzstrecke.',
+  run_6x1000: 'Klassische VO2max-Einheit fürs Laufen: genug Zeit im harten Bereich, die Pausen halten die Qualität hoch. Hebt das Tempo für 5–10 km.',
+  run_fartlek: 'Schwelle im Gelände ohne Uhr-Stress: trainiert Tempogefühl und Kraft am Hügel, nah am Langlauf.',
+  bike_ka6x6: 'Kraftausdauer mit niedriger Trittfrequenz: viel Kraft pro Tritt bei moderatem Puls – überträgt sich gut auf Anstiege und Doppelstock.',
+  bike_40_20: 'Kurze Intervalle mit kurzen Pausen sammeln viel Zeit nahe VO2max, ohne dass die einzelnen Abschnitte zermürben.',
   bike_2x20: 'Radschwelle mit zwei langen Blöcken: Watt halten, Wirkung auf die aerobe Schwelle ohne hohe Stoßbelastung.',
   bike_3x12: 'Kürzere Radschwellenblöcke, gut dosierbar und nach längeren Pausen als Einstieg.',
   bike_sweet2x15: 'Sweet Spot knapp unter der Schwelle: viel Wirkung bei überschaubarer Erholung.',
@@ -496,10 +504,16 @@ export function generatePlan(opts, races = []) {
     const dtOff = (opts.dtRhythm === 'biweekly' && wi % 2 === 1) || (opts.dtRhythm === '3:1' && wi % 4 === 3);
     if (dtOff && Array.isArray(hardSlots)) hardSlots = hardSlots.map((x) => (x === 'dt' ? 'threshold' : x));
     const focus = opts.focusFor ? opts.focusFor(w.from) : null;
-    const fSport = ['run', 'bike', 'swim'].includes(focus) ? focus : (apw.only || null);
+    let fSport = ['run', 'bike', 'swim'].includes(focus) ? focus : (apw.only || null);
     // Schwerpunkt vor einem bestimmten Rennen: Einheiten der passenden Rennart bevorzugen (z. B. Marathontempo vor dem Marathon).
     const fKind = opts.focusKindFor ? opts.focusKindFor(w.from) : null;
     const fPref = fKind ? new Set(APPROACHES.find((a) => a.id === fKind)?.defaults || []) : null;
+    // Allrounder (Profil „multi“): von April bis Oktober ohne Schwerpunkt Rad und Laufen gleichwertig neben Rollski –
+    // eine harte Einheit wechselt zwischen Rad und Laufen, die lange Einheit zwischen Rollski, Rad und Laufen.
+    const mon = Number(w.from.slice(5, 7));
+    const mSeason = pr.multi === 'multi' && !fSport && !fKind && !focus && mon >= 4 && mon <= 10 && !['taper', 'race'].includes(w.phase);
+    let mEasy = wi;
+    const multiEasy = () => { const pool = ['bike', 'run'].filter((x) => !(pr.dislikes || []).includes(x)); return pool.length ? pool[mEasy++ % pool.length] : 'run'; };
     // Triathlon: harte Einheiten wechseln zwischen Lauf und Rad (sonst Rollski wie im Standardplan).
     let triFlip = 0;
     const sess = (o, date, i, when) => session(w.phase === 'taper' ? taperKey(o) : o, date, i, when, focus === 'tri' ? (triFlip++ % 2 ? 'bike' : 'run') : fSport);
@@ -573,7 +587,13 @@ export function generatePlan(opts, races = []) {
     const room = (day) => (opts.capFor ? opts.capFor(day.date) - day.sessions.reduce((a, x) => a + x.minutes, 0) - (day.sessions.length ? 30 : 0) : Infinity);
     // 1) Harte Einheiten auf die Wunschtage (Ruhetag und langer Tag ausgenommen, sonst nächster freier Tag).
     const hardUsed = new Set();
+    const baseF = fSport;
+    const realHard = Array.isArray(hardSlots) ? hardSlots.filter((x) => x !== 'opener').length : 0;
     hardSlots.forEach((slot, k) => {
+      // Allrounder: die letzte harte Einheit (bei nur einer jede zweite Woche) auf dem Rad bzw. beim Laufen.
+      fSport = baseF;
+      // Double Threshold: morgens bleibt Rollski, abends wechseln Laufen und Rad von Woche zu Woche.
+      if (mSeason && slot !== 'opener' && slot !== 'dt' && k === realHard - 1 && (realHard > 1 || wi % 2 === 1)) fSport = (realHard > 1 ? wi : Math.floor(wi / 2)) % 2 ? 'run' : 'bike';
       let dow = hardDays[k] ?? hardDays[hardDays.length - 1] ?? 3;
       const need = slot === 'dt' ? 70 : 60;
       if (slot !== 'opener') for (let tries = 0; tries < 7 && (!hardOk(dow) || hardUsed.has(dow) || room(days[dow - 1]) < need); tries++) dow = (dow % 7) + 1;
@@ -604,6 +624,7 @@ export function generatePlan(opts, races = []) {
           const x = sess(pm, day.date, rot++, 'nachmittags');
           // Mit Rad als Ersatz: auch die Abendeinheit auf dem Rad.
           if (fSport === 'bike' && pm.sport === 'run') x.sport = 'bike';
+          if (mSeason) x.sport = wi % 2 ? 'bike' : 'run';
           put(day, x);
         }
       } else if (slot === 'opener') {
@@ -625,6 +646,7 @@ export function generatePlan(opts, races = []) {
         if (o) put(day, sess(o, day.date, rot++));
       }
     });
+    fSport = baseF;
     // Rennen der Woche als Einheit eintragen (Dauer grob nach Distanz).
     for (const r of w.races || []) { const d = days.find((x) => x.date === r.date); if (d) put(d, { title: `Rennen: ${r.name}`, sport: raceSport(r.technique, r.date), minutes: Math.round((Number(r.distanceKm) || 15) * (RACE_MIN_PER_KM[raceSport(r.technique, r.date)] || 3.2) + 40), zone: 'I4', description: 'Inkl. Ein- und Auslaufen', kind: 'race' }); }
     // 2) Lange Einheit (ca. 22 % der Woche, 1,5–3,5 h), nicht in Renn-/Taperwochen mit Rennen am Wochenende.
@@ -632,9 +654,9 @@ export function generatePlan(opts, races = []) {
     if (keys.has('long') && !raceOnLong && !['race', 'recovery'].includes(w.phase)) {
       const min = Math.round(Math.min(240, room(days[longDay - 1]), Math.max(90, total * 0.22)) / 15) * 15;
       // Schwimmen: die lange Einheit als Ausfahrt (lange Schwimmeinheiten sind für Einsteiger wenig sinnvoll).
-      const longSport = fSport === 'swim' ? 'bike' : fSport || (focus === 'tri' ? 'bike' : null);
+      const longSport = fSport === 'swim' ? 'bike' : fSport || (focus === 'tri' ? 'bike' : null) || (mSeason ? [null, 'bike', 'run'][wi % 3] : null);
       const lg = longSport && LONG_BY_SPORT[longSport];
-      if (min >= 60) put(days[longDay - 1], lg ? { title: lg.title, sport: longSport, minutes: Math.min(min, lg.max), zone: 'I1', description: lg.description, kind: 'long' } : { title: 'Lange Grundlage', sport: specificSport(w.from, 1), minutes: min, zone: 'I1', description: 'Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)', kind: 'long' });
+      if (min >= 60) put(days[longDay - 1], lg ? { title: lg.title, sport: longSport, minutes: Math.min(min, mSeason && longSport === 'run' ? 120 : lg.max), zone: 'I1', description: lg.description, kind: 'long' } : { title: 'Lange Grundlage', sport: specificSport(w.from, 1), minutes: min, zone: 'I1', description: 'Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)', kind: 'long' });
     }
     // 3) Kraft auf Tage ohne harte Einheit.
     // Kraft: Vorbereitung wie gewählt, ab Wettkampfvorbereitung und in Erholungswochen höchstens 1× (Erhalt).
@@ -679,7 +701,8 @@ export function generatePlan(opts, races = []) {
     let swimCount = 0;
     const nextSwim = () => swimSession({ wi, weeks: weeks.length, k: swimCount++, cur: opts.swimPace, goal: opts.swimGoal });
     let techLeft = pr.weak?.some((x) => x === 'skate' || x === 'classic') && !['race', 'taper'].includes(w.phase) ? 1 : 0;
-    const share = per?.type === 'travel' ? 0.1 : focus ? Math.min(0.2, specificShare(w.phase, w.from, pr)) : specificShare(w.phase, w.from, pr);
+    let share = per?.type === 'travel' ? 0.1 : focus ? Math.min(0.2, specificShare(w.phase, w.from, pr)) : specificShare(w.phase, w.from, pr);
+    if (mSeason) share = Math.min(share, mon <= 8 ? 0.35 : 0.5);
     for (let i = 0; i < n; i++) {
       const d = slots[i];
       const min = Math.floor(Math.min(210, room(d), Math.max(40, easy / (n - i))) / 5) * 5;
@@ -688,7 +711,7 @@ export function generatePlan(opts, races = []) {
       // Schwerpunkt: Qualität in der Schwerpunkt-Sportart, der lockere Umfang bleibt gemischt (Schwerpunkt, Rollski, Rad bzw.
       // Laufen), damit Langlauf-Grundlage und Multisport erhalten bleiben. Mit focusMix: false nur die Schwerpunkt-Sportart.
       const easySport = easyMix(focus === 'tri' ? 'tri' : fSport || focus, i, d.date, wi);
-      const s = { title: (focus || fSport) ? `Locker (${EASY_NAME[easySport] || SPORT_NAME[easySport] || 'Rad'})` : 'Locker', sport: specific && !focus && !fSport ? specificSport(d.date, i + (pr.weak?.includes('classic') ? 1 : 0)) : easySport || (specific ? specificSport(d.date, i) : generalSport(pr, i + rot)), minutes: min, zone: 'I1', description: 'Grundlage I1, wirklich locker', kind: 'easy' };
+      const s = { title: (focus || fSport) ? `Locker (${EASY_NAME[easySport] || SPORT_NAME[easySport] || 'Rad'})` : 'Locker', sport: specific && !focus && !fSport ? specificSport(d.date, i + (pr.weak?.includes('classic') ? 1 : 0)) : easySport || (specific ? specificSport(d.date, i) : mSeason ? multiEasy() : generalSport(pr, i + rot)), minutes: min, zone: 'I1', description: 'Grundlage I1, wirklich locker', kind: 'easy' };
       // Triathlon-Block: die erste lockere Einheit der Woche als Koppeltraining Rad → Lauf (gewöhnt die Beine an den Wechsel).
       if (focus === 'tri' && i === 0 && ['build', 'specific'].includes(w.phase) && room(d) >= 80) { s.title = 'Koppeln: Rad → Lauf'; s.sport = 'bike'; s.minutes = 80; s.description = 'Rad 60 min locker, direkt danach Lauf 20 min locker. Der Wechsel Rad → Lauf ist im Triathlon der Knackpunkt.'; }
       // Schwimmen: Technik-Einheiten (für Einsteiger geeignet) im Schwerpunkt Schwimmen, eine pro Woche im Triathlon
@@ -703,7 +726,7 @@ export function generatePlan(opts, races = []) {
       if (!speedDone && specific && s.title === 'Locker') { s.title = 'Locker + Sprints'; s.description = 'Grundlage I1, gegen Ende 6–8× 10–15 s Sprint mit voller Pause'; speedLeft--; if (speedLeft <= 0) speedDone = true; }
       // Wer es nicht so ernst nimmt, legt die Sportart nicht fest: locker nach Lust (Spaß-Fokus außerhalb des Winters,
       // ambitioniert im Frühjahr/Frühsommer). Leistungsorientierte bekommen feste Sportarten.
-      if (!focus && !specific && s.title === 'Locker' && flexible(pr, d.date)) {
+      if (!focus && !mSeason && !specific && s.title === 'Locker' && flexible(pr, d.date)) {
         const liked = (pr.likes || []).map((x) => sportName(x)).filter(Boolean);
         s.sport = 'other'; s.title = 'Locker nach Lust';
         s.description = `Grundlage I1 – Sportart frei: ${liked.length ? liked.join(', ') + ' oder was sonst Spaß macht' : 'Rad, Laufen, Rollski, Wandern, Schwimmen … was Spaß macht'}`;
@@ -815,3 +838,22 @@ export function recommend(pr = {}, hours = 10) {
   if (pr.goal === 'short') reasons.push('Kurze Rennen: mehr Wettkampftempo und Sprints in der Wettkampfvorbereitung.');
   return { approach, keys: [...keys], strengthPerWeek: weak.includes('strength') ? 3 : pr.seriousness === 'fun' ? 1 : 2, reasons };
 }
+
+// Berater: welche Rad- und Laufeinheit wann (für Allrounder bzw. Sommer neben dem Langlauf).
+// Reihenfolge = Saisonverlauf. ids verweisen auf KEY_OPTIONS (Name, Ablauf und „Warum“ kommen von dort).
+export const SESSION_GUIDE = [
+  { sport: 'bike', title: 'Rad', blocks: [
+    { when: 'Mai–Juli (Grundlage)', ids: ['bike_ka6x6', 'bike_sweet2x15', 'bike_2x20'], tip: 'Lange lockere Ausfahrten (2–4 h) sind der Kern; dazu 1× pro Woche oder alle zwei Wochen Kraftausdauer bzw. Sweet Spot.' },
+    { when: 'August–Oktober (Aufbau)', ids: ['bike_3x12', 'bike_overunder', 'bike_hit5x4', 'bike_40_20', 'bike_climb5x6'], tip: 'Schwelle und VO2max im Wechsel mit dem Laufen; am Berg, weil das dem Langlauf am nächsten kommt.' },
+    { when: 'Vor einem Radrennen', ids: ['bike_climb_tt', 'bike_tempo2x30'], tip: 'Bergzeitfahren: Simulation im Renntempo, Start kontrollieren. Marathon: langes Dauertempo mit Verpflegung.' },
+  ] },
+  { sport: 'run', title: 'Laufen', blocks: [
+    { when: 'Mai–Juli (Grundlage)', ids: ['run_fartlek', 'run_tempo4x8', 'hit_hill8x4'], tip: 'Lockere Läufe und ein langer Lauf (bis ca. 2 h); Umfang höchstens ca. 10 % pro Woche steigern. Bergläufe sind ideal für Langläufer.' },
+    { when: 'August–Oktober (Aufbau)', ids: ['run_tempo3x12', 'run_dauer25', 'run_6x1000', 'run_10k5x4'], tip: 'Schwelle und VO2max im Wechsel mit dem Rad; Bergläufe und Imitation (Skigang mit Stöcken) bleiben.' },
+    { when: 'Vor einem Laufrennen', ids: ['run_hm3x10', 'run_mp3x15', 'run_10k5x4'], tip: 'Renntempo üben (10 km, Halbmarathon, Marathon), in der letzten Woche nur noch kurz und knackig.' },
+  ] },
+];
+export const PROFILE_INFO = {
+  ski: 'Langlauf zuerst: im Sommer vor allem Rollski, Laufen und Rad als Ergänzung (meist locker).',
+  multi: 'Allrounder: von April bis Oktober Rollski, Laufen und Rad etwa gleichwertig. Jede Woche bleibt eine harte Rollski-Einheit; die zweite harte Einheit wechselt zwischen Rad und Laufen, die lange Einheit zwischen Rollski, Rad und Laufen. Ab November wird es wieder langlaufspezifisch, damit der Winter nicht leidet.',
+};

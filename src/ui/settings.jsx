@@ -228,7 +228,8 @@ function TrainingPeaksFeed() {
     try {
       update((d) => ({ ...d, settings: { ...d.settings, tpFeedUrl: u.trim() } }));
       const n = await syncTrainingPeaks(u.trim());
-      toast(`TrainingPeaks: ${n} Einheit(en) neu im Kalender`);
+      const own = syncTrainingPeaks.lastReplaced;
+      toast(`TrainingPeaks: ${n} Einheit(en) neu im Kalender${own ? `, ${own} App-Einheiten in diesen Wochen entfernt` : ''}`);
     } catch (e) { toast(e.message); }
     setBusy(false);
   };
@@ -242,7 +243,7 @@ function TrainingPeaksFeed() {
         {settings.tpFeedUrl && <button className="ghost" onClick={() => { update((d) => ({ ...d, settings: { ...d.settings, tpFeedUrl: '' } })); setUrl(''); }}><Unlink size={16} />Entfernen</button>}
       </div>
       {settings.tpLastSync && <p className="small muted">Zuletzt geholt: {new Date(settings.tpLastSync).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })} · {settings.tpLastCount ?? 0} Termine im Feed</p>}
-      <p className="small muted" style={{ marginBottom: 0 }}>Danach bei jedem „Abgleichen“ automatisch. Der Feed reicht ca. 5 Tage zurück und 14 Tage voraus. Hat die Trainerin umgeplant, werden offene TrainingPeaks-Einheiten ersetzt; erledigte und eigene bleiben. Dauer, Sportart und Zone liest die App aus Titel und Beschreibung, also bitte einmal prüfen.</p>
+      <p className="small muted" style={{ marginBottom: 0 }}>Danach bei jedem „Abgleichen“ automatisch. Der Feed reicht ca. 5 Tage zurück und 14 Tage voraus. Der Plan der Trainerin hat Vorrang: In jeder Woche mit TrainingPeaks-Einheiten werden alle offenen Einheiten aus der App (Saisonplan, KI-Coach, eigene) entfernt, und Saisonplan bzw. KI-Coach tragen dort nichts mehr ein. Erledigte Einheiten bleiben. Dauer, Sportart und Zone liest die App aus Titel und Beschreibung, also bitte einmal prüfen.</p>
     </div>
   );
 }
