@@ -6,7 +6,7 @@ import { today, weeks as weekStats } from '../lib/activities.js';
 import { addDays } from '../lib/metrics.js';
 import { sportLabel, SPORTS } from '../lib/sports.js';
 import { PHASES, PRIORITY_INFO, raceAdvice } from '../lib/season.js';
-import { parsePace, focusBlockOn, raceKind, focusSuggestions, FOCUS_OPTIONS, focusOn, noSnowOn, APPROACHES, KEY_TYPES, allOptions, makeKey, PLAN_SOURCES, GOALS, SESSION_GUIDE, PROFILE_INFO, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend, hardDayCount, suggestHardDays, checkHardDays } from '../lib/plan-wizard.js';
+import { parsePace, focusBlockOn, raceKind, focusSuggestions, FOCUS_OPTIONS, focusOn, noSnowOn, APPROACHES, KEY_TYPES, allOptions, makeKey, PLAN_SOURCES, GOALS, SESSION_GUIDE, PROFILE_INFO, PROFILES, MIX_KEYS, profileMix, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend, hardDayCount, suggestHardDays, checkHardDays } from '../lib/plan-wizard.js';
 import { Sheet, fmtDate, fmtNum, toast } from './common.jsx';
 import { freeMinutes, hasSchedule, periodForWeek, busyOn } from '../lib/week-adapt.js';
 
@@ -93,8 +93,9 @@ export function PlanWizard({ onClose }) {
         <label>Ziel</label>
         <div className="chips">{GOALS.map(([id, l]) => <button key={id} className={`chip${pr.goal === id ? ' on' : ''}`} onClick={() => setPr('goal', id)}>{l}</button>)}</div>
         <label>Profil</label>
-        <div className="chips">{[['ski', 'Langlauf zuerst'], ['multi', 'Allrounder: Langlauf, Laufen, Rad']].map(([id, l]) => <button key={id} className={`chip${(pr.multi || 'ski') === id ? ' on' : ''}`} onClick={() => setPr('multi', id)}>{l}</button>)}</div>
+        <div className="chips">{PROFILES.map((p) => <button key={p.id} className={`chip${(pr.multi || 'ski') === p.id ? ' on' : ''}`} onClick={() => set('profile', { ...pr, multi: p.id, mix: undefined })}>{p.label}</button>)}</div>
         <p className="muted small">{PROFILE_INFO[pr.multi || 'ski']}</p>
+        {(pr.multi || 'ski') !== 'ski' && <MixSliders pr={pr} set={(mix) => set('profile', { ...pr, mix })} />}
         <SessionGuide />
         <label>Wie ernst nimmst du es?</label>
         <div className="chips">{SERIOUSNESS.map(([id, l]) => <button key={id} className={`chip${pr.seriousness === id ? ' on' : ''}`} onClick={() => setPr('seriousness', id)}>{l}</button>)}</div>
@@ -488,5 +489,24 @@ export function SessionGuide() {
       ))}
       <p className="muted small" style={{ marginBottom: 0 }}>Grundregel: höchstens 2–3 harte Einheiten pro Woche über alle Sportarten zusammen, nicht zwei harte Tage hintereinander. Für „multipel gut“ zählt vor allem viel lockerer Umfang in allen Sportarten; Intensität im Wechsel.</p>
     </details>
+  );
+}
+
+// Regler: wie stark Ski/Rollski, Rad und Laufen im Plan vorkommen (Anteile werden auf 100 % umgerechnet).
+const MIX_LABEL = { ski: '⛷️ Ski / Rollski', bike: '🚴 Rad', run: '🏃 Laufen' };
+function MixSliders({ pr, set }) {
+  const mix = profileMix(pr);
+  const raw = { ...(PROFILES.find((p) => p.id === pr.multi)?.mix || {}), ...(pr.mix || {}) };
+  return (
+    <div className="card" style={{ padding: 12 }}>
+      <b>Gewichtung</b>
+      {MIX_KEYS.map((k) => (
+        <div key={k} style={{ marginTop: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>{MIX_LABEL[k]}</span><b>{mix[k]} %</b></div>
+          <input type="range" min="0" max="100" step="5" value={Number(raw[k]) || 0} aria-label={MIX_LABEL[k]} onChange={(e) => set({ ...raw, [k]: Number(e.target.value) })} style={{ width: '100%', accentColor: 'var(--accent)' }} />
+        </div>
+      ))}
+      <p className="muted small" style={{ marginBottom: 0 }}>Gilt für lockeren Umfang, harte Einheiten und die lange Einheit{pr.multi === 'multi' ? ' von April bis Oktober (im Winter bleibt Langlauf vorn)' : ''}. Ein Rennschwerpunkt (z. B. 4 Wochen vor einem Laufrennen) hat Vorrang. Tipp: Über 2–3 harte Einheiten pro Woche über alle Sportarten zusammen hinaus wird es zu viel.</p>
+    </div>
   );
 }

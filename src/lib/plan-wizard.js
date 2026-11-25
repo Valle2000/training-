@@ -184,6 +184,29 @@ export const KEY_OPTIONS = [
   K('run_fartlek', 'threshold', 6, 4, 2, { sport: 'run', warm: 15, cool: 10, name: 'Laufen Fahrtspiel: 6×4 min', note: 'im Gelände nach Gefühl an der Schwelle, bergauf ruhig etwas mehr' }),
   K('bike_ka6x6', 'threshold', 6, 6, 3, { sport: 'bike', zone: 'I3', warm: 20, cool: 15, name: 'Rad Kraftausdauer: 6×6 min (50–60 U/min)', note: 'am Berg oder mit großem Gang, niedrige Trittfrequenz, Oberkörper ruhig' }),
   K('bike_40_20', 'hit', 10, 40, 20, { unit: 's', restUnit: 's', sets: 3, setRest: 5, zone: 'I5', sport: 'bike', warm: 20, cool: 15, name: 'Rad VO2max kurz (I5): 3×(10×40/20 s)', note: 'hohe Trittfrequenz, jede Serie gleich stark' }),
+  // Weitere Rad-Intervalle
+  K('bike_4x8', 'hit', 4, 8, 2, { sport: 'bike', zone: 'I4', warm: 20, cool: 15, name: 'Rad 4×8 min (I4)', note: 'so hart, dass alle vier gleich stark gelingen' }),
+  K('bike_6x3', 'hit', 6, 3, 3, { sport: 'bike', zone: 'I4', warm: 20, cool: 15, name: 'Rad VO2max: 6×3 min' }),
+  K('bike_8x2', 'hit', 8, 2, 2, { sport: 'bike', zone: 'I5', warm: 20, cool: 15, name: 'Rad hart (I5): 8×2 min' }),
+  K('bike_15_15', 'hit', 12, 15, 15, { unit: 's', restUnit: 's', sets: 3, setRest: 5, zone: 'I5', sport: 'bike', warm: 20, cool: 15, name: 'Rad Microintervalle (I5): 3×(12×15/15 s)', note: 'hohe Trittfrequenz, nicht voll sprinten' }),
+  K('bike_pyr', 'hit', 7, 2.3, 2, { sport: 'bike', zone: 'I4', name: 'Rad Pyramide (I4): 1-2-3-4-3-2-1 min', desc: '20 min ein, 1-2-3-4-3-2-1 min hart (I4), Pause jeweils halb so lang wie das Intervall davor, 15 min aus' }),
+  K('bike_sprints', 'hit', 8, 12, 5, { unit: 's', restUnit: 'min', zone: 'I5', sport: 'bike', warm: 25, cool: 15, name: 'Rad Sprints: 8×12 s', note: 'aus dem Rollen voll antreten, lange lockere Pause – Kraft und Spritzigkeit, kaum Ermüdung' }),
+  K('bike_ss3x20', 'threshold', 3, 20, 5, { sport: 'bike', warm: 15, cool: 15, name: 'Rad Sweet Spot: 3×20 min', note: '88–94 % der FTP, viel Zeit im wirksamen Bereich' }),
+  K('bike_climb3x15', 'threshold', 3, 15, 5, { sport: 'bike', warm: 20, cool: 15, name: 'Rad Berg-Schwelle: 3×15 min', note: 'längere Anstiege, sitzend, gleichmäßig' }),
+  K('bike_tempo60', 'threshold', 1, 60, 0, { sport: 'bike', zone: 'I2', warm: 20, cool: 15, name: 'Rad Tempo: 60 min am Stück (I2)', note: 'zügig, aber deutlich unter der Schwelle' }),
+  K('bike_tt20', 'race', 1, 20, 0, { sport: 'bike', warm: 25, cool: 15, name: 'Rad 20-min-Zeitfahren (FTP-Test)', note: 'gleichmäßig voll, Durchschnitt × 0,95 ≈ FTP' }),
+  K('brick_bike_run', 'threshold', 2, 25, 5, { sport: 'bike', warm: 15, cool: 10, name: 'Koppel Rad + Lauf: 2×(15 min Rad + 10 min Lauf)', desc: '15 min Rad ein, 2 Runden: 15 min Rad an der Schwelle, sofort 10 min Laufen an der Schwelle, 5 min locker. 10 min auslaufen' }),
+  // Weitere Lauf-Intervalle
+  K('run_4x4', 'hit', 4, 4, 3, { sport: 'run', zone: 'I4', warm: 15, cool: 10, name: 'Laufen 4×4 min (norwegisch)', note: '90–95 % HFmax, 3 min Trabpause' }),
+  K('run_8x400', 'hit', 8, 80, 60, { unit: 's', restUnit: 's', sport: 'run', zone: 'I5', warm: 15, cool: 10, name: 'Laufen 8×400 m (ca. 80 s)', note: 'etwa 3-km-Tempo, locker und schnell, nicht verkrampfen' }),
+  K('run_30_30', 'hit', 10, 30, 30, { unit: 's', restUnit: 's', sets: 2, setRest: 4, sport: 'run', zone: 'I5', warm: 15, cool: 10, name: 'Laufen 2×(10×30/30 s)', note: '30 s schnell, 30 s Trab' }),
+  K('run_hill10x60', 'hit', 10, 1, 2, { sport: 'run', zone: 'I5', warm: 15, cool: 10, name: 'Kurze Bergläufe: 10×60 s', note: 'steil bergauf, kraftvoll, gehend/trabend zurück' }),
+  K('run_ladder', 'hit', 5, 2.8, 2, { sport: 'run', zone: 'I4', name: 'Laufen Leiter (I4): 2-3-4-3-2 min', desc: '15 min ein, 2-3-4-3-2 min hart (I4), je 2 min Trabpause, 10 min aus', warm: 15, cool: 10 }),
+  K('run_3x2000', 'hit', 3, 8, 3, { sport: 'run', zone: 'I4', warm: 15, cool: 10, name: 'Laufen 3×2000 m (ca. 8 min)', note: 'etwa 10-km-Renntempo' }),
+  K('run_cruise5x6', 'threshold', 5, 6, 1, { sport: 'run', warm: 15, cool: 10, name: 'Laufen Schwelle: 5×6 min, kurze Pause', note: 'kontrolliert, 1 min Trab – viel Schwellenzeit' }),
+  K('run_tempo2x20', 'threshold', 2, 20, 3, { sport: 'run', warm: 15, cool: 10, name: 'Laufen Schwelle: 2×20 min', note: 'untere Schwelle, gleichmäßig' }),
+  K('run_progress', 'threshold', 3, 10, 1, { sport: 'run', warm: 15, cool: 10, name: 'Steigerungslauf: 3×10 min', desc: '15 min ein, 3×10 min ohne Pause steigernd: I2 – untere Schwelle – Schwelle, 10 min aus' }),
+  K('run_mixed_hill', 'threshold', 6, 5, 2, { sport: 'run', warm: 15, cool: 10, name: 'Wellige Schwelle: 6×5 min im Gelände', note: 'bergauf und flach gemischt, Puls an der Schwelle halten' }),
   K('bike_2x20', 'threshold', 2, 20, 5, { sport: 'bike', warm: 20, cool: 15, name: 'Rad Schwelle: 2×20 min', note: 'Watt gleichmäßig halten, untere FTP-Grenze' }),
   K('bike_3x12', 'threshold', 3, 12, 4, { sport: 'bike', warm: 20, cool: 15, name: 'Rad Schwelle: 3×12 min', note: 'etwas über der Schwelle möglich, aber nicht steigern' }),
   K('bike_sweet2x15', 'threshold', 2, 15, 4, { sport: 'bike', warm: 20, cool: 15, name: 'Rad Sweet Spot: 2×15 min', note: 'knapp unter der Schwelle, zügig und kontrolliert' }),
@@ -260,6 +283,27 @@ const WHY = {
   run_fartlek: 'Schwelle im Gelände ohne Uhr-Stress: trainiert Tempogefühl und Kraft am Hügel, nah am Langlauf.',
   bike_ka6x6: 'Kraftausdauer mit niedriger Trittfrequenz: viel Kraft pro Tritt bei moderatem Puls – überträgt sich gut auf Anstiege und Doppelstock.',
   bike_40_20: 'Kurze Intervalle mit kurzen Pausen sammeln viel Zeit nahe VO2max, ohne dass die einzelnen Abschnitte zermürben.',
+  bike_4x8: 'In einer bekannten Studie (Seiler et al. 2013) brachten 4×8 min etwas mehr als 4×4 oder 4×16 min: lange genug für viel Zeit nahe VO2max, aber noch mit hoher Leistung.',
+  bike_6x3: 'Kurze VO2max-Intervalle, gut zum Einstieg in härtere Rad-Einheiten.',
+  bike_8x2: 'Sehr hart und kurz – für Tempohärte und Antritte am Berg; sparsam einsetzen.',
+  bike_15_15: 'Viele kurze Abschnitte mit kurzer Pause: hohe Sauerstoffaufnahme über lange Zeit, fühlt sich trotzdem machbar an.',
+  bike_pyr: 'Abwechslungsreich: kurze und lange harte Abschnitte in einer Einheit.',
+  bike_sprints: 'Neuromuskulär: mehr Kraft und Spritzigkeit, kaum Ermüdung – passt auch in eine lockere Woche.',
+  bike_ss3x20: 'Sweet Spot: viel Wirkung auf die Schwelle bei überschaubarer Ermüdung, gut für viel Radumfang.',
+  bike_climb3x15: 'Lange Anstiege an der Schwelle – Langlauf-nah, weil Kraft und Ausdauer am Berg gefragt sind.',
+  bike_tempo60: 'Lange zügige Fahrt: Ermüdungsresistenz und Fettstoffwechsel, für Marathon und Radrennen.',
+  bike_tt20: 'Test und Training zugleich: zeigt die aktuelle FTP für Wattbereiche.',
+  brick_bike_run: 'Kombi Rad und Laufen: die Beine lernen den Wechsel, viel Schwellenzeit bei verteilter Belastung.',
+  run_4x4: 'Der Klassiker: In einer Studie verbesserten 4×4 min die VO2max deutlich stärker als lockeres Laufen (Helgerud et al. 2007).',
+  run_8x400: 'Kurz und schnell: Laufökonomie und Tempo, wenig Gesamtbelastung.',
+  run_30_30: 'Viel Zeit nahe VO2max in kleinen Häppchen – gut verträglich, auch auf weichem Untergrund.',
+  run_hill10x60: 'Kurze steile Bergläufe: Kraft und Spritzigkeit, schonender für Gelenke als Sprints im Flachen.',
+  run_ladder: 'Abwechslung im harten Bereich: trainiert Tempogefühl bei verschiedenen Längen.',
+  run_3x2000: 'Lange 10-km-Tempo-Intervalle: Tempohärte für 10 km bis Halbmarathon.',
+  run_cruise5x6: 'Viele Schwellenminuten mit kurzen Pausen – nach Daniels die Basis für Laufleistung.',
+  run_tempo2x20: 'Lange Schwellenblöcke: Ermüdungsresistenz für Halbmarathon und Marathon.',
+  run_progress: 'Steigernd: lernt das Einteilen und endet kontrolliert hart.',
+  run_mixed_hill: 'Schwelle im welligen Gelände – nah am Langlauf, wo das Gelände ständig wechselt.',
   bike_2x20: 'Radschwelle mit zwei langen Blöcken: Watt halten, Wirkung auf die aerobe Schwelle ohne hohe Stoßbelastung.',
   bike_3x12: 'Kürzere Radschwellenblöcke, gut dosierbar und nach längeren Pausen als Einstieg.',
   bike_sweet2x15: 'Sweet Spot knapp unter der Schwelle: viel Wirkung bei überschaubarer Erholung.',
@@ -494,6 +538,7 @@ export function generatePlan(opts, races = []) {
     return cycle[i % cycle.length];
   };
   let rot = 0, buildIdx = 0, rotIdx = 0, prevHours = null;
+  const hardCred = { ski: 0, bike: 0, run: 0 }, longCred = { ski: 0, bike: 0, run: 0 };
   const pickHit = (zone, k, sport = null, pref = null, strict = false) => { const sp = sport ? options.filter((o) => o.type === 'hit' && o.zone === zone && o.sport === sport) : []; const spp = pref ? sp.filter((o) => pref.has(o.id)) : []; const spk = sp.filter((o) => keys.has(o.id)); const list = spp.length ? spp : spk.length ? spk : sp.length ? sp : options.filter((o) => o.type === 'hit' && o.zone === zone && keys.has(o.id)); const idx = sp.length ? Math.floor(k / 2) : k; if (strict) { const ord = [...pref]; spp.sort((x, y) => ord.indexOf(x.id) - ord.indexOf(y.id)); return spp.length ? spp[(strict === 'first' ? 0 : idx) % spp.length] : null; } return list.length ? list[idx % list.length] : null; };
   return weeks.map((w, wi) => {
     const apw = phaseAp(w.phase);
@@ -508,12 +553,14 @@ export function generatePlan(opts, races = []) {
     // Schwerpunkt vor einem bestimmten Rennen: Einheiten der passenden Rennart bevorzugen (z. B. Marathontempo vor dem Marathon).
     const fKind = opts.focusKindFor ? opts.focusKindFor(w.from) : null;
     const fPref = fKind ? new Set(APPROACHES.find((a) => a.id === fKind)?.defaults || []) : null;
-    // Allrounder (Profil „multi“): von April bis Oktober ohne Schwerpunkt Rad und Laufen gleichwertig neben Rollski –
-    // eine harte Einheit wechselt zwischen Rad und Laufen, die lange Einheit zwischen Rollski, Rad und Laufen.
+    // Profil mit Gewichtung (Regler Ski/Rollski, Rad, Laufen): Langlauf-Allrounder von April bis Oktober, Kombi Rad + Laufen,
+    // Laufen und Rad das ganze Jahr. Lockerer Umfang, harte Einheiten und lange Einheit werden nach den Anteilen verteilt.
     const mon = Number(w.from.slice(5, 7));
-    const mSeason = pr.multi === 'multi' && !fSport && !fKind && !focus && mon >= 4 && mon <= 10 && !['taper', 'race'].includes(w.phase);
-    let mEasy = wi;
-    const multiEasy = () => { const pool = ['bike', 'run'].filter((x) => !(pr.dislikes || []).includes(x)); return pool.length ? pool[mEasy++ % pool.length] : 'run'; };
+    const prof = pr.multi || 'ski';
+    const mSeason = prof !== 'ski' && !fSport && !fKind && !focus && (prof !== 'multi' || (mon >= 4 && mon <= 10)) && !['taper', 'race'].includes(w.phase);
+    const mix = profileMix(pr);
+    const pickMix = (cred) => { let best = null; for (const k of MIX_KEYS) { if (!(mix[k] > 0)) continue; cred[k] += mix[k]; if (!best || cred[k] > cred[best]) best = k; } if (best) cred[best] -= 100; return best; };
+    const mixSport = (k, date, i) => (k === 'ski' ? specificSport(date, i) : k);
     // Triathlon: harte Einheiten wechseln zwischen Lauf und Rad (sonst Rollski wie im Standardplan).
     let triFlip = 0;
     const sess = (o, date, i, when) => session(w.phase === 'taper' ? taperKey(o) : o, date, i, when, focus === 'tri' ? (triFlip++ % 2 ? 'bike' : 'run') : fSport);
@@ -590,10 +637,9 @@ export function generatePlan(opts, races = []) {
     const baseF = fSport;
     const realHard = Array.isArray(hardSlots) ? hardSlots.filter((x) => x !== 'opener').length : 0;
     hardSlots.forEach((slot, k) => {
-      // Allrounder: die letzte harte Einheit (bei nur einer jede zweite Woche) auf dem Rad bzw. beim Laufen.
+      // Profil mit Gewichtung: Sportart jeder harten Einheit nach den Anteilen (über die Wochen ausgeglichen).
       fSport = baseF;
-      // Double Threshold: morgens bleibt Rollski, abends wechseln Laufen und Rad von Woche zu Woche.
-      if (mSeason && slot !== 'opener' && slot !== 'dt' && k === realHard - 1 && (realHard > 1 || wi % 2 === 1)) fSport = (realHard > 1 ? wi : Math.floor(wi / 2)) % 2 ? 'run' : 'bike';
+      if (mSeason && slot !== 'opener' && slot !== 'dt') { const m = pickMix(hardCred); fSport = m === 'ski' ? null : m; }
       let dow = hardDays[k] ?? hardDays[hardDays.length - 1] ?? 3;
       const need = slot === 'dt' ? 70 : 60;
       if (slot !== 'opener') for (let tries = 0; tries < 7 && (!hardOk(dow) || hardUsed.has(dow) || room(days[dow - 1]) < need); tries++) dow = (dow % 7) + 1;
@@ -606,25 +652,34 @@ export function generatePlan(opts, races = []) {
         // Zweimal am Tag: immer, nie, oder nur an Tagen ohne Termin (Uni, Arbeit) – auto.
         const busy = opts.busyFor ? opts.busyFor(day.date) : false;
         const twice = opts.dtDouble === 'always' || (opts.dtDouble !== 'never' && !busy);
+        // Profil mit Gewichtung: Sportart je Hälfte nach Anteil; auf Rad/Laufen die sportartspezifischen Schwelleneinheiten
+        // (morgens längere Blöcke, abends kürzere), damit es abwechslungsreich bleibt.
+        const amM = mSeason ? pickMix(hardCred) : null, pmM = mSeason && twice ? pickMix(hardCred) : null;
+        const thrFor = (m, part) => { const l = options.filter((o) => o.type === 'threshold' && o.sport === m && o.zone === 'I3' && !o.id.startsWith('brick') && (part === 'am' ? o.spec?.work >= 8 : o.spec?.work < 8)); return l.length ? l[wi % l.length] : null; };
+        const amO = amM && amM !== 'ski' ? thrFor(amM, 'am') || am : am;
+        const pmO = pmM && pmM !== 'ski' ? thrFor(pmM, 'pm') || pm : pmM && pm?.id === 'dtpm_25x400' ? optionById('dt_pm') : pm;
         if (!twice && am) {
           // Eine Schwelleneinheit statt zwei: der Tag bleibt frei, die Schwelle bleibt drin.
-          const single = pickByType('threshold', rot, fSport, fPref) || optionById('thr_6x10');
-          put(day, sess(single, day.date, rot++, ''));
+          const single = (amM && amM !== 'ski' && thrFor(amM, 'am')) || pickByType('threshold', rot, fSport, fPref) || optionById('thr_6x10');
+          const x = sess(single, day.date, rot++, '');
+          if (amM && amM !== 'ski') x.sport = amM;
+          put(day, x);
         } else if (am) {
-          const x = sess(am, day.date, rot++, 'vormittags');
+          const x = sess(amO, day.date, rot++, 'vormittags');
           // Double Threshold getrennt: morgens Rad (gelenkschonend), abends Laufen – im Laufen-Schwerpunkt.
           if (fSport === 'run' && opts.dtSplit !== false && x.sport !== 'bike' && am.sport === 'specific') x.sport = 'bike';
           // Morgens Double Threshold am SkiErg (Winter-Standard) oder Ski oder Rad – nach Einstellung.
           const amPref = opts.dtAmSport || 'auto';
           if (am.sport === 'specific' && (amPref === 'skierg' || (amPref === 'auto' && winter(day.date) && !fSport))) x.sport = 'skierg';
           if (am.sport === 'specific' && amPref === 'bike') x.sport = 'bike';
+          if (amM) { if (amM !== 'ski') x.sport = amM; else if (!isSki(x.sport) && x.sport !== 'skierg') x.sport = specificSport(day.date, 0); }
           put(day, x);
         }
-        if (twice && pm && room(day) >= pm.minutes) {
-          const x = sess(pm, day.date, rot++, 'nachmittags');
+        if (twice && pmO && room(day) >= pmO.minutes) {
+          const x = sess(pmO, day.date, rot++, 'nachmittags');
           // Mit Rad als Ersatz: auch die Abendeinheit auf dem Rad.
           if (fSport === 'bike' && pm.sport === 'run') x.sport = 'bike';
-          if (mSeason) x.sport = wi % 2 ? 'bike' : 'run';
+          if (pmM) x.sport = mixSport(pmM, day.date, 1);
           put(day, x);
         }
       } else if (slot === 'opener') {
@@ -654,9 +709,9 @@ export function generatePlan(opts, races = []) {
     if (keys.has('long') && !raceOnLong && !['race', 'recovery'].includes(w.phase)) {
       const min = Math.round(Math.min(240, room(days[longDay - 1]), Math.max(90, total * 0.22)) / 15) * 15;
       // Schwimmen: die lange Einheit als Ausfahrt (lange Schwimmeinheiten sind für Einsteiger wenig sinnvoll).
-      const longSport = fSport === 'swim' ? 'bike' : fSport || (focus === 'tri' ? 'bike' : null) || (mSeason ? [null, 'bike', 'run'][wi % 3] : null);
+      const longSport = fSport === 'swim' ? 'bike' : fSport || (focus === 'tri' ? 'bike' : null) || (mSeason ? ((m) => (m === 'ski' ? null : m))(pickMix(longCred)) : null);
       const lg = longSport && LONG_BY_SPORT[longSport];
-      if (min >= 60) put(days[longDay - 1], lg ? { title: lg.title, sport: longSport, minutes: Math.min(min, mSeason && longSport === 'run' ? 120 : lg.max), zone: 'I1', description: lg.description, kind: 'long' } : { title: 'Lange Grundlage', sport: specificSport(w.from, 1), minutes: min, zone: 'I1', description: 'Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)', kind: 'long' });
+      if (min >= 60) put(days[longDay - 1], lg ? { title: lg.title, sport: longSport, minutes: Math.min(min, mSeason && prof === 'multi' && longSport === 'run' ? 120 : lg.max), zone: 'I1', description: lg.description, kind: 'long' } : { title: 'Lange Grundlage', sport: specificSport(w.from, 1), minutes: min, zone: 'I1', description: 'Locker, viel Doppelstock, Verpflegung üben (60 g KH/h)', kind: 'long' });
     }
     // 3) Kraft auf Tage ohne harte Einheit.
     // Kraft: Vorbereitung wie gewählt, ab Wettkampfvorbereitung und in Erholungswochen höchstens 1× (Erhalt).
@@ -670,6 +725,9 @@ export function generatePlan(opts, races = []) {
       put(d, { title: ['Kraft A – Beine schwer + Zug', 'Kraft B – Hüfte, einbeinig + Doppelstock', 'Kraft JOE – Doppelstock-Fokus'][i % 3], sport: 'strength', minutes: 60, zone: 'Kraft', description: 'Vorlage im Tab „Kraft“', kind: 'strength' });
     }
     // 4) Rest mit lockeren Einheiten füllen (45–150 min, höchstens 2 Einheiten pro Tag).
+    // Profil mit Gewichtung: jeweils die Sportart, die gemessen an ihrem Anteil am weitesten zurückliegt.
+    const mixHave = (k) => days.flatMap((x) => x.sessions).filter((x) => (k === 'ski' ? isSki(x.sport) || x.sport === 'skierg' : x.sport === k)).reduce((a, x) => a + x.minutes, 0);
+    const mixDeficit = () => MIX_KEYS.filter((k) => mix[k] > 0).sort((a, b) => (mix[b] / 100) * total - mixHave(b) - ((mix[a] / 100) * total - mixHave(a)))[0] || 'run';
     let easy = Math.max(0, total - used);
     // Freie Plätze: erst jeder Tag einmal, dann (bei Doppeltagen) ein zweites Mal – höchstens 2 Einheiten pro Tag.
     // Zwei Einheiten am Tag nur, wenn ausdrücklich gewünscht (Double-Threshold-Tage sind ohnehin zwei Einheiten).
@@ -702,16 +760,15 @@ export function generatePlan(opts, races = []) {
     const nextSwim = () => swimSession({ wi, weeks: weeks.length, k: swimCount++, cur: opts.swimPace, goal: opts.swimGoal });
     let techLeft = pr.weak?.some((x) => x === 'skate' || x === 'classic') && !['race', 'taper'].includes(w.phase) ? 1 : 0;
     let share = per?.type === 'travel' ? 0.1 : focus ? Math.min(0.2, specificShare(w.phase, w.from, pr)) : specificShare(w.phase, w.from, pr);
-    if (mSeason) share = Math.min(share, mon <= 8 ? 0.35 : 0.5);
     for (let i = 0; i < n; i++) {
       const d = slots[i];
       const min = Math.floor(Math.min(210, room(d), Math.max(40, easy / (n - i))) / 5) * 5;
       if (min < 30) { if (room(d) < 30) continue; break; }
-      const specific = (i / Math.max(1, n)) < share;
+      const specific = !mSeason && (i / Math.max(1, n)) < share;
       // Schwerpunkt: Qualität in der Schwerpunkt-Sportart, der lockere Umfang bleibt gemischt (Schwerpunkt, Rollski, Rad bzw.
       // Laufen), damit Langlauf-Grundlage und Multisport erhalten bleiben. Mit focusMix: false nur die Schwerpunkt-Sportart.
       const easySport = easyMix(focus === 'tri' ? 'tri' : fSport || focus, i, d.date, wi);
-      const s = { title: (focus || fSport) ? `Locker (${EASY_NAME[easySport] || SPORT_NAME[easySport] || 'Rad'})` : 'Locker', sport: specific && !focus && !fSport ? specificSport(d.date, i + (pr.weak?.includes('classic') ? 1 : 0)) : easySport || (specific ? specificSport(d.date, i) : mSeason ? multiEasy() : generalSport(pr, i + rot)), minutes: min, zone: 'I1', description: 'Grundlage I1, wirklich locker', kind: 'easy' };
+      const s = { title: (focus || fSport) ? `Locker (${EASY_NAME[easySport] || SPORT_NAME[easySport] || 'Rad'})` : 'Locker', sport: specific && !focus && !fSport ? specificSport(d.date, i + (pr.weak?.includes('classic') ? 1 : 0)) : easySport || (specific ? specificSport(d.date, i) : mSeason ? mixSport(mixDeficit(), d.date, i) : generalSport(pr, i + rot)), minutes: min, zone: 'I1', description: 'Grundlage I1, wirklich locker', kind: 'easy' };
       // Triathlon-Block: die erste lockere Einheit der Woche als Koppeltraining Rad → Lauf (gewöhnt die Beine an den Wechsel).
       if (focus === 'tri' && i === 0 && ['build', 'specific'].includes(w.phase) && room(d) >= 80) { s.title = 'Koppeln: Rad → Lauf'; s.sport = 'bike'; s.minutes = 80; s.description = 'Rad 60 min locker, direkt danach Lauf 20 min locker. Der Wechsel Rad → Lauf ist im Triathlon der Knackpunkt.'; }
       // Schwimmen: Technik-Einheiten (für Einsteiger geeignet) im Schwerpunkt Schwimmen, eine pro Woche im Triathlon
@@ -746,6 +803,8 @@ export function generatePlan(opts, races = []) {
     if (opts.bikeFrom && opts.bikeTo) {
       for (const d of days) {
         if (bikeInSeason(d.date, opts.bikeFrom, opts.bikeTo)) continue;
+        // Profile ohne Ski (Rad, Laufen, Kombi): Rad bleibt Rad, aber drinnen auf der Rolle statt Ski/Rollski.
+        if (mSeason && !(mix.ski > 0)) { d.sessions = d.sessions.map((x) => (x.sport === 'bike' && x.kind !== 'race' && !/Rolle/.test(x.title) ? { ...x, title: `${x.title} (Rolle/drinnen)` } : x)); continue; }
         d.sessions = d.sessions.map((x, j) => {
           if (x.sport !== 'bike' || x.kind === 'race') return x;
           const to = x.kind === 'hard' ? (winter(d.date) ? 'skierg' : 'run')
@@ -839,21 +898,40 @@ export function recommend(pr = {}, hours = 10) {
   return { approach, keys: [...keys], strengthPerWeek: weak.includes('strength') ? 3 : pr.seriousness === 'fun' ? 1 : 2, reasons };
 }
 
+// Profile: Anteile Ski/Rollski, Rad, Laufen (Standard; mit den Reglern im Assistenten anpassbar).
+export const MIX_KEYS = ['ski', 'bike', 'run'];
+export const PROFILES = [
+  { id: 'ski', label: 'Langlauf', mix: null, info: 'Langlauf zuerst: im Sommer vor allem Rollski, Laufen und Rad als Ergänzung (meist locker).' },
+  { id: 'multi', label: 'Langlauf-Allrounder', mix: { ski: 50, bike: 25, run: 25 }, info: 'Von April bis Oktober nach deinen Anteilen Rollski, Rad und Laufen – locker, hart und lang. Ab November wieder langlaufspezifisch, damit der Winter nicht leidet.' },
+  { id: 'runbike', label: 'Kombi Rad + Laufen', mix: { ski: 0, bike: 50, run: 50 }, info: 'Rad und Laufen das ganze Jahr nach deinen Anteilen, Ski/Rollski nur, wenn du den Regler hochziehst. Koppeleinheiten Rad → Lauf gehören dazu.' },
+  { id: 'run', label: 'Laufen', mix: { ski: 0, bike: 20, run: 80 }, info: 'Läufer-Profil: vor allem Laufen, Rad als gelenkschonender Zusatzumfang.' },
+  { id: 'bike', label: 'Rad', mix: { ski: 0, bike: 80, run: 20 }, info: 'Rad-Profil: vor allem Rad, etwas Laufen für die Knochen und Abwechslung.' },
+];
+// Anteile in Prozent (Summe 100). Regler-Werte (pr.mix) überschreiben die Standardwerte des Profils.
+export function profileMix(pr = {}) {
+  const p = PROFILES.find((x) => x.id === (pr.multi || 'ski')) || PROFILES[0];
+  if (!p.mix) return { ski: 100, bike: 0, run: 0 };
+  const m = { ...p.mix, ...(pr.mix || {}) };
+  for (const k of MIX_KEYS) { m[k] = Math.max(0, Number(m[k]) || 0); if ((pr.dislikes || []).includes(k === 'ski' ? 'rollerski' : k) && pr.mix?.[k] == null) m[k] = 0; }
+  const sum = MIX_KEYS.reduce((a, k) => a + m[k], 0) || 1;
+  return Object.fromEntries(MIX_KEYS.map((k) => [k, Math.round((m[k] / sum) * 100)]));
+}
+
 // Berater: welche Rad- und Laufeinheit wann (für Allrounder bzw. Sommer neben dem Langlauf).
 // Reihenfolge = Saisonverlauf. ids verweisen auf KEY_OPTIONS (Name, Ablauf und „Warum“ kommen von dort).
 export const SESSION_GUIDE = [
   { sport: 'bike', title: 'Rad', blocks: [
-    { when: 'Mai–Juli (Grundlage)', ids: ['bike_ka6x6', 'bike_sweet2x15', 'bike_2x20'], tip: 'Lange lockere Ausfahrten (2–4 h) sind der Kern; dazu 1× pro Woche oder alle zwei Wochen Kraftausdauer bzw. Sweet Spot.' },
-    { when: 'August–Oktober (Aufbau)', ids: ['bike_3x12', 'bike_overunder', 'bike_hit5x4', 'bike_40_20', 'bike_climb5x6'], tip: 'Schwelle und VO2max im Wechsel mit dem Laufen; am Berg, weil das dem Langlauf am nächsten kommt.' },
-    { when: 'Vor einem Radrennen', ids: ['bike_climb_tt', 'bike_tempo2x30'], tip: 'Bergzeitfahren: Simulation im Renntempo, Start kontrollieren. Marathon: langes Dauertempo mit Verpflegung.' },
+    { when: 'Mai–Juli (Grundlage)', ids: ['bike_ka6x6', 'bike_sweet2x15', 'bike_ss3x20', 'bike_2x20', 'bike_tempo60', 'bike_sprints'], tip: 'Lange lockere Ausfahrten (2–4 h) sind der Kern; dazu 1× pro Woche oder alle zwei Wochen Kraftausdauer bzw. Sweet Spot.' },
+    { when: 'August–Oktober (Aufbau)', ids: ['bike_3x12', 'bike_climb3x15', 'bike_overunder', 'bike_4x8', 'bike_hit5x4', 'bike_6x3', 'bike_pyr', 'bike_40_20', 'bike_15_15', 'bike_8x2', 'bike_climb5x6'], tip: 'Schwelle und VO2max im Wechsel mit dem Laufen; am Berg, weil das dem Langlauf am nächsten kommt.' },
+    { when: 'Vor einem Radrennen', ids: ['bike_climb_tt', 'bike_tempo2x30', 'bike_tt20'], tip: 'Bergzeitfahren: Simulation im Renntempo, Start kontrollieren. Marathon: langes Dauertempo mit Verpflegung.' },
   ] },
   { sport: 'run', title: 'Laufen', blocks: [
-    { when: 'Mai–Juli (Grundlage)', ids: ['run_fartlek', 'run_tempo4x8', 'hit_hill8x4'], tip: 'Lockere Läufe und ein langer Lauf (bis ca. 2 h); Umfang höchstens ca. 10 % pro Woche steigern. Bergläufe sind ideal für Langläufer.' },
-    { when: 'August–Oktober (Aufbau)', ids: ['run_tempo3x12', 'run_dauer25', 'run_6x1000', 'run_10k5x4'], tip: 'Schwelle und VO2max im Wechsel mit dem Rad; Bergläufe und Imitation (Skigang mit Stöcken) bleiben.' },
-    { when: 'Vor einem Laufrennen', ids: ['run_hm3x10', 'run_mp3x15', 'run_10k5x4'], tip: 'Renntempo üben (10 km, Halbmarathon, Marathon), in der letzten Woche nur noch kurz und knackig.' },
+    { when: 'Mai–Juli (Grundlage)', ids: ['run_fartlek', 'run_tempo4x8', 'run_progress', 'run_mixed_hill', 'hit_hill8x4', 'run_hill10x60'], tip: 'Lockere Läufe und ein langer Lauf (bis ca. 2 h); Umfang höchstens ca. 10 % pro Woche steigern. Bergläufe sind ideal für Langläufer.' },
+    { when: 'August–Oktober (Aufbau)', ids: ['run_cruise5x6', 'run_tempo3x12', 'run_tempo2x20', 'run_dauer25', 'run_4x4', 'run_6x1000', 'run_ladder', 'run_30_30', 'run_8x400'], tip: 'Schwelle und VO2max im Wechsel mit dem Rad; Bergläufe und Imitation (Skigang mit Stöcken) bleiben.' },
+    { when: 'Vor einem Laufrennen', ids: ['run_10k5x4', 'run_3x2000', 'run_hm3x10', 'run_mp3x15'], tip: 'Renntempo üben (10 km, Halbmarathon, Marathon), in der letzten Woche nur noch kurz und knackig.' },
+  ] },
+  { sport: 'brick', title: 'Kombi Rad + Laufen', blocks: [
+    { when: 'Ab Juni, vor Duathlon/Triathlon oder als Abwechslung', ids: ['brick_bike_run'], tip: 'Nach dem Rad direkt laufen gewöhnt die Beine an den Wechsel; locker auch als 60 min Rad + 15 min Lauf.' },
   ] },
 ];
-export const PROFILE_INFO = {
-  ski: 'Langlauf zuerst: im Sommer vor allem Rollski, Laufen und Rad als Ergänzung (meist locker).',
-  multi: 'Allrounder: von April bis Oktober Rollski, Laufen und Rad etwa gleichwertig. Jede Woche bleibt eine harte Rollski-Einheit; die zweite harte Einheit wechselt zwischen Rad und Laufen, die lange Einheit zwischen Rollski, Rad und Laufen. Ab November wird es wieder langlaufspezifisch, damit der Winter nicht leidet.',
-};
+export const PROFILE_INFO = Object.fromEntries(PROFILES.map((p) => [p.id, p.info]));

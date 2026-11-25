@@ -89,3 +89,27 @@ test('Allrounder: im Sommer Rad und Laufen gleichwertig, harte Rollski-Einheit b
   const longs = new Set(all.filter((s) => s.kind === 'long').map((s) => s.sport.replace(/_.*/, '')));
   assert.ok(longs.has('bike') && longs.has('run') && longs.has('rollerski'));
 });
+
+test('Profile und Regler: Anteile werden eingehalten', async () => {
+  const { generatePlan, profileMix } = await import('../src/lib/plan-wizard.js');
+  const share = (profile, from, to) => {
+    const opts = { startHours: 10, peakHours: 14, start: '2026-05-04', end: '2027-03-14', restDays: [1], longDay: 7, strengthPerWeek: 2, bikeFrom: 4, bikeTo: 10, profile };
+    const all = generatePlan(opts, [{ date: '2027-03-14', priority: 'A', name: 'E' }]).filter((w) => w.from >= from && w.from < to).flatMap((w) => w.days.flatMap((d) => d.sessions)).filter((s) => s.sport !== 'strength');
+    const tot = all.reduce((a, s) => a + s.minutes, 0), g = (re) => all.filter((s) => re.test(s.sport)).reduce((a, s) => a + s.minutes, 0) / tot * 100;
+    return { ski: g(/^(xc_|rollerski|skierg)/), bike: g(/^bike$/), run: g(/^run$/), all };
+  };
+  assert.deepEqual(profileMix({ multi: 'multi', mix: { ski: 20, bike: 20, run: 10 } }), { ski: 40, bike: 40, run: 20 });
+  assert.deepEqual(profileMix({}), { ski: 100, bike: 0, run: 0 });
+  const kombi = share({ multi: 'runbike' }, '2026-05-01', '2026-10-01');
+  assert.ok(Math.abs(kombi.bike - 50) < 8 && Math.abs(kombi.run - 50) < 8 && kombi.ski < 2, JSON.stringify(kombi));
+  const radlastig = share({ multi: 'multi', mix: { ski: 30, bike: 40, run: 30 } }, '2026-05-01', '2026-10-01');
+  assert.ok(radlastig.bike > radlastig.ski && Math.abs(radlastig.bike - 40) < 8, JSON.stringify(radlastig));
+  // Rad-Profil im Winter: Rad bleibt Rad (Rolle), kein Umbau auf Ski.
+  const bikeWinter = share({ multi: 'bike' }, '2026-12-01', '2027-02-01');
+  assert.ok(bikeWinter.bike > 60, JSON.stringify(bikeWinter));
+  assert.ok(bikeWinter.all.some((s) => /Rolle/.test(s.title)));
+  // Laufprofil: harte Einheiten vor allem beim Laufen, mit neuen Intervallformen
+  const run = share({ multi: 'run' }, '2026-05-01', '2026-10-01');
+  const hardRun = run.all.filter((s) => s.kind === 'hard' && s.sport === 'run');
+  assert.ok(new Set(hardRun.map((s) => s.title)).size >= 4, 'Abwechslung bei den Laufintervallen');
+});
