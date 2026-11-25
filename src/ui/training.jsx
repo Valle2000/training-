@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check, Copy, Scissors, Undo2, CalendarClock, CalendarCheck, Wand2, Download, Trophy } from 'lucide-react';
 import { useData, update, getData, getSeries, getLocalSeries, putSeries, uid } from '../lib/store.js';
 import { today, weeks, mondayOf, buildActivity, evaluate, estimatePlanLoad, matchPlan, compliance, cropActivity, localDate, reevaluate } from '../lib/activities.js';
@@ -32,7 +32,8 @@ const actZone = (a) => {
 };
 
 export function Training({ openActivity, openAdd }) {
-  const { activities, plan, settings } = useData();
+  const { activities, plan, settings, races = [] } = useData();
+  const swipe = useRef(null);
   const t = today(settings.timezone);
   const [view, setView] = useState('week');
   const [monday, setMonday] = useState(mondayOf(t));
@@ -67,26 +68,68 @@ export function Training({ openActivity, openAdd }) {
 
       {view === 'week' && (
         <>
-          <div className="row" style={{ justifyContent: 'space-between', margin: '12px 0 8px' }}>
-            <button className="ghost" style={{ flex: 'none' }} onClick={() => setMonday(addDays(monday, -7))} aria-label="Vorige Woche"><ChevronLeft /></button>
-            <b style={{ flex: 'none' }}>{fmtDate(monday, { day: 'numeric', month: 'short' })} – {fmtDate(days[6], { day: 'numeric', month: 'short' })}</b>
-            <button className="ghost" style={{ flex: 'none' }} onClick={() => setMonday(addDays(monday, 7))} aria-label="Nächste Woche"><ChevronRight /></button>
-          </div>
+          {(() => {
+            // Woche auf einen Blick: Phase aus dem Saisonplan, Summen, Tagesbalken (erledigt + geplant, Farbe = Zone).
+            const PH = { base: 'Grundlage', build: 'Aufbau', specific: 'Wettkampfvorbereitung', taper: 'Taper', race: 'Rennwoche', recovery: 'Erholung', transition: 'Übergang' };
+            const phases = plan.filter((p) => p.date >= monday && p.date <= days[6] && p.phase).map((p) => p.phase);
+            const phase = phases.sort((a, b) => phases.filter((x) => x === b).length - phases.filter((x) => x === a).length)[0];
+            const info = days.map((d) => {
+              const doneA = activities.filter((a) => a.date === d);
+              const openP = plan.filter((p) => p.date === d && !p.done && !(d <= t && matchPlan(p, activities)));
+              const doneMin = doneA.reduce((x, a) => x + (a.durationS || 0) / 60, 0);
+              const planMin = openP.reduce((x, p) => x + (Number(p.minutes) || 0), 0);
+              const openMin = d >= t ? planMin : 0, missMin = d < t ? planMin : 0;
+              const zones = [...doneA.map(actZone), ...openP.map((p) => p.zone)].filter((z) => ZONE_COLORS[z]);
+              const top = ['I5', 'I4', 'I3'].find((z) => zones.includes(z)) || zones[0] || null;
+              return { d, doneMin, openMin, missMin, top, race: races.find((r) => r.date === d) };
+            });
+            const max = Math.max(60, ...info.map((x) => x.doneMin + x.openMin + x.missMin));
+            const hardDays = info.filter((x) => ['I3', 'I4', 'I5'].includes(x.top)).length;
+            return (
+              <>
+                <div className="row" style={{ justifyContent: 'space-between', margin: '12px 0 6px', flexWrap: 'nowrap' }}>
+                  <button className="ghost" style={{ flex: 'none' }} onClick={() => setMonday(addDays(monday, -7))} aria-label="Vorige Woche"><ChevronLeft /></button>
+                  <div style={{ flex: 1, textAlign: 'center' }}>
+                    <b>{fmtDate(monday, { day: 'numeric', month: 'short' })} – {fmtDate(days[6], { day: 'numeric', month: 'short' })}</b>
+                    <div className="small muted">{[phase && PH[phase], `${fmtNum(comp.actualMin / 60, 1)} von ${fmtNum(comp.plannedMin / 60, 1)} h`, hardDays ? `${hardDays} harte ${hardDays === 1 ? 'Tag' : 'Tage'}` : null].filter(Boolean).join(' · ')}</div>
+                  </div>
+                  <button className="ghost" style={{ flex: 'none' }} onClick={() => setMonday(addDays(monday, 7))} aria-label="Nächste Woche"><ChevronRight /></button>
+                </div>
+                {monday !== mondayOf(t) && <div style={{ textAlign: 'center', marginBottom: 6 }}><button className="chip" onClick={() => setMonday(mondayOf(t))}>Zur aktuellen Woche</button></div>}
+                <div className="wk-strip">
+                  {info.map((x) => (
+                    <button key={x.d} className={`wk-col${x.d === t ? ' today' : ''}`} onClick={() => document.getElementById(`day-${x.d}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>
+                      <span className="wk-bar">
+                        {x.missMin > 0 && <i className="miss" style={{ height: `${(x.missMin / max) * 100}%` }} />}
+                        {x.openMin > 0 && <i className="open" style={{ height: `${(x.openMin / max) * 100}%`, borderColor: ZONE_COLORS[x.top] || 'var(--accent)' }} />}
+                        {x.doneMin > 0 && <i style={{ height: `${(x.doneMin / max) * 100}%`, background: ZONE_COLORS[x.top] || 'var(--accent)' }} />}
+                      </span>
+                      <span className="wk-day">{x.race ? '🏁' : fmtDate(x.d, { weekday: 'short' }).replace('.', '')}</span>
+                      <span className="wk-h">{x.doneMin + x.openMin ? fmtNum((x.doneMin + x.openMin) / 60, 1) : '–'}</span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            );
+          })()}
           {(() => { const wp = weekPeriod(monday, settings.schedule); return wp && <div className="notice">{wp.label}: {wp.days} Tag(e) diese Woche · Umfang ca. {Math.round(wp.factor * 100)} %</div>; })()}
           {monday === mondayOf(t) && <AdaptCard />}
-          <div className="agenda">
+          <div className="agenda" onTouchStart={(e) => { swipe.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }}
+            onTouchEnd={(e) => { const s0 = swipe.current; if (!s0) return; const dx = e.changedTouches[0].clientX - s0.x, dy = e.changedTouches[0].clientY - s0.y; swipe.current = null; if (Math.abs(dx) > 70 && Math.abs(dy) < 45) setMonday(addDays(monday, dx < 0 ? 7 : -7)); }}>
             {days.map((d) => {
               const open = plan.filter((p) => p.date === d && !p.done && !(d <= t && matchPlan(p, activities)));
               const done = activities.filter((a) => a.date === d);
               const slot = sched ? slotDay(d, open, sched) : null;
               const total = done.reduce((x, a) => x + (a.durationS || 0) / 60, 0) + open.reduce((x, p) => x + (Number(p.minutes) || 0), 0);
               const restDay = new Date(`${d}T12:00:00Z`).getUTCDay() === 1;
+              const race = races.find((r) => r.date === d);
               return (
-                <div key={d} className={`ag-day${d === t ? ' today' : ''}${d < t ? ' past' : ''}`}>
+                <div key={d} id={`day-${d}`} className={`ag-day${d === t ? ' today' : ''}${d < t ? ' past' : ''}`}>
                   <button className="ag-date" onClick={() => setPlanItem({ date: d })} aria-label={`Einheit am ${fmtDate(d)} planen`}>
                     <span>{fmtDate(d, { weekday: 'short' }).replace('.', '')}</span><b>{Number(d.slice(8))}</b>
                   </button>
                   <div className="ag-items">
+                    {race && <div className="ag-race">🏁 <b>{String(race.name || 'Rennen').trim()}</b>{race.distanceKm ? ` · ${race.distanceKm} km` : ''}{race.technique ? ` · ${race.technique}` : ''} <span className={`badge ${race.priority === 'A' ? 'b-kritisch' : race.priority === 'B' ? 'b-achtung' : 'b-info'}`}>{race.priority}</span></div>}
                     {done.map((a) => (
                       <button key={a.id} className="ag-item done" style={{ borderLeft: `5px solid ${ZONE_COLORS[actZone(a)] || 'var(--line)'}` }} onClick={() => openActivity(a)}>
                         <span className="ag-ico">{sportEmoji(a.sport)}</span>
@@ -109,7 +152,7 @@ export function Training({ openActivity, openAdd }) {
               );
             })}
           </div>
-          <p className="muted small">Tippe auf das Datum, um eine Einheit zu planen. Ausgefüllt mit Haken = erledigt, gestrichelt = geplant, durchgestrichen = verpasst. Der Farbstreifen zeigt die Zone.{sched ? ' Uhrzeit = Vorschlag in deiner freien Zeit, rot umrandet = passt nicht in den Tag.' : ''}</p>
+          <p className="muted small">Tippe auf das Datum, um eine Einheit zu planen, oder wische nach links und rechts für die nächste bzw. vorige Woche. Ausgefüllt mit Haken = erledigt, gestrichelt = geplant, durchgestrichen = verpasst. Der Farbstreifen zeigt die Zone; die Balken oben zeigen die Woche auf einen Blick (gefüllt erledigt, umrandet geplant, grau verpasst).{sched ? ' Uhrzeit = Vorschlag in deiner freien Zeit, rot umrandet = passt nicht in den Tag.' : ''}</p>
           <div className="stats">
             <div><b>{fmtNum(comp.actualMin / 60, 1)}<small className="muted">/{fmtNum(comp.plannedMin / 60, 1)}</small></b><span>Stunden Ist/Soll</span></div>
             <div><b>{fmtNum(comp.actualLoad)}<small className="muted">/{fmtNum(comp.plannedLoad)}</small></b><span>Belastung Ist/Soll</span></div>
