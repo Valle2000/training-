@@ -42,7 +42,7 @@ function App() {
     const run = async () => {
       if (document.visibilityState !== 'visible') return;
       const d = getData();
-      if (!Object.keys(d.connections || {}).length) return;
+      if (!Object.keys(d.connections || {}).length && !d.settings.tpFeedUrl) return;
       if (d.settings.lastSync && Date.now() - Date.parse(d.settings.lastSync) < 30 * 60000) return;
       const res = await syncAll().catch(() => ({}));
       const added = Object.values(res).reduce((a, v) => a + (v.added || 0), 0);

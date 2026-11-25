@@ -5,6 +5,7 @@ import { buildActivity, findDuplicate, localDate, estimatePlanLoad, renameTitle 
 import { sportFromConcept2, polarSport, polarSportId } from './sports.js';
 import { readExport, zipEntries, zipEntriesSync, importable, parseStravaCsv, stravaSport } from './importers.js';
 import { recomputeAll } from './recompute.js';
+import { icsToPlan, mergeFeedPlan } from './ical.js';
 import { tempoGroup } from './sport-buckets.js';
 import { deleteRemoteSeries, forgetSeriesPushed } from './cloud-sync.js';
 import { lapsFromConcept2, lapsFromSeries, pacePer, concept2Title, isAutoC2Title } from './laps.js';
@@ -410,8 +411,21 @@ export async function testConnection(provider) {
   return lines;
 }
 
+// Geplante Einheiten aus dem TrainingPeaks-Kalender-Feed (Premium) in den Plan holen.
+export async function syncTrainingPeaks(url = getData().settings.tpFeedUrl) {
+  if (!url) return 0;
+  const r = await fetch('/api/ical', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || `Feed nicht erreichbar (${r.status})`);
+  const items = icsToPlan(j.ics).map((it) => ({ ...it, description: it.notes, load: it.minutes ? estimatePlanLoad(it.minutes, it.zone || 'I1') : 0 }));
+  let res = { added: 0, removed: 0 };
+  update((d) => { const m = mergeFeedPlan(d.plan, items, uid); res = m; return { ...d, plan: m.plan, settings: { ...d.settings, tpLastSync: new Date().toISOString(), tpLastCount: items.length } }; });
+  return res.added;
+}
+
 export async function syncAll() {
   const out = {};
+  if (getData().settings.tpFeedUrl) { try { out.trainingpeaks = { added: await syncTrainingPeaks() }; } catch (e) { out.trainingpeaks = { error: e.message }; } }
   for (const p of Object.keys(getData().connections)) {
     try { out[p] = { added: await SYNC[p]() }; } catch (e) { out[p] = { error: e.message }; }
   }

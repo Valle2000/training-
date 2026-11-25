@@ -267,7 +267,7 @@ export function coachSummary(data, t) {
     })),
     letzte21Tage: recent.map((a) => ({
       datum: a.date, sport: sportById(a.sport).label, titel: a.title || undefined, min: Math.round((a.durationS || 0) / 60),
-      belastung: a.load ?? undefined, oPuls: a.avgHr ?? undefined, rpe: a.rpe ?? undefined, laktat: a.lactate || undefined,
+      belastung: a.load ?? undefined, oPuls: a.avgHr ?? undefined, rpe: a.rpe ?? undefined, gefuehl: a.feel || undefined, laktat: a.lactate || undefined,
       zonenMin: a.zones ? Object.fromEntries(Object.entries(a.zones).filter(([, v]) => v > 59).map(([k, v]) => [k, Math.round(v / 60)])) : undefined,
       notiz: a.notes || undefined,
     })),
@@ -333,4 +333,20 @@ export function cropActivity(a, series5, from, to, settings) {
   next.timerS = null; next.deviceAutoLaps = null;
   if (!next.laps.length) next.laps = null;
   return { activity: next, series: cut };
+}
+
+// Wochensumme je Sportart (Ist/Soll) wie die Summenspalte in TrainingPeaks.
+// Soll = alle geplanten Einheiten der Woche, Ist = alle Aktivitäten. Gruppiert nach Sportgruppe.
+export function sportSummary(plan, activities, from, to) {
+  const key = (sport) => (sportById(sport).group === 'ski' ? 'ski' : sport); // Ski-Varianten zusammen, sonst je Sportart
+  const m = new Map();
+  const row = (k, sport) => { if (!m.has(k)) m.set(k, { group: k, sport, doneMin: 0, planMin: 0, km: 0, ascent: 0, kj: 0, n: 0, feel: { strong: 0, normal: 0, weak: 0 } }); return m.get(k); };
+  for (const p of plan) if (p.date >= from && p.date <= to) row(key(p.sport), p.sport).planMin += Number(p.minutes) || 0;
+  for (const a of activities) {
+    if (a.date < from || a.date > to) continue;
+    const r = row(key(a.sport), a.sport);
+    r.doneMin += (a.durationS || 0) / 60; r.km += (a.distanceM || 0) / 1000; r.ascent += a.ascentM || 0; r.kj += a.avgPower ? a.kj || 0 : 0; r.n += 1; // kJ nur mit Wattmessung
+    if (r.feel[a.feel] != null) r.feel[a.feel] += 1;
+  }
+  return [...m.values()].sort((a, b) => Math.max(b.doneMin, b.planMin) - Math.max(a.doneMin, a.planMin));
 }

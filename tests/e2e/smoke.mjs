@@ -62,14 +62,16 @@ await step('Heute: Rad wegen Wetter tauschen', async () => {
   await page.getByRole('button', { name: 'Laufen', exact: true }).first().click();
   await see('Getauscht');
 });
-await step('Heute: „Wie hart war es?“ beantworten', async () => {
-  await see('Wie hart war es?');
+await step('Heute: „Wie war die Einheit?“ beantworten (RPE + Gefühl)', async () => {
+  await see('Wie war die Einheit?');
   await page.getByRole('button', { name: '6', exact: true }).first().click();
   await see('Gespeichert: 6/10');
+  await page.getByRole('button', { name: /Stark/ }).first().click();
 });
 await step('Kalender und Wochenliste', async () => {
   await tab('Kalender');
   await page.getByRole('heading', { name: 'Kalender' }).waitFor();
+  await see('Summe je Sportart');
   await page.getByRole('button', { name: 'Wochenliste' }).click();
   await see(/Ziel:/);
 });

@@ -18,6 +18,7 @@ import { RaceCountdown } from './season.jsx';
 import { HealthBanner } from './more.jsx';
 import { AdaptCard, ThresholdCard, WeekReviewCard } from './week.jsx';
 
+export const FEELS = [['strong', '💪 Stark'], ['normal', '🙂 Normal'], ['weak', '😮‍💨 Schwach']];
 // Kleiner Verlauf ohne Achsen für das Cockpit.
 function Spark({ values, color = 'currentColor', width = 110, height = 28 }) {
   const v = values.filter((x) => x != null && !isNaN(x));
@@ -62,7 +63,7 @@ export function Today({ go, openActivity, openAdd }) {
   const food = dayTargets({ weightKg: Number(settings.weightKg), minutes, hardMinutes: hard, strength: [...todays, ...planned].some((x) => x.sport === 'strength'), longestMinutes: longest });
   const lastW = wellness.at(-1);
   const tip = useMemo(() => tipsFor(data, t)[0], [data, t]);
-  const connected = Object.keys(data.connections).length > 0;
+  const connected = Object.keys(data.connections).length > 0 || !!data.settings.tpFeedUrl;
   // Cockpit: HRV-Wochenschnitt gegen die Vorwoche, letzte Nacht, Form der letzten 4 Wochen.
   const wIn = (from, to) => wellness.filter((x) => x.date > addDays(t, -from) && x.date <= addDays(t, -to));
   const hrv7 = avg(wIn(7, 0).map((x) => x.hrv ?? null)), hrvPrev = avg(wIn(14, 7).map((x) => x.hrv ?? null));
@@ -84,7 +85,8 @@ export function Today({ go, openActivity, openAdd }) {
   const toTomorrow = (p) => { changePlan(p, { date: addDays(p.date, 1) }); toast('Auf morgen verschoben'); };
   // Nach der Einheit: „Wie hart war es?“ (RPE 1–10) für Einheiten von heute und gestern ohne Angabe.
   // Ohne Puls/Watt wird daraus die Belastung berechnet; der KI-Coach bekommt den Wert mit.
-  const toRate = activities.filter((a) => a.date >= addDays(t, -1) && a.date <= t && a.sport !== 'strength' && a.rpe == null && !a.rpeSkip).slice(-3);
+  const toRate = activities.filter((a) => a.date >= addDays(t, -1) && a.date <= t && a.sport !== 'strength' && (a.rpe == null || !a.feel) && !a.rpeSkip).slice(-3);
+  const setFeel = (a, v) => update((d) => ({ ...d, activities: d.activities.map((x) => (x.id === a.id ? { ...x, feel: v } : x)) }));
   const rate = (a, v) => { update((d) => ({ ...d, activities: d.activities.map((x) => (x.id === a.id ? { ...x, rpe: v, ...(x.load == null ? { load: rpeLoad(x.durationS, v), loadSource: 'rpe' } : {}) } : x)) })); toast(`Gespeichert: ${v}/10`); };
   const skipRate = (a) => update((d) => ({ ...d, activities: d.activities.map((x) => (x.id === a.id ? { ...x, rpeSkip: true } : x)) }));
   const swap = (p, to) => { const n = swapPlanItem(p, to); changePlan(p, n); setSwapFor(null); toast(`Getauscht: ${sportLabel(to)}, ${n.minutes} min`); };
@@ -164,8 +166,9 @@ export function Today({ go, openActivity, openAdd }) {
 
       {toRate.map((a) => (
         <div key={a.id} className="card" style={{ padding: 14 }}>
-          <div className="row" style={{ flexWrap: 'nowrap' }}><b className="grow">Wie hart war es? <span className="muted small">{a.title || sportLabel(a.sport)} · {fmtDuration(a.durationS)} h{a.date !== t ? ' · gestern' : ''}</span></b><button className="ghost" style={{ flex: 'none' }} onClick={() => skipRate(a)}>Überspringen</button></div>
-          <div className="chips" style={{ flexWrap: 'nowrap', overflowX: 'auto' }}>{[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((v) => <button key={v} className="chip" style={{ flex: 'none', minWidth: 38 }} onClick={() => rate(a, v)}>{v}</button>)}</div>
+          <div className="row" style={{ flexWrap: 'nowrap' }}><b className="grow">Wie war die Einheit? <span className="muted small">{a.title || sportLabel(a.sport)} · {fmtDuration(a.durationS)} h{a.date !== t ? ' · gestern' : ''}</span></b><button className="ghost" style={{ flex: 'none' }} onClick={() => skipRate(a)}>Überspringen</button></div>
+          <div className="chips" style={{ flexWrap: 'nowrap', overflowX: 'auto' }}>{[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((v) => <button key={v} className={`chip${a.rpe === v ? ' on' : ''}`} style={{ flex: 'none', minWidth: 38 }} onClick={() => rate(a, v)}>{v}</button>)}</div>
+          <div className="chips">{FEELS.map(([k, label]) => <button key={k} className={`chip${a.feel === k ? ' on' : ''}`} onClick={() => setFeel(a, k)}>{label}</button>)}</div>
           <p className="muted small" style={{ margin: 0 }}>1 sehr leicht · 4 locker · 6 Schwelle · 8 hart · 10 maximal</p>
         </div>
       ))}

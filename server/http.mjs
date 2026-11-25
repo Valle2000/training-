@@ -2,6 +2,7 @@
 import { handleAi, aiRoutes } from './ai.mjs';
 import { handleConnect } from './connect.mjs';
 import { handlePush } from './push.mjs';
+import { fetchFeed } from './ical.mjs';
 
 function sendJson(res, status, body) {
   res.statusCode = status;
@@ -43,6 +44,17 @@ export async function pushHandler(req, res) {
   }
 }
 
+// Kalender-Feed (TrainingPeaks) als Text zurückgeben. Adresse im Body, damit sie nicht in Zugriffsprotokollen landet.
+export async function icalHandler(req, res) {
+  if (req.method !== 'POST') return sendJson(res, 405, { error: 'Nur POST' });
+  try {
+    const { url } = await readJson(req);
+    sendJson(res, 200, { ics: await fetchFeed(url) });
+  } catch (e) {
+    sendJson(res, e.status && e.status < 600 ? e.status : 502, { error: e.message || String(e) });
+  }
+}
+
 export function devMiddleware() {
   const ai = Object.fromEntries(aiRoutes.map((p) => [p, aiHandler(p)]));
   return (req, res, next) => {
@@ -50,6 +62,7 @@ export function devMiddleware() {
     if (ai[path]) return ai[path](req, res);
     if (path === '/api/connect') return handleConnect(req, res);
     if (path === '/api/push') return pushHandler(req, res);
+    if (path === '/api/ical') return icalHandler(req, res);
     next();
   };
 }

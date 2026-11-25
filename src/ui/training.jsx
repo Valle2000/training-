@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check, Copy, Scissors, Undo2, CalendarClock, CalendarCheck, Wand2, Download, Trophy } from 'lucide-react';
 import { useData, update, getData, getSeries, getLocalSeries, putSeries, uid } from '../lib/store.js';
-import { today, weeks, mondayOf, buildActivity, evaluate, estimatePlanLoad, matchPlan, compliance, cropActivity, localDate, reevaluate } from '../lib/activities.js';
+import { today, weeks, mondayOf, buildActivity, evaluate, estimatePlanLoad, matchPlan, compliance, sportSummary, cropActivity, localDate, reevaluate } from '../lib/activities.js';
 import { addDays, ZONES, cleanSeries } from '../lib/metrics.js';
 import { detectIntervals } from '../lib/intervals.js';
 import { SPORTS, sportLabel, sportEmoji, guessSport } from '../lib/sports.js';
@@ -130,14 +130,14 @@ export function Training({ openActivity, openAdd }) {
                     {done.map((a) => (
                       <button key={a.id} className="ag-item done" style={{ borderLeft: `5px solid ${ZONE_COLORS[actZone(a)] || 'var(--line)'}` }} onClick={() => openActivity(a)}>
                         <span className="ag-ico">{sportEmoji(a.sport)}</span>
-                        <span className="ag-txt"><b>{fmtMin(a.durationS / 60)}</b> {a.title || sportLabel(a.sport)}</span>
+                        <span className="ag-txt"><b>{fmtMin(a.durationS / 60)}</b> {a.title || sportLabel(a.sport)}{a.feel ? <em> · {FEEL_ICON[a.feel]}</em> : null}{a.rpe ? <em> · RPE {a.rpe}</em> : null}</span>
                         <Check size={15} className="ag-check" />
                       </button>
                     ))}
                     {open.map((p) => (
                       <button key={p.id} className={`ag-item plan${d < t ? ' missed' : ''}`} style={{ ...(slot?.overflow.includes(p.id) && d >= t ? { borderColor: 'var(--bad)' } : {}), borderLeft: `5px solid ${ZONE_COLORS[p.zone] || 'var(--line)'}` }} onClick={() => setPlanItem(p)}>
                         <span className="ag-ico">{sportEmoji(p.sport)}</span>
-                        <span className="ag-txt"><b>{fmtMin(p.minutes)}</b> {p.title || sportLabel(p.sport)}{slot?.slots[p.id] && d >= t ? <em> · {fmtTime(slot.slots[p.id].from)}</em> : null}</span>
+                        <span className="ag-txt"><b>{fmtMin(p.minutes)}</b> {p.title || sportLabel(p.sport)}{p.source === 'trainingpeaks' ? <em> · TP</em> : null}{slot?.slots[p.id] && d >= t ? <em> · {fmtTime(slot.slots[p.id].from)}</em> : null}</span>
                         {ZONE_COLORS[p.zone] && <span className="ag-zone">{p.zone}</span>}
                       </button>
                     ))}
@@ -155,6 +155,7 @@ export function Training({ openActivity, openAdd }) {
             <div><b>{fmtNum(comp.actualLoad)}<small className="muted">/{fmtNum(comp.plannedLoad)}</small></b><span>Belastung Ist/Soll</span></div>
             <div><b>{comp.done}/{comp.planned}</b><span>Einheiten erledigt</span></div>
           </div>
+          <SportWeek rows={sportSummary(plan, activities, monday, days[6])} />
           <div className="row actions">
             <button className="secondary" onClick={() => setPlanItem({ date: days.find((d) => d >= t) || days[0] })}><Plus size={17} />Einheit planen</button>
             <button className="secondary" onClick={copyLastWeek}><Copy size={17} />Vorwoche kopieren</button>
@@ -773,6 +774,36 @@ function OtherTools({ list }) {
         <select value={target} onChange={(e) => setTarget(e.target.value)}><option value="">–</option>{SPORTS.filter((x) => x.id !== 'other').map((x) => <option key={x.id} value={x.id}>{x.label}</option>)}</select>
         <button className="secondary" style={{ flex: 'none' }} disabled={busy || !target || !list.length} onClick={() => apply(list.map((a) => ({ a, to: target })), `auf ${sportLabel(target)} gesetzt`)}>Setzen</button>
       </div>
+    </div>
+  );
+}
+
+const FEEL_ICON = { strong: "💪", normal: "🙂", weak: "😮‍💨" };
+
+// Summe je Sportart: Ist/Soll-Balken, Distanz, Höhenmeter, Arbeit (kJ), Gefühl.
+function SportWeek({ rows }) {
+  if (!rows.length) return null;
+  return (
+    <div className="card">
+      <h3 style={{ marginTop: 0 }}>Summe je Sportart</h3>
+      {rows.map((r) => {
+        const pct = r.planMin ? Math.min(150, Math.round((r.doneMin / r.planMin) * 100)) : null;
+        const tone = pct == null ? "var(--accent)" : pct >= 80 && pct <= 120 ? "var(--good)" : pct >= 50 && pct <= 150 ? "var(--warn)" : "var(--bad)";
+        const extra = [r.km >= 0.5 && `${fmtNum(r.km, r.km < 20 ? 1 : 0)} km`, r.ascent >= 50 && `${fmtNum(r.ascent)} hm`, r.kj >= 50 && `${fmtNum(r.kj)} kJ`,
+          ...Object.entries(r.feel).filter(([, n]) => n).map(([k, n]) => `${FEEL_ICON[k]}${n > 1 ? "×" + n : ""}`)].filter(Boolean).join(" · ");
+        return (
+          <div key={r.group} style={{ margin: "10px 0" }}>
+            <div className="row" style={{ flexWrap: "nowrap", gap: 8 }}>
+              <span className="ico-badge" style={{ flex: "none" }}>{sportEmoji(r.sport)}</span>
+              <b className="grow">{r.group === "ski" ? "Langlauf / Ski" : sportLabel(r.sport)}</b>
+              <span className="num" style={{ flex: "none", whiteSpace: "nowrap" }}>{fmtMin(r.doneMin) || "0"}<small className="muted">{r.planMin ? ` / ${fmtMin(r.planMin)}` : ""}</small></span>
+            </div>
+            {r.planMin > 0 && <div style={{ height: 6, borderRadius: 4, background: "var(--line)", marginTop: 6, overflow: "hidden" }}><div style={{ width: `${Math.min(100, pct)}%`, height: "100%", background: tone }} /></div>}
+            {extra && <div className="small muted" style={{ marginTop: 4 }}>{extra}</div>}
+          </div>
+        );
+      })}
+      <p className="muted small" style={{ marginBottom: 0 }}>Balken = erledigt im Verhältnis zum Plan: grün 80–120 %, gelb deutlich darunter oder darüber, rot stark abweichend.</p>
     </div>
   );
 }

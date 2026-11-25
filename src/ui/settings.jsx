@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link2, Unlink, Download, Upload, RefreshCw, History } from 'lucide-react';
 import { useData, update, getData } from '../lib/store.js';
 import { recomputeAll } from '../lib/recompute.js';
-import { PROVIDERS, startConnect, disconnect, importFiles, testConnection, syncHistory, reloadConcept2, deleteActivities, mapPolarSport } from '../lib/sync.js';
+import { PROVIDERS, startConnect, disconnect, importFiles, testConnection, syncHistory, reloadConcept2, deleteActivities, mapPolarSport, syncTrainingPeaks } from '../lib/sync.js';
 import { getAccessCode, setAccessCode, getOwnKey, setOwnKey } from '../lib/ai.js';
 import { fmtDate, toast } from './common.jsx';
 import { SPORTS } from '../lib/sports.js';
@@ -94,8 +94,8 @@ export function Settings() {
           const c = connections[id];
           const ready = configured?.includes(id);
           return (
-            <div key={id} className="item">
-              <div className="grow"><b>{p.label}</b><p>{p.hint}</p>{c && <p>Verbunden seit {fmtDate(c.connectedAt.slice(0, 10))}</p>}{configured && !ready && !c && <p>Auf dem Server nicht eingerichtet (siehe README).</p>}</div>
+            <div key={id} className="item" style={{ flexWrap: 'wrap' }}>
+              <div className="grow" style={{ minWidth: '60%' }}><b>{p.label}</b><p>{p.hint}</p>{c && <p>Verbunden seit {fmtDate(c.connectedAt.slice(0, 10))}</p>}{configured && !ready && !c && <p>Auf dem Server nicht eingerichtet (siehe README).</p>}</div>
               {c && id !== 'polar' && <button className="ghost" style={{ flex: 'none' }} onClick={() => history(id)} disabled={!!progress}><History size={15} />Ganze Historie</button>}
               {c && id === 'concept2' && <button className="ghost" style={{ flex: 'none' }} disabled={!!progress} onClick={async () => { if (!confirm('Alle Concept2-Einheiten neu laden? Notizen, RPE und Laktat bleiben erhalten.')) return; setProgress('Concept2: lade neu …'); try { toast(`Concept2: ${await reloadConcept2(setProgress)} Einheiten neu geladen`); } catch (err) { toast(err.message); } setProgress(''); }}><RefreshCw size={15} />Neu laden</button>}
               {c && <button className="ghost" style={{ flex: 'none' }} onClick={() => runTest(id)}>Testen</button>}
@@ -107,6 +107,8 @@ export function Settings() {
         {test && <div className="notice" style={{ fontFamily: 'ui-monospace,Menlo,monospace', fontSize: 12, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{test.busy ? 'Teste …' : test.lines.join('\n')}</div>}
         {progress && <div className="notice">{progress}</div>}
       </div>
+
+      <TrainingPeaksFeed />
 
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Vergangene Einheiten importieren</h3>
@@ -212,6 +214,35 @@ function PolarSports({ activities }) {
           </select>
         </div>
       ))}
+    </div>
+  );
+}
+
+// TrainingPeaks-Kalender-Feed: geplante Einheiten der Trainerin automatisch in den Kalender.
+function TrainingPeaksFeed() {
+  const { settings } = useData();
+  const [url, setUrl] = useState(settings.tpFeedUrl || '');
+  const [busy, setBusy] = useState(false);
+  const run = async (u) => {
+    setBusy(true);
+    try {
+      update((d) => ({ ...d, settings: { ...d.settings, tpFeedUrl: u.trim() } }));
+      const n = await syncTrainingPeaks(u.trim());
+      toast(`TrainingPeaks: ${n} Einheit(en) neu im Kalender`);
+    } catch (e) { toast(e.message); }
+    setBusy(false);
+  };
+  return (
+    <div className="card">
+      <h3 style={{ marginTop: 0 }}>TrainingPeaks-Plan</h3>
+      <p className="small muted" style={{ marginTop: 0 }}>Holt die geplanten Einheiten deiner Trainerin über den Kalender-Feed von TrainingPeaks (braucht <b>Premium</b>). In TrainingPeaks: Einstellungen → Konto → Kalender-Feed → Adresse kopieren (beginnt mit webcal://) und hier einfügen.</p>
+      <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="webcal://www.trainingpeaks.com/ical/…" autoCapitalize="off" autoCorrect="off" spellCheck={false} />
+      <div className="row" style={{ marginTop: 8 }}>
+        <button className="primary" disabled={busy || !url.trim()} onClick={() => run(url)}><RefreshCw size={16} className={busy ? 'spin' : ''} />{settings.tpFeedUrl ? 'Jetzt holen' : 'Speichern und holen'}</button>
+        {settings.tpFeedUrl && <button className="ghost" onClick={() => { update((d) => ({ ...d, settings: { ...d.settings, tpFeedUrl: '' } })); setUrl(''); }}><Unlink size={16} />Entfernen</button>}
+      </div>
+      {settings.tpLastSync && <p className="small muted">Zuletzt geholt: {new Date(settings.tpLastSync).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })} · {settings.tpLastCount ?? 0} Termine im Feed</p>}
+      <p className="small muted" style={{ marginBottom: 0 }}>Danach bei jedem „Abgleichen“ automatisch. Der Feed reicht ca. 5 Tage zurück und 14 Tage voraus. Hat die Trainerin umgeplant, werden offene TrainingPeaks-Einheiten ersetzt; erledigte und eigene bleiben. Dauer, Sportart und Zone liest die App aus Titel und Beschreibung, also bitte einmal prüfen.</p>
     </div>
   );
 }
