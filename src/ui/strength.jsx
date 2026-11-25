@@ -44,6 +44,7 @@ export function Strength() {
           <h2>Neue Einheit</h2>
           {visibleTemplates.map((t) => (
             <div key={t.id} className="item" style={{ alignItems: 'center' }}>
+              <span className="ico-badge">🏋️</span>
               <button className="grow" style={{ textAlign: 'left', background: 'none', border: 0, padding: 0, color: 'inherit' }} onClick={() => start(t)}><b>{t.name}</b><p>{t.items.map((i) => exerciseById(i.ex)?.name).join(' · ')}</p></button>
               <button className="ghost" style={{ flex: 'none' }} aria-label="Vorlage ausblenden" onClick={() => hideTemplate(t)}><Trash2 size={16} /></button>
             </div>
@@ -51,9 +52,10 @@ export function Strength() {
           {hiddenIds.length > 0 && <button className="ghost wide" onClick={showAllTemplates}>Ausgeblendete Vorlagen wieder anzeigen ({hiddenIds.length})</button>}
           <button className="secondary wide" onClick={() => start(null)}><Plus size={17} />Leere Einheit</button>
           <h2>Letzte Einheiten</h2>
-          {!sorted.length && <p className="muted">Noch keine Krafteinheiten.</p>}
+          {!sorted.length && <div className="empty"><span>💪</span><b>Noch keine Krafteinheiten</b><p>Wähle oben eine Vorlage oder starte eine leere Einheit.</p></div>}
           {sorted.map((s) => (
             <button key={s.id} className="item" onClick={() => setEditing(s)}>
+              <span className="ico-badge">🏋️</span>
               <div className="grow"><b>{s.title}</b><p>{fmtDate(s.date)} · {s.minutes} min · RPE {s.rpe}</p>
                 <p>{s.items.map((it) => `${it.name}: ${setsText(it.sets, exerciseById(it.ex, customExercises))}`).join(' | ')}</p></div>
               <Dumbbell size={18} />
