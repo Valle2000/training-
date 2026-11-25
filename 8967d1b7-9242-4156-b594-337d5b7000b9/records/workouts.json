@@ -1,0 +1,61 @@
+[
+ {
+  "id": "mwv8z4pq58a26",
+  "deleted": false,
+  "updated_at": "2026-11-24T22:09:36.983806+00:00",
+  "data": {
+   "id": "mwv8z4pq58a26",
+   "name": "Double Threshold AM: 5×6 min",
+   "sport": "rollerski_skate",
+   "steps": [
+    {
+     "id": "ayrqlmt",
+     "type": "warmup",
+     "label": "",
+     "target": {
+      "kind": "zone",
+      "zone": "I1"
+     },
+     "durationS": 1200
+    },
+    {
+     "id": "n8ep77q",
+     "type": "repeat",
+     "steps": [
+      {
+       "id": "24c71md",
+       "type": "work",
+       "label": "",
+       "target": {
+        "kind": "zone",
+        "zone": "I3"
+       },
+       "durationS": 360
+      },
+      {
+       "id": "z9ri1rd",
+       "type": "rest",
+       "label": "",
+       "target": {
+        "kind": "open"
+       },
+       "durationS": 60
+      }
+     ],
+     "repeat": 5
+    },
+    {
+     "id": "o11qti2",
+     "type": "cooldown",
+     "label": "",
+     "target": {
+      "kind": "zone",
+      "zone": "I1"
+     },
+     "durationS": 900
+    }
+   ],
+   "description": "Schwelle, Laktat 2–3 mmol/l, kontrolliert"
+  }
+ }
+]

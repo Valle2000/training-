@@ -3998,11 +3998,11 @@
  {
   "id": "mwszma5w22ntw",
   "deleted": false,
-  "updated_at": "2026-11-23T08:12:08.763166+00:00",
+  "updated_at": "2026-11-24T22:12:26.195412+00:00",
   "data": {
    "id": "mwszma5w22ntw",
-   "date": "2026-11-27",
-   "load": 70,
+   "date": "2026-11-26",
+   "load": 100,
    "zone": "I1",
    "sport": "rollerski_skate",
    "title": "Rollski Skating locker + Sprints",
@@ -4030,58 +4030,49 @@
  {
   "id": "mwszma5w2uvk6",
   "deleted": false,
-  "updated_at": "2026-11-23T08:12:08.748554+00:00",
+  "updated_at": "2026-11-24T22:09:55.091189+00:00",
   "data": {
    "id": "mwszma5w2uvk6",
    "date": "2026-11-24",
-   "load": 38,
+   "load": 88,
    "zone": "I1",
    "sport": "run",
    "title": "Lauf locker",
    "source": "coach",
-   "minutes": 60,
+   "minutes": 105,
    "description": "Ganz locker unter 139 bpm (72 % HFmax), flach."
   }
  },
  {
   "id": "mwszma5w6hu65",
-  "deleted": false,
-  "updated_at": "2026-11-23T08:12:08.765392+00:00",
-  "data": {
-   "id": "mwszma5w6hu65",
-   "date": "2026-11-29",
-   "load": 25,
-   "zone": "Kraft",
-   "sport": "strength",
-   "title": "Kraft B – Oberkörper/Rumpf kurz",
-   "source": "coach",
-   "minutes": 40,
-   "description": "Nach der langen Einheit, moderat. Bankziehen 3×5 schwer. Dips 3×5. Kabel-Doppelstockzug 3×6 explosiv. Pallof Press 3×8 je Seite. Wadenheben exzentrisch 3×10. Keine Übung bis zum Versagen."
-  }
+  "deleted": true,
+  "updated_at": "2026-11-24T22:11:19.877543+00:00",
+  "data": null
  },
  {
   "id": "mwszma5w9z2es",
   "deleted": false,
-  "updated_at": "2026-11-23T08:12:08.763262+00:00",
+  "updated_at": "2026-11-24T22:12:01.342529+00:00",
   "data": {
    "id": "mwszma5w9z2es",
-   "date": "2026-11-27",
-   "load": 28,
+   "date": "2026-11-28",
+   "load": 50,
    "zone": "I1",
    "sport": "run",
    "title": "Lauf locker",
    "source": "coach",
-   "minutes": 45,
+   "minutes": 60,
    "description": "Ganz locker."
   }
  },
  {
   "id": "mwszma5wcput1",
   "deleted": false,
-  "updated_at": "2026-11-23T08:12:08.75909+00:00",
+  "updated_at": "2026-11-25T12:47:53.02707+00:00",
   "data": {
    "id": "mwszma5wcput1",
    "date": "2026-11-25",
+   "done": true,
    "load": 125,
    "zone": "I3",
    "sport": "skierg",
@@ -4094,98 +4085,78 @@
  {
   "id": "mwszma5wen2f8",
   "deleted": false,
-  "updated_at": "2026-11-23T08:12:08.758835+00:00",
+  "updated_at": "2026-11-24T22:12:26.194837+00:00",
   "data": {
    "id": "mwszma5wen2f8",
-   "date": "2026-11-24",
-   "load": 65,
+   "date": "2026-11-27",
+   "load": 125,
    "zone": "I1",
    "sport": "rollerski_classic",
    "title": "Rollski klassisch Grundlage",
    "source": "coach",
-   "minutes": 120,
+   "minutes": 150,
    "description": "Spezifisch für Gastein: I1, rund 40 % Doppelstock, Rest Diagonal. Bei Schnee auf Ski. Langer Tag vor dem Double-Threshold-Tag."
   }
  },
  {
   "id": "mwszma5whybwl",
   "deleted": false,
-  "updated_at": "2026-11-23T08:12:08.761073+00:00",
+  "updated_at": "2026-11-24T22:10:38.156777+00:00",
   "data": {
    "id": "mwszma5whybwl",
    "date": "2026-11-26",
-   "load": 38,
+   "load": 75,
    "zone": "I1",
    "sport": "run",
    "title": "Lauf locker",
    "source": "coach",
-   "minutes": 60,
+   "minutes": 90,
    "description": "Regenerativ unter 139 bpm, vor der Krafteinheit."
   }
  },
  {
   "id": "mwszma5wqoxem",
   "deleted": false,
-  "updated_at": "2026-11-23T08:12:08.759197+00:00",
+  "updated_at": "2026-11-24T22:12:10.747046+00:00",
   "data": {
    "id": "mwszma5wqoxem",
    "date": "2026-11-25",
-   "load": 80,
+   "load": 143,
    "zone": "I3",
    "sport": "run",
    "title": "Double Threshold abends: 8×4 min Lauf leicht bergauf",
    "source": "coach",
-   "minutes": 65,
+   "minutes": 95,
    "description": "Mindestens 6 h Abstand zum Morgen. 20 min Einlaufen, 8×4 min bei 158–167 bpm (I3, ~2–3 mmol/l), 1 min Trabpause. Ausdrücklich nicht in I4 laufen. Liegst du nach den ersten 2 Intervallen über 168 bpm, Tempo rausnehmen."
   }
  },
  {
   "id": "mwszma5wr5c7s",
-  "deleted": false,
-  "updated_at": "2026-11-23T08:12:08.763003+00:00",
-  "data": {
-   "id": "mwszma5wr5c7s",
-   "date": "2026-11-26",
-   "load": 40,
-   "zone": "Kraft",
-   "sport": "strength",
-   "title": "Kraft A – Beine schwer + Zug",
-   "source": "coach",
-   "minutes": 60,
-   "description": "Aufwärmen 10 min. Kniebeuge 4×4 @ ~85 % 1RM, konzentrisch explosiv. Rumänisches Kreuzheben 3×5 @ ~80 %. Klimmzug mit Zusatzgewicht 4×4. Kabel-Doppelstockzug kniend 3×6, schwer und explosiv. Box Jumps 4×3. Copenhagen Plank 2×20 s je Seite. Pausen 2–3 min, keine Wiederholungen bis zum Versagen."
-  }
+  "deleted": true,
+  "updated_at": "2026-11-24T22:10:23.978187+00:00",
+  "data": null
  },
  {
   "id": "mwszma5wv20ib",
   "deleted": false,
-  "updated_at": "2026-11-23T08:12:08.763388+00:00",
+  "updated_at": "2026-11-24T22:12:01.352759+00:00",
   "data": {
    "id": "mwszma5wv20ib",
    "date": "2026-11-28",
-   "load": 95,
+   "load": 202,
    "zone": "I4",
-   "sport": "run",
+   "sport": "rollerski_skate",
    "title": "Bergintervalle Skigang 6×5 min",
    "source": "coach",
-   "minutes": 80,
+   "minutes": 110,
    "description": "Skigang/Sprunglauf mit Stöcken bergauf. 20 min Einlaufen, 6×5 min bei 168–176 bpm (I4, Brustgurt), 3 min locker bergab. Test: Kommt der Puls trotz voller Anstrengung nicht über ~165 und sind die Beine schwer, nach 4 Wiederholungen abbrechen und die Folgewoche nur locker trainieren."
   }
  },
  {
   "id": "mwszma5wzcybb",
-  "deleted": false,
-  "updated_at": "2026-11-23T08:12:08.763479+00:00",
-  "data": {
-   "id": "mwszma5wzcybb",
-   "date": "2026-11-28",
-   "load": 35,
-   "zone": "I1",
-   "sport": "bike",
-   "title": "Rad locker",
-   "source": "coach",
-   "minutes": 60,
-   "description": "Ausfahren in I1 ohne Stoßbelastung."
-  }
+  "deleted": true,
+  "updated_at": "2026-11-24T22:11:19.876189+00:00",
+  "data": null
  },
  {
   "id": "mwuo1ysl02l57",
@@ -5233,21 +5204,9 @@
  },
  {
   "id": "mwuo1ysls8su2",
-  "deleted": false,
-  "updated_at": "2026-11-24T12:23:57.194634+00:00",
-  "data": {
-   "id": "mwuo1ysls8su2",
-   "date": "2026-12-02",
-   "done": false,
-   "load": 150,
-   "zone": "I3",
-   "phase": "build",
-   "sport": "skierg",
-   "title": "Double Threshold morgens: 3×20 min",
-   "source": "wizard",
-   "minutes": 100,
-   "description": "20 min ein, 3× 20 min Schwelle (Laktat ca. 2–3,5 mmol/l, kontrolliert), 2 min Pause, 15 min aus – eher untere Schwelle"
-  }
+  "deleted": true,
+  "updated_at": "2026-11-25T12:48:22.604257+00:00",
+  "data": null
  },
  {
   "id": "mwuo1yslsfyyb",
