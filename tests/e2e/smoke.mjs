@@ -72,6 +72,8 @@ await step('Kalender und Wochenliste', async () => {
   await tab('Kalender');
   await page.getByRole('heading', { name: 'Kalender' }).waitFor();
   await see('Summe je Sportart');
+  await page.locator('.ag-vit').first().waitFor();
+  if (process.env.SHOT) await page.locator('.agenda').screenshot({ path: process.env.SHOT });
   await page.getByRole('button', { name: 'Plan der Trainerin' }).click();
   await see('Plan der Trainerin übernehmen');
   await page.keyboard.press('Escape');

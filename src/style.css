@@ -169,6 +169,8 @@ table.t.nowrap td, table.t.nowrap th { white-space: nowrap }
 .ag-date { flex: none; width: 46px; border: 0; background: var(--soft); border-radius: 12px; padding: 6px 0; display: flex; flex-direction: column; align-items: center; color: var(--muted) }
 .ag-date span { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px }
 .ag-date b { font-size: 20px; color: var(--ink); line-height: 1.1 }
+.ag-vit { display: flex; flex-direction: column; align-items: center; margin-top: 3px; font-size: 10px; line-height: 1.25; font-weight: 600 }
+.ag-vit i { font-style: normal }
 .ag-day.today .ag-date { background: var(--accent); color: #fff } .ag-day.today .ag-date b { color: #fff }
 .ag-items { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px }
 .ag-item { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; border: 1px dashed var(--line); background: transparent; border-radius: 12px; padding: 8px 10px }

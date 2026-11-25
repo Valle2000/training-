@@ -147,3 +147,14 @@ test('Wiedereinstieg nach Krankheit: Stufen nach Dauer und Fieber', async () => 
   assert.equal(returnPlan({ ...flu, end: null }, '2026-10-05').active, true);
   assert.equal(returnPlan({ type: 'injury', start: '2026-10-01' }, '2026-10-05'), null);
 });
+
+test('Tageswerte im Kalender: Abweichung vom eigenen Normalbereich', async () => {
+  const { dayVitals } = await import('../src/lib/readiness.js');
+  const wellness = Array.from({ length: 20 }, (_, i) => ({ date: `2026-11-${String(i + 1).padStart(2, '0')}`, restHr: 48, hrv: 80, sleepH: 7.5 }));
+  wellness.push({ date: '2026-11-21', restHr: 55, hrv: 62, sleepH: 5.2 });
+  const v = dayVitals('2026-11-21', wellness);
+  assert.ok(v.restHigh && v.hrvLow && v.sleepShort);
+  const ok = dayVitals('2026-11-20', wellness);
+  assert.ok(!ok.restHigh && !ok.hrvLow && !ok.sleepShort);
+  assert.equal(dayVitals('2026-12-01', wellness), null);
+});

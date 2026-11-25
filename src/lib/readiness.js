@@ -97,3 +97,20 @@ export function readinessFor(date, wellness, form = null, activities = []) {
   const hasData = Object.keys(today).length > 1 || form != null;
   return { level, score, reasons, advice, checked: today.feel != null, hasData };
 }
+
+// Tageswerte für den Kalender: Ruhepuls, HRV, Schlaf und ob sie vom eigenen Normalbereich (28 Tage davor) abweichen.
+// Ruhepuls ≥ 5 Schläge über dem Mittel bzw. HRV ≥ 15 % darunter gilt als auffällig (Warnsignal, keine Diagnose).
+export function dayVitals(date, wellness = []) {
+  const w = wellness.find((x) => x.date === date);
+  if (!w || (w.restHr == null && w.hrv == null && w.sleepH == null)) return null;
+  const from = addDays(date, -28);
+  const prev = wellness.filter((x) => x.date >= from && x.date < date);
+  const avg = (k) => { const v = prev.map((x) => x[k]).filter((x) => x != null && x > 0); return v.length >= 7 ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+  const rhAvg = avg('restHr'), hrvAvg = avg('hrv');
+  return {
+    restHr: w.restHr ?? null, hrv: w.hrv ?? null, sleepH: w.sleepH ?? null,
+    restHigh: w.restHr != null && rhAvg != null && w.restHr >= rhAvg + 5,
+    hrvLow: w.hrv != null && hrvAvg != null && w.hrv <= hrvAvg * 0.85,
+    sleepShort: w.sleepH != null && w.sleepH < 6,
+  };
+}

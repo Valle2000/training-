@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check, Copy, Scissors, Undo2, CalendarClock, CalendarCheck, Wand2, Download, Trophy, ClipboardList } from 'lucide-react';
 import { PlanImportSheet } from './plan-import.jsx';
+import { dayVitals } from '../lib/readiness.js';
 import { useData, update, getData, getSeries, getLocalSeries, putSeries, uid } from '../lib/store.js';
 import { today, weeks, mondayOf, buildActivity, evaluate, estimatePlanLoad, matchPlan, compliance, sportSummary, cropActivity, localDate, reevaluate } from '../lib/activities.js';
 import { addDays, ZONES, cleanSeries } from '../lib/metrics.js';
@@ -33,7 +34,7 @@ const actZone = (a) => {
 };
 
 export function Training({ openActivity, openAdd }) {
-  const { activities, plan, settings, races = [] } = useData();
+  const { activities, plan, settings, races = [], wellness = [] } = useData();
   const swipe = useRef(null);
   const t = today(settings.timezone);
   const [view, setView] = useState('week');
@@ -126,6 +127,7 @@ export function Training({ openActivity, openAdd }) {
                 <div key={d} id={`day-${d}`} className={`ag-day${d === t ? ' today' : ''}${d < t ? ' past' : ''}`}>
                   <button className="ag-date" onClick={() => setPlanItem({ date: d })} aria-label={`Einheit am ${fmtDate(d)} planen`}>
                     <span>{fmtDate(d, { weekday: 'short' }).replace('.', '')}</span><b>{Number(d.slice(8))}</b>
+                    {(() => { const v = d <= t ? dayVitals(d, wellness) : null; return v && (v.restHr || v.hrv) ? <small className="ag-vit" title={`Ruhepuls ${v.restHr ?? '–'} · HRV ${v.hrv ?? '–'} ms${v.sleepH ? ` · Schlaf ${v.sleepH} h` : ''}`}>{v.restHr && <i style={v.restHigh ? { color: 'var(--bad)' } : undefined}>♥{v.restHr}</i>}{v.hrv && <i style={v.hrvLow ? { color: 'var(--bad)' } : undefined}>{Math.round(v.hrv)}</i>}</small> : null; })()}
                   </button>
                   <div className="ag-items">
                     {race && <div className="ag-race">🏁 <b>{String(race.name || 'Rennen').trim()}</b>{race.distanceKm ? ` · ${race.distanceKm} km` : ''}{race.technique ? ` · ${race.technique}` : ''} <span className={`badge ${race.priority === 'A' ? 'b-kritisch' : race.priority === 'B' ? 'b-achtung' : 'b-info'}`}>{race.priority}</span></div>}
@@ -151,7 +153,7 @@ export function Training({ openActivity, openAdd }) {
               );
             })}
           </div>
-          <p className="muted small">Tippe auf das Datum, um eine Einheit zu planen, oder wische nach links und rechts für die nächste bzw. vorige Woche. Ausgefüllt mit Haken = erledigt, gestrichelt = geplant, durchgestrichen = verpasst. Der Farbstreifen zeigt die Zone; die Balken oben zeigen die Woche auf einen Blick (gefüllt erledigt, umrandet geplant, grau verpasst).{sched ? ' Uhrzeit = Vorschlag in deiner freien Zeit, rot umrandet = passt nicht in den Tag.' : ''}</p>
+          <p className="muted small">Tippe auf das Datum, um eine Einheit zu planen, oder wische nach links und rechts für die nächste bzw. vorige Woche. Ausgefüllt mit Haken = erledigt, gestrichelt = geplant, durchgestrichen = verpasst. Der Farbstreifen zeigt die Zone; unter dem Datum stehen Ruhepuls (♥) und HRV der Nacht, rot = deutlich schlechter als dein Mittel der letzten 4 Wochen; die Balken oben zeigen die Woche auf einen Blick (gefüllt erledigt, umrandet geplant, grau verpasst).{sched ? ' Uhrzeit = Vorschlag in deiner freien Zeit, rot umrandet = passt nicht in den Tag.' : ''}</p>
           <div className="stats">
             <div><b>{fmtNum(comp.actualMin / 60, 1)}<small className="muted">/{fmtNum(comp.plannedMin / 60, 1)}</small></b><span>Stunden Ist/Soll</span></div>
             <div><b>{fmtNum(comp.actualLoad)}<small className="muted">/{fmtNum(comp.plannedLoad)}</small></b><span>Belastung Ist/Soll</span></div>
