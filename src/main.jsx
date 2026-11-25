@@ -72,7 +72,7 @@ function App() {
       <main>
         {saveErr && <div className="notice" style={{ background: 'var(--badbg)', color: 'var(--bad)' }}><b>Achtung:</b> {saveErr} Bitte unter Mehr → Einstellungen anmelden (Online-Abgleich) oder ein Backup machen.</div>}
         {wrongHost && <div className="notice" style={{ background: 'var(--warnbg)', color: 'var(--warn)' }}><b>Andere Adresse:</b> Du nutzt {location.host}. Daten liegen je Adresse getrennt – öffne die App über <a href={__APP_URL__}>{__APP_URL__.replace('https://', '')}</a>{' '}oder melde dich an, dann sind sie überall gleich.</div>}
-        <Suspense fallback={<p className="muted">Lädt …</p>}>
+        <Suspense fallback={<div className="skeleton" aria-label="Lädt"><i /><i /><i /></div>}>
         {tab === 'today' && <Today {...common} />}
         {tab === 'training' && <Training {...common} />}
         {tab === 'analysis' && <Analysis {...common} />}

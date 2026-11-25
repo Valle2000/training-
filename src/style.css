@@ -192,3 +192,44 @@ table.t.nowrap td, table.t.nowrap th { white-space: nowrap }
 .wk-h { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums }
 .ag-race { font-size: 13.5px; padding: 8px 10px; border-radius: 12px; background: var(--warnbg); color: var(--ink); display: flex; gap: 6px; align-items: center; flex-wrap: wrap }
 .wk-bar i.miss { border: 2px dashed var(--line); background: transparent }
+
+/* ——— Heute: Kopfbereich mit Begrüßung, Bereitschafts-Ring, Kennzahlen und Vitalwerten ——— */
+.hero2 .hero-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px }
+.hello { font-size: 27px; font-weight: 750; letter-spacing: -.7px; margin-top: 3px; line-height: 1.15 }
+.race-chip { flex: none; max-width: 52%; border: 1px solid rgba(255, 255, 255, .22); background: rgba(255, 255, 255, .1); color: #fff; border-radius: 999px; padding: 7px 11px; font-size: 12.5px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.hero-main { display: flex; gap: 16px; align-items: center; margin: 14px 0 4px }
+.ring { flex: none; filter: drop-shadow(0 4px 14px rgba(0, 0, 0, .18)) }
+.hero-ready { flex: 1; min-width: 0 }
+.hero-ready b { display: block; font-size: 16px; line-height: 1.35; font-weight: 700 }
+.hero-ready p { font-size: 13px; margin: 5px 0 8px; color: #cfe4ea; line-height: 1.4 }
+.hero-ready .pill { color: #fff; margin-top: 2px }
+.hero-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 14px 0 10px }
+.hero-metrics > div { background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .12); border-radius: 15px; padding: 10px 6px; text-align: center }
+.hero-metrics b { display: block; font-size: 24px; font-weight: 750; letter-spacing: -.5px; font-variant-numeric: tabular-nums }
+.hero-metrics span { font-size: 11.5px; color: #b9d6de; font-weight: 600 } .hero-metrics em { font-style: normal; font-size: 9px; opacity: .9 }
+.hero-metrics .fit b { color: #a6ceff } .hero-metrics .fat b { color: #ffadd5 } .hero-metrics .form b { color: #ffd27a }
+.hero-vitals { display: flex; flex-wrap: wrap; gap: 6px }
+.hero-vitals span { display: inline-flex; align-items: center; gap: 5px; background: rgba(255, 255, 255, .09); border-radius: 999px; padding: 6px 11px; font-size: 12.5px; color: #e3f1f5 }
+.hero-vitals .spark { padding: 4px 10px }
+.hero-more { margin-top: 10px; color: #cfe4ea } .hero-more ul { margin: 6px 0 0; padding-left: 18px; font-size: 13px }
+.ico-badge { flex: none; width: 42px; height: 42px; border-radius: 13px; background: var(--soft); display: flex; align-items: center; justify-content: center; font-size: 22px; align-self: flex-start }
+
+/* ——— Aktionen als Kacheln (z. B. Kalender) ——— */
+.actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px }
+.actions .secondary { flex-direction: column; gap: 6px; padding: 14px 8px; font-size: 13px; border-radius: 16px; background: var(--card); box-shadow: inset 0 0 0 1px var(--line), var(--shadow-sm) }
+.actions .secondary svg { color: var(--accent) }
+
+/* ——— Ladeplatzhalter und sanfte Übergänge ——— */
+.skeleton { display: grid; gap: 12px; margin-top: 10px }
+.skeleton i { display: block; height: 96px; border-radius: var(--r); background: linear-gradient(90deg, var(--soft) 0%, var(--card) 50%, var(--soft) 100%); background-size: 200% 100%; animation: shimmer 1.2s linear infinite }
+.skeleton i:first-child { height: 60px }
+@keyframes shimmer { to { background-position: -200% 0 } }
+@keyframes rise { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: none } }
+@keyframes sheetUp { from { transform: translateY(36px); opacity: .5 } to { transform: none; opacity: 1 } }
+@keyframes fadeIn { from { opacity: 0 } }
+main > * { animation: rise .3s ease both }
+.overlay { animation: fadeIn .18s ease }
+.sheet { animation: sheetUp .3s cubic-bezier(.2, .8, .2, 1) }
+@media (prefers-reduced-motion: reduce) { main > *, .overlay, .sheet, .skeleton i { animation: none } }
+.clamp3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer }
+.link-btn { border: 0; background: none; color: var(--accent); font-weight: 650; font-size: 13px; padding: 2px 0 }

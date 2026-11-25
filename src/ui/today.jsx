@@ -1,18 +1,19 @@
 import React, { useMemo, useState } from 'react';
-import { RefreshCw, Plus, Moon, Lightbulb } from 'lucide-react';
+import { RefreshCw, Plus, Moon, Lightbulb, Sun, HeartPulse, Activity as Pulse } from 'lucide-react';
 import { useData, update } from '../lib/store.js';
 import { BIKE_SWAP, swapPlanItem } from '../lib/weather-swap.js';
 import { curve, today, weeks } from '../lib/activities.js';
 import { planTargets } from '../lib/targets.js';
 import { addDays, rpeLoad } from '../lib/metrics.js';
-import { sportLabel } from '../lib/sports.js';
+import { sportLabel, sportEmoji } from '../lib/sports.js';
 import { syncAll } from '../lib/sync.js';
 import { dayTargets } from '../lib/nutrition.js';
 import { tipsFor } from '../lib/food-day.js';
 import { FormChart, ZoneBar, LineChart } from './charts.jsx';
 import { rolling } from '../lib/analysis.js';
 import { fmtDuration, fmtNum, toast } from './common.jsx';
-import { ReadinessCard, MorningSheet, RecoveryCard } from './morning.jsx';
+import { MorningSheet, RecoveryCard } from './morning.jsx';
+import { readinessFor } from '../lib/readiness.js';
 import { RaceCountdown } from './season.jsx';
 import { HealthBanner } from './more.jsx';
 import { AdaptCard, ThresholdCard, WeekReviewCard } from './week.jsx';
@@ -24,6 +25,20 @@ function Spark({ values, color = 'currentColor', width = 110, height = 28 }) {
   const lo = Math.min(...v), hi = Math.max(...v), span = hi - lo || 1;
   const pts = values.map((x, i) => (x == null ? null : [(i / (values.length - 1)) * width, height - 2 - ((x - lo) / span) * (height - 4)])).filter(Boolean);
   return <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ display: 'block' }}><polyline points={pts.map((p) => p.join(',')).join(' ')} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" /></svg>;
+}
+// Bereitschaft als Ring (Punkte 0–100, Farbe nach Ampel).
+const RING = { gruen: ['#7be495', 'Bereit'], gelb: ['#ffd166', 'Vorsicht'], rot: ['#ff8a7a', 'Erholen'] };
+function ReadyRing({ score = 0, level = 'gruen', size = 112 }) {
+  const r = 44, c = 2 * Math.PI * r, p = Math.max(0, Math.min(100, score)) / 100;
+  const [color, label] = RING[level] || RING.gruen;
+  return (
+    <svg width={size} height={size} viewBox="0 0 110 110" className="ring" role="img" aria-label={`Bereitschaft ${Math.round(score)} von 100`}>
+      <circle cx="55" cy="55" r={r} fill="none" stroke="rgba(255,255,255,.14)" strokeWidth="10" />
+      <circle cx="55" cy="55" r={r} fill="none" stroke={color} strokeWidth="10" strokeLinecap="round" strokeDasharray={`${c * p} ${c}`} transform="rotate(-90 55 55)" style={{ transition: 'stroke-dasharray .8s ease' }} />
+      <text x="55" y="54" textAnchor="middle" fill="#fff" fontSize="28" fontWeight="750">{Math.round(score)}</text>
+      <text x="55" y="72" textAnchor="middle" fill={color} fontSize="11.5" fontWeight="700" letterSpacing=".5">{label.toUpperCase()}</text>
+    </svg>
+  );
 }
 const avg = (a) => { const v = a.filter((x) => x != null); return v.length ? v.reduce((x, y) => x + y, 0) / v.length : null; };
 
@@ -54,6 +69,16 @@ export function Today({ go, openActivity, openAdd }) {
   const trend = hrv7 && hrvPrev ? (hrv7 > hrvPrev * 1.03 ? '↗' : hrv7 < hrvPrev * 0.97 ? '↘' : '→') : '';
   const formSpark = days.filter((d) => d.day > addDays(t, -28) && d.day <= t).map((d) => d.form);
   const [swapFor, setSwapFor] = useState(null);
+  const [openDesc, setOpenDesc] = useState({});
+  // Kopfbereich: Bereitschaft, Trend der Kennzahlen gegenüber vor 7 Tagen, nächstes Rennen, Begrüßung.
+  const ready = readinessFor(t, wellness, now?.form ?? null, activities);
+  const weekAgo = days.find((d) => d.day === addDays(t, -7));
+  const delta = (k) => (now && weekAgo ? now[k] - weekAgo[k] : null);
+  const nextRace = (data.races || []).filter((r) => r.date >= t).sort((a, b) => a.date.localeCompare(b.date))[0];
+  const raceIn = nextRace ? Math.round((Date.parse(`${nextRace.date}T12:00:00Z`) - Date.parse(`${t}T12:00:00Z`)) / 864e5) : null;
+  const hour = new Date().getHours();
+  const hello = hour < 11 ? 'Guten Morgen' : hour < 17 ? 'Hallo' : 'Guten Abend';
+  const arrow = (v, invert = false) => (v == null || Math.abs(v) < 1 ? '' : (v > 0) !== invert ? '▲' : '▼');
   const changePlan = (p, patch) => update((d) => ({ ...d, plan: d.plan.map((x) => (x.id === p.id ? { ...x, ...patch } : x)) }));
   const markDone = (p) => { changePlan(p, { done: true }); toast('Als erledigt markiert'); };
   const toTomorrow = (p) => { changePlan(p, { date: addDays(p.date, 1) }); toast('Auf morgen verschoben'); };
@@ -75,22 +100,37 @@ export function Today({ go, openActivity, openAdd }) {
 
   return (
     <>
-      <div className="hero">
-        <div className="eyebrow">{new Date().toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase()}</div>
-        <div className="stats">
-          <div className="fit"><b>{fmtNum(now?.fitness)}</b><span>Fitness</span></div>
-          <div className="fat"><b>{fmtNum(now?.fatigue)}</b><span>Ermüdung</span></div>
-          <div className="form"><b>{fmtNum(now?.form)}</b><span>Form</span></div>
+      <div className="hero hero2">
+        <div className="hero-top">
+          <div>
+            <div className="eyebrow">{new Date().toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase()}</div>
+            <div className="hello">{hello}</div>
+          </div>
+          {nextRace && <button className="race-chip" onClick={() => go('training')}>🏁 {String(nextRace.name || 'Rennen').trim()} · {raceIn === 0 ? 'heute' : `${raceIn} T`}</button>}
         </div>
-        {(hrv7 || lastW?.sleepH || formSpark.length > 1) && <div className="row" style={{ gap: 14, alignItems: 'center', flexWrap: 'wrap', margin: '2px 0 8px', fontSize: 13 }}>
-          {hrv7 && <span style={{ flex: 'none' }}>HRV 7 T <b>{Math.round(hrv7)} ms</b> {trend}</span>}
-          {lastW?.restHr && <span style={{ flex: 'none' }}>Ruhepuls <b>{lastW.restHr}</b></span>}
-          {lastW?.sleepH && <span style={{ flex: 'none' }}><Moon size={13} /> <b>{fmtNum(lastW.sleepH, 1)} h</b></span>}
-          {formSpark.length > 1 && <span className="row" style={{ gap: 6, alignItems: 'center', flexWrap: 'nowrap', flex: 'none' }}><span className="small" style={{ flex: 'none' }}>Form 4 W</span><Spark values={formSpark} color="var(--form)" /></span>}
+        <div className="hero-main">
+          <ReadyRing score={ready.score} level={ready.level} />
+          <div className="hero-ready">
+            <b>{ready.advice}</b>
+            {ready.reasons.length > 0 && <p>{ready.reasons[0]}{ready.reasons.length > 1 ? ` (+${ready.reasons.length - 1})` : ''}</p>}
+            {!ready.hasData && <p>Wenig Daten – mach den Morgen-Check für eine genauere Einschätzung.</p>}
+            <button className="pill" onClick={() => { setCheckDay(t); setChecking(true); }}><Sun size={14} />{ready.checked ? 'Check ändern' : 'Morgen-Check'}</button>
+          </div>
+        </div>
+        <div className="hero-metrics">
+          {[['fitness', 'Fitness', 'fit', false], ['fatigue', 'Ermüdung', 'fat', true], ['form', 'Form', 'form', false]].map(([k, label, cls, inv]) => (
+            <div key={k} className={cls}><b>{fmtNum(now?.[k])}</b><span>{label} <em>{arrow(delta(k), inv)}</em></span></div>
+          ))}
+        </div>
+        {(hrv7 || lastW?.restHr || lastW?.sleepH) && <div className="hero-vitals">
+          {hrv7 && <span><HeartPulse size={14} /> HRV <b>{Math.round(hrv7)}</b> ms {trend}</span>}
+          {lastW?.restHr && <span><Pulse size={14} /> Ruhe <b>{lastW.restHr}</b></span>}
+          {lastW?.sleepH && <span><Moon size={14} /> <b>{fmtNum(lastW.sleepH, 1)}</b> h</span>}
+          {formSpark.length > 1 && <span className="spark"><Spark values={formSpark} color="#ffd27a" width={70} height={22} /></span>}
         </div>}
-        <ReadinessCard date={t} form={now?.form ?? null} onCheck={() => { setCheckDay(t); setChecking(true); }} />
-        <details style={{ margin: '4px 0 8px' }}>
-          <summary className="small" style={{ cursor: 'pointer' }}>Morgen-Check für einen anderen Tag</summary>
+        {ready.reasons.length > 1 && <details className="hero-more"><summary className="small">Alle Gründe</summary><ul>{ready.reasons.map((x) => <li key={x}>{x}</li>)}</ul></details>}
+        <details className="hero-more">
+          <summary className="small">Morgen-Check für einen anderen Tag</summary>
           <div className="row" style={{ gap: 6, marginTop: 6 }}>
             <input type="date" value={checkDay} max={t} onChange={(e) => setCheckDay(e.target.value)} style={{ color: '#1b1f1d', background: '#fff', colorScheme: 'light', flex: 1 }} />
             <button className="secondary" disabled={!checkDay} onClick={() => setChecking(true)}>Öffnen</button>
@@ -104,7 +144,7 @@ export function Today({ go, openActivity, openAdd }) {
       {planned.map((p) => (
         <div key={p.id} className="item" style={{ borderStyle: 'dashed', flexDirection: 'column', alignItems: 'stretch' }}>
           <div className="row" style={{ flexWrap: 'nowrap', alignItems: 'flex-start' }}>
-            <div className="grow"><b>{p.title}</b><p>{sportLabel(p.sport)} · {p.minutes} min · {p.zone}</p>{planTargets(p, settings) && <p><b>Ziel:</b> {planTargets(p, settings)}</p>}{p.description && <p>{p.description}</p>}</div>
+            <span className="ico-badge">{sportEmoji(p.sport)}</span><div className="grow"><b>{p.title}</b><p>{sportLabel(p.sport)} · {p.minutes} min · {p.zone}</p>{planTargets(p, settings) && <p><b>Ziel:</b> {planTargets(p, settings)}</p>}{p.description && <p className={openDesc[p.id] ? '' : 'clamp3'} onClick={() => setOpenDesc({ ...openDesc, [p.id]: !openDesc[p.id] })}>{p.description}</p>}{p.description?.length > 140 && <button className="link-btn" onClick={() => setOpenDesc({ ...openDesc, [p.id]: !openDesc[p.id] })}>{openDesc[p.id] ? 'weniger' : 'mehr anzeigen'}</button>}</div>
             <span className="badge b-info" style={{ flex: 'none' }}>geplant</span>
           </div>
           <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
@@ -117,7 +157,7 @@ export function Today({ go, openActivity, openAdd }) {
       ))}
       {todays.map((a) => (
         <button key={a.id} className="item" onClick={() => openActivity(a)}>
-          <div className="grow"><b>{a.title || sportLabel(a.sport)}</b><p>{fmtDuration(a.durationS)} h{a.avgHr ? ` · Ø ${a.avgHr} bpm` : ''}</p><ZoneBar zones={a.zones} /></div>
+          <span className="ico-badge">{sportEmoji(a.sport)}</span><div className="grow"><b>{a.title || sportLabel(a.sport)}</b><p>{fmtDuration(a.durationS)} h{a.avgHr ? ` · Ø ${a.avgHr} bpm` : ''}</p><ZoneBar zones={a.zones} /></div>
           <span className="num">{fmtNum(a.load)}</span>
         </button>
       ))}

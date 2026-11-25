@@ -158,7 +158,7 @@ export function Training({ openActivity, openAdd }) {
             <div><b>{fmtNum(comp.actualLoad)}<small className="muted">/{fmtNum(comp.plannedLoad)}</small></b><span>Belastung Ist/Soll</span></div>
             <div><b>{comp.done}/{comp.planned}</b><span>Einheiten erledigt</span></div>
           </div>
-          <div className="row">
+          <div className="row actions">
             <button className="secondary" onClick={() => setPlanItem({ date: days.find((d) => d >= t) || days[0] })}><Plus size={17} />Einheit planen</button>
             <button className="secondary" onClick={copyLastWeek}><Copy size={17} />Vorwoche kopieren</button>
             <button className="secondary" onClick={() => setSchedOpen(true)}><CalendarClock size={17} />Alltag</button>
@@ -183,6 +183,7 @@ export function Training({ openActivity, openAdd }) {
           {!sorted.length && <p className="muted">Noch keine Einheiten.</p>}
           {sorted.map((a) => (
             <button key={a.id} className="item" onClick={() => openActivity(a)}>
+              <span className="ico-badge">{sportEmoji(a.sport)}</span>
               <div className="grow">
                 <b>{otherNo && <span className="muted">#{otherNo.get(a.id)} </span>}{a.title || sportLabel(a.sport)}</b>
                 <p>{fmtDate(a.date, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })} · {fmtDuration(a.durationS)} h {fmtKm(a.distanceM) && '· ' + fmtKm(a.distanceM)}{a.avgHr ? ` · Ø ${a.avgHr}` : ''} · {a.source}</p>
