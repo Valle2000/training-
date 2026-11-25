@@ -95,7 +95,7 @@ export function Today({ go, openActivity, openAdd }) {
     setBusy(true);
     try {
       const res = await syncAll();
-      const msg = Object.entries(res).map(([p, v]) => (v.error ? `${p}: ${v.error}` : `${p}: ${v.added} neu`)).join(' · ');
+      const msg = Object.entries(res).map(([p, v]) => (v.error ? `${p}: ${v.error}` : `${p}: ${v.added} neu${v.refreshed ? `, ${v.refreshed} mit Puls ergänzt` : ''}`)).join(' · ');
       toast(msg || 'Nichts verbunden');
     } finally { setBusy(false); }
   };

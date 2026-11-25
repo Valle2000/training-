@@ -129,9 +129,45 @@ function flushPolarAsk() {
   for (const fn of unknownListeners) fn(items);
 }
 
+// Polar-Einheit ohne Pulsverlauf, obwohl die Uhr Puls gemessen hat (Zusammenfassung mit Durchschnittspuls).
+export function needsFitRepair(old, ex = {}) {
+  if (old.hasSeries || old.fitOk || (old.fitRetries || 0) >= 3) return false;
+  const hr = ex.heart_rate || ex['heart-rate'] || {};
+  return !!(hr.average || old.avgHr || ex.has_route || ex['has-route']);
+}
+// Felder, die du selbst setzt, bleiben beim Ergänzen erhalten.
+const KEEP_FIELDS = ['notes', 'rpe', 'rpeSkip', 'feel', 'lactate', 'keySessionId', 'gearIds', 'title'];
+export function mergeRepaired(activity, old) {
+  for (const k of KEEP_FIELDS) if (old[k] != null && old[k] !== '') activity[k] = old[k];
+  if (old.sport && old.sport !== 'other') activity.sport = old.sport;
+  if (old.polarSportId != null) activity.polarSportId = old.polarSportId;
+  activity.fitOk = true;
+  return activity;
+}
+async function repairPolar(old, ex) {
+  let raw = null;
+  try { const fit = await call('polar', `/v3/exercises/${ex.id}/fit`, { binary: true }); if (fit?.length) raw = await parseFit(fit); } catch { /* nächster Abgleich */ }
+  if (!raw) { update((x) => ({ ...x, activities: x.activities.map((a) => (a.id === old.id ? { ...a, fitRetries: (a.fitRetries || 0) + 1 } : a)) })); return false; }
+  const d = getData();
+  const { activity, series } = buildActivity({ ...raw, source: 'polar', externalId: String(ex.id) }, d.settings, { id: old.id });
+  mergeRepaired(activity, old);
+  if (series) { await putSeries(old.id, series); await deleteRemoteSeries([old.id]).catch(() => {}); }
+  update((x) => ({ ...x, activities: x.activities.map((a) => (a.id === old.id ? activity : a)) }));
+  return !!activity.hasSeries;
+}
+
+// Einzelne Polar-Einheit von Hand neu laden (Knopf in der Einheit). Polar liefert nur die letzten 30 Tage.
+export async function reloadPolarActivity(a) {
+  if (a.source !== 'polar' || !a.externalId) throw new Error('Nur für Einheiten aus der Polar-Schnittstelle');
+  const ok = await repairPolar({ ...a, fitRetries: 0 }, { id: a.externalId });
+  const now = getData().activities.find((x) => x.id === a.id);
+  if (!ok && !now?.hasSeries) throw new Error('Polar liefert für diese Einheit (noch) keinen Pulsverlauf – Polar stellt nur die letzten 30 Tage bereit. Sonst in Polar Flow als FIT exportieren und unter Mehr → Importieren laden.');
+  return ok;
+}
+
 async function syncPolar() {
   const list = (await call('polar', '/v3/exercises')) || [];
-  let added = 0;
+  let added = 0, refreshed = 0;
   const known = new Map(getData().activities.filter((a) => a.source === 'polar').map((a) => [a.externalId, a]));
   const failed = [];
   for (const ex of list) {
@@ -142,6 +178,9 @@ async function syncPolar() {
         const mappedSport = ex.sport?.id != null ? getData().settings.polarSportMap?.[ex.sport.id] : null;
         if (mappedSport && old.sport === 'other') setSport(old.id, mappedSport);
         if (old.sport === 'other') askPolar(ex, mappedSport || 'other');
+        // Ohne Pulsverlauf gespeichert (FIT-Datei war beim ersten Abgleich nicht abrufbar, z. B. Polar-Störung):
+        // FIT erneut holen und die Einheit ergänzen – höchstens 3 Versuche je Einheit.
+        if (needsFitRepair(old, ex) && (await repairPolar(old, ex))) refreshed++;
         continue;
       }
       let raw = null;
@@ -179,6 +218,7 @@ async function syncPolar() {
     }
   }
   flushPolarAsk();
+  if (refreshed) syncPolar.lastRefreshed = refreshed;
   if (failed.length) console.warn('[polar] übersprungen:', failed);
   await syncPolarWellness();
   return added;
@@ -428,7 +468,7 @@ export async function syncAll() {
   const out = {};
   if (getData().settings.tpFeedUrl) { try { out.trainingpeaks = { added: await syncTrainingPeaks() }; } catch (e) { out.trainingpeaks = { error: e.message }; } }
   for (const p of Object.keys(getData().connections)) {
-    try { out[p] = { added: await SYNC[p]() }; } catch (e) { out[p] = { error: e.message }; }
+    try { out[p] = { added: await SYNC[p]() }; if (p === 'polar' && syncPolar.lastRefreshed) { out[p].refreshed = syncPolar.lastRefreshed; syncPolar.lastRefreshed = 0; } } catch (e) { out[p] = { error: e.message }; }
   }
   update((d) => ({ ...d, settings: { ...d.settings, lastSync: new Date().toISOString() } }));
   return out;

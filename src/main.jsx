@@ -45,8 +45,8 @@ function App() {
       if (!Object.keys(d.connections || {}).length && !d.settings.tpFeedUrl) return;
       if (d.settings.lastSync && Date.now() - Date.parse(d.settings.lastSync) < 30 * 60000) return;
       const res = await syncAll().catch(() => ({}));
-      const added = Object.values(res).reduce((a, v) => a + (v.added || 0), 0);
-      if (added) toast(`${added} neue Einheit(en) abgeglichen`);
+      const added = Object.values(res).reduce((a, v) => a + (v.added || 0), 0), fixed = Object.values(res).reduce((a, v) => a + (v.refreshed || 0), 0);
+      if (added || fixed) toast([added && `${added} neue Einheit(en) abgeglichen`, fixed && `${fixed} mit Pulsverlauf ergänzt`].filter(Boolean).join(' · '));
     };
     const timer = setTimeout(run, 3000);
     document.addEventListener('visibilitychange', run);

@@ -8,7 +8,7 @@ import { addDays, ZONES, cleanSeries } from '../lib/metrics.js';
 import { detectIntervals } from '../lib/intervals.js';
 import { SPORTS, sportLabel, sportEmoji, guessSport } from '../lib/sports.js';
 import { recomputeAll } from '../lib/recompute.js';
-import { importFiles, deleteActivities, mapPolarSport, askTempoGroups } from '../lib/sync.js';
+import { importFiles, deleteActivities, mapPolarSport, askTempoGroups, reloadPolarActivity } from '../lib/sync.js';
 import { deleteRemoteSeries } from '../lib/cloud-sync.js';
 import { ZoneWeeks, ZoneBar, LineChart, ZONE_COLORS } from './charts.jsx';
 import { Sheet, Seg, fmtDuration, fmtNum, fmtDate, fmtKm, toast, PageHead } from './common.jsx';
@@ -614,6 +614,7 @@ export function ActivitySheet({ activity, onClose }) {
       {raceDraft && <RaceEditor race={raceDraft} activities={activities} onClose={() => setRaceDraft(null)} openActivity={() => {}} t={today(settings.timezone)} />}
       <div className="row" style={{ marginTop: 12 }}>
         <button className="primary" onClick={save}>Speichern</button>
+        {activity.source === 'polar' && !activity.hasSeries && <div className="notice small">Diese Einheit hat keinen Pulsverlauf – wahrscheinlich war die Detaildatei bei Polar beim Abgleich nicht abrufbar. <button className="secondary" style={{ marginTop: 6 }} onClick={async () => { try { await reloadPolarActivity(activity); toast('Pulsverlauf von Polar geladen'); onClose(); } catch (e) { toast(e.message); } }}>Von Polar neu laden</button></div>}
         <button className="danger" onClick={remove}><Trash2 size={17} />Löschen</button>
       </div>
     </Sheet>
