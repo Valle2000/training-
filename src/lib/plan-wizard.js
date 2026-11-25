@@ -565,14 +565,14 @@ export function generatePlan(opts, races = []) {
     const mon = Number(w.from.slice(5, 7));
     const prof = pr.multi || 'ski';
     const mSeason = prof !== 'ski' && !fSport && !fKind && !focus && (prof !== 'multi' || (mon >= 4 && mon <= 10)) && !['taper', 'race'].includes(w.phase);
-    const mix = { ...profileMix(pr) };
+    const mix = { ...profileMix(pr, w.from) };
     const pickMix = (cred) => { let best = null; for (const k of MIX_KEYS) { if (!(mix[k] > 0)) continue; cred[k] += mix[k]; if (!best || cred[k] > cred[best]) best = k; } if (best) cred[best] -= 100; return best; };
     const mixSport = (k, date, i) => (k === 'ski' ? specificSport(date, i) : k);
     // Schwerpunkt mit Stärke (z. B. 60 % Laufen vor einem Halbmarathon): der Rest verteilt sich nach dem Profil, damit es
     // multisportlich bleibt. Harte Einheiten überwiegend in der Schwerpunkt-Sportart, bei unter 75 % eine nach Profil.
     const fStr = ['run', 'bike'].includes(fSport) && opts.focusStrengthFor ? opts.focusStrengthFor(w.from) : null;
     const mBlend = fStr != null && !['taper', 'race'].includes(w.phase);
-    const baseMix = prof !== 'ski' ? profileMix(pr) : winter(w.from) ? { ski: 80, bike: 0, run: 20 } : { ski: 70, bike: 10, run: 20 };
+    const baseMix = prof !== 'ski' ? profileMix(pr, w.from) : winter(w.from) ? { ski: 80, bike: 0, run: 20 } : { ski: 70, bike: 10, run: 20 };
     const otherMix = Object.fromEntries(MIX_KEYS.map((k) => [k, k === fSport ? 0 : baseMix[k]]));
     const otherSum = MIX_KEYS.reduce((a, k) => a + otherMix[k], 0);
     if (mBlend) { const sh = fStr / 100; for (const k of MIX_KEYS) mix[k] = Math.round((k === fSport ? sh * 100 : 0) + (otherSum ? (1 - sh) * (otherMix[k] / otherSum) * 100 : k === fSport ? (1 - sh) * 100 : 0)); }
@@ -813,6 +813,11 @@ export function generatePlan(opts, races = []) {
       }
       put(d, s); easy -= min;
     }
+    // Wenig Rollski im Sommer: trotzdem mindestens 1× pro Woche (Technik, Doppelstock-Muskulatur bleiben wach).
+    if ((mSeason || mBlend) && mix.ski > 0 && !days.some((d) => d.sessions.some((x) => isSki(x.sport) || x.sport === 'skierg'))) {
+      const cand = days.flatMap((d) => d.sessions.filter((x) => x.kind === 'easy' && ['bike', 'run'].includes(x.sport)).map((x) => ({ d, x }))).sort((p, q) => Math.abs(p.x.minutes - 70) - Math.abs(q.x.minutes - 70))[0];
+      if (cand) Object.assign(cand.x, { sport: specificSport(cand.d.date, wi), title: 'Locker + Technik (Rollski)', minutes: Math.min(cand.x.minutes, 90), description: 'Grundlage I1 auf Rollski, dazu 10–15 min Technik (Doppelstock, Gleichgewicht auf einem Ski) – hält die Langlauf-Technik über den Sommer wach.' });
+    }
     // Gewählte Schwimm-Technik noch offen (z. B. in Wochen mit nur einer lockeren Einheit): auf einen freien Tag legen.
     for (const d of days) {
       if (swimLeft <= 0) break;
@@ -925,13 +930,33 @@ export function recommend(pr = {}, hours = 10) {
 export const MIX_KEYS = ['ski', 'bike', 'run'];
 export const PROFILES = [
   { id: 'ski', label: 'Langlauf', mix: null, info: 'Langlauf zuerst: im Sommer vor allem Rollski, Laufen und Rad als Ergänzung (meist locker).' },
-  { id: 'multi', label: 'Langlauf-Allrounder', mix: { ski: 50, bike: 25, run: 25 }, info: 'Von April bis Oktober nach deinen Anteilen Rollski, Rad und Laufen – locker, hart und lang. Ab November wieder langlaufspezifisch, damit der Winter nicht leidet.' },
+  { id: 'multi', label: 'Langlauf-Allrounder', mix: { ski: 50, bike: 25, run: 25 }, info: 'April–August nach deinen Anteilen Rollski, Rad und Laufen – locker, hart und lang. September und Oktober automatischer Übergang zu mehr Rollski, ab November Langlauf-Plan, damit der Winter nicht leidet.' },
   { id: 'runbike', label: 'Kombi Rad + Laufen', mix: { ski: 0, bike: 50, run: 50 }, info: 'Rad und Laufen das ganze Jahr nach deinen Anteilen, Ski/Rollski nur, wenn du den Regler hochziehst. Koppeleinheiten Rad → Lauf gehören dazu.' },
   { id: 'run', label: 'Laufen', mix: { ski: 0, bike: 20, run: 80 }, info: 'Läufer-Profil: vor allem Laufen, Rad als gelenkschonender Zusatzumfang.' },
   { id: 'bike', label: 'Rad', mix: { ski: 0, bike: 80, run: 20 }, info: 'Rad-Profil: vor allem Rad, etwas Laufen für die Knochen und Abwechslung.' },
 ];
+// Langlauf-Allrounder: Herbst-Übergang. Die Regler gelten April–August; im September halb, im Oktober ganz auf den
+// Rollski-Anteil für den Herbst (pr.autumnSki, Standard 70 %). Rad und Laufen teilen sich den Rest wie im Sommer.
+export const AUTUMN_SKI = 70;
+export function profileMix(pr = {}, date = null) {
+  const summer = summerMix(pr);
+  const m = date ? Number(String(date).slice(5, 7)) : 0;
+  if ((pr.multi || 'ski') !== 'multi' || (m !== 9 && m !== 10)) return summer;
+  const target = Math.max(summer.ski, Number(pr.autumnSki ?? AUTUMN_SKI));
+  const ski = m === 9 ? Math.round((summer.ski + target) / 2) : target;
+  const rest = summer.bike + summer.run;
+  const bike = rest ? Math.round(((100 - ski) * summer.bike) / rest) : Math.round((100 - ski) / 2);
+  return { ski, bike, run: 100 - ski - bike };
+}
+// Rad-Sommer usw.: Schnellwahl für die Regler.
+export const MIX_PRESETS = [
+  { label: 'Ausgewogen', mix: { ski: 50, bike: 25, run: 25 } },
+  { label: 'Rad-Sommer', mix: { ski: 15, bike: 60, run: 25 } },
+  { label: 'Lauf-Sommer', mix: { ski: 15, bike: 25, run: 60 } },
+  { label: 'Viel Rollski', mix: { ski: 65, bike: 20, run: 15 } },
+];
 // Anteile in Prozent (Summe 100). Regler-Werte (pr.mix) überschreiben die Standardwerte des Profils.
-export function profileMix(pr = {}) {
+function summerMix(pr = {}) {
   const p = PROFILES.find((x) => x.id === (pr.multi || 'ski')) || PROFILES[0];
   if (!p.mix) return { ski: 100, bike: 0, run: 0 };
   const m = { ...p.mix, ...(pr.mix || {}) };

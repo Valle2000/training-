@@ -138,3 +138,19 @@ test('Ansatz am Rennen wählbar, Fokus-Stärke hält es multisportlich', async (
   assert.ok(r60.ss.some((s) => s.kind === 'hard' && /^rollerski|^bike$/.test(s.sport)), 'harte Einheit auch auf Rollski/Rad');
   assert.ok(r60.ss.some((s) => /Halbmarathontempo/.test(s.title)), 'Einheiten des gewählten Ansatzes');
 });
+
+test('Rad-Sommer mit Herbst-Übergang und Rollski-Minimum', async () => {
+  const { generatePlan, profileMix } = await import('../src/lib/plan-wizard.js');
+  const pr = { multi: 'multi', mix: { ski: 15, bike: 60, run: 25 } };
+  assert.deepEqual(profileMix(pr, '2026-07-01'), { ski: 15, bike: 60, run: 25 });
+  assert.equal(profileMix(pr, '2026-09-01').ski, 43);
+  assert.equal(profileMix(pr, '2026-10-01').ski, 70);
+  assert.equal(profileMix({ ...pr, autumnSki: 80 }, '2026-10-01').ski, 80);
+  assert.equal(profileMix({ multi: 'runbike' }, '2026-10-01').ski, 0, 'Übergang nur beim Langlauf-Allrounder');
+  const weeks = generatePlan({ startHours: 10, peakHours: 14, start: '2026-05-04', end: '2027-03-14', restDays: [1], longDay: 7, strengthPerWeek: 2, bikeFrom: 4, bikeTo: 10, profile: pr }, [{ date: '2027-03-14', priority: 'A', name: 'E' }]);
+  const share = (from, to) => { const ss = weeks.filter((w) => w.from >= from && w.from < to).flatMap((w) => w.days.flatMap((d) => d.sessions)).filter((s) => s.sport !== 'strength'); const t = ss.reduce((a, s) => a + s.minutes, 0); return { bike: ss.filter((s) => s.sport === 'bike').reduce((a, s) => a + s.minutes, 0) / t * 100, ski: ss.filter((s) => /^(rollerski|xc_|skierg)/.test(s.sport)).reduce((a, s) => a + s.minutes, 0) / t * 100 }; };
+  const sommer = share('2026-05-01', '2026-09-01'), okt = share('2026-10-01', '2026-11-01');
+  assert.ok(sommer.bike > 50 && sommer.ski < 25, JSON.stringify(sommer));
+  assert.ok(okt.ski > 55, JSON.stringify(okt));
+  for (const w of weeks.filter((x) => x.from < '2026-09-01')) assert.ok(w.days.some((d) => d.sessions.some((s) => /^(rollerski|xc_|skierg)/.test(s.sport))), `Rollski in ${w.from}`);
+});

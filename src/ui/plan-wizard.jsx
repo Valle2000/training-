@@ -6,7 +6,7 @@ import { today, weeks as weekStats } from '../lib/activities.js';
 import { addDays } from '../lib/metrics.js';
 import { sportLabel, SPORTS } from '../lib/sports.js';
 import { PHASES, PRIORITY_INFO, raceAdvice } from '../lib/season.js';
-import { parsePace, focusBlockOn, raceKind, RACE_APPROACHES, RACE_KIND_LABEL, FOCUS_STRENGTHS, focusSuggestions, FOCUS_OPTIONS, focusOn, noSnowOn, APPROACHES, KEY_TYPES, allOptions, makeKey, PLAN_SOURCES, GOALS, SESSION_GUIDE, PROFILE_INFO, PROFILES, MIX_KEYS, profileMix, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend, hardDayCount, suggestHardDays, checkHardDays } from '../lib/plan-wizard.js';
+import { parsePace, focusBlockOn, raceKind, RACE_APPROACHES, RACE_KIND_LABEL, FOCUS_STRENGTHS, focusSuggestions, FOCUS_OPTIONS, focusOn, noSnowOn, APPROACHES, KEY_TYPES, allOptions, makeKey, PLAN_SOURCES, GOALS, SESSION_GUIDE, PROFILE_INFO, PROFILES, MIX_KEYS, profileMix, MIX_PRESETS, AUTUMN_SKI, SERIOUSNESS, STYLES, ABILITIES, MODES, generatePlan, toPlanItems, nextMonday, recommend, hardDayCount, suggestHardDays, checkHardDays } from '../lib/plan-wizard.js';
 import { Sheet, fmtDate, fmtNum, toast } from './common.jsx';
 import { RaceApproachFields, FOCUS_HELP } from './race-approach.jsx';
 import { freeMinutes, hasSchedule, periodForWeek, busyOn } from '../lib/week-adapt.js';
@@ -96,7 +96,7 @@ export function PlanWizard({ onClose }) {
         <label>Profil</label>
         <div className="chips">{PROFILES.map((p) => <button key={p.id} className={`chip${(pr.multi || 'ski') === p.id ? ' on' : ''}`} onClick={() => set('profile', { ...pr, multi: p.id, mix: undefined })}>{p.label}</button>)}</div>
         <p className="muted small">{PROFILE_INFO[pr.multi || 'ski']}</p>
-        {(pr.multi || 'ski') !== 'ski' && <MixSliders pr={pr} set={(mix) => set('profile', { ...pr, mix })} />}
+        {(pr.multi || 'ski') !== 'ski' && <MixSliders pr={pr} set={(mix) => set('profile', { ...pr, mix })} setAutumn={(v) => set('profile', { ...pr, autumnSki: v })} />}
         <SessionGuide />
         <label>Wie ernst nimmst du es?</label>
         <div className="chips">{SERIOUSNESS.map(([id, l]) => <button key={id} className={`chip${pr.seriousness === id ? ' on' : ''}`} onClick={() => setPr('seriousness', id)}>{l}</button>)}</div>
@@ -507,19 +507,29 @@ export function SessionGuide() {
 
 // Regler: wie stark Ski/Rollski, Rad und Laufen im Plan vorkommen (Anteile werden auf 100 % umgerechnet).
 const MIX_LABEL = { ski: '⛷️ Ski / Rollski', bike: '🚴 Rad', run: '🏃 Laufen' };
-function MixSliders({ pr, set }) {
+function MixSliders({ pr, set, setAutumn }) {
   const mix = profileMix(pr);
+  const multi = pr.multi === 'multi';
+  const sep = profileMix(pr, '2026-09-15'), oct = profileMix(pr, '2026-10-15');
+  const fmtMix = (m) => `Rollski ${m.ski} · Rad ${m.bike} · Laufen ${m.run} %`;
   const raw = { ...(PROFILES.find((p) => p.id === pr.multi)?.mix || {}), ...(pr.mix || {}) };
   return (
     <div className="card" style={{ padding: 12 }}>
-      <b>Gewichtung</b>
+      <b>Gewichtung{multi ? ' im Sommer (April–August)' : ''}</b>
+      <div className="chips" style={{ marginTop: 6 }}>{MIX_PRESETS.map((p) => <button key={p.label} className={`chip${MIX_KEYS.every((k) => Number(raw[k]) === p.mix[k]) ? ' on' : ''}`} onClick={() => set(p.mix)}>{p.label}</button>)}</div>
       {MIX_KEYS.map((k) => (
         <div key={k} style={{ marginTop: 8 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>{MIX_LABEL[k]}</span><b>{mix[k]} %</b></div>
           <input type="range" min="0" max="100" step="5" value={Number(raw[k]) || 0} aria-label={MIX_LABEL[k]} onChange={(e) => set({ ...raw, [k]: Number(e.target.value) })} style={{ width: '100%', accentColor: 'var(--accent)' }} />
         </div>
       ))}
-      <p className="muted small" style={{ marginBottom: 0 }}>Gilt für lockeren Umfang, harte Einheiten und die lange Einheit{pr.multi === 'multi' ? ' von April bis Oktober (im Winter bleibt Langlauf vorn)' : ''}. Ein Rennschwerpunkt (z. B. 4 Wochen vor einem Laufrennen) hat Vorrang. Tipp: Über 2–3 harte Einheiten pro Woche über alle Sportarten zusammen hinaus wird es zu viel.</p>
+      {multi && mix.ski < 20 && <div className="notice small" style={{ marginTop: 8 }}>Wenig Rollski ist im Sommer okay. Die App plant trotzdem jede Woche mindestens eine lockere Rollski-Einheit mit Technik ein, damit Technik und Doppelstock-Muskulatur nicht einschlafen. Der Herbst-Übergang holt den Rest nach.</div>}
+      {multi && <>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12 }}><b>Rollski im Oktober</b><b>{oct.ski} %</b></div>
+        <input type="range" min="40" max="90" step="5" value={Number(pr.autumnSki ?? AUTUMN_SKI)} aria-label="Rollski-Anteil im Oktober" onChange={(e) => setAutumn(Number(e.target.value))} style={{ width: '100%', accentColor: 'var(--accent)' }} />
+        <p className="muted small" style={{ margin: '4px 0 0' }}>Herbst-Übergang automatisch: September {fmtMix(sep)}, Oktober {fmtMix(oct)}, ab November Langlauf-Plan.</p>
+      </>}
+      <p className="muted small" style={{ marginBottom: 0 }}>Gilt für lockeren Umfang, harte Einheiten und die lange Einheit{multi ? ' (im Winter bleibt Langlauf vorn)' : ''}. Ein Rennschwerpunkt (z. B. 4 Wochen vor einem Laufrennen) hat Vorrang. Tipp: Über 2–3 harte Einheiten pro Woche über alle Sportarten zusammen hinaus wird es zu viel.</p>
     </div>
   );
 }
