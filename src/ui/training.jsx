@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check, Copy, Scissors, Undo2, CalendarClock, CalendarCheck, Wand2, Download, Trophy } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Upload, Trash2, Check, Copy, Scissors, Undo2, CalendarClock, CalendarCheck, Wand2, Download, Trophy, ClipboardList } from 'lucide-react';
+import { PlanImportSheet } from './plan-import.jsx';
 import { useData, update, getData, getSeries, getLocalSeries, putSeries, uid } from '../lib/store.js';
 import { today, weeks, mondayOf, buildActivity, evaluate, estimatePlanLoad, matchPlan, compliance, sportSummary, cropActivity, localDate, reevaluate } from '../lib/activities.js';
 import { addDays, ZONES, cleanSeries } from '../lib/metrics.js';
@@ -40,6 +41,7 @@ export function Training({ openActivity, openAdd }) {
   const [planItem, setPlanItem] = useState(null);
   const [schedOpen, setSchedOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const sched = hasSchedule(settings.schedule) ? settings.schedule : null;
   const [sportFilter, setSportFilter] = useState('');
   const sorted = useMemo(() => [...activities].filter((a) => !sportFilter || a.sport === sportFilter).sort((a, b) => b.start.localeCompare(a.start)), [activities, sportFilter]);
@@ -158,6 +160,7 @@ export function Training({ openActivity, openAdd }) {
           <SportWeek rows={sportSummary(plan, activities, monday, days[6])} />
           <div className="row actions">
             <button className="secondary" onClick={() => setPlanItem({ date: days.find((d) => d >= t) || days[0] })}><Plus size={17} />Einheit planen</button>
+            <button className="secondary" onClick={() => setImportOpen(true)}><ClipboardList size={17} />Plan der Trainerin</button>
             <button className="secondary" onClick={copyLastWeek}><Copy size={17} />Vorwoche kopieren</button>
             <button className="secondary" onClick={() => setSchedOpen(true)}><CalendarClock size={17} />Alltag</button>
             {monday <= t && <button className="secondary" onClick={() => setReviewOpen(true)}><CalendarCheck size={17} />Rückblick</button>}
@@ -206,6 +209,7 @@ export function Training({ openActivity, openAdd }) {
       {view === 'workouts' && <Workouts />}
       {schedOpen && <ScheduleSheet onClose={() => setSchedOpen(false)} />}
       {reviewOpen && <WeekReviewSheet monday={monday} onClose={() => setReviewOpen(false)} />}
+      {importOpen && <PlanImportSheet onClose={() => setImportOpen(false)} />}
       {planItem && <PlanEditor item={planItem} onClose={() => setPlanItem(null)} />}
     </>
   );

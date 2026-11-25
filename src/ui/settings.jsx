@@ -236,7 +236,7 @@ function TrainingPeaksFeed() {
   return (
     <div className="card">
       <h3 style={{ marginTop: 0 }}>TrainingPeaks-Plan</h3>
-      <p className="small muted" style={{ marginTop: 0 }}>Holt die geplanten Einheiten deiner Trainerin über den Kalender-Feed von TrainingPeaks (braucht <b>Premium</b>). In TrainingPeaks: Einstellungen → Konto → Kalender-Feed → Adresse kopieren (beginnt mit webcal://) und hier einfügen.</p>
+      <p className="small muted" style={{ marginTop: 0 }}><b>Ohne Premium:</b> Kalender → „Plan der Trainerin“ – Screenshot oder Text, die KI liest die Einheiten aus. <b>Mit Premium</b> geht es automatisch über den Kalender-Feed: In TrainingPeaks: Einstellungen → Konto → Kalender-Feed → Adresse kopieren (beginnt mit webcal://) und hier einfügen.</p>
       <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="webcal://www.trainingpeaks.com/ical/…" autoCapitalize="off" autoCorrect="off" spellCheck={false} />
       <div className="row" style={{ marginTop: 8 }}>
         <button className="primary" disabled={busy || !url.trim()} onClick={() => run(url)}><RefreshCw size={16} className={busy ? 'spin' : ''} />{settings.tpFeedUrl ? 'Jetzt holen' : 'Speichern und holen'}</button>

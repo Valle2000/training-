@@ -142,7 +142,43 @@ async function food(body) {
   return askClaude({ system: FOOD_SYSTEM, schema: FOOD_SCHEMA, content, effort: pickEffort(effort, 'medium'), model: pickModel(model) });
 }
 
-const routes = { '/api/coach': coach, '/api/ernaehrung': food };
+// Plan der Trainerin auslesen: Screenshots (TrainingPeaks, Polar Flow, Excel, Foto) oder eingefügter Text (z. B. die
+// tägliche TrainingPeaks-Mail). Die KI überträgt nur, was dort steht – sie plant nichts dazu.
+const PLAN_IMPORT_SYSTEM = `Du liest Trainingspläne einer Trainerin aus Screenshots, Fotos oder Text (TrainingPeaks-Kalender, Polar Flow, Tabellen, E-Mails) und überträgst sie 1:1 in eine Liste.
+Regeln:
+- Nur Einheiten übernehmen, die dort wirklich stehen. Nichts erfinden, nichts ergänzen, keine Ruhetage als Einheit.
+- Datum als YYYY-MM-DD. Steht nur ein Wochentag oder Tag ohne Jahr, nimm das nächstliegende passende Datum ab ca. 7 Tage vor „heute“ (Feld heute). In TrainingPeaks-Kalendern stehen die Wochentage als Spalten (meist Montag zuerst) und die Daten oben.
+- Dauer in Minuten (z. B. 1:30:00 = 90). Fehlt die Dauer, aus Distanz und Sportart grob schätzen und dauerGeschaetzt = true setzen.
+- Sportart aus Symbol, Titel oder Text: XC-Ski/Langlauf → xc_skate oder xc_classic (Skating/klassisch, sonst xc_skate), Rollski → rollerski_skate oder rollerski_classic (ohne Angabe rollerski_skate), SkiErg → skierg, Run → run, Bike/Rad → bike, Swim → swim, Strength/Kraft → strength, Rowing → row, Mobility/Yoga → mobility, sonst other.
+- Zone: höchste Intensität der Einheit nach Olympiatoppen I1–I5 (L1–L5, Z1–Z5 entsprechen I1–I5; locker/GA1 = I1, Schwelle/Tempo = I3, VO2/Intervalle hart = I4, Sprint/maximal = I5), Kraft bei Krafttraining, sonst null.
+- Beschreibung: den Ablauf so vollständig wie lesbar (Aufwärmen, Intervalle mit Pausen, Puls/Watt/Tempo-Vorgaben, Kommentare der Trainerin).
+- Bereits absolvierte Einheiten (z. B. grün markiert mit Ist-Werten) trotzdem mit dem geplanten Inhalt übernehmen.
+- hinweis: kurz, was unklar war (z. B. unleserliches Datum). Antworte auf Deutsch.`;
+const PLAN_IMPORT_SCHEMA = {
+  type: 'object', additionalProperties: false, required: ['einheiten', 'hinweis'],
+  properties: {
+    einheiten: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['datum', 'titel', 'sport', 'minuten', 'dauerGeschaetzt', 'zone', 'beschreibung'], properties: {
+      datum: { type: 'string', description: 'YYYY-MM-DD' }, titel: { type: 'string' }, sport: { type: 'string', enum: SPORT_IDS },
+      minuten: { type: 'integer' }, dauerGeschaetzt: { type: 'boolean' }, zone: { anyOf: [{ type: 'string', enum: ['I1', 'I2', 'I3', 'I4', 'I5', 'Kraft'] }, { type: 'null' }] },
+      beschreibung: { type: 'string' } } } },
+    hinweis: { type: 'string' },
+  },
+};
+const IMG_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
+async function planImport(body) {
+  const { bilder = [], text = '', heute, model, effort } = body;
+  const imgs = (Array.isArray(bilder) ? bilder : []).slice(0, 6).filter((b) => IMG_TYPES.includes(b?.type) && typeof b.data === 'string' && b.data.length < 6e6);
+  const txt = String(text || '').slice(0, 30000).trim();
+  if (!imgs.length && !txt) throw httpError(400, 'Bitte einen Screenshot oder Text mitgeben.');
+  const content = [
+    ...imgs.map((b) => ({ type: 'image', source: { type: 'base64', media_type: b.type, data: b.data } })),
+    { type: 'text', text: `heute: ${/^\d{4}-\d{2}-\d{2}$/.test(heute) ? heute : new Date().toISOString().slice(0, 10)}${txt ? `\n\nText:\n${txt}` : ''}\n\nLies alle geplanten Einheiten aus.` },
+  ];
+  return askClaude({ system: PLAN_IMPORT_SYSTEM, schema: PLAN_IMPORT_SCHEMA, content, effort: pickEffort(effort, 'medium'), model: pickModel(model) });
+}
+
+const routes = { '/api/coach': coach, '/api/ernaehrung': food, '/api/plan-import': planImport };
 
 // Optionaler Zugangscode: Ist APP_ACCESS_CODE gesetzt, muss der Browser ihn im Header x-access-code mitsenden.
 function checkAccess(headers) {
