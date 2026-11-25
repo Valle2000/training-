@@ -9,7 +9,7 @@ import { recomputeAll } from '../lib/recompute.js';
 import { importFiles, deleteActivities, mapPolarSport, askTempoGroups } from '../lib/sync.js';
 import { deleteRemoteSeries } from '../lib/cloud-sync.js';
 import { ZoneWeeks, ZoneBar, LineChart, ZONE_COLORS } from './charts.jsx';
-import { Sheet, Seg, fmtDuration, fmtNum, fmtDate, fmtKm, toast } from './common.jsx';
+import { Sheet, Seg, fmtDuration, fmtNum, fmtDate, fmtKm, toast, PageHead } from './common.jsx';
 import { Season, Races, RaceEditor } from './season.jsx';
 import { Workouts } from './workouts.jsx';
 import { durationOf, workoutLoad, mainZone, describe } from '../lib/workouts.js';
@@ -60,10 +60,7 @@ export function Training({ openActivity, openAdd }) {
 
   return (
     <>
-      <div className="row" style={{ justifyContent: 'space-between' }}>
-        <h1 style={{ flex: 'none', margin: '8px 0' }}>Kalender</h1>
-        <button className="primary" style={{ flex: 'none' }} onClick={openAdd}><Plus size={18} />Einheit</button>
-      </div>
+      <PageHead eyebrow="Planung · Einheiten · Saison" title="Kalender" action={<button className="primary" style={{ flex: 'none' }} onClick={openAdd}><Plus size={18} />Einheit</button>} />
       <Seg value={view} onChange={setView} options={[['week', 'Woche'], ['weeklist', 'Wochenliste'], ['list', 'Liste'], ['season', 'Saison'], ['races', 'Rennen'], ['workouts', 'Workouts'], ['zones', 'Zonen']]} />
 
       {view === 'week' && (

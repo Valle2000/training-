@@ -7,7 +7,7 @@ import { SPORTS, sportLabel } from '../lib/sports.js';
 import { PRESETS, SPORT_FILTERS, periodRange, previousRange, inRange, totals, buckets, delta, bestCurve, estimateFtp, rampRate, rolling, intensityShare, fmtDur, KEY_DURATIONS, daysBetween } from '../lib/analysis.js';
 import { KEY_TEMPLATES, keySessionRows, trend } from '../lib/keysessions.js';
 import { FormChart, LineChart, StackedBars, CurveChart, ZONE_COLORS } from './charts.jsx';
-import { Seg, Sheet, fmtDate, fmtNum, fmtDuration, toast } from './common.jsx';
+import { Seg, Sheet, fmtDate, fmtNum, fmtDuration, toast, PageHead } from './common.jsx';
 import { LactateSection } from './lactate.jsx';
 import { LongTerm } from './longterm.jsx';
 
@@ -22,7 +22,7 @@ function Delta({ now, prev, invert }) {
   const d = delta(now, prev);
   if (d == null) return null;
   const good = invert ? d < 0 : d > 0;
-  return <span className="small" style={{ color: d === 0 ? 'var(--muted)' : good ? 'var(--good)' : 'var(--bad)' }}>{d > 0 ? '+' : ''}{d} %</span>;
+  return <span className={`delta${d === 0 ? '' : good ? ' up' : ' down'}`}>{d > 0 ? '▲ ' : d < 0 ? '▼ ' : ''}{Math.abs(d)} %</span>;
 }
 
 export function Analysis({ openActivity }) {
@@ -41,15 +41,15 @@ export function Analysis({ openActivity }) {
 
   return (
     <>
-      <h1>Analyse</h1>
-      <div className="chips">{PRESETS.map(([k, l]) => <button key={k} className={`chip${preset === k ? ' on' : ''}`} onClick={() => setPreset(k)}>{l}</button>)}</div>
+      <PageHead eyebrow={`${fmtDate(range.from, { day: 'numeric', month: 'short', year: 'numeric' })} – ${fmtDate(range.to, { day: 'numeric', month: 'short', year: 'numeric' })}`} title="Analyse" />
+      <div className="chips scroll">{PRESETS.map(([k, l]) => <button key={k} className={`chip${preset === k ? ' on' : ''}`} onClick={() => setPreset(k)}>{l}</button>)}</div>
       {preset === 'custom' && <div className="grid2"><div><label>Von</label><input type="date" value={range.from} onChange={(e) => setCustom({ ...custom, from: e.target.value })} /></div><div><label>Bis</label><input type="date" value={range.to} onChange={(e) => setCustom({ ...custom, to: e.target.value })} /></div></div>}
       <div className="row" style={{ margin: '6px 0' }}>
         <select value={filter} onChange={(e) => setFilter(e.target.value)} style={{ flex: '1 1 140px' }}>
           {SPORT_FILTERS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
           <optgroup label="Sportart">{SPORTS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}</optgroup>
         </select>
-        <span className="muted small" style={{ flex: '2 1 160px' }}>{fmtDate(range.from, { day: 'numeric', month: 'short', year: '2-digit' })} – {fmtDate(range.to, { day: 'numeric', month: 'short', year: '2-digit' })} · Vergleich: Vorzeitraum gleicher Länge</span>
+        <span className="muted small" style={{ flex: '2 1 160px' }}>Vergleich: Vorzeitraum gleicher Länge</span>
       </div>
       <Seg value={section} onChange={setSection} options={[['overview', 'Überblick'], ['keys', 'Key Sessions'], ['curves', 'Bestwerte'], ['zones', 'Zonen'], ['recovery', 'Form & Erholung'], ['weight', 'Gewicht'], ['long', 'Langzeit'], ['lactate', 'Laktat']]} />
 

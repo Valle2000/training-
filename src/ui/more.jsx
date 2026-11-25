@@ -6,13 +6,13 @@ import { SPORTS } from '../lib/sports.js';
 import { GEAR_KINDS, gearUsage, HEALTH_TYPES, healthDays, loadBefore, healthStats, returnPlan } from '../lib/gear.js';
 import { seasonStart } from '../lib/season.js';
 import { Settings } from './settings.jsx';
-import { Sheet, Seg, fmtDate, fmtNum, toast } from './common.jsx';
+import { Sheet, Seg, fmtDate, fmtNum, toast, PageHead } from './common.jsx';
 
 export function More() {
   const [view, setView] = useState('settings');
   return (
     <>
-      <h1>Mehr</h1>
+      <PageHead eyebrow="Einstellungen · Material · Gesundheit" title="Mehr" />
       <Seg value={view} onChange={setView} options={[['settings', 'Einstellungen'], ['gear', 'Material'], ['health', 'Gesundheit']]} />
       {view === 'settings' && <Settings />}
       {view === 'gear' && <Gear />}

@@ -11,7 +11,7 @@ import { CATALOG, SLOTS, CONTEXTS, filterCatalog, toRecipe, recipeNutrients, hig
 import { NUTRIENTS, REFERENCE } from '../lib/foods.js';
 import { GUIDE, NUTRITION_SOURCES, sweatRate } from '../lib/nutrition-guide.js';
 import { kiPost } from '../lib/ai.js';
-import { Sheet, Seg, fmtDate, toast } from './common.jsx';
+import { Sheet, Seg, fmtDate, toast, PageHead } from './common.jsx';
 import { AiQuality, AiCost, aiChoice, logAiCost, budgetOk } from './ai-quality.jsx';
 import { requestKey } from '../lib/ai-models.js';
 
@@ -41,7 +41,7 @@ export function Food() {
 
   return (
     <>
-      <h1>Ernährung</h1>
+      <PageHead eyebrow={new Date().toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })} title="Ernährung" />
       {!weight && <div className="notice">Trag unter „Mehr → Einstellungen → Athlet“ dein Gewicht ein, dann rechnet die App deinen Bedarf aus und passt die Rezeptmengen an.</div>}
 
       <div className="card">

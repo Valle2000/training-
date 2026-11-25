@@ -4,7 +4,7 @@ import { useData, update, uid } from '../lib/store.js';
 import { today, buildActivity } from '../lib/activities.js';
 import { EXERCISES, CATEGORIES, TEMPLATES, exerciseById, exerciseHistory, lastSets, e1rm } from '../lib/strength.js';
 import { LineChart } from './charts.jsx';
-import { Sheet, Seg, fmtDate, fmtNum, toast } from './common.jsx';
+import { Sheet, Seg, fmtDate, fmtNum, toast, PageHead } from './common.jsx';
 
 const unit = (ex) => (ex?.type === 'time' ? 'Sek.' : 'Wdh.');
 const setsText = (sets, ex) => sets.filter((s) => s.reps).map((s) => `${s.reps}${ex?.type === 'time' ? 's' : ''}${s.kg ? '×' + s.kg : ''}`).join(' · ');
@@ -37,7 +37,7 @@ export function Strength() {
 
   return (
     <>
-      <h1>Kraft</h1>
+      <PageHead eyebrow="Einheiten · Katalog · Fortschritt" title="Kraft" />
       <Seg value={view} onChange={setView} options={[['log', 'Einheiten'], ['catalog', 'Katalog'], ['progress', 'Fortschritt']]} />
       {view === 'log' && (
         <>

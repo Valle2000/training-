@@ -233,3 +233,16 @@ main > * { animation: rise .3s ease both }
 @media (prefers-reduced-motion: reduce) { main > *, .overlay, .sheet, .skeleton i { animation: none } }
 .clamp3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer }
 .link-btn { border: 0; background: none; color: var(--accent); font-weight: 650; font-size: 13px; padding: 2px 0 }
+
+/* ——— Seitenkopf, Hintergrund-Schimmer, scrollbare Chip-Reihen ——— */
+.page-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin: 6px 0 16px }
+.page-head h1 { margin: 2px 0 0 }
+.page-eyebrow { font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: var(--accent); font-weight: 750 }
+body::before { content: ; position: fixed; inset: 0 0 auto 0; height: 460px; pointer-events: none; z-index: -1;
+  background: radial-gradient(900px 380px at 110% -8%, rgba(15, 109, 126, .13), rgba(15, 109, 126, 0) 62%), radial-gradient(600px 300px at -20% 0%, rgba(196, 240, 106, .14), rgba(196, 240, 106, 0) 60%) }
+@media (prefers-color-scheme: dark) { body::before { background: radial-gradient(900px 380px at 110% -8%, rgba(92, 195, 212, .14), rgba(92, 195, 212, 0) 62%), radial-gradient(600px 300px at -20% 0%, rgba(196, 240, 106, .07), rgba(196, 240, 106, 0) 60%) } }
+.chips.scroll { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-bottom: 2px; -webkit-mask-image: linear-gradient(90deg, #000 86%, transparent); mask-image: linear-gradient(90deg, #000 86%, transparent) }
+.chips.scroll::-webkit-scrollbar { display: none }
+.chips.scroll .chip { flex: none }
+.delta { display: inline-block; font-size: 10.5px; font-weight: 700; border-radius: 999px; padding: 1px 6px; margin-left: 3px; background: var(--soft); color: var(--muted); white-space: nowrap; vertical-align: 1px }
+.delta.up { background: var(--goodbg); color: var(--good) } .delta.down { background: var(--badbg); color: var(--bad) }

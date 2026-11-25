@@ -6,7 +6,7 @@ import { seasonPlan, seasonStart, PHASES } from '../lib/season.js';
 import { addDays } from '../lib/metrics.js';
 import { sportLabel } from '../lib/sports.js';
 import { kiPost } from '../lib/ai.js';
-import { fmtDate, toast, Seg } from './common.jsx';
+import { fmtDate, toast, Seg, PageHead } from './common.jsx';
 import { TOPICS, FAQ, EVIDENCE_LABEL } from '../lib/knowledge.js';
 import { AiQuality, AiCost, aiChoice, logAiCost, budgetOk } from './ai-quality.jsx';
 import { requestKey } from '../lib/ai-models.js';
@@ -17,7 +17,7 @@ export function Coach() {
   const [view, setView] = useState('coach');
   return (
     <>
-      <h1>Coach</h1>
+      <PageHead eyebrow="KI-Analyse · Wissen · FAQ" title="Coach" />
       <Seg value={view} onChange={setView} options={[['coach', 'KI-Coach'], ['wiki', 'Wissen'], ['faq', 'FAQ']]} />
       {view === 'coach' && <CoachAi />}
       {view === 'wiki' && <Knowledge />}

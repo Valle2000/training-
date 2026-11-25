@@ -34,3 +34,13 @@ export function Seg({ value, options, onChange }) {
   // Viele Reiter (z. B. Kalender) brechen in eine zweite Zeile um, statt seitlich zu verschwinden.
   return <div className={options.length > 4 ? 'seg many' : 'seg'}>{options.map(([v, l]) => <button key={v} className={value === v ? 'on' : ''} onClick={() => onChange(v)}>{l}</button>)}</div>;
 }
+
+// Seitenkopf: kleine farbige Zeile über dem Titel (Kontext), Titel, optional eine Aktion rechts.
+export function PageHead({ eyebrow, title, action }) {
+  return (
+    <div className="page-head">
+      <div>{eyebrow && <div className="page-eyebrow">{eyebrow}</div>}<h1>{title}</h1></div>
+      {action}
+    </div>
+  );
+}
