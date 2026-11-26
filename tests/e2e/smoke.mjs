@@ -89,6 +89,27 @@ await step('Saisonplan-Assistent öffnet sich', async () => {
 await step('Analyse', async () => { await tab('Analyse'); await page.getByRole('heading', { name: 'Analyse' }).waitFor(); });
 await step('Kraft', async () => { await tab('Kraft'); await page.getByRole('heading', { name: 'Kraft' }).waitFor(); });
 await step('Essen', async () => { await tab('Essen'); await page.getByRole('heading', { name: 'Ernährung', exact: true, level: 1 }).waitFor(); });
+await step('Coach: Frage und Plan ändern (KI simuliert)', async () => {
+  await tab('Coach');
+  await page.route('**/api/frage', (r) => r.fulfill({ json: { antwort: 'Locker bleiben:\n- Puls unter 150', quellen: [], model: 'claude-sonnet-5-5', costUsd: 0.01 } }));
+  await page.route('**/api/plan-edit', async (r) => {
+    const body = r.request().postDataJSON();
+    const first = body.plan.find((p) => !p.erledigt);
+    r.fulfill({ json: { erklaerung: 'Einheit um einen Tag verschoben.', aenderungen: first ? [{ aktion: 'aendern', id: first.id, datum: first.datum, titel: first.titel + ' (verschoben)', sport: first.sport, minuten: first.minuten, zone: first.zone, beschreibung: '' }] : [], model: 'claude-sonnet-5-5', costUsd: 0.01 } });
+  });
+  await page.getByRole('button', { name: 'KI-Coach', exact: true }).click();
+  await page.getByRole('button', { name: 'Frage', exact: true }).click();
+  await page.getByPlaceholder('Deine Frage …').fill('Wie hart morgen?');
+  await page.getByRole('button', { name: 'Fragen', exact: true }).click();
+  await see('Puls unter 150');
+  await page.getByRole('button', { name: 'Plan ändern', exact: true }).click();
+  await page.getByPlaceholder('Was soll sich ändern?').fill('Verschiebe die Einheit');
+  await page.getByRole('button', { name: /Änderung vorschlagen/ }).click();
+  await see('Einheit um einen Tag verschoben.');
+  if (process.env.SHOT2) await page.screenshot({ path: process.env.SHOT2 });
+  await page.getByRole('button', { name: /Übernehmen/ }).click();
+  await see(/1 geändert/);
+});
 await step('Coach → Wissen mit Kapiteln, FAQ', async () => {
   await tab('Coach');
   await page.getByRole('button', { name: 'Wissen', exact: true }).click();

@@ -11,7 +11,7 @@ export const AI_EFFORTS = [
   ['medium', 'Normal', 'gutes Verhältnis aus Gründlichkeit und Kosten'],
   ['high', 'Gründlich', 'länger nachdenken – für Analyse und Planung'],
 ];
-export const DEFAULT_AI = { coach: { model: 'claude-opus-5-5', effort: 'high' }, food: { model: 'claude-opus-5-5', effort: 'medium' }, planImport: { model: 'claude-sonnet-5-5', effort: 'low' } };
+export const DEFAULT_AI = { coach: { model: 'claude-opus-5-5', effort: 'high' }, food: { model: 'claude-opus-5-5', effort: 'medium' }, planImport: { model: 'claude-sonnet-5-5', effort: 'low' }, ask: { model: 'claude-sonnet-5-5', effort: 'medium' }, edit: { model: 'claude-sonnet-5-5', effort: 'low' } };
 export const modelById = (id) => AI_MODELS.find((m) => m.id === id) || AI_MODELS.find((m) => m.id === 'claude-opus-5-5');
 
 // Kosten einer Antwort aus den Token-Zahlen der API.
@@ -22,7 +22,7 @@ export function costOf(modelId, u = {}) {
 }
 
 // Grobe Schätzung pro Anfrage (Eingabe/Ausgabe-Tokens je Art, Ausgabe inkl. Nachdenken je nach Gründlichkeit).
-const TYPICAL = { coach: { input: 20000, output: 12000 }, food: { input: 12000, output: 10000 }, planImport: { input: 6000, output: 3000 } };
+const TYPICAL = { coach: { input: 20000, output: 12000 }, food: { input: 12000, output: 10000 }, planImport: { input: 6000, output: 3000 }, ask: { input: 15000, output: 2500 }, edit: { input: 6000, output: 2500 } };
 const EFFORT_FACTOR = { low: 0.5, medium: 0.75, high: 1 };
 export function estimateCost(kind, modelId, effort) {
   const t = TYPICAL[kind] || TYPICAL.coach;

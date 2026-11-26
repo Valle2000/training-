@@ -178,7 +178,46 @@ async function planImport(body) {
   return askClaude({ system: PLAN_IMPORT_SYSTEM, schema: PLAN_IMPORT_SCHEMA, content, effort: pickEffort(effort, 'medium'), model: pickModel(model) });
 }
 
-const routes = { '/api/coach': coach, '/api/ernaehrung': food, '/api/plan-import': planImport };
+// Bilder (Screenshots, Fotos) für Frage und Plan-Änderung prüfen.
+const imageBlocks = (bilder) => (Array.isArray(bilder) ? bilder : []).slice(0, 4).filter((b) => IMG_TYPES.includes(b?.type) && typeof b.data === 'string' && b.data.length < 6e6).map((b) => ({ type: 'image', source: { type: 'base64', media_type: b.type, data: b.data } }));
+const isoDay = (d) => (/^\d{4}-\d{2}-\d{2}$/.test(d) ? d : new Date().toISOString().slice(0, 10));
+
+// Schnelle Frage: kurze Antwort auf Basis der Trainingsdaten und der Wissensbasis, ohne Analyse und Wochenplan.
+const FRAGE_SCHEMA = { type: 'object', additionalProperties: false, required: ['antwort', 'quellen'], properties: {
+  antwort: { type: 'string', description: 'Direkte Antwort, knapp, gern mit kurzen Aufzählungen (Zeilen mit „- “)' },
+  quellen: { type: 'array', items: { type: 'string' } } } };
+async function frage(body) {
+  const { daten, frage: q, bilder, model, effort } = body;
+  if (!String(q || '').trim()) throw httpError(400, 'Frage fehlt');
+  const content = [...imageBlocks(bilder), { type: 'text', text: `Trainingsdaten (JSON):\n${JSON.stringify(daten || {})}\n\nFrage: ${String(q).slice(0, 4000)}` }];
+  const system = `${COACH_SYSTEM}\n\nModus Frage: Beantworte nur die Frage – direkt, konkret, auf die Daten bezogen, höchstens ca. 250 Wörter. Keine Gesamtanalyse, kein Wochenplan. Liegt ein Bild bei (z. B. Screenshot einer Einheit), beziehe es ein. Quellen nur, wenn du dich auf Studien stützt.\n\nWissensbasis der App:\n\n${KNOWLEDGE}`;
+  return askClaude({ system, schema: FRAGE_SCHEMA, content, effort: pickEffort(effort, 'medium'), model: pickModel(model) });
+}
+
+// Kleine Planänderung per Satz („Schwelle von Donnerstag auf Freitag“, „nächste Woche 20 % weniger“).
+const PLAN_EDIT_SCHEMA = { type: 'object', additionalProperties: false, required: ['erklaerung', 'aenderungen'], properties: {
+  erklaerung: { type: 'string' },
+  aenderungen: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['aktion', 'id', 'datum', 'titel', 'sport', 'minuten', 'zone', 'beschreibung'], properties: {
+    aktion: { type: 'string', enum: ['neu', 'aendern', 'loeschen'] }, id: { anyOf: [{ type: 'string' }, { type: 'null' }] },
+    datum: { type: 'string' }, titel: { type: 'string' }, sport: { type: 'string', enum: SPORT_IDS }, minuten: { type: 'integer' },
+    zone: { anyOf: [{ type: 'string', enum: ['I1', 'I2', 'I3', 'I4', 'I5', 'Kraft'] }, { type: 'null' }] }, beschreibung: { type: 'string' } } } } } };
+const PLAN_EDIT_SYSTEM = `Du bist Skilanglauf-Trainer und änderst den Trainingsplan eines Athleten nach seinem Wunsch.
+Du bekommst die geplanten Einheiten (mit id) der nächsten Wochen, den Wunsch, „heute“ und eine kurze Zusammenfassung der letzten Tage.
+Regeln:
+- Ändere nur, was der Wunsch verlangt – so wenig wie möglich. Unveränderte Einheiten NICHT aufführen.
+- aendern/loeschen nur mit einer id aus der Liste; neu mit id = null. Bei aendern alle Felder mit den neuen Werten füllen (unveränderte Felder übernehmen).
+- Einheiten mit quelle „trainingpeaks“ stammen von der Trainerin: nur ändern, wenn der Wunsch das ausdrücklich verlangt, sonst drumherum planen.
+- Erledigte Einheiten (erledigt: true) und Tage vor „heute“ nicht ändern.
+- Trainingslogik beachten: keine zwei harten Tage hintereinander, wenn es sich vermeiden lässt; beim Verschieben die Woche stimmig halten und das in der Erklärung kurz sagen.
+- erklaerung: 1–3 Sätze, was du geändert hast und warum. Ist der Wunsch unklar oder unsinnig, keine Änderungen und in der Erklärung nachfragen. Antworte auf Deutsch.`;
+async function planEdit(body) {
+  const { plan = [], wunsch, heute, kontext, bilder, model, effort } = body;
+  if (!String(wunsch || '').trim()) throw httpError(400, 'Was soll geändert werden?');
+  const content = [...imageBlocks(bilder), { type: 'text', text: `heute: ${isoDay(heute)}\n\nGeplante Einheiten (JSON):\n${JSON.stringify(plan.slice(0, 120))}\n\nLetzte Tage (JSON):\n${JSON.stringify(kontext || {})}\n\nWunsch: ${String(wunsch).slice(0, 2000)}` }];
+  return askClaude({ system: PLAN_EDIT_SYSTEM, schema: PLAN_EDIT_SCHEMA, content, effort: pickEffort(effort, 'low'), model: pickModel(model) });
+}
+
+const routes = { '/api/coach': coach, '/api/ernaehrung': food, '/api/plan-import': planImport, '/api/frage': frage, '/api/plan-edit': planEdit };
 
 // Optionaler Zugangscode: Ist APP_ACCESS_CODE gesetzt, muss der Browser ihn im Header x-access-code mitsenden.
 function checkAccess(headers) {
