@@ -2,7 +2,7 @@
  {
   "id": "settings",
   "deleted": false,
-  "updated_at": "2026-11-25T12:47:53.031284+00:00",
+  "updated_at": "2026-11-26T12:25:50.311864+00:00",
   "data": {
    "ai": {
     "coach": {
@@ -61,6 +61,12 @@
      "date": "2026-11-23",
      "kind": "coach",
      "model": "claude-opus-5-5"
+    },
+    {
+     "usd": 0.0273,
+     "date": "2026-11-26",
+     "kind": "planImport",
+     "model": "claude-sonnet-5-5"
     }
    ],
    "hrMax": "193",
@@ -141,7 +147,7 @@
     "peakHours": "19",
     "winterRunHours": "5"
    },
-   "lastSync": "2026-11-25T12:47:44.870Z",
+   "lastSync": "2026-11-26T12:22:31.228Z",
    "strategy": "Aktuell ca. 15 h Ausdauer pro Woche plus 2 Krafteinheiten (zusammen ca. 2 h). Bald möchte ich Double-Threshold-Tage einbauen und später auch etwas mehr Intensität.",
    "weightKg": "80",
    "ftpSkierg": "224",

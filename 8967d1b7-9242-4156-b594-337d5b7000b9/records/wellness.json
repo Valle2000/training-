@@ -805,5 +805,35 @@
    "ansCharge": 3.2,
    "sleepScore": 68
   }
+ },
+ {
+  "id": "2026-11-25",
+  "deleted": false,
+  "updated_at": "2026-11-25T20:00:38.727593+00:00",
+  "data": {
+   "hrv": 144,
+   "date": "2026-11-25",
+   "restHr": 37,
+   "sleepH": 7,
+   "source": "polar",
+   "recharge": 5,
+   "ansCharge": 2.7,
+   "sleepScore": 76
+  }
+ },
+ {
+  "id": "2026-11-26",
+  "deleted": false,
+  "updated_at": "2026-11-26T12:22:30.173708+00:00",
+  "data": {
+   "hrv": 140,
+   "date": "2026-11-26",
+   "restHr": 38,
+   "sleepH": 4.2,
+   "source": "polar",
+   "recharge": 3,
+   "ansCharge": 0.5,
+   "sleepScore": 51
+  }
  }
 ]

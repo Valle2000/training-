@@ -3997,51 +3997,21 @@
  },
  {
   "id": "mwszma5w22ntw",
-  "deleted": false,
-  "updated_at": "2026-11-24T22:12:26.195412+00:00",
-  "data": {
-   "id": "mwszma5w22ntw",
-   "date": "2026-11-26",
-   "load": 100,
-   "zone": "I1",
-   "sport": "rollerski_skate",
-   "title": "Rollski Skating locker + Sprints",
-   "source": "coach",
-   "minutes": 120,
-   "description": "I1 unter 139 bpm. In der zweiten Hälfte 6×15 s Sprint bei voller Geschwindigkeit, 2–3 min Pause, technisch sauber."
-  }
+  "deleted": true,
+  "updated_at": "2026-11-26T12:26:12.556332+00:00",
+  "data": null
  },
  {
   "id": "mwszma5w2mk7k",
-  "deleted": false,
-  "updated_at": "2026-11-23T08:12:08.763563+00:00",
-  "data": {
-   "id": "mwszma5w2mk7k",
-   "date": "2026-11-29",
-   "load": 95,
-   "zone": "I1",
-   "sport": "rollerski_classic",
-   "title": "Lange Grundlage Rollski klassisch",
-   "source": "coach",
-   "minutes": 180,
-   "description": "I1, wellige Strecke, viel Doppelstock. Renn-Verpflegung üben: 60–90 g Kohlenhydrate pro Stunde (Glukose-Fruktose). Bei Schnee auf Ski."
-  }
+  "deleted": true,
+  "updated_at": "2026-11-26T12:26:12.558027+00:00",
+  "data": null
  },
  {
   "id": "mwszma5w2uvk6",
-  "deleted": false,
-  "updated_at": "2026-11-24T22:09:55.091189+00:00",
-  "data": {
-   "id": "mwszma5w2uvk6",
-   "date": "2026-11-24",
-   "load": 88,
-   "zone": "I1",
-   "sport": "run",
-   "title": "Lauf locker",
-   "source": "coach",
-   "minutes": 105,
-   "description": "Ganz locker unter 139 bpm (72 % HFmax), flach."
-  }
+  "deleted": true,
+  "updated_at": "2026-11-26T12:26:12.551219+00:00",
+  "data": null
  },
  {
   "id": "mwszma5w6hu65",
@@ -4051,19 +4021,9 @@
  },
  {
   "id": "mwszma5w9z2es",
-  "deleted": false,
-  "updated_at": "2026-11-24T22:12:01.342529+00:00",
-  "data": {
-   "id": "mwszma5w9z2es",
-   "date": "2026-11-28",
-   "load": 50,
-   "zone": "I1",
-   "sport": "run",
-   "title": "Lauf locker",
-   "source": "coach",
-   "minutes": 60,
-   "description": "Ganz locker."
-  }
+  "deleted": true,
+  "updated_at": "2026-11-26T12:26:12.556563+00:00",
+  "data": null
  },
  {
   "id": "mwszma5wcput1",
@@ -4084,51 +4044,21 @@
  },
  {
   "id": "mwszma5wen2f8",
-  "deleted": false,
-  "updated_at": "2026-11-24T22:12:26.194837+00:00",
-  "data": {
-   "id": "mwszma5wen2f8",
-   "date": "2026-11-27",
-   "load": 125,
-   "zone": "I1",
-   "sport": "rollerski_classic",
-   "title": "Rollski klassisch Grundlage",
-   "source": "coach",
-   "minutes": 150,
-   "description": "Spezifisch für Gastein: I1, rund 40 % Doppelstock, Rest Diagonal. Bei Schnee auf Ski. Langer Tag vor dem Double-Threshold-Tag."
-  }
+  "deleted": true,
+  "updated_at": "2026-11-26T12:26:12.553563+00:00",
+  "data": null
  },
  {
   "id": "mwszma5whybwl",
-  "deleted": false,
-  "updated_at": "2026-11-24T22:10:38.156777+00:00",
-  "data": {
-   "id": "mwszma5whybwl",
-   "date": "2026-11-26",
-   "load": 75,
-   "zone": "I1",
-   "sport": "run",
-   "title": "Lauf locker",
-   "source": "coach",
-   "minutes": 90,
-   "description": "Regenerativ unter 139 bpm, vor der Krafteinheit."
-  }
+  "deleted": true,
+  "updated_at": "2026-11-26T12:26:12.556066+00:00",
+  "data": null
  },
  {
   "id": "mwszma5wqoxem",
-  "deleted": false,
-  "updated_at": "2026-11-24T22:12:10.747046+00:00",
-  "data": {
-   "id": "mwszma5wqoxem",
-   "date": "2026-11-25",
-   "load": 143,
-   "zone": "I3",
-   "sport": "run",
-   "title": "Double Threshold abends: 8×4 min Lauf leicht bergauf",
-   "source": "coach",
-   "minutes": 95,
-   "description": "Mindestens 6 h Abstand zum Morgen. 20 min Einlaufen, 8×4 min bei 158–167 bpm (I3, ~2–3 mmol/l), 1 min Trabpause. Ausdrücklich nicht in I4 laufen. Liegst du nach den ersten 2 Intervallen über 168 bpm, Tempo rausnehmen."
-  }
+  "deleted": true,
+  "updated_at": "2026-11-26T12:26:12.553823+00:00",
+  "data": null
  },
  {
   "id": "mwszma5wr5c7s",
@@ -4138,19 +4068,9 @@
  },
  {
   "id": "mwszma5wv20ib",
-  "deleted": false,
-  "updated_at": "2026-11-24T22:12:01.352759+00:00",
-  "data": {
-   "id": "mwszma5wv20ib",
-   "date": "2026-11-28",
-   "load": 202,
-   "zone": "I4",
-   "sport": "rollerski_skate",
-   "title": "Bergintervalle Skigang 6×5 min",
-   "source": "coach",
-   "minutes": 110,
-   "description": "Skigang/Sprunglauf mit Stöcken bergauf. 20 min Einlaufen, 6×5 min bei 168–176 bpm (I4, Brustgurt), 3 min locker bergab. Test: Kommt der Puls trotz voller Anstrengung nicht über ~165 und sind die Beine schwer, nach 4 Wiederholungen abbrechen und die Folgewoche nur locker trainieren."
-  }
+  "deleted": true,
+  "updated_at": "2026-11-26T12:26:12.556781+00:00",
+  "data": null
  },
  {
   "id": "mwszma5wzcybb",
@@ -5530,6 +5450,206 @@
    "source": "wizard",
    "minutes": 60,
    "description": "Locker, ohne Anfahrt zur Loipe. Laufumfang langsam steigern (max. ca. 10 % pro Woche)."
+  }
+ },
+ {
+  "id": "mwxj0kgf0l99k",
+  "deleted": false,
+  "updated_at": "2026-11-26T12:26:12.5326+00:00",
+  "data": {
+   "id": "mwxj0kgf0l99k",
+   "date": "2026-11-27",
+   "done": false,
+   "load": 125,
+   "zone": "I1",
+   "notes": "Schub, 2:30:00. Wahrscheinlich Doppelstock-Schub, Zone geschätzt.",
+   "sport": "xc_classic",
+   "title": "Schub",
+   "source": "trainingpeaks",
+   "minutes": 150,
+   "externalId": "img-2026-11-27-schub-5",
+   "description": "Schub, 2:30:00. Wahrscheinlich Doppelstock-Schub, Zone geschätzt.",
+   "minutesGuessed": false
+  }
+ },
+ {
+  "id": "mwxj0kgf1pj2l",
+  "deleted": false,
+  "updated_at": "2026-11-26T12:26:12.54679+00:00",
+  "data": {
+   "id": "mwxj0kgf1pj2l",
+   "date": "2026-11-29",
+   "done": false,
+   "load": 34,
+   "zone": "Kraft",
+   "notes": "Home Kraft. Die Dauer ist nicht angegeben (--:--:--) und wurde auf 45 Minuten geschätzt.",
+   "sport": "strength",
+   "title": "Home Kraft",
+   "source": "trainingpeaks",
+   "minutes": 45,
+   "externalId": "img-2026-11-29-home-kraft-9",
+   "description": "Home Kraft. Die Dauer ist nicht angegeben (--:--:--) und wurde auf 45 Minuten geschätzt.",
+   "minutesGuessed": true
+  }
+ },
+ {
+  "id": "mwxj0kgfgbfkz",
+  "deleted": false,
+  "updated_at": "2026-11-26T12:26:12.53278+00:00",
+  "data": {
+   "id": "mwxj0kgfgbfkz",
+   "date": "2026-11-28",
+   "done": false,
+   "load": 50,
+   "zone": "I1",
+   "notes": "Laufen, 1:00:00. Keine weiteren Vorgaben sichtbar.",
+   "sport": "run",
+   "title": "Laufen",
+   "source": "trainingpeaks",
+   "minutes": 60,
+   "externalId": "img-2026-11-28-laufen-7",
+   "description": "Laufen, 1:00:00. Keine weiteren Vorgaben sichtbar.",
+   "minutesGuessed": false
+  }
+ },
+ {
+  "id": "mwxj0kgfh5maj",
+  "deleted": false,
+  "updated_at": "2026-11-26T12:26:12.532097+00:00",
+  "data": {
+   "id": "mwxj0kgfh5maj",
+   "date": "2026-11-25",
+   "done": false,
+   "load": 158,
+   "zone": "I3",
+   "notes": "3x20 SkiErg, 1:45:00. Der Titel ist abgeschnitten, Zone als Schwelle geschätzt.",
+   "sport": "skierg",
+   "title": "3x20 SkiErg (ca...)",
+   "source": "trainingpeaks",
+   "minutes": 105,
+   "externalId": "img-2026-11-25-3x20-skierg-ca--1",
+   "description": "3x20 SkiErg, 1:45:00. Der Titel ist abgeschnitten, Zone als Schwelle geschätzt.",
+   "minutesGuessed": false
+  }
+ },
+ {
+  "id": "mwxj0kgftcatv",
+  "deleted": false,
+  "updated_at": "2026-11-26T12:26:12.532357+00:00",
+  "data": {
+   "id": "mwxj0kgftcatv",
+   "date": "2026-11-26",
+   "done": false,
+   "load": 100,
+   "zone": "I1",
+   "notes": "Skating, 2:00:00. Keine weiteren Vorgaben sichtbar.",
+   "sport": "xc_skate",
+   "title": "Skating",
+   "source": "trainingpeaks",
+   "minutes": 120,
+   "externalId": "img-2026-11-26-skating-3",
+   "description": "Skating, 2:00:00. Keine weiteren Vorgaben sichtbar.",
+   "minutesGuessed": false
+  }
+ },
+ {
+  "id": "mwxj0kgfvvh7q",
+  "deleted": false,
+  "updated_at": "2026-11-26T12:26:12.532443+00:00",
+  "data": {
+   "id": "mwxj0kgfvvh7q",
+   "date": "2026-11-26",
+   "done": false,
+   "load": 75,
+   "zone": "I1",
+   "notes": "Laufen, 1:30:00. Keine weiteren Vorgaben sichtbar.",
+   "sport": "run",
+   "title": "Laufen",
+   "source": "trainingpeaks",
+   "minutes": 90,
+   "externalId": "img-2026-11-26-laufen-4",
+   "description": "Laufen, 1:30:00. Keine weiteren Vorgaben sichtbar.",
+   "minutesGuessed": false
+  }
+ },
+ {
+  "id": "mwxj0kgfwjyal",
+  "deleted": false,
+  "updated_at": "2026-11-26T12:26:12.523821+00:00",
+  "data": {
+   "id": "mwxj0kgfwjyal",
+   "date": "2026-11-24",
+   "done": false,
+   "load": 88,
+   "zone": "I1",
+   "notes": "Laufen am Abend, 1:45:00. Keine weiteren Vorgaben sichtbar.",
+   "sport": "run",
+   "title": "Laufen am Abend",
+   "source": "trainingpeaks",
+   "minutes": 105,
+   "externalId": "img-2026-11-24-laufen-am-abend-0",
+   "description": "Laufen am Abend, 1:45:00. Keine weiteren Vorgaben sichtbar.",
+   "minutesGuessed": false
+  }
+ },
+ {
+  "id": "mwxj0kgfy6nfk",
+  "deleted": false,
+  "updated_at": "2026-11-26T12:26:12.532697+00:00",
+  "data": {
+   "id": "mwxj0kgfy6nfk",
+   "date": "2026-11-28",
+   "done": false,
+   "load": 220,
+   "zone": "I4",
+   "notes": "8x4min im Bereich I4 Skating, insgesamt 2:00:00.",
+   "sport": "xc_skate",
+   "title": "8x4min i4 Skating",
+   "source": "trainingpeaks",
+   "minutes": 120,
+   "externalId": "img-2026-11-28-8x4min-i4-skating-6",
+   "description": "8x4min im Bereich I4 Skating, insgesamt 2:00:00.",
+   "minutesGuessed": false
+  }
+ },
+ {
+  "id": "mwxj0kgfz22w0",
+  "deleted": false,
+  "updated_at": "2026-11-26T12:26:12.534903+00:00",
+  "data": {
+   "id": "mwxj0kgfz22w0",
+   "date": "2026-11-29",
+   "done": false,
+   "load": 150,
+   "zone": "I1",
+   "notes": "Skating, 3:00:00. Keine weiteren Vorgaben sichtbar.",
+   "sport": "xc_skate",
+   "title": "Skating",
+   "source": "trainingpeaks",
+   "minutes": 180,
+   "externalId": "img-2026-11-29-skating-8",
+   "description": "Skating, 3:00:00. Keine weiteren Vorgaben sichtbar.",
+   "minutesGuessed": false
+  }
+ },
+ {
+  "id": "mwxj0kgfzm04t",
+  "deleted": false,
+  "updated_at": "2026-11-26T12:26:12.532249+00:00",
+  "data": {
+   "id": "mwxj0kgfzm04t",
+   "date": "2026-11-25",
+   "done": false,
+   "load": 165,
+   "zone": "I4",
+   "notes": "8x4min Stocklauf, 1:30:00. Pausen und weitere Vorgaben nicht sichtbar.",
+   "sport": "run",
+   "title": "8x4min Stocklauf",
+   "source": "trainingpeaks",
+   "minutes": 90,
+   "externalId": "img-2026-11-25-8x4min-stocklauf-2",
+   "description": "8x4min Stocklauf, 1:30:00. Pausen und weitere Vorgaben nicht sichtbar.",
+   "minutesGuessed": false
   }
  }
 ]
