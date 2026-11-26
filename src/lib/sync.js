@@ -67,9 +67,16 @@ async function call(provider, path, { binary = false, file = null } = {}) {
   return binary ? new Uint8Array(await r.arrayBuffer()) : r.json();
 }
 
+// Von Hand gelöschte Einheiten merken, damit der Abgleich sie nicht wieder holt (Anbieter + Nummer, bei Dateien
+// ohne Nummer Anbieter + Startzeit). Gespeichert in den Einstellungen, damit es auf allen Geräten gilt.
+export const deletedKey = (a) => (a.externalId != null && a.externalId !== '' ? `${a.source}:${a.externalId}` : a.start ? `${a.source || 'upload'}@${String(a.start).slice(0, 16)}` : null);
+export const isDeleted = (a, d = getData()) => { const k = deletedKey(a); return !!(k && d.settings.deletedActivities?.[k]); };
+export function forgetDeleted() { update((d) => ({ ...d, settings: { ...d.settings, deletedActivities: {} } })); }
+
 // Neue Einheit speichern, wenn sie noch nicht existiert. Gibt true zurück, wenn neu.
 async function store(raw) {
   const d = getData();
+  if (isDeleted(raw, d)) return false;
   // Selbst zugeordnete Polar-Sportnummern (Einstellungen) haben Vorrang.
   const mapped = raw.polarSportId != null && d.settings.polarSportMap?.[raw.polarSportId];
   if (mapped) raw.sport = mapped;
@@ -173,6 +180,7 @@ async function syncPolar() {
   for (const ex of list) {
     try {
       const old = known.get(String(ex.id));
+      if (!old && isDeleted({ source: 'polar', externalId: String(ex.id) })) continue; // von Hand gelöscht
       if (old) {
         // Bekannte „Sonstiges“-Einheit: mit gespeicherter Zuordnung umstellen, sonst unverändert lassen.
         const mappedSport = ex.sport?.id != null ? getData().settings.polarSportMap?.[ex.sport.id] : null;
@@ -262,7 +270,7 @@ async function syncConcept2({ all = false, onProgress } = {}) {
     const res = await call('concept2', `/api/users/me/results?${from ? `from=${from}&` : ''}number=100&page=${page}`);
     pages = res?.meta?.pagination?.total_pages || 1;
     for (const r of res?.data || []) {
-      if (known.has(String(r.id))) continue;
+      if (known.has(String(r.id)) || isDeleted({ source: 'concept2', externalId: String(r.id) })) continue;
       if (await store(await concept2Raw(r))) added++;
     }
     onProgress?.(`Concept2: Seite ${page} von ${pages}, ${added} neu`);
@@ -388,7 +396,7 @@ async function syncWahoo({ all = false, onProgress } = {}) {
     onProgress?.(`Wahoo: ${list.length} Einheiten gefunden`);
     if (ws.length < 50) break;
   }
-  const todo = list.filter((w) => !known.has(String(w.id)));
+  const todo = list.filter((w) => !known.has(String(w.id)) && !isDeleted({ source: 'wahoo', externalId: String(w.id) }));
   try {
     for (const w of todo) {
       const s = w.workout_summary || {};
@@ -489,6 +497,7 @@ export async function importFiles(files, onProgress) {
   const fail = (name, e) => { failed++; if (errors.length < 3) errors.push(`${name.split('/').pop()}: ${e?.message || e}`); };
   const flush = () => { if (!pending.length) return; const batch = pending.splice(0); update((x) => ({ ...x, activities: [...x.activities, ...batch] })); };
   const add = async (raw) => {
+    if (isDeleted({ ...raw, source: raw.source || 'upload' })) return false; // von Hand gelöscht: zählt als „schon vorhanden“
     const d = getData(), cand = { ...raw, durationS: raw.series?.hr?.length || raw.series?.power?.length || raw.elapsedS, elapsedS: raw.elapsedS };
     // Selbst zugeordnete Polar-Sportnummern (Einstellungen) haben Vorrang.
     const mapped = raw.polarSportId != null && d.settings.polarSportMap?.[raw.polarSportId];
@@ -615,7 +624,14 @@ export async function importFiles(files, onProgress) {
 // Mehrere Einheiten löschen (z. B. einen fehlerhaften Import): lokal, und beim nächsten Abgleich auch in Supabase.
 export async function deleteActivities(ids) {
   const set = new Set(ids);
-  update((d) => ({ ...d, activities: d.activities.filter((a) => !set.has(a.id)) }));
+  update((d) => {
+    const keys = d.activities.filter((a) => set.has(a.id)).map(deletedKey).filter(Boolean);
+    const del = { ...(d.settings.deletedActivities || {}) };
+    for (const k of keys) del[k] = new Date().toISOString().slice(0, 10);
+    // Höchstens 3000 Einträge (älteste fallen raus).
+    const trimmed = Object.fromEntries(Object.entries(del).sort((a, b) => a[1].localeCompare(b[1])).slice(-3000));
+    return { ...d, activities: d.activities.filter((a) => !set.has(a.id)), settings: { ...d.settings, deletedActivities: trimmed } };
+  });
   for (const id of ids) await deleteSeries(id);
   await deleteRemoteSeries(ids).catch(() => {});
   return ids.length;

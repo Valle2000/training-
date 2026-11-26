@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link2, Unlink, Download, Upload, RefreshCw, History } from 'lucide-react';
 import { useData, update, getData } from '../lib/store.js';
 import { recomputeAll } from '../lib/recompute.js';
-import { PROVIDERS, startConnect, disconnect, importFiles, testConnection, syncHistory, reloadConcept2, deleteActivities, mapPolarSport, syncTrainingPeaks } from '../lib/sync.js';
+import { PROVIDERS, startConnect, disconnect, importFiles, testConnection, syncHistory, reloadConcept2, deleteActivities, mapPolarSport, syncTrainingPeaks, forgetDeleted } from '../lib/sync.js';
 import { getAccessCode, setAccessCode, getOwnKey, setOwnKey } from '../lib/ai.js';
 import { fmtDate, toast } from './common.jsx';
 import { SPORTS } from '../lib/sports.js';
@@ -118,6 +118,7 @@ export function Settings() {
         {progress && <div className="notice">{progress}<br /><span className="small">App geöffnet lassen – große Exporte dauern einige Minuten.</span></div>}
         {result && <div className="notice"><b>{result.added} importiert</b>{result.refreshed > 0 && ` · ${result.refreshed} ergänzt`}{result.planned > 0 && ` · ${result.planned} geplante in den Kalender`} · {result.dup} schon vorhanden · {result.failed} nicht lesbar{result.errors?.length > 0 && <div className="small" style={{ marginTop: 4, wordBreak: 'break-word' }}>{result.errors.join(' · ')}</div>}{result.filled?.length > 0 && <div className="small" style={{ marginTop: 4 }}>Aus deinem Polar-Profil übernommen: {result.filled.map((k) => ({ hrMax: 'Maximalpuls', hrRest: 'Ruhepuls', lthr: 'Schwellenpuls', ftp: 'FTP', weightKg: 'Gewicht', sex: 'Geschlecht' }[k])).join(', ')} – bitte oben prüfen.</div>}{result.added > 0 && <div className="small" style={{ marginTop: 4 }}>Die Verläufe werden im Hintergrund nach Supabase hochgeladen (wenn angemeldet).</div>}</div>}
         <PolarSports activities={activities} />
+        {(() => { const n = Object.keys(getData().settings.deletedActivities || {}).length; return n > 0 && <div className="item"><div className="grow"><b>{n} gelöschte Einheit(en) werden übersprungen</b><p>Von Hand gelöschte Einheiten holt der Abgleich nicht wieder. Wenn du doch eine zurück willst:</p></div><button className="ghost" style={{ flex: 'none' }} onClick={() => { if (confirm('Gelöschte Einheiten beim nächsten Abgleich wieder zulassen?')) { forgetDeleted(); toast('Beim nächsten Abgleich kommen sie wieder'); } }}>Wieder zulassen</button></div>; })()}
         <ul className="small muted" style={{ paddingLeft: 18, lineHeight: 1.55 }}>
           <li><b>Polar:</b> Die Schnittstelle liefert nur Einheiten ab der Verbindung. Ältere Einheiten in Polar Flow (Web) im Tagebuch öffnen → Exportieren (TCX, CSV oder FIT, mehrere auch als ZIP). Den Komplett-Export deines Kontos (account.polar.com, JSON im ZIP) kann die App auch lesen – das Format ist nicht offiziell beschrieben, schick mir eine Rückmeldung, falls Einheiten fehlen.</li>
           <li><b>Concept2 / ErgData:</b> Nach dem Verbinden oben „Ganze Historie“ antippen.</li>

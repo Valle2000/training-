@@ -56,3 +56,24 @@ test('Abgleich: FIT erst nicht abrufbar (503), beim nächsten Abgleich mit Puls 
   const r3 = await syncAll();
   assert.equal(r3.polar.refreshed, undefined, 'kein erneutes Nachladen');
 });
+
+test('Von Hand gelöschte Einheiten kommen beim Abgleich nicht wieder', async () => {
+  const { update, getData } = await import('../src/lib/store.js');
+  const { syncAll, deleteActivities, forgetDeleted } = await import('../src/lib/sync.js');
+  const ex = (id, h) => ({ id, start_time: `2026-11-1${id}T0${h}:00:00`, start_time_utc_offset: 60, duration: 'PT45M', distance: 9000, sport: 'RUNNING', detailed_sport_info: 'RUNNING' });
+  globalThis.fetch = async (url) => {
+    const path = new URL(url, 'http://x').searchParams.get('path') || '';
+    if (path === '/v3/exercises') return new Response(JSON.stringify([ex(1, 7), ex(2, 8)]), { status: 200, headers: { 'content-type': 'application/json' } });
+    return new Response('null', { status: 404 });
+  };
+  update((d) => ({ ...d, activities: [], settings: { hrMax: 196, timezone: 'Europe/Berlin' }, connections: { polar: { access_token: 't' } } }));
+  assert.equal((await syncAll()).polar.added, 2);
+  const one = getData().activities.find((a) => a.externalId === '1');
+  await deleteActivities([one.id]);
+  assert.equal(getData().activities.length, 1);
+  assert.ok(getData().settings.deletedActivities['polar:1']);
+  assert.equal((await syncAll()).polar.added, 0, 'gelöschte Einheit bleibt weg');
+  assert.equal(getData().activities.length, 1);
+  forgetDeleted();
+  assert.equal((await syncAll()).polar.added, 1, 'nach „Wieder zulassen“ kommt sie zurück');
+});
